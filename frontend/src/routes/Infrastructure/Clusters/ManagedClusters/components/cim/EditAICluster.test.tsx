@@ -81,9 +81,10 @@ const provisioningConfig = {
 describe('Edit AI Cluster', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('can be rendered', async () => {
-    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock)
-      .mockReturnValue([provisioningConfig, true, null])
-      .mockReturnValueOnce([mockAgents, true, null])
+    ;(dynamicPluginSdk.useK8sWatchResource as jest.Mock).mockImplementation(
+      (resource: { groupVersionKind?: { kind?: string } }) =>
+        resource.groupVersionKind?.kind === 'Agent' ? [mockAgents, true, null] : [provisioningConfig, true, null]
+    )
 
     const nocks = [
       nockGet(pullSecretMock, pullSecretMock),

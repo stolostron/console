@@ -2,11 +2,11 @@
 
 import { SelectOption } from '@patternfly/react-core'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { SelectVariant } from '../../components/AcmSelectBase'
 import { AcmMultiSelect } from './AcmMultiSelect'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmMultiSelect', () => {
   const Select = () => {
@@ -27,12 +27,12 @@ describe('AcmMultiSelect', () => {
     const { container, getByRole } = render(<Select />)
 
     expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toBeNull()
-    userEvent.click(
+    await clickElement(
       screen.getByRole('combobox', {
         name: /ACM select/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /red/i,
       })
@@ -40,7 +40,7 @@ describe('AcmMultiSelect', () => {
     await waitFor(() => {
       expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('1')
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /green/i,
       })
@@ -48,7 +48,7 @@ describe('AcmMultiSelect', () => {
     await waitFor(() => {
       expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('2')
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /green/i,
       })
@@ -57,7 +57,7 @@ describe('AcmMultiSelect', () => {
       expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toHaveTextContent('1')
     })
 
-    userEvent.click(getByRole('button', { name: 'Clear input value' }))
+    await clickElement(getByRole('button', { name: 'Clear input value' }))
     await waitFor(() => {
       expect(container.querySelector<HTMLSpanElement>('.pf-v6-c-badge')).toBeNull()
     })
@@ -78,16 +78,16 @@ describe('AcmMultiSelect', () => {
     }
     const { getByText, getByTestId } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    userEvent.click(getByText('Submit'))
+    await clickElement(getByText('Submit'))
     await waitFor(() => {
       expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('combobox', {
         name: /label/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /red/i,
       })
@@ -116,16 +116,16 @@ describe('AcmMultiSelect', () => {
     }
     const { getByText, getByTestId } = render(<Component />)
     expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
-    userEvent.click(getByText('Submit'))
+    await clickElement(getByText('Submit'))
     await waitFor(() => {
       expect(getByTestId('input-label')).toContainHTML('pf-m-error')
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('combobox', {
         name: /label/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /red/i,
       })
@@ -133,7 +133,7 @@ describe('AcmMultiSelect', () => {
     await waitFor(() => {
       expect(getByTestId('input-label')).not.toContainHTML('pf-m-error')
     })
-    userEvent.click(
+    await clickElement(
       screen.getByRole('checkbox', {
         name: /red/i,
       })

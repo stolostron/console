@@ -434,7 +434,7 @@ describe('events Route', () => {
       // With the fix: Only 1 MODIFIED event should survive (recheck-after-await ensures
       // only one caller wins; others see existing entry and skip creating a new event).
       // Without the fix: up to 4 MODIFIED events can survive (multiple orphaned events).
-      expect(newModifiedEventIds.length).toBe(1)
+      expect(newModifiedEventIds).toHaveLength(1)
 
       // The surviving event should be the one in the cache
       expect(newModifiedEventIds[0]).toBe(cachedEventID)
@@ -1500,7 +1500,7 @@ describe('events Route', () => {
 
       cleanupAccessCache()
 
-      expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
+      expect(Object.keys(cache)).toHaveLength(ACCESS_CACHE_MAX_TOKENS)
       expect(cache['token-0']).toBeDefined()
       expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
     })
@@ -1698,7 +1698,7 @@ describe('events Route', () => {
       const modifiedPushes = pushSpy.mock.calls.filter(
         (call) => (call[0].data as { type?: string })?.type === 'MODIFIED'
       )
-      expect(modifiedPushes.length).toBe(1)
+      expect(modifiedPushes).toHaveLength(1)
 
       const resources = await getKubeResources('Policy', policyApiVersion)
       expect(resources).toHaveLength(1)

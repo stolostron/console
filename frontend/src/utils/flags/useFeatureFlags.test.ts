@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { useQuery } from '../../lib/useQuery'
 import { FEATURE_FLAGS } from './consts'
 import useFeatureFlags from './useFeatureFlags'

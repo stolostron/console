@@ -1,6 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
-import { waitFor } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 import { useFleetAccessReview } from './useFleetAccessReview'
 
 describe('useFleetAccessReview', () => {

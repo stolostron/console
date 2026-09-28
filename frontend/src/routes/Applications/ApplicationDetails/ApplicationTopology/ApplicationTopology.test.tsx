@@ -147,12 +147,12 @@ jest.mock('./ApplicationTopology.css', () => ({}))
 jest.mock('./topology/css/Drawer.css', () => ({}))
 
 import { act, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { AcmDrawerContext } from '~/ui-components'
 import { ApplicationTopologyPageContent } from './ApplicationTopology'
 import { getDiagramElements } from './model/topology'
 import { processResourceActionLink } from './helpers/diagram-helpers'
+import { clickElement } from '~/lib/test-util'
 
 const mockGetDiagramElements = getDiagramElements as jest.Mock
 const mockProcessResourceActionLink = processResourceActionLink as jest.Mock
@@ -273,28 +273,28 @@ describe('ApplicationTopologyPageContent', () => {
   it('opens modals from topology callbacks', async () => {
     renderTopology()
 
-    await userEvent.click(screen.getByRole('button', { name: 'edit-appset' }))
+    await clickElement(screen.getByRole('button', { name: 'edit-appset' }))
     expect(screen.getByTestId('edit-appset-modal')).toHaveTextContent('test-appset')
 
-    await userEvent.click(screen.getByRole('button', { name: 'edit-yaml' }))
+    await clickElement(screen.getByRole('button', { name: 'edit-yaml' }))
     expect(screen.getByTestId('edit-yaml-modal')).toHaveTextContent('$.spec')
 
-    await userEvent.click(screen.getByRole('button', { name: 'view-logs' }))
+    await clickElement(screen.getByRole('button', { name: 'view-logs' }))
     expect(screen.getByTestId('logs-modal')).toBeInTheDocument()
 
-    await userEvent.click(screen.getByRole('button', { name: 'sync-resources' }))
+    await clickElement(screen.getByRole('button', { name: 'sync-resources' }))
     expect(screen.getByTestId('sync-modal')).toHaveTextContent('test-appset')
   })
 
   it('opens sync modal from refresh resources', async () => {
     renderTopology()
-    await userEvent.click(screen.getByRole('button', { name: 'refresh-resources' }))
+    await clickElement(screen.getByRole('button', { name: 'refresh-resources' }))
     expect(screen.getByTestId('sync-modal')).toHaveTextContent('test-appset')
   })
 
   it('launches argo editor via processActionLink', async () => {
     renderTopology()
-    await userEvent.click(screen.getByRole('button', { name: 'launch-argo' }))
+    await clickElement(screen.getByRole('button', { name: 'launch-argo' }))
     expect(mockProcessResourceActionLink).toHaveBeenCalledWith(
       expect.objectContaining({
         action: 'open_argo_editor',
@@ -311,10 +311,10 @@ describe('ApplicationTopologyPageContent', () => {
   it('opens and closes the drawer', async () => {
     const { setDrawerContext } = renderTopology()
 
-    await userEvent.click(screen.getByRole('button', { name: 'open-drawer' }))
+    await clickElement(screen.getByRole('button', { name: 'open-drawer' }))
     expect(setDrawerContext).toHaveBeenCalledWith(expect.objectContaining({ isExpanded: true, title: 'Drawer title' }))
 
-    await userEvent.click(screen.getByRole('button', { name: 'close-drawer' }))
+    await clickElement(screen.getByRole('button', { name: 'close-drawer' }))
     expect(setDrawerContext).toHaveBeenCalledWith(undefined)
   })
 })

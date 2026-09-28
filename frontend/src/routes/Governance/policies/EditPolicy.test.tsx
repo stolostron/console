@@ -4,7 +4,7 @@ import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { placementBindingsState, policiesState, namespacesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
-import { clickByText, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
+import { clickByText, clickElement, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy, PlacementBinding } from '../../../resources'
 import { mockNamespaces, mockPolicy, mockPlacements, mockPlacementBindings } from '../governance.sharedMocks'
@@ -51,21 +51,21 @@ describe('Edit Policy Page', () => {
     await waitForText('Edit policy')
 
     // step 1 -- name and namespace
-    screen.getByRole('button', { name: 'Next' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     // step 2 -- policy templates
-    screen
-      .getByRole('button', {
+    await clickElement(
+      screen.getByRole('button', {
         name: /remove item/i,
       })
-      .click()
-    screen.getByRole('button', { name: 'Next' }).click()
+    )
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     // step 3 -- placement
-    screen.getByRole('button', { name: 'Next' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     // step 4 -- Policy annotations
-    screen.getByRole('button', { name: 'Next' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     // step 5 -- Review and Submit
 
@@ -75,7 +75,7 @@ describe('Edit Policy Page', () => {
       }),
       nockPatch(mockPolicyCopy, [{ op: 'remove', path: '/spec/policy-templates/0' }]),
     ]
-    screen.getByRole('button', { name: 'Submit' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Submit' }))
     await waitForNocks(mockPolicyUpdate)
   })
 

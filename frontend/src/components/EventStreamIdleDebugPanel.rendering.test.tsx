@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import React, { createElement, ReactElement } from 'react'
+import React, { createElement, type ReactNode } from 'react'
 import { MutableSnapshot, RecoilRoot } from 'recoil'
 import { settingsState } from '../atoms'
 import { PluginDataContext, defaultContext } from '../lib/PluginDataContext'
@@ -20,7 +20,7 @@ jest.mock('../lib/usePageActivity', () => ({
   usePageActivity: () => ({ isActive: true, deadline: null, pageInUse: true }),
 }))
 
-function wrapper({ children }: { children: ReactElement }) {
+function wrapper({ children }: { children: ReactNode }) {
   return createElement(
     PluginDataContext.Provider,
     { value: { ...defaultContext, loadCompleted: true, loadStarted: true } },
@@ -63,7 +63,7 @@ describe('EventStreamIdleDebugPanel rendering', () => {
 
   it('shows IDLE (grace) state when stream is idle', () => {
     const idleCtx = { ...defaultContext, isStreamIdle: true, loadCompleted: true, loadStarted: true }
-    const idleWrapper = ({ children }: { children: ReactElement }) =>
+    const idleWrapper = ({ children }: { children: ReactNode }) =>
       createElement(
         PluginDataContext.Provider,
         { value: idleCtx },
@@ -84,7 +84,7 @@ describe('EventStreamIdleDebugPanel rendering', () => {
 
   it('shows RECONNECTING state when reconnecting', () => {
     const reconnCtx = { ...defaultContext, isReconnecting: true, loadCompleted: true, loadStarted: true }
-    const reconnWrapper = ({ children }: { children: ReactElement }) =>
+    const reconnWrapper = ({ children }: { children: ReactNode }) =>
       createElement(
         PluginDataContext.Provider,
         { value: reconnCtx },

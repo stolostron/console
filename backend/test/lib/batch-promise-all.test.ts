@@ -26,10 +26,10 @@ describe('batchPromiseAll', () => {
       return Promise.resolve(n)
     })
 
-    expect(batchesProcessed.length).toBe(3)
-    expect(batchesProcessed[0].length).toBe(BATCH_SIZE)
-    expect(batchesProcessed[1].length).toBe(BATCH_SIZE)
-    expect(batchesProcessed[2].length).toBe(3)
+    expect(batchesProcessed).toHaveLength(3)
+    expect(batchesProcessed[0]).toHaveLength(BATCH_SIZE)
+    expect(batchesProcessed[1]).toHaveLength(BATCH_SIZE)
+    expect(batchesProcessed[2]).toHaveLength(3)
   })
 
   it('should yield the event loop between batches', async () => {

@@ -3,10 +3,10 @@
 
 import ControlPanelMultiTextInput from './ControlPanelMultiTextInput'
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 
 import i18n from 'i18next'
 import { getIPValidator } from '../utils/validation-types'
+import { clickElement } from '~/lib/test-util'
 const t = i18n.t.bind(i18n)
 
 export const control = {
@@ -59,7 +59,7 @@ describe('ControlPanelTextInput component', () => {
     expect(getByText('Add additional ingressVIP')).toBeInTheDocument()
   })
 
-  it('creates new fields', () => {
+  it('creates new fields', async () => {
     const Component = () => {
       return (
         <ControlPanelMultiTextInput
@@ -76,12 +76,12 @@ describe('ControlPanelTextInput component', () => {
     const { getByText, getAllByPlaceholderText, rerender } = render(<Component />)
 
     expect(getAllByPlaceholderText('Enter ingressVIP')).toHaveLength(1)
-    userEvent.click(getByText('Add additional ingressVIP'))
+    await clickElement(getByText('Add additional ingressVIP'))
     rerender(<Component />)
     expect(getAllByPlaceholderText('Enter ingressVIP')).toHaveLength(2)
   })
 
-  it('deletes field', () => {
+  it('deletes field', async () => {
     const Component = () => {
       return (
         <ControlPanelMultiTextInput
@@ -97,12 +97,12 @@ describe('ControlPanelTextInput component', () => {
     }
     const { getByText, getAllByPlaceholderText, getAllByTestId, rerender } = render(<Component />)
     expect(getAllByPlaceholderText('Enter ingressVIP')).toHaveLength(2)
-    userEvent.click(getByText('Add additional ingressVIP'))
+    await clickElement(getByText('Add additional ingressVIP'))
     rerender(<Component />)
     expect(getAllByPlaceholderText('Enter ingressVIP')).toHaveLength(3)
-    userEvent.click(getAllByTestId('remove-item')[0])
+    await clickElement(getAllByTestId('remove-item')[0])
     rerender(<Component />)
-    userEvent.click(getAllByTestId('remove-item')[0])
+    await clickElement(getAllByTestId('remove-item')[0])
     rerender(<Component />)
     expect(getAllByPlaceholderText('Enter ingressVIP')).toHaveLength(1)
   })

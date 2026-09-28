@@ -34,7 +34,6 @@ import {
   SubscriptionOperatorKind,
 } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot, useSetRecoilState } from 'recoil'
 import {
@@ -72,7 +71,8 @@ import {
   waitForNocks,
   waitForNotText,
   waitForText,
-} from '../../../../../lib/test-util'
+  clickElement,
+} from '~/lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import DiscoveredClustersPage from '../../DiscoveredClusters/DiscoveredClusters'
 import ImportClusterPage from './ImportCluster'
@@ -1049,7 +1049,7 @@ describe('Import Discovered Cluster', () => {
     const { getAllByText, getAllByLabelText } = render(<Component />) // Render component
 
     await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for DiscoveredCluster to appear in table
-    userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+    await clickElement(getAllByLabelText('Actions')[0]) // Click on Kebab menu
 
     await clickByText('Import cluster')
     await waitForText('Import an existing cluster', true)
@@ -1079,7 +1079,7 @@ describe('Import Discovered Cluster', () => {
     const { getAllByText, getAllByLabelText, getByDisplayValue } = render(<Component />) // Render component
 
     await waitFor(() => expect(getAllByText(mockDiscoveredClusters[0].metadata.name!)[0]!).toBeInTheDocument()) // Wait for Discovered ROSA Cluster to appear in table
-    userEvent.click(getAllByLabelText('Actions')[0]) // Click on Kebab menu
+    await clickElement(getAllByLabelText('Actions')[0]) // Click on Kebab menu
 
     await clickByText('Import cluster')
     await waitForText('Enter your server URL and API token for the existing cluster', true)
@@ -1137,7 +1137,7 @@ describe('Import Discovered Cluster with import credentials', () => {
     await waitFor(() => {
       expect(getAllByText(mockDiscoveredClusters[1].metadata.name!)[0]!).toBeInTheDocument()
     })
-    userEvent.click(getAllByLabelText('Actions')[1]) // Click on Kebab menu
+    await clickElement(getAllByLabelText('Actions')[1]) // Click on Kebab menu
     await clickByText('Import cluster')
     await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
 
@@ -1192,7 +1192,7 @@ describe('Import Discovered Cluster with import credentials', () => {
     await waitFor(() => {
       expect(getAllByText(mockDiscoveredClusters[2].metadata.name!)[0]!).toBeInTheDocument()
     })
-    userEvent.click(getAllByLabelText('Actions')[2]) // Click on Kebab menu
+    await clickElement(getAllByLabelText('Actions')[2]) // Click on Kebab menu
     await clickByText('Import cluster')
     await waitForText('Import from Red Hat OpenShift Cluster Manager', true)
 
@@ -1280,11 +1280,7 @@ describe('Import cluster RHOCM mode', () => {
     await waitForText(mockCRHCredential2.metadata.name!)
 
     // Click on the button with the name "Credential Options menu"
-    screen
-      .getByRole('combobox', {
-        name: 'Credential',
-      })
-      .click()
+    await clickElement(screen.getByRole('combobox', { name: 'Credential' }))
     // Assert the removed credential does not exist
     expect(screen.queryByText(mockCRHCredential1.metadata.name!)).not.toBeInTheDocument()
     expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
@@ -1292,15 +1288,11 @@ describe('Import cluster RHOCM mode', () => {
     setSetSecrets.mock.calls.slice(-1)[0][0]([mockCRHCredential3])
 
     // Assert the second removed credential does not exist
-    expect(screen.queryByText(mockCRHCredential2.metadata.name!)).not.toBeInTheDocument()
+    await waitForNotText(mockCRHCredential2.metadata.name!)
     // Third credential should now be selected
     // Click on the button with the name "Credential Options menu"
-    screen
-      .getByRole('combobox', {
-        name: 'Credential',
-      })
-      .click()
+    await clickElement(screen.getByRole('combobox', { name: 'Credential' }))
     // await new Promise((resolve) => setTimeout(resolve, 500))
-    expect(screen.queryByText(mockCRHCredential3.metadata.name!)).toBeInTheDocument()
+    expect(screen.getAllByText(mockCRHCredential3.metadata.name!).length).toBeGreaterThan(0)
   })
 })

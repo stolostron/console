@@ -2,7 +2,6 @@
 
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import {
@@ -16,7 +15,7 @@ import {
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
-import { waitForText } from '../../../lib/test-util'
+import { waitForText, clickElement } from '~/lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
 import { AcmExtension } from '../../../plugin-extensions/types'
 import { SearchSchemaDocument } from '../../Search/search-sdk/search-sdk'
@@ -370,8 +369,8 @@ describe('Applications Page', () => {
     expect(screen.getByText('Topology')).toBeTruthy()
     expect(screen.getByText('Details')).toBeTruthy()
     await waitForText('Actions', true)
-    userEvent.click(screen.getByText('Actions'))
-    userEvent.click(
+    await clickElement(screen.getByText('Actions'))
+    await clickElement(
       screen.getByRole('menuitem', {
         name: /delete application/i,
       })

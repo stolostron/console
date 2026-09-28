@@ -6,9 +6,9 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util
 import { RecoilRoot } from 'recoil'
 import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './NodePoolsProgress'
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
-import userEvent from '@testing-library/user-event'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import { clickElement } from '~/lib/test-util'
 
 const mockClusterImageSet0: ClusterImageSetK8sResource = {
   apiVersion: ClusterImageSetApiVersion,
@@ -348,8 +348,8 @@ describe('NodePoolsProgress', () => {
       </RecoilRoot>
     )
   })
-  it('should show all cluster pool names and button', () => {
-    userEvent.click(
+  it('should show all cluster pool names and button', async () => {
+    await clickElement(
       screen.getByRole('button', {
         name: /cluster node pools/i,
       })

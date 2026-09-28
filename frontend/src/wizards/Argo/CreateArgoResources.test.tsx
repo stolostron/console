@@ -2,13 +2,13 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { RecoilRoot } from 'recoil'
 import { argoCDsState } from '../../atoms'
 import { AcmToastContext } from '../../ui-components'
 import { CreateArgoResources } from './CreateArgoResources'
 import { ResourceError, ResourceErrorCode } from '../../resources/utils/resource-request'
 import { IResource } from '../../resources'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 const mockReconcileResources = jest.fn()
 jest.mock('../../resources/utils', () => ({
@@ -85,7 +85,7 @@ describe('CreateArgoResources', () => {
         </div>
       )
 
-      await userEvent.click(screen.getByRole('button', { name: /^Add$/i }))
+      await clickElement(screen.getByRole('button', { name: /^Add$/i }))
 
       const alert = await screen.findByText('You must fill out all required fields before you can proceed.')
       const pageSection = alert.closest('section.pf-v6-c-page__main-section')
@@ -111,17 +111,17 @@ describe('CreateArgoResources', () => {
 
       // Fill in the form
       const nameInput = screen.getByRole('textbox', { name: /name/i })
-      await userEvent.type(nameInput, 'test-argo-server')
+      await typeElement(nameInput, 'test-argo-server')
 
       // Select namespace
       const namespaceSelect = screen.getByRole('combobox', { name: /namespace/i })
-      await userEvent.click(namespaceSelect)
+      await clickElement(namespaceSelect)
       const namespaceOption = await screen.findByRole('option', { name: /openshift-gitops/i })
-      await userEvent.click(namespaceOption)
+      await clickElement(namespaceOption)
 
       // Click Add button
       const addButton = screen.getByRole('button', { name: /^Add$/i })
-      await userEvent.click(addButton)
+      await clickElement(addButton)
 
       await waitFor(() => {
         expect(mockReconcileResources).toHaveBeenCalled()
@@ -147,17 +147,17 @@ describe('CreateArgoResources', () => {
 
       // Fill in the form
       const nameInput = screen.getByRole('textbox', { name: /name/i })
-      await userEvent.type(nameInput, 'existing-server')
+      await typeElement(nameInput, 'existing-server')
 
       // Select namespace
       const namespaceSelect = screen.getByRole('combobox', { name: /namespace/i })
-      await userEvent.click(namespaceSelect)
+      await clickElement(namespaceSelect)
       const namespaceOption = await screen.findByRole('option', { name: /openshift-gitops/i })
-      await userEvent.click(namespaceOption)
+      await clickElement(namespaceOption)
 
       // Click Add button
       const addButton = screen.getByRole('button', { name: /^Add$/i })
-      await userEvent.click(addButton)
+      await clickElement(addButton)
 
       await waitFor(() => {
         expect(mockReconcileResources).toHaveBeenCalled()
@@ -187,17 +187,17 @@ describe('CreateArgoResources', () => {
 
       // Fill in the form
       const nameInput = screen.getByRole('textbox', { name: /name/i })
-      await userEvent.type(nameInput, 'my-argo')
+      await typeElement(nameInput, 'my-argo')
 
       // Select namespace
       const namespaceSelect = screen.getByRole('combobox', { name: /namespace/i })
-      await userEvent.click(namespaceSelect)
+      await clickElement(namespaceSelect)
       const namespaceOption = await screen.findByRole('option', { name: /openshift-gitops/i })
-      await userEvent.click(namespaceOption)
+      await clickElement(namespaceOption)
 
       // Click Add button
       const addButton = screen.getByRole('button', { name: /^Add$/i })
-      await userEvent.click(addButton)
+      await clickElement(addButton)
 
       await waitFor(() => {
         expect(mockReconcileResources).toHaveBeenCalledWith(

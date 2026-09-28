@@ -99,7 +99,7 @@ describe('ClusterSetsTable', () => {
     render(<Component areLinksDisplayed={false} />)
     await waitForText(mockManagedClusterSet.metadata.name!)
     const links = screen.queryAllByRole('link', { name: mockManagedClusterSet.metadata.name! })
-    expect(links.length).toBe(0)
+    expect(links).toHaveLength(0)
   })
 
   test('hides table actions when hideTableActions is true', async () => {

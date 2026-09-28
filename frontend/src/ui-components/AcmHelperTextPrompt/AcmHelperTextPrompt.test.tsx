@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { AcmSelect } from '../AcmSelect'
 import { AcmHelperTextPrompt } from './AcmHelperTextPrompt'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmHelperTextPrompt renders', () => {
-  test('renders', () => {
+  test('renders', async () => {
     const { getByText } = render(
       <AcmSelect
         id="test-select"
@@ -20,7 +20,7 @@ describe('AcmHelperTextPrompt renders', () => {
     )
     expect(getByText('Visit selected value')).toBeInTheDocument()
     window.open = jest.fn()
-    userEvent.click(getByText('Visit selected value'))
+    await clickElement(getByText('Visit selected value'))
     expect(window.open).toHaveBeenCalledWith('/test-url')
   })
   test('renders with helper text', async () => {

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmExpandableSection } from './AcmExpandableSection'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmExpandableSection', () => {
   test('renders in a collapsed state', () => {
@@ -15,13 +15,13 @@ describe('AcmExpandableSection', () => {
     expect(getByText('Expandable Label - Summary about this section')).toBeInTheDocument()
     expect(container.querySelector('.pf-v6-c-expandable-section__content')).not.toBeVisible()
   })
-  test('can be expanded', () => {
+  test('can be expanded', async () => {
     const { getByRole, container } = render(
       <AcmExpandableSection label="Expandable Label" summary="Summary about this section">
         Section content
       </AcmExpandableSection>
     )
-    userEvent.click(getByRole('button'))
+    await clickElement(getByRole('button'))
     expect(container.querySelector('.pf-v6-c-expandable-section__content')).toBeVisible()
   })
   test('has zero accessibility defects', async () => {
@@ -31,7 +31,7 @@ describe('AcmExpandableSection', () => {
       </AcmExpandableSection>
     )
     expect(await axe(container)).toHaveNoViolations()
-    userEvent.click(getByRole('button'))
+    await clickElement(getByRole('button'))
     expect(await axe(container)).toHaveNoViolations()
   })
   test('can be hidden', async () => {

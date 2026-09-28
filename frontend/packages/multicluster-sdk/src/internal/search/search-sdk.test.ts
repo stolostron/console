@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { MockedProvider } from '@apollo/client/testing'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import React from 'react'

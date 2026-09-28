@@ -4,11 +4,10 @@ import { ClusterCuratorDefinition, HostedClusterApiVersion, HostedClusterKind } 
 import { HostedClusterK8sResourceWithChannel } from '../../../../../resources/hosted-cluster'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { act } from 'react-dom/test-utils'
 import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { MemoryRouter } from 'react-router'
+import { clickElement } from '~/lib/test-util'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',
@@ -251,13 +250,11 @@ describe('BatchChannelSelectModal', () => {
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'), undefined, 404)
     const mockNockUpgrade2backup = nockCreate({ ...clusterCuratorReady2, ...getPatchUpdate('stable-2.3') })
     expect(getByText('Save')).toBeTruthy()
-    userEvent.click(getByText('Save'))
-    await act(async () => {
-      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
-      await waitFor(() => expect(isClosed).toBe(true))
-    })
+    await clickElement(getByText('Save'))
+    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+    await waitFor(() => expect(mockNockUpgrade2backup.isDone()).toBeTruthy())
+    await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
+    await waitFor(() => expect(isClosed).toBe(true))
 
     expect(isClosed).toBe(true)
   })
@@ -276,20 +273,18 @@ describe('BatchChannelSelectModal', () => {
     )
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
     expect(getByText('Save')).toBeTruthy()
-    userEvent.click(getByText('Save'))
-    await act(async () => {
-      await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
-      userEvent.click(getByText('Saving')) // do additional click. make sure not calling update again
-      userEvent.click(getByText('Saving'))
-      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Saving')).toBeFalsy(), {
-        timeout: 5000,
-      })
-      await waitFor(() => expect(isClosed).toBe(true))
+    await clickElement(getByText('Save'))
+    await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
+    await clickElement(getByText('Saving')) // do additional click. make sure not calling update again
+    await clickElement(getByText('Saving'))
+    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+    await waitFor(() => expect(queryByText('Saving')).toBeFalsy(), {
+      timeout: 5000,
     })
+    await waitFor(() => expect(isClosed).toBe(true))
   })
 
-  it('should close modal if click cancel', () => {
+  it('should close modal if click cancel', async () => {
     let isClosed = false
     const { getByText } = render(
       <MemoryRouter>
@@ -302,7 +297,7 @@ describe('BatchChannelSelectModal', () => {
         />
       </MemoryRouter>
     )
-    userEvent.click(getByText('Cancel'))
+    await clickElement(getByText('Cancel'))
     expect(isClosed).toBe(true)
   })
   it('should show alert when failed; keep failed rows in table with error messages', async () => {
@@ -316,7 +311,7 @@ describe('BatchChannelSelectModal', () => {
     expect(queryByText('cluster-1-ready1')).toBeTruthy()
     expect(queryByText('cluster-2-ready2')).toBeTruthy()
     expect(getByText('Save')).toBeTruthy()
-    userEvent.click(getByText('Save'))
+    await clickElement(getByText('Save'))
     await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
     await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
     await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
@@ -566,14 +561,12 @@ describe('BatchChannelSelectModal - Hosted Clusters', () => {
     const mockNockCreateCurator = nockCreate({ ...clusterCurator, ...patchSpec })
 
     expect(getByText('Save')).toBeTruthy()
-    userEvent.click(getByText('Save'))
+    await clickElement(getByText('Save'))
 
-    await act(async () => {
-      await waitFor(() => expect(mockNockPatchCurator.isDone()).toBeTruthy())
-      await waitFor(() => expect(mockNockCreateCurator.isDone()).toBeTruthy())
-      await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
-      await waitFor(() => expect(isClosed).toBe(true))
-    })
+    await waitFor(() => expect(mockNockPatchCurator.isDone()).toBeTruthy())
+    await waitFor(() => expect(mockNockCreateCurator.isDone()).toBeTruthy())
+    await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
+    await waitFor(() => expect(isClosed).toBe(true))
 
     expect(isClosed).toBe(true)
   })

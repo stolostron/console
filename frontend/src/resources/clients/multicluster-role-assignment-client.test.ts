@@ -1,6 +1,6 @@
 /* eslint-disable jest/no-conditional-expect */
 /* Copyright Contributors to the Open Cluster Management project */
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import * as req from '../../resources/utils/resource-request'
 import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
@@ -1567,7 +1567,7 @@ describe('multicluster-role-assignment-client', function () {
       expect(result).toHaveLength(1)
       expect(result[0].clusterSetNames).toContain('cluster-set-beta')
       expect(result[0].clusterSetNames).toContain('cluster-set-gamma')
-      expect(result[0].clusterSetNames.length).toBe(2)
+      expect(result[0].clusterSetNames).toHaveLength(2)
     })
 
     it('should not include clusterSetNames from unrelated placements in the same placementClusters array', () => {
@@ -1623,7 +1623,7 @@ describe('multicluster-role-assignment-client', function () {
       expect(result[0].clusterSetNames).toContain('cluster-set-alpha')
       expect(result[0].clusterSetNames).toContain('cluster-set-beta')
       expect(result[0].clusterSetNames).not.toContain('cluster-set-gamma')
-      expect(result[0].clusterSetNames.length).toBe(2)
+      expect(result[0].clusterSetNames).toHaveLength(2)
     })
 
     it('should include cluster set names from all referenced placements (may include duplicates)', () => {

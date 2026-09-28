@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockIgnoreOperatorCheck, nockIgnoreClusterVersion } from '../../../lib/nock-util'
 import { PolicyAutomationWizard, PolicyAutomationWizardProps } from './PolicyAutomationWizard'
+import { clickElement, typeElement, tab } from '~/lib/test-util'
 
 const mockGetwizardsynceditor = jest.fn()
 const mockCreatecredentialscallback = jest.fn()
@@ -40,70 +40,70 @@ describe('PolicyAutomationWizard tests', () => {
 
     await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible credential/i)).toBeInTheDocument())
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /menu toggle/i,
       })
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /test/i,
       })
     )
 
     await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible job/i)).toBeInTheDocument())
-    userEvent.click(screen.getByPlaceholderText(/select the ansible job/i))
-    userEvent.click(
+    await clickElement(screen.getByPlaceholderText(/select the ansible job/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /job/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /action/i,
       })
     )
     const key = container.querySelector('#key-1')
     if (key) {
-      userEvent.type(key, 'key1')
+      await typeElement(key, 'key1')
     }
     const val = container.querySelector('#value-1')
     if (val) {
-      userEvent.type(val, 'value1')
+      await typeElement(val, 'value1')
     }
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /plus/i,
       })
     )
-    userEvent.type(
+    await typeElement(
       screen.getByRole('spinbutton', {
         name: /input/i,
       }),
       '22'
     )
-    userEvent.tab()
-    userEvent.click(
+    await tab()
+    await clickElement(
       screen.getByRole('button', {
         name: /minus/i,
       })
     )
 
-    userEvent.click(screen.getByPlaceholderText(/select the schedule/i))
+    await clickElement(screen.getByPlaceholderText(/select the schedule/i))
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /everyevent/i,
       })
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /next/i,
       })
     )
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /submit/i,
       })
@@ -116,27 +116,27 @@ describe('PolicyAutomationWizard tests', () => {
     render(<Component {...props} />)
     await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible credential/i)).toBeInTheDocument())
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('button', {
         name: /menu toggle/i,
       })
     )
 
-    userEvent.click(
+    await clickElement(
       screen.getByRole('option', {
         name: /test/i,
       })
     )
 
     await waitFor(() => expect(screen.getByPlaceholderText(/select the ansible job/i)).toBeInTheDocument())
-    userEvent.click(screen.getByPlaceholderText(/select the ansible job/i))
-    userEvent.click(
+    await clickElement(screen.getByPlaceholderText(/select the ansible job/i))
+    await clickElement(
       screen.getByRole('option', {
         name: /job/i,
       })
     )
     window.open = jest.fn()
-    userEvent.click(screen.getByText('View selected template'))
+    await clickElement(screen.getByText('View selected template'))
     expect(window.open).toHaveBeenCalledWith('/#/templates/job_template/1')
   })
 })

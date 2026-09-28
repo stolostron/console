@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { axe } from 'jest-axe'
 import type { ApplicationDetailsContext } from '~/routes/Applications/ApplicationDetails/ApplicationDetails'
 import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { EditAppSetModal, topologyNodeToAppSetParams } from './EditAppSetModal'
+import { clickElement } from '~/lib/test-util'
 
 const mockOnCancel = jest.fn()
 const mockOnSubmitSuccess = jest.fn()
@@ -146,18 +146,18 @@ describe('EditAppSetModal', () => {
   it('closes on cancel and not-found', async () => {
     renderModal()
 
-    await userEvent.click(screen.getByRole('button', { name: 'cancel-edit' }))
+    await clickElement(screen.getByRole('button', { name: 'cancel-edit' }))
     expect(close).toHaveBeenCalled()
 
     close.mockClear()
-    await userEvent.click(screen.getByRole('button', { name: 'not-found' }))
+    await clickElement(screen.getByRole('button', { name: 'not-found' }))
     expect(close).toHaveBeenCalled()
   })
 
   it('notifies success and closes on submit', async () => {
     renderModal()
 
-    await userEvent.click(screen.getByRole('button', { name: 'submit-success' }))
+    await clickElement(screen.getByRole('button', { name: 'submit-success' }))
     expect(onUpdateSuccess).toHaveBeenCalledWith('appset-1')
     expect(close).toHaveBeenCalled()
   })

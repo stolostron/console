@@ -2,7 +2,6 @@
 
 import { SortByDirection } from '@patternfly/react-table'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useContext } from 'react'
 import { MemoryRouter } from 'react-router'
 import {
@@ -13,6 +12,7 @@ import {
   getItemWithExpiration,
   setItemWithExpiration,
 } from './AcmTableStateProvider'
+import { clickElement } from '~/lib/test-util'
 
 const TEST_KEY = 'test-table-state'
 
@@ -100,7 +100,7 @@ describe('AcmTableStateProvider', () => {
     test('setSort persists and applies DEFAULT_SORT when given default sort', async () => {
       renderProvider()
 
-      await userEvent.click(screen.getByTestId('set-sort'))
+      await clickElement(screen.getByTestId('set-sort'))
       await waitFor(() => {
         expect(screen.getByTestId('sort')).toHaveTextContent(
           JSON.stringify({ index: 2, direction: SortByDirection.desc })
@@ -115,7 +115,7 @@ describe('AcmTableStateProvider', () => {
       })
 
       // Reset to default sort (simulates table clearing sort)
-      await userEvent.click(screen.getByTestId('set-sort-default'))
+      await clickElement(screen.getByTestId('set-sort-default'))
       await waitFor(() => {
         expect(screen.getByTestId('sort')).toHaveTextContent(JSON.stringify(DEFAULT_SORT))
       })
@@ -129,7 +129,7 @@ describe('AcmTableStateProvider', () => {
     test('setSort with custom sort persists it and rehydration restores it after remount', async () => {
       const { unmount: unmountFirst } = renderProvider()
 
-      await userEvent.click(screen.getByTestId('set-sort'))
+      await clickElement(screen.getByTestId('set-sort'))
       await waitFor(() => {
         expect(screen.getByTestId('sort')).toHaveTextContent(
           JSON.stringify({ index: 2, direction: SortByDirection.desc })
@@ -153,8 +153,8 @@ describe('AcmTableStateProvider', () => {
     test('setSearch and setPage persist to localStorage and restore on remount', async () => {
       renderProvider()
 
-      await userEvent.click(screen.getByTestId('set-search'))
-      await userEvent.click(screen.getByTestId('set-page'))
+      await clickElement(screen.getByTestId('set-search'))
+      await clickElement(screen.getByTestId('set-page'))
 
       await waitFor(() => {
         expect(screen.getByTestId('search')).toHaveTextContent('my-query')

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import React, { ReactNode } from 'react'
 import { MutableSnapshot, RecoilRoot } from 'recoil'
 import { settingsState, useEventStreamIdleTimeout, useEventStreamIdleGracePeriod } from './atoms'

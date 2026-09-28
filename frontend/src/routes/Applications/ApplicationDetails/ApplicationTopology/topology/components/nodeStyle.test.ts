@@ -82,7 +82,7 @@ describe('nodeStyle tests', () => {
       undefined
     )
     expect(result.label).toBe('{{.path.basename}}/d…')
-    expect(result.label.length).toBe(21)
+    expect(result.label).toHaveLength(21)
   })
 
   test('git node does not truncate label at exactly 20 characters', () => {

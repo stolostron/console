@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmModal } from './AcmModal'
 import { AcmButton } from '../AcmButton/AcmButton'
 import { ButtonVariant } from '@patternfly/react-core'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmModal', () => {
   const onSubmit = jest.fn()
@@ -28,10 +28,10 @@ describe('AcmModal', () => {
       </AcmModal>
     )
   }
-  test('renders in an open state', () => {
+  test('renders in an open state', async () => {
     const { getByRole, getByText } = render(<Component open={true} />)
-    userEvent.click(getByText('Submit'))
-    userEvent.click(getByText('Cancel'))
+    await clickElement(getByText('Submit'))
+    await clickElement(getByText('Cancel'))
     expect(getByRole('dialog')).toBeInTheDocument()
     expect(onSubmit).toHaveBeenCalled()
     expect(onCancel).toHaveBeenCalled()

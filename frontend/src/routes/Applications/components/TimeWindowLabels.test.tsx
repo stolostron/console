@@ -32,7 +32,7 @@ describe('TimeWindowLabels', () => {
         missingData={sub.spec.timewindow?.missingData}
       />
     )
-    expect(container.getElementsByClassName('timeWindow-status-icon').length).toBe(1)
+    expect(container.getElementsByClassName('timeWindow-status-icon')).toHaveLength(1)
   })
 
   it('should show block', async () => {

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { policiesState, policyreportState } from '../../../../../atoms'
@@ -304,27 +304,25 @@ describe('StatusSummaryCount', () => {
   }
   test('renders', async () => {
     render(<Component />)
-    await act(async () => {
-      await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-      // This wait pauses till summary data has been parsed
-      await waitFor(() => expect(screen.getAllByText('1')).toHaveLength(2))
+    // This wait pauses till summary data has been parsed
+    await waitFor(() => expect(screen.getAllByText('1')).toHaveLength(2))
 
-      // click Application
-      await clickByText('1', 0)
-      expect(push).toHaveBeenCalledTimes(1)
-      expect(push.mock.calls[0][0]).toBe('/multicloud/applications?cluster=test-cluster')
+    // click Application
+    await clickByText('1', 0)
+    expect(push).toHaveBeenCalledTimes(1)
+    expect(push.mock.calls[0][0]).toBe('/multicloud/applications?cluster=test-cluster')
 
-      // click Policy violations
-      await clickByText('1', 1)
-      expect(push).toHaveBeenCalledTimes(2)
-      expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=violations')
+    // click Policy violations
+    await clickByText('1', 1)
+    expect(push).toHaveBeenCalledTimes(2)
+    expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=violations')
 
-      await clickByText('6')
+    await clickByText('6')
 
-      await waitForText('Identified issues')
-      await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
-    })
+    await waitForText('Identified issues')
+    await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
   })
   test('renders without applications and governance', async () => {
     render(
@@ -334,17 +332,15 @@ describe('StatusSummaryCount', () => {
         <Component />
       </PluginContext.Provider>
     )
-    await act(async () => {
-      await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByTestId('summary-status')).toBeInTheDocument())
 
-      await waitForNotText('Applications')
+    await waitForNotText('Applications')
 
-      await waitForNotText('Policy violations')
+    await waitForNotText('Policy violations')
 
-      await clickByText('6')
+    await clickByText('6')
 
-      await waitForText('Identified issues')
-      await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
-    })
+    await waitForText('Identified issues')
+    await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
   })
 })

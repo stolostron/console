@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { policySetsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
-import { waitForText } from '../../../lib/test-util'
+import { clickElement, waitForText } from '../../../lib/test-util'
 import PolicySetsPage from './PolicySets'
 import { mockEmptyPolicySet, mockPolicySets } from '../governance.sharedMocks'
 import { PolicySet } from '../../../resources'
@@ -47,11 +47,11 @@ describe('PolicySets Page', () => {
     // should show all items initially
     expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(3)
 
-    screen
-      .getByRole('combobox', {
+    await clickElement(
+      screen.getByRole('combobox', {
         name: 'Select filter options',
       })
-      .click()
+    )
 
     // check filter dropdown options
     expect(screen.getByText('Violations')).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('PolicySets Page', () => {
     expect(screen.getByText('No status (1)')).toBeInTheDocument()
 
     // filter by no status
-    screen.getAllByText('No status (1)')[0].click()
+    await clickElement(screen.getAllByText('No status (1)')[0])
     expect(screen.getAllByText('policy-set-with-1-placement')).toHaveLength(1)
   })
 

@@ -289,7 +289,7 @@ describe('searchWebSocket', () => {
       // After upgrade completed, an upstream error should not write to the socket
       const writeCallsBefore = (socket.write as jest.Mock).mock.calls.length
       mockWsInstance.emit('error', new Error('post-open error'))
-      expect((socket.write as jest.Mock).mock.calls.length).toBe(writeCallsBefore)
+      expect((socket.write as jest.Mock).mock.calls).toHaveLength(writeCallsBefore)
     })
   })
 

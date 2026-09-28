@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, act } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmCodeSnippet } from './AcmCodeSnippet'
+import { clickElement } from '~/lib/test-util'
 
 document.execCommand = jest.fn()
 
@@ -27,7 +27,7 @@ describe('AcmCodeSnippet', () => {
     expect(queryByText('real command')).toBeVisible()
     expect(queryByText(fakeCommand)).toBeNull()
     await act(async () => {
-      await userEvent.click(getByTestId('copy-button-snippet'))
+      await clickElement(getByTestId('copy-button-snippet'))
       await new Promise((resolve) => setTimeout(resolve, 2100))
     })
     expect(document.execCommand).toHaveBeenCalled()

@@ -66,7 +66,7 @@ describe('ClusterSetsList', () => {
     render(<Component />)
     await waitForText(mockManagedClusterSet.metadata.name!)
     const links = screen.queryAllByRole('link', { name: mockManagedClusterSet.metadata.name! })
-    expect(links.length).toBe(0)
+    expect(links).toHaveLength(0)
   })
 
   test('does not render table action buttons', async () => {
@@ -99,6 +99,6 @@ describe('ClusterSetsList', () => {
     const clusterSetRows = screen.queryAllByText(mockManagedClusterSet.metadata.name!)
     expect(clusterSetRows.length).toBeGreaterThan(0)
     const globalClusterSetRows = screen.queryAllByText(mockGlobalClusterSet.metadata.name!)
-    expect(globalClusterSetRows.length).toBe(0)
+    expect(globalClusterSetRows).toHaveLength(0)
   })
 })

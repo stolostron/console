@@ -1,13 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
-import { getCSVDownloadLink, getCSVExportSpies, waitForText } from '../../lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement } from '~/lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -99,6 +98,7 @@ const mockClusters = [hubCluster]
 
 describe('Applications Page', () => {
   beforeEach(async () => {
+    localStorage.removeItem('acm-table-filter.applicationTable')
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
@@ -166,9 +166,9 @@ describe('Applications Page', () => {
   test('should show Label filter in filter panel', async () => {
     await waitForText('feng-remote-argo8')
 
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
     expect(screen.getByRole('button', { name: /^Label$/i })).toBeInTheDocument()
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
   })
 
   test('should filter', async () => {
@@ -178,70 +178,70 @@ describe('Applications Page', () => {
     // subscription
 
     // Open filter
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
 
     expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
-    userEvent.click(screen.getByRole('checkbox', { name: /subscription/i }))
+    await clickElement(screen.getByRole('checkbox', { name: /subscription/i }))
 
     // Close filter
-    userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull()
+    await clickElement(screen.getByText('Filter'))
+    await waitFor(() => expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull())
     expect(screen.queryByText(ApplicationSetKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
 
     // clear subscription filter
-    userEvent.click(screen.getByRole('button', { name: /close subscription/i }))
+    await clickElement(screen.getByRole('button', { name: /close subscription/i }))
 
     // argo apps
     // Open filter
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
     expect(screen.getByRole('checkbox', { name: /argo cd/i })).toBeTruthy()
-    userEvent.click(screen.getByRole('checkbox', { name: /argo cd/i }))
+    await clickElement(screen.getByRole('checkbox', { name: /argo cd/i }))
 
     // Close filter
-    userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox')).toBeNull()
+    await clickElement(screen.getByText('Filter'))
+    await waitFor(() => expect(screen.queryByRole('checkbox')).toBeNull())
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText(ApplicationSetKind)).toBeNull()
     expect(screen.getAllByText('Argo CD')).toBeTruthy()
 
     // clear argo filter
-    userEvent.click(screen.getByRole('button', { name: /close argo cd/i }))
+    await clickElement(screen.getByRole('button', { name: /close argo cd/i }))
 
     // appset
     // Open filter
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
     expect(screen.getByRole('checkbox', { name: /application set/i })).toBeTruthy()
-    userEvent.click(screen.getByRole('checkbox', { name: /application set/i }))
+    await clickElement(screen.getByRole('checkbox', { name: /application set/i }))
 
     // Close filter
-    userEvent.click(screen.getByText('Filter'))
-    expect(screen.queryByRole('checkbox')).toBeNull()
+    await clickElement(screen.getByText('Filter'))
+    await waitFor(() => expect(screen.queryByRole('checkbox')).toBeNull())
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
     expect(screen.getAllByText('Application set')).toBeTruthy()
 
     // clear appset filter
-    userEvent.click(screen.getByRole('button', { name: /close application set/i }))
+    await clickElement(screen.getByRole('button', { name: /close application set/i }))
 
     nockSearch(mockSearchQueryOCPApplicationsFiltered, mockSearchResponseOCPApplications)
     nockSearch(mockSearchQueryOCPApplicationsFilteredCount, mockSearchResponseOCPApplicationsCount)
 
     // OCP
     // Openshift filter possibly 2 (Openshift, Default Openshift)
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
     await waitForText('OpenShift', true)
     expect(screen.getAllByText(/openshift/i)).toBeTruthy()
-    userEvent.click(screen.getByRole('checkbox', { name: /openshift/i }))
+    await clickElement(screen.getByRole('checkbox', { name: /openshift/i }))
 
     // Close filter
-    userEvent.click(screen.getByText('Filter'))
+    await clickElement(screen.getByText('Filter'))
     expect(screen.queryByText(ApplicationKind)).toBeNull()
     expect(screen.queryByText('Discovered')).toBeNull()
 
     // clear openshift filter
-    userEvent.click(screen.getByRole('button', { name: /close openshift/i }))
+    await clickElement(screen.getByRole('button', { name: /close openshift/i }))
   })
 
   test('should delete application', async () => {
@@ -249,8 +249,8 @@ describe('Applications Page', () => {
     await waitForText('feng-remote-argo8')
 
     // click delete
-    userEvent.click(screen.getAllByRole('button', { name: /actions/i })[1])
-    userEvent.click(screen.getByText(/delete application/i))
+    await clickElement(screen.getAllByRole('button', { name: /actions/i })[1])
+    await clickElement(screen.getByText(/delete application/i))
     expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
   })
 
@@ -264,8 +264,8 @@ describe('Applications Page', () => {
 
     const { blobConstructorSpy, createElementSpy } = getCSVExportSpies()
 
-    userEvent.click(screen.getByTestId('export-search-result'))
-    userEvent.click(screen.getByText('Export all to CSV'))
+    await clickElement(screen.getByTestId('export-search-result'))
+    await clickElement(screen.getByText('Export all to CSV'))
 
     await waitFor(() => {
       const toastElement = screen.getByText(/Export successful/i)
@@ -291,6 +291,7 @@ describe('Applications Page', () => {
 describe('Create application dropdown', () => {
   test('Create application button should be disabled when unauthorized', async () => {
     ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => false)
+    localStorage.removeItem('acm-table-filter.applicationTable')
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)

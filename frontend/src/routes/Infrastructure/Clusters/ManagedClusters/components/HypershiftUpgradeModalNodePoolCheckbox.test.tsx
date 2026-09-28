@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { HypershiftUpgradeModalNodePoolCheckbox } from './HypershiftUpgradeModalNodePoolCheckbox'
+import { clickElement } from '~/lib/test-util'
 
 const defaultProps = {
   label: 'Node pool worker-pool-1',
@@ -54,7 +54,7 @@ describe('HypershiftUpgradeModalNodePoolCheckbox', () => {
   it('calls onChange when checkbox is clicked', async () => {
     const onChange = jest.fn()
     render(<HypershiftUpgradeModalNodePoolCheckbox {...defaultProps} onChange={onChange} isExpandable={false} />)
-    await userEvent.click(screen.getByRole('checkbox', { name: /Node pool worker-pool-1/ }))
+    await clickElement(screen.getByRole('checkbox', { name: /Node pool worker-pool-1/ }))
     expect(onChange).toHaveBeenCalledTimes(1)
   })
 
@@ -68,7 +68,7 @@ describe('HypershiftUpgradeModalNodePoolCheckbox', () => {
         isExpandable={false}
       />
     )
-    await userEvent.click(screen.getByRole('checkbox', { name: /Node pool worker-pool-1/ }))
+    await clickElement(screen.getByRole('checkbox', { name: /Node pool worker-pool-1/ }))
     expect(onChange).not.toHaveBeenCalled()
   })
 
@@ -99,7 +99,7 @@ describe('HypershiftUpgradeModalNodePoolCheckbox', () => {
     const onToggle = jest.fn()
     render(<HypershiftUpgradeModalNodePoolCheckbox {...defaultProps} onToggle={onToggle} isExpandable={true} />)
     const toggle = screen.getByRole('button', { name: /node pool worker-pool-1/i })
-    await userEvent.click(toggle)
+    await clickElement(toggle)
     expect(onToggle).toHaveBeenCalledTimes(1)
   })
 })

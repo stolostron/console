@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { ProjectsList } from './ProjectsList'
+import { clickElement } from '~/lib/test-util'
 
 // Use an object to track captured state (avoids let variables)
 const capturedState = {
@@ -75,11 +75,11 @@ describe('ProjectsList', () => {
     render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
-    await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+    await clickElement(screen.getByRole('button', { name: 'Create common project' }))
     await waitFor(() => {
       expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
     })
-    await userEvent.click(screen.getByText('Cancel'))
+    await clickElement(screen.getByText('Cancel'))
 
     // Assert
     await waitFor(() => {
@@ -93,9 +93,9 @@ describe('ProjectsList', () => {
     render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
     // Act
-    await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+    await clickElement(screen.getByRole('button', { name: 'Create common project' }))
     expect(await screen.findByTestId('common-project-create')).toBeInTheDocument()
-    await userEvent.click(screen.getByText('Submit'))
+    await clickElement(screen.getByText('Submit'))
 
     // Assert
     await waitFor(() => {
@@ -107,11 +107,11 @@ describe('ProjectsList', () => {
   it('calls onSelectionChange with new project name when create succeeds and no projects selected', async () => {
     render(<ProjectsList selectedClusters={[{ name: 'cluster-1' }]} onSelectionChange={mockOnSelectionChange} />)
 
-    await userEvent.click(screen.getByText('Create common project'))
+    await clickElement(screen.getByText('Create common project'))
     await waitFor(() => {
       expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
     })
-    await userEvent.click(screen.getByText('Submit'))
+    await clickElement(screen.getByText('Submit'))
 
     expect(mockOnSelectionChange).toHaveBeenCalledWith(['new-project'])
   })
@@ -121,7 +121,7 @@ describe('ProjectsList', () => {
       <ProjectsList selectedClusters={[{ name: 'cluster-1' }]} onSelectionChange={mockOnSelectionChange} />
     )
 
-    await userEvent.click(screen.getByText('Create common project'))
+    await clickElement(screen.getByText('Create common project'))
     await waitFor(() => {
       expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
     })
@@ -134,7 +134,7 @@ describe('ProjectsList', () => {
       />
     )
 
-    await userEvent.click(screen.getByText('Submit Custom'))
+    await clickElement(screen.getByText('Submit Custom'))
 
     expect(mockOnSelectionChange).toHaveBeenCalledWith(['existing-ns-1', 'existing-ns-2', 'custom-project'])
   })
@@ -145,7 +145,7 @@ describe('ProjectsList', () => {
 
     // Act
     const selectButton = screen.getByText('Select Project')
-    await userEvent.click(selectButton)
+    await clickElement(selectButton)
 
     // Assert
     expect(mockOnSelectionChange).toHaveBeenCalledWith(['project-1'])
@@ -161,11 +161,11 @@ describe('ProjectsList', () => {
       expect(capturedState.additionalProjects).toEqual([])
 
       // Act - Create a project
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit'))
+      await clickElement(screen.getByText('Submit'))
 
       // Assert - ProjectsTable should receive the new project
       await waitFor(() => {
@@ -179,11 +179,11 @@ describe('ProjectsList', () => {
       render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create a project with custom name
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit Custom'))
+      await clickElement(screen.getByText('Submit Custom'))
 
       // Assert - ProjectsTable should receive the custom project name
       await waitFor(() => {
@@ -197,11 +197,11 @@ describe('ProjectsList', () => {
       render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create first project
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit'))
+      await clickElement(screen.getByText('Submit'))
 
       // Wait for table to appear
       await waitFor(() => {
@@ -212,11 +212,11 @@ describe('ProjectsList', () => {
       expect(capturedState.additionalProjects).toEqual(['new-project'])
 
       // Act - Create second project
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit Custom'))
+      await clickElement(screen.getByText('Submit Custom'))
 
       // Assert - Both projects should be in additionalProjects
       await waitFor(() => {
@@ -230,11 +230,11 @@ describe('ProjectsList', () => {
       render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
       // Act - Create a project
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit'))
+      await clickElement(screen.getByText('Submit'))
 
       // Assert - The additional projects should be visible in the UI
       await waitFor(() => {
@@ -257,11 +257,11 @@ describe('ProjectsList', () => {
       render(<ProjectsList selectedClusters={mockClustersWithOne} onSelectionChange={mockOnSelectionChange} />)
 
       // Create first project
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Submit'))
+      await clickElement(screen.getByText('Submit'))
 
       await waitFor(() => {
         expect(screen.getByTestId('projects-table')).toBeInTheDocument()
@@ -269,11 +269,11 @@ describe('ProjectsList', () => {
       expect(capturedState.additionalProjects).toEqual(['new-project'])
 
       // Start creating another project but cancel
-      await userEvent.click(screen.getByRole('button', { name: 'Create common project' }))
+      await clickElement(screen.getByRole('button', { name: 'Create common project' }))
       await waitFor(() => {
         expect(screen.getByTestId('common-project-create')).toBeInTheDocument()
       })
-      await userEvent.click(screen.getByText('Cancel'))
+      await clickElement(screen.getByText('Cancel'))
 
       // Assert - First project should still be in the list
       await waitFor(() => {

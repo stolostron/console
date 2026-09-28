@@ -118,8 +118,8 @@ describe('eventsCache', () => {
       resetAccessCache()
 
       expect(getAccessCache()[tokenKey]).toBeUndefined()
-      expect(Object.keys(getSubjectRulesCacheStore()).length).toBe(0)
-      expect(Object.keys(getKindGetAccessCacheStore()).length).toBe(0)
+      expect(Object.keys(getSubjectRulesCacheStore())).toHaveLength(0)
+      expect(Object.keys(getKindGetAccessCacheStore())).toHaveLength(0)
     })
   })
 
@@ -154,7 +154,7 @@ describe('eventsCache', () => {
 
       cleanupAccessCache()
 
-      expect(Object.keys(cache).length).toBe(ACCESS_CACHE_MAX_TOKENS)
+      expect(Object.keys(cache)).toHaveLength(ACCESS_CACHE_MAX_TOKENS)
       expect(cache['token-0']).toBeDefined()
       expect(cache[`token-${tokenCount - 1}`]).toBeUndefined()
     })

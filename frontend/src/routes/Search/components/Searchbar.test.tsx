@@ -4,7 +4,6 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { t as t } from '~/lib/test-helpers'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { useMemo, useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
@@ -13,6 +12,7 @@ import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
 import { updateBrowserUrl } from '../urlQuery'
 import { convertStringToTags, getNoFilterText, handleCSVExport, Searchbar } from './Searchbar'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 jest.mock('../SearchResults/utils')
 const toastContextMock: any = {
@@ -292,7 +292,7 @@ describe('Searchbar tests', () => {
     render(<LoadingSearchbar />)
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
     await waitFor(() => expect(screen.queryByText('Loading...')).toBeTruthy())
   })
 
@@ -306,14 +306,14 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
-    userEvent.type(searchbar, 'name ')
-    userEvent.type(searchbar, 'name1 ')
+    await typeElement(searchbar, 'name ')
+    await typeElement(searchbar, 'name1 ')
 
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
 
-    userEvent.click(screen.getByTestId('run-search-button'))
+    await clickElement(screen.getByTestId('run-search-button'))
   })
 
   it('Searchbar should render correctly and add a search via typing', async () => {
@@ -321,10 +321,10 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
-    userEvent.type(searchbar, 'name ')
-    userEvent.type(searchbar, 'name1 ')
+    await typeElement(searchbar, 'name ')
+    await typeElement(searchbar, 'name1 ')
 
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
   })
@@ -334,10 +334,10 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
-    userEvent.type(searchbar, 'label ')
-    userEvent.type(searchbar, 'app=*rch ')
+    await typeElement(searchbar, 'label ')
+    await typeElement(searchbar, 'app=*rch ')
 
     expect(screen.queryByText('label:app=*rch')).toBeInTheDocument()
   })
@@ -347,7 +347,7 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
     fireEvent.keyDown(searchbar, { key: 'Backspace', code: 'Backspace' })
 
@@ -360,11 +360,11 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
     const clearAllBtn = screen.getByLabelText('Clear button for chips and input')
     expect(clearAllBtn).toBeTruthy()
-    userEvent.click(clearAllBtn)
+    await clickElement(clearAllBtn)
 
     expect(screen.queryByText('name:name1')).not.toBeInTheDocument()
     expect(screen.queryByText('kind:Pod')).not.toBeInTheDocument()
@@ -375,16 +375,16 @@ describe('Searchbar tests', () => {
 
     const searchbar = screen.getByLabelText('Search input')
     expect(searchbar).toBeTruthy()
-    userEvent.click(searchbar)
+    await clickElement(searchbar)
 
-    userEvent.type(searchbar, 'name ')
-    userEvent.type(searchbar, 'name2')
+    await typeElement(searchbar, 'name ')
+    await typeElement(searchbar, 'name2')
     fireEvent.keyDown(searchbar, { key: 'Enter', code: 'Enter' })
     expect(screen.queryByText('name:name1,name2')).toBeInTheDocument()
 
     const nameChipDeleteBtn = screen.queryAllByLabelText('delete-chip')
     expect(nameChipDeleteBtn[1]).toBeTruthy()
-    userEvent.click(nameChipDeleteBtn[1])
+    await clickElement(nameChipDeleteBtn[1])
 
     expect(screen.queryByText('name:name1,name2')).not.toBeInTheDocument()
     expect(screen.queryByText('name:name1')).toBeInTheDocument()
@@ -396,7 +396,7 @@ describe('Searchbar tests', () => {
     // Check if the toggle button is present
     const toggleButton = screen.getByLabelText('export-search-result')
     expect(toggleButton).toBeInTheDocument()
-    userEvent.click(toggleButton)
+    await clickElement(toggleButton)
 
     // Check if the dropdown item is present
     const dropdownItem = screen.getByRole('menuitem', {

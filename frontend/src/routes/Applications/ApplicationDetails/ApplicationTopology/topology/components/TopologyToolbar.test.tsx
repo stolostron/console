@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor, act, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import TopologyToolbar, { useToolbarControl, ToolbarControl } from './TopologyToolbar'
 import { TopologyProps } from '../Topology'
+import { clickElement } from '~/lib/test-util'
 
 // Mock CSS
 jest.mock('../css/topology-toolbar.css', () => ({}))
@@ -248,7 +248,7 @@ describe('TopologyToolbar tests', () => {
 
       // Click on the cluster dropdown toggle
       const toggle = screen.getByText('All clusters')
-      await userEvent.click(toggle)
+      await clickElement(toggle)
 
       // Should show cluster options
       await waitFor(() => {
@@ -256,7 +256,7 @@ describe('TopologyToolbar tests', () => {
       })
 
       // Select a cluster
-      await userEvent.click(screen.getByText('cluster1'))
+      await clickElement(screen.getByText('cluster1'))
 
       expect(setActiveClusters).toHaveBeenCalledWith(['cluster1'])
     })
@@ -302,13 +302,13 @@ describe('TopologyToolbar tests', () => {
 
       // Click on the applications dropdown toggle
       const toggle = screen.getByText('All applications')
-      await userEvent.click(toggle)
+      await clickElement(toggle)
 
       await waitFor(() => {
         expect(screen.getByText('app1')).toBeInTheDocument()
       })
 
-      await userEvent.click(screen.getByText('app1'))
+      await clickElement(screen.getByText('app1'))
 
       expect(setActiveApplications).toHaveBeenCalledWith(['app1'])
     })
@@ -341,13 +341,13 @@ describe('TopologyToolbar tests', () => {
 
       // Click on the types dropdown toggle
       const toggle = screen.getByText('All types')
-      await userEvent.click(toggle)
+      await clickElement(toggle)
 
       await waitFor(() => {
         expect(screen.getByText('Deployment')).toBeInTheDocument()
       })
 
-      await userEvent.click(screen.getByText('Deployment'))
+      await clickElement(screen.getByText('Deployment'))
 
       expect(setActiveTypes).toHaveBeenCalledWith(['Deployment'])
     })
@@ -403,7 +403,7 @@ describe('TopologyToolbar tests', () => {
       render(<TopologyToolbar {...props} />)
 
       const clearAll = screen.getByRole('button', { name: 'Clear all filters' })
-      await userEvent.click(clearAll)
+      await clickElement(clearAll)
 
       expect(setActiveClusters).toHaveBeenCalledWith(undefined)
       expect(setActiveApplications).toHaveBeenCalledWith(undefined)
@@ -439,11 +439,11 @@ describe('TopologyToolbar tests', () => {
       })
       render(<TopologyToolbar {...props} />)
 
-      await userEvent.click(getClusterFilterToggle())
+      await clickElement(getClusterFilterToggle())
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument()
       })
-      await userEvent.click(within(screen.getByRole('menu')).getByText('All clusters'))
+      await clickElement(within(screen.getByRole('menu')).getByText('All clusters'))
 
       expect(setActiveClusters).toHaveBeenCalledWith(undefined)
     })
@@ -459,11 +459,11 @@ describe('TopologyToolbar tests', () => {
       })
       render(<TopologyToolbar {...props} />)
 
-      await userEvent.click(getClusterFilterToggle())
+      await clickElement(getClusterFilterToggle())
       await waitFor(() => {
         expect(screen.getByRole('menu')).toBeInTheDocument()
       })
-      await userEvent.click(within(screen.getByRole('menu')).getByText('cluster1'))
+      await clickElement(within(screen.getByRole('menu')).getByText('cluster1'))
 
       expect(setActiveClusters).toHaveBeenCalledWith(undefined)
     })
@@ -533,7 +533,7 @@ describe('TopologyToolbar tests', () => {
       render(<TopologyToolbar {...props} />)
 
       const howToReadText = screen.getByText('How to read topology')
-      await userEvent.click(howToReadText)
+      await clickElement(howToReadText)
 
       expect(setDrawerContent).toHaveBeenCalledWith(
         'How to read topology',

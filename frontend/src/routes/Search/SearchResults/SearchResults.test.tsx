@@ -4,12 +4,11 @@
 import { ApolloError } from '@apollo/client'
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { Settings, settingsState } from '../../../atoms'
-import { wait } from '../../../lib/test-util'
+import { wait, clickElement } from '~/lib/test-util'
 import {
   SearchResultItemsDocument,
   SearchResultRelatedCountDocument,
@@ -860,8 +859,8 @@ describe('SearchResults Page', () => {
     await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
 
     // Click on the row actions dropdown for testVM1 and verify that plugin actions exist
-    await waitFor(() => {
-      userEvent.click(screen.getAllByRole('button', { name: 'Actions' })[0])
+    await waitFor(async () => {
+      await clickElement(screen.getAllByRole('button', { name: 'Actions' })[0])
     })
     await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
   })

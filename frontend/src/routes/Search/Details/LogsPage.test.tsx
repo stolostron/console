@@ -2,13 +2,12 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import React, { useRef, useState } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { RecoilRoot } from 'recoil'
 import { managedClustersState } from '../../../atoms'
 import { nockOff, nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
-import { waitForNocks } from '../../../lib/test-util'
+import { waitForNocks, clickElement } from '~/lib/test-util'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../../../resources'
 import { SearchDetailsContext } from './DetailsPage'
 import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
@@ -656,13 +655,13 @@ describe('LogsPage', () => {
     // Should toggle wrap lines
     const wrapLinesBtn = screen.getByText(/wrap lines/i)
     await waitFor(() => expect(wrapLinesBtn).toBeInTheDocument())
-    userEvent.click(wrapLinesBtn)
+    await clickElement(wrapLinesBtn)
 
     const rawBtn = screen.getByRole('button', {
       name: /raw/i,
     })
     await waitFor(() => expect(rawBtn).toBeInTheDocument())
-    userEvent.click(rawBtn)
+    await clickElement(rawBtn)
     expect(window.open).toHaveBeenCalledWith('about:blank')
     expect(mockRawWindow.document.createElement).toHaveBeenCalledWith('pre')
     expect(mockPre.textContent).toBe('testLogs')
@@ -670,7 +669,7 @@ describe('LogsPage', () => {
 
     const containerBtn = screen.getByText(/testcontainer/i)
     await waitFor(() => expect(containerBtn).toBeInTheDocument())
-    userEvent.click(containerBtn)
+    await clickElement(containerBtn)
     await waitFor(() => expect(screen.getByText(/testcontainer1/i)).toBeInTheDocument())
     screen.getByText(/testcontainer1/i).click()
   })
@@ -753,7 +752,7 @@ describe('LogsPage', () => {
 
     const footerBtn = screen.getByText('Jump to the bottom')
     await waitFor(() => expect(footerBtn).toHaveStyle('visibility: visible'))
-    userEvent.click(footerBtn)
+    await clickElement(footerBtn)
     await waitFor(() => expect(footerBtn).toHaveStyle('visibility: hidden'))
   })
 })

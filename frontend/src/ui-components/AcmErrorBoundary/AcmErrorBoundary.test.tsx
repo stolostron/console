@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { render, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { AcmErrorBoundary } from './AcmErrorBoundary'
 import { AcmButton } from '../AcmButton/AcmButton'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmErrorBoundary', () => {
   const ErrorBoundary = () => {
@@ -32,11 +32,11 @@ describe('AcmErrorBoundary', () => {
   test('renders', async () => {
     const { getByText, container } = render(<ErrorBoundary />)
     expect(getByText('Throw error')).toBeInTheDocument()
-    userEvent.click(getByText('Throw error'))
+    await clickElement(getByText('Throw error'))
     await waitFor(() => expect(getByText('Uh oh, something went wrong...')).toBeInTheDocument())
     expect(getByText('Refresh page')).toBeInTheDocument()
     expect(getByText('See error details...')).toBeInTheDocument()
-    userEvent.click(getByText('See error details...'))
+    await clickElement(getByText('See error details...'))
     expect(getByText('SyntaxError')).toBeInTheDocument()
     expect(getByText('Description:')).toBeInTheDocument()
     expect(getByText('Component trace:')).toBeInTheDocument()

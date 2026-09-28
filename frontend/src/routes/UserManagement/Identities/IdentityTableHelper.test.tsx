@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { t } from '~/lib/test-helpers'
 import { render } from '@testing-library/react'
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { Group, User } from '../../../resources/rbac'
 import {

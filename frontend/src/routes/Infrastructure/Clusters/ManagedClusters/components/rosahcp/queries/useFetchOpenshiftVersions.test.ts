@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook } from '@testing-library/react'
 import { versionRegEx, versionComparator, useFetchHCPVersions } from './useFetchOpenshiftVersions'
 import type { SelectedSecret, OpenshiftVersion } from '../constants/types'
 

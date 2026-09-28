@@ -2,8 +2,8 @@
 
 import { render } from '@testing-library/react'
 
-import userEvent from '@testing-library/user-event'
 import { AcmLogWindow } from './AcmLogWindow'
+import { clickElement } from '~/lib/test-util'
 
 describe('AcmLogWindow', () => {
   const onSwitchContainerClick = jest.fn()
@@ -26,12 +26,12 @@ describe('AcmLogWindow', () => {
     expect(getByTestId('log-window-lines-container').textContent).toContain('Testing log lines1')
   })
 
-  test('Handles switching container click', () => {
+  test('Handles switching container click', async () => {
     const { getByText } = render(<LogWindow />)
     expect(getByText('container1')).toBeInTheDocument()
-    userEvent.click(getByText('container1'))
+    await clickElement(getByText('container1'))
     expect(getByText('container2')).toBeInTheDocument()
-    userEvent.click(getByText('container2'))
+    await clickElement(getByText('container2'))
     expect(onSwitchContainerClick).toHaveBeenCalled()
   })
 })

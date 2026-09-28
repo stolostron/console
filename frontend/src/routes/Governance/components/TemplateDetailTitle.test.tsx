@@ -12,6 +12,6 @@ describe('TemplateDetailTitle components test', () => {
     await waitForText('myTemplateName')
     await waitForText('CP')
     await waitForText('No violations')
-    expect(container.getElementsByClassName('pf-m-green').length).toBe(1)
+    expect(container.getElementsByClassName('pf-m-green')).toHaveLength(1)
   })
 })

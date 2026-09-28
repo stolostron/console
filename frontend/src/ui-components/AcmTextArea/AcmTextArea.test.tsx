@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmTextArea } from './AcmTextArea'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 describe('AcmTextArea', () => {
   const TextArea = () => <AcmTextArea label="ACM text Area" id="text-Area" value="foobar" onChange={() => null} />
@@ -39,11 +39,11 @@ describe('AcmTextArea', () => {
     }
     const { getByText, getByTestId } = render(<Component />)
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'true')
     expect(getByTestId('input-helper')).toBeInTheDocument()
     expect(getByTestId('input-helper')).toContainHTML('Required')
-    userEvent.type(getByTestId('input'), '12345678')
+    await typeElement(getByTestId('input'), '12345678')
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
   })
 
@@ -69,11 +69,11 @@ describe('AcmTextArea', () => {
 
     const { getByText, getByTestId } = render(<Component />)
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'true')
     expect(getByTestId('input-helper')).toBeInTheDocument()
     expect(getByTestId('input-helper')).toContainHTML('Field must be at least 8 characters.')
-    userEvent.type(getByTestId('input'), '12345678')
+    await typeElement(getByTestId('input'), '12345678')
     expect(getByTestId('input')).toHaveAttribute('aria-invalid', 'false')
   })
 
@@ -99,7 +99,7 @@ describe('AcmTextArea', () => {
     const { getByText, queryByTestId } = render(<Component />)
     // Hidden required field should not block form submission
     expect(queryByTestId('hidden-input')).not.toBeInTheDocument()
-    getByText('Submit').click()
+    await clickElement(getByText('Submit'))
     // Form should be able to submit since hidden fields skip validation
     expect(getByText('Submit')).not.toBeDisabled()
   })

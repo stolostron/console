@@ -13,6 +13,7 @@ import {
   policySetsState,
 } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnorePlacementDebug, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
+import { clickElement, clearElement } from '../../../lib/test-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { EditPolicySet } from './EditPolicySet'
 import {
@@ -24,8 +25,7 @@ import {
   mockClusterSetBinding,
   mockPolicy,
 } from '../governance.sharedMocks'
-import { waitForNocks } from '../../../lib/test-util'
-import userEvent from '@testing-library/user-event'
+import { waitForNocks, typeElement } from '~/lib/test-util'
 
 function EditPolicySetTest() {
   const actualPath = generatePath(NavigationPath.editPolicySet, {
@@ -66,18 +66,19 @@ describe('Edit Policy Set Page', () => {
     render(<EditPolicySetTest />)
     await new Promise((resolve) => setTimeout(resolve, 1000))
     const descriptionChange = screen.getByRole('textbox', { name: /description/i })
-    userEvent.type(descriptionChange, '{selectall}updated text')
+    await clearElement(descriptionChange)
+    await typeElement(descriptionChange, 'updated text')
 
-    screen.getByRole('button', { name: 'Next' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
-    screen.getByRole('button', { name: 'Next' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
 
     const mockPolicySetUpdate = [
       nockPatch(mockPolicySets[0], policySetPatch, undefined, 204, { dryRun: 'All' }),
       nockPatch(mockPolicySets[0], policySetPatch),
     ]
 
-    screen.getByRole('button', { name: 'Submit' }).click()
+    await clickElement(screen.getByRole('button', { name: 'Submit' }))
 
     await waitForNocks(mockPolicySetUpdate)
   })

@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { act, renderHook } from '@testing-library/react-hooks'
+import { act, renderHook } from '@testing-library/react'
 import {
   SearchResultItemsQuery,
   SearchResultItemsQueryVariables,

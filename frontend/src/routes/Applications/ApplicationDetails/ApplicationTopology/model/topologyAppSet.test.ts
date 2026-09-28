@@ -1515,7 +1515,7 @@ describe('getAppSetTopology', () => {
     crNodes.forEach((crNode) => {
       expect((crNode.specs?.parent as any)?.parentType).toBe('virtualmachine')
     })
-    expect(crNodes.length).toBe(2)
+    expect(crNodes).toHaveLength(2)
     expect(crNodes.map((n) => n.name).sort()).toEqual([`revision-start-vm-${vmUid}-1`, `revision-start-vm-${vmUid}-2`])
   })
 

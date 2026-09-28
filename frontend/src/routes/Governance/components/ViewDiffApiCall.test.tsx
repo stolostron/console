@@ -1,9 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { v4 as uuidv4 } from 'uuid'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockManagedClusterView } from '../../../lib/nock-util'
-import { waitForNocks, waitForText } from '../../../lib/test-util'
+import { waitForNocks, waitForText, clickElement } from '~/lib/test-util'
 import { ResultsTableData } from '../policies/policy-details/PolicyDetailsResults'
 import { ViewDiffApiCall } from './ViewDiffApiCall'
 
@@ -167,13 +166,13 @@ describe('ViewDiffApiCall components test', () => {
     await waitForNocks(mcvNocks1)
     await waitForText('View diff')
     const viewDiffLink = screen.getByText('View diff')
-    userEvent.click(viewDiffLink)
+    await clickElement(viewDiffLink)
     await waitForNocks(mcvNocks2)
     await waitForText('policy-set-with-1-placement-policy-1')
     await waitForText('Difference for the Namespace ns-1')
     await waitForText('Difference for the ConfigMap configmap-1')
     // Pod doesn't have diff
-    expect(screen.queryAllByText('Difference for the Pod pod-1').length).toBe(0)
+    expect(screen.queryAllByText('Difference for the Pod pod-1')).toHaveLength(0)
 
     const modal = screen.getByRole('dialog')
     expect(modal).toHaveTextContent('--- testing : existing')
