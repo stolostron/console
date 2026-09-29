@@ -1969,7 +1969,7 @@ describe('Policy Template Details Page', () => {
 
     const gkScope = {
       name: 'require-labels',
-      resource: 'constraint.v1beta1.constraints.gatekeeper.sh',
+      resource: 'k8srequiredlabels.v1beta1.constraints.gatekeeper.sh',
     }
     const gkStatus = {
       conditions: [
@@ -2031,6 +2031,101 @@ describe('Policy Template Details Page', () => {
 
     // VAPB link should be found using legacy gatekeeper-<name> naming convention (Gatekeeper < 3.23.0)
     expect(screen.getByRole('link', { name: 'gatekeeper-require-labels' })).toBeInTheDocument()
+  })
+
+  test('Should render Gatekeeper Constraint with current VAPB naming (gatekeeper-<kind>-<name>)', async () => {
+    ;(useSearchResultRelatedItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      { data: undefined, loading: false, error: undefined },
+    ])
+    ;(useSearchResultItemsLazyQuery as jest.Mock).mockReturnValue([
+      jest.fn(),
+      {
+        data: {
+          searchResult: [
+            {
+              items: [
+                {
+                  _hubClusterResource: 'true',
+                  _uid: 'local-cluster/gk-current-vapb-uid',
+                  apigroup: 'admissionregistration.k8s.io',
+                  apiversion: 'v1',
+                  cluster: 'local-cluster',
+                  created: '2026-09-28T23:00:00Z',
+                  kind: 'ValidatingAdmissionPolicyBinding',
+                  kind_plural: 'validatingadmissionpolicybindings',
+                  name: 'gatekeeper-k8srequiredlabels-require-labels',
+                  policyName: 'gatekeeper-k8srequiredlabels',
+                  validationActions: 'audit',
+                },
+              ],
+              __typename: 'SearchResult',
+            },
+          ],
+        },
+        loading: false,
+        error: undefined,
+      },
+    ])()
+
+    const gkScope = {
+      name: 'require-labels',
+      resource: 'k8srequiredlabels.v1beta1.constraints.gatekeeper.sh',
+    }
+    const gkStatus = {
+      conditions: [
+        {
+          message: 'Watching resources successfully',
+          reason: 'GetResourceProcessing',
+          status: 'True',
+          type: 'Processing',
+        },
+      ],
+      result: {
+        apiVersion: 'constraints.gatekeeper.sh/v1beta1',
+        kind: 'K8sRequiredLabels',
+        metadata: { name: 'require-labels' },
+        spec: { match: { kinds: [{ apiGroups: [''], kinds: ['Pod'] }] } },
+      },
+    }
+    mockUuidV4.mockReturnValue(MOCKED_UUID_1)
+    const mcvNocks = nockManagedClusterView(MOCKED_UUID_1, 'test-cluster', gkScope, gkStatus)
+
+    nockIgnoreRBAC()
+    render(
+      <RecoilRoot
+        initializeState={(snapshot) => {
+          snapshot.set(managedClusterAddonsState, {})
+        }}
+      >
+        <MemoryRouter
+          initialEntries={[
+            generatePath(NavigationPath.discoveredPolicyDetails, {
+              clusterName: 'test-cluster',
+              apiGroup: 'constraints.gatekeeper.sh',
+              apiVersion: 'v1beta1',
+              kind: 'K8sRequiredLabels',
+              templateName: 'require-labels',
+              templateNamespace: '',
+            }),
+          ]}
+        >
+          <Routes>
+            <Route element={<PolicyTemplateDetailsPage />}>
+              <Route path={NavigationPath.discoveredPolicyDetails} element={<PolicyTemplateDetails />} />
+              <Route path={NavigationPath.discoveredPolicyYaml} element={<PolicyTemplateYaml />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </RecoilRoot>
+    )
+
+    await waitForNocks(mcvNocks)
+    await waitForText('Discovered policies')
+    await waitForText('K8sRequiredLabels details')
+
+    // VAPB link should be found using the current Gatekeeper 3.23.0+ naming convention
+    expect(screen.getByRole('link', { name: 'gatekeeper-k8srequiredlabels-require-labels' })).toBeInTheDocument()
   })
 
   test('Should render ValidatingAdmissionPolicyBinding with paramRefs successfully', async () => {
@@ -2448,6 +2543,6 @@ describe('useFetchVapb hook coverage', () => {
 
     const callArgs = mockGetVapb.mock.calls[0][0]
     const nameFilter = callArgs.variables.input[0].filters.find((f: any) => f.property === 'name')
-    expect(nameFilter.values).toEqual(['gatekeeper-k8srequiredlabels-ns-must-have-gk'])
+    expect(nameFilter.values).toEqual(['gatekeeper-k8srequiredlabels-ns-must-have-gk', 'gatekeeper-ns-must-have-gk'])
   })
 })
