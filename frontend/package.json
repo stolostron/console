@@ -196,6 +196,7 @@
     "redux-thunk": "2.4.2",
     "regenerator-runtime": "^0.14.1",
     "reselect": "^4.1.8",
+    "resize-observer-polyfill": "^1.5.1",
     "sass": "1.105.0",
     "sass-loader": "13.3.3",
     "simple-git": "^3.36.0",
