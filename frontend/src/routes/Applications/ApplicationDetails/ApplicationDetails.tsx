@@ -32,7 +32,7 @@ import {
   ApplicationSetKind,
   IUIResource,
 } from '../../../resources'
-import { useRecoilValueGetter, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValueGetter, useSharedAtoms } from '../../../shared-atoms'
 import {
   AcmActionGroup,
   AcmAlert,
@@ -142,15 +142,15 @@ export default function ApplicationDetailsPage() {
 
   const hubCluster = useLocalHubName()
 
-  const applicationsGetter = useRecoilValueGetter(applicationsState)
-  const servicesGetter = useRecoilValueGetter(servicesState)
-  const channelsGetter = useRecoilValueGetter(channelsState)
-  const placementsGetter = useRecoilValueGetter(placementsState)
-  const subscriptionsGetter = useRecoilValueGetter(subscriptionsState)
-  const subscriptionReportsGetter = useRecoilValueGetter(subscriptionReportsState)
-  const placementDecisionsGetter = useRecoilValueGetter(placementDecisionsState)
+  const applicationsGetter = useSharedValueGetter(applicationsState)
+  const servicesGetter = useSharedValueGetter(servicesState)
+  const channelsGetter = useSharedValueGetter(channelsState)
+  const placementsGetter = useSharedValueGetter(placementsState)
+  const subscriptionsGetter = useSharedValueGetter(subscriptionsState)
+  const subscriptionReportsGetter = useSharedValueGetter(subscriptionReportsState)
+  const placementDecisionsGetter = useSharedValueGetter(placementDecisionsState)
 
-  const getRecoilStates = useCallback(
+  const getSharedStates = useCallback(
     () => ({
       applications: applicationsGetter(),
       channels: channelsGetter(),
@@ -234,16 +234,16 @@ export default function ApplicationDetailsPage() {
         id: 'delete-application',
         text: t('Delete application'),
         click: () => {
-          const recoilStates = getRecoilStates()
+          const sharedStates = getSharedStates()
 
           const appChildResources =
             selectedApp.kind === ApplicationKind
               ? getAppChildResources(
                   selectedApp,
-                  recoilStates.applications,
-                  recoilStates.subscriptions,
-                  recoilStates.placements,
-                  recoilStates.channels,
+                  sharedStates.applications,
+                  sharedStates.subscriptions,
+                  sharedStates.placements,
+                  sharedStates.channels,
                   hubCluster
                 )
               : [[], []]
@@ -298,7 +298,7 @@ export default function ApplicationDetailsPage() {
     acmExtensions.applicationAction,
     navigate,
     isAppSet,
-    getRecoilStates,
+    getSharedStates,
     hubCluster,
     canDeleteApplicationSet,
     canDeleteApplication,
@@ -377,14 +377,14 @@ export default function ApplicationDetailsPage() {
     const isLatestRefresh = () => requestId === refreshRequestIdRef.current
 
     try {
-      const recoilStates = getRecoilStates()
+      const sharedStates = getSharedStates()
 
       const application = await getApplication(
         namespace,
         name,
         backendUrl,
         activeChannel,
-        recoilStates,
+        sharedStates,
         cluster,
         apiVersion,
         clusters,
@@ -406,7 +406,7 @@ export default function ApplicationDetailsPage() {
           {
             cluster,
           },
-          recoilStates.services
+          sharedStates.services
         )
         if (!isLatestRefresh()) {
           return
@@ -442,7 +442,7 @@ export default function ApplicationDetailsPage() {
             topology,
             cluster,
           },
-          recoilStates.services
+          sharedStates.services
         )
         if (!isLatestRefresh()) {
           return
@@ -488,7 +488,7 @@ export default function ApplicationDetailsPage() {
     cluster,
     name,
     namespace,
-    getRecoilStates,
+    getSharedStates,
     backendUrl,
     clustersString,
     localHubName,

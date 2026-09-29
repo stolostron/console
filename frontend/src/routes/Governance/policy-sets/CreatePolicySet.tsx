@@ -11,7 +11,7 @@ import { PolicySetWizard } from '../../../wizards/Governance/PolicySet/PolicySet
 import { AcmToastContext } from '../../../ui-components'
 import { useContext, useMemo } from 'react'
 import { useNavigate } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
@@ -64,11 +64,11 @@ export function CreatePolicySet() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const namespaces = useRecoilValue(namespacesState)
-  const placements = useRecoilValue(placementsState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const namespaces = useSharedValue(namespacesState)
+  const placements = useSharedValue(placementsState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const clusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () => namespaces.map((namespace) => namespace.metadata.name ?? '').sort(localeCompare),
     [namespaces]

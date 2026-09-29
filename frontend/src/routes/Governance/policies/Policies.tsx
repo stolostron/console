@@ -33,7 +33,7 @@ import {
   PolicySet,
 } from '../../../resources'
 import { getISOStringTimestamp, patchResource, replaceResource } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import {
   AcmAlert,
   AcmDrawerContext,
@@ -86,11 +86,11 @@ export default function PoliciesPage() {
     subscriptionsState,
   } = useSharedAtoms()
   const policies = useAddRemediationPolicies()
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
-  const policyAutomations = useRecoilValue(policyAutomationState)
-  const namespaces = useRecoilValue(namespacesState)
+  const helmReleases = useSharedValue(helmReleaseState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
+  const policyAutomations = useSharedValue(policyAutomationState)
+  const namespaces = useSharedValue(namespacesState)
   const { setDrawerContext } = useContext(AcmDrawerContext)
 
   const tableItems: PolicyTableItem[] = useMemo(() => {
@@ -104,7 +104,7 @@ export default function PoliciesPage() {
 
   const policyClusterViolationSummaryMap = usePolicyClusterViolationSummaryMap(policies)
   const navigate = useNavigate()
-  const policySets = useRecoilValue(policySetsState)
+  const policySets = useSharedValue(policySetsState)
   const [modalProps, setModalProps] = useState<BulkActionModalProps<PolicyTableItem> | { open: false }>({
     open: false,
   })
@@ -856,7 +856,7 @@ export function AddToPolicySetModal(
 ) {
   const { t } = useTranslation()
   const { policySetsState } = useSharedAtoms()
-  const policySets = useRecoilValue(policySetsState)
+  const policySets = useSharedValue(policySetsState)
   const namespace = useMemo(() => namespaceCheck(props.policyTableItems), [props.policyTableItems])
   const namespacedPolicySets = useMemo(
     () => policySets.filter((ps) => ps.metadata.namespace === namespace),
@@ -1012,8 +1012,8 @@ export function DeletePolicyModal(props: Readonly<{ item: PolicyTableItem; onClo
   const { placementBindingsState, placementsState } = useSharedAtoms()
   const [deletePlacements, setDeletePlacements] = useState(true)
   const [deletePlacementBindings, setDeletePlacementBindings] = useState(true)
-  const placements = useRecoilValue(placementsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
+  const placements = useSharedValue(placementsState)
+  const placementBindings = useSharedValue(placementBindingsState)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState('')
 

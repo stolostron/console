@@ -6,7 +6,7 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { isGlobalClusterSet } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { ClusterSetActionDropdown } from '../components/ClusterSetActionDropdown'
 import { useClusterSetDetailsContext } from './ClusterSetDetails'
@@ -18,7 +18,7 @@ export default function ClusterSetDetailsPage() {
   const { isSubmarinerAvailable } = useContext(PluginContext)
 
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
 
   const clusterSetDetailsContext = useClusterSetDetailsContext()
   const { clusterSet } = clusterSetDetailsContext

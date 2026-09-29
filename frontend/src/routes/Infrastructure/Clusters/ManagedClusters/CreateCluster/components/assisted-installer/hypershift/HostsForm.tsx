@@ -4,7 +4,7 @@ import { HostedClusterHostsStep, LoadingState } from '@openshift-assisted/ui-lib
 import { FormikProps } from 'formik'
 import { HypershiftAgentContext } from './HypershiftAgentContext'
 import { getClusterImageSet } from './utils'
-import { useSharedAtoms, useRecoilValue } from '../../../../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../../../../shared-atoms'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { TFunction } from 'i18next'
 
@@ -74,10 +74,10 @@ const HostsForm: React.FC<HostsFormProps> = ({ control, handleChange }) => {
     setOlmCatalogPlacement,
   } = React.useContext(HypershiftAgentContext)
   const { agentsState, clusterImageSetsState, infraEnvironmentsState, nodePoolsState } = useSharedAtoms()
-  const agents = useRecoilValue(agentsState)
-  const infraEnvironments = useRecoilValue(infraEnvironmentsState)
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const currentNodePools = useRecoilValue(nodePoolsState)
+  const agents = useSharedValue(agentsState)
+  const infraEnvironments = useSharedValue(infraEnvironmentsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
+  const currentNodePools = useSharedValue(nodePoolsState)
 
   const formRef = React.useRef<FormikProps<any>>(null)
   const { t } = useTranslation()

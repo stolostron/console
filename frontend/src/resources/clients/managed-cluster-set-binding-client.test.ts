@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import {
   ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
@@ -14,8 +14,8 @@ import {
   useFindManagedClusterSetBinding,
 } from './managed-cluster-set-binding-client'
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -25,7 +25,7 @@ jest.mock('../utils', () => ({
 
 const createResourceMock = createResource as jest.MockedFunction<typeof createResource>
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
-const useRecoilValueMock = useRecoilValue as jest.Mock
+const useSharedValueMock = useSharedValue as jest.Mock
 
 describe('managed-cluster-set-binding-client', () => {
   beforeEach(() => {
@@ -270,10 +270,10 @@ describe('managed-cluster-set-binding-client', () => {
 
     beforeEach(() => {
       useSharedAtomsMock.mockReturnValue({ managedClusterSetBindingsState: {} })
-      useRecoilValueMock.mockReturnValue(mockBindings)
+      useSharedValueMock.mockReturnValue(mockBindings)
     })
 
-    it('should return bindings from Recoil state matching the query', () => {
+    it('should return bindings from shared state state matching the query', () => {
       // Act
       const { result } = renderHook(() =>
         useFindManagedClusterSetBinding({
@@ -287,7 +287,7 @@ describe('managed-cluster-set-binding-client', () => {
       expect(result.current[0].metadata.name).toBe('binding-1')
     })
 
-    it('should return empty array when no matches in Recoil state', () => {
+    it('should return empty array when no matches in shared state state', () => {
       // Act
       const { result } = renderHook(() =>
         useFindManagedClusterSetBinding({
@@ -300,7 +300,7 @@ describe('managed-cluster-set-binding-client', () => {
       expect(result.current).toHaveLength(0)
     })
 
-    it('should call useSharedAtoms and useRecoilValue', () => {
+    it('should call useSharedAtoms and useSharedValue', () => {
       // Act
       renderHook(() =>
         useFindManagedClusterSetBinding({
@@ -311,7 +311,7 @@ describe('managed-cluster-set-binding-client', () => {
 
       // Assert
       expect(useSharedAtomsMock).toHaveBeenCalled()
-      expect(useRecoilValueMock).toHaveBeenCalled()
+      expect(useSharedValueMock).toHaveBeenCalled()
     })
   })
 })

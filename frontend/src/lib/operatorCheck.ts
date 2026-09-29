@@ -1,10 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { RecoilValueReadOnly } from 'recoil'
 import { SubscriptionOperator } from '../resources'
 import { IRequestResult, getBackendUrl, postRequest } from '../resources/utils'
-import { useRecoilValue } from '../shared-recoil'
+import { useSharedValue } from '../shared-atoms'
+import type { SharedValue } from '../shared-atoms'
 import { useQuery } from './useQuery'
 import { useCallback, useEffect, useMemo } from 'react'
 
@@ -41,9 +40,9 @@ export function operatorCheck(operator: SupportedOperator): IRequestResult<Opera
 
 export function useOperatorCheck(
   operator: SupportedOperator,
-  selector: RecoilValueReadOnly<SubscriptionOperator[]>
+  selector: SharedValue<SubscriptionOperator[]>
 ): OperatorCheckResult {
-  const subscriptionOperators = useRecoilValue(selector)
+  const subscriptionOperators = useSharedValue(selector)
   const installed = !!subscriptionOperators.length
   const version = installed ? subscriptionOperators[0]?.status?.installedCSV : undefined
 

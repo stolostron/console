@@ -26,7 +26,7 @@ import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../..
 import { NavigationPath } from '../../../NavigationPath'
 import { getUserPreference, UserPreference } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmButton, AcmDonutChart, colorThemes } from '../../../ui-components'
 import { useAddRemediationPolicies } from '../../Governance/common/useCustom'
 import { useClusterAddons } from '../../Infrastructure/Clusters/ClusterSets/components/useClusterAddons'
@@ -65,8 +65,8 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
   const policies = useAddRemediationPolicies()
   const allAddons = useClusterAddons()
-  const policyReports = useRecoilValue(policyreportState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const policyReports = useSharedValue(policyreportState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
     localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
   )

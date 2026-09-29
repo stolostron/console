@@ -15,7 +15,7 @@ var gpuColumnTestState: {
 import { render, screen, within } from '@testing-library/react'
 import { t } from '~/lib/test-helpers'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
 import {
@@ -54,14 +54,14 @@ jest.mock('../../lib/acm-i18next', () => ({
 }))
 
 // Mock the shared atoms
-jest.mock('../../shared-recoil', () => ({
+jest.mock('../../shared-atoms', () => ({
   useSharedAtoms: () => ({
     agentClusterInstallsState: 'agentClusterInstallsState',
     clusterImageSetsState: 'clusterImageSetsState',
     clusterManagementAddonsState: 'clusterManagementAddonsState',
     useIsObservabilityInstalled: () => gpuColumnTestState.observabilityInstalled,
   }),
-  useRecoilValue: (state: string) => {
+  useSharedValue: (state: string) => {
     switch (state) {
       case 'agentClusterInstallsState':
         return []
@@ -216,9 +216,9 @@ const mockCluster: Cluster = {
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>{component}</MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

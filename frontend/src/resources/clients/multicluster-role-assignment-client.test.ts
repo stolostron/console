@@ -2,7 +2,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
 import * as req from '../../resources/utils/resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { Placement } from '../placement'
 import { GroupKind, UserKind } from '../rbac'
@@ -53,8 +53,8 @@ jest.mock('../utils', () => ({
   patchResource: jest.fn(),
 }))
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -107,7 +107,7 @@ const mockPlacementClustersArray: PlacementClusters[] = [
 const deleteResourceMock = deleteResource as jest.MockedFunction<typeof deleteResource>
 const patchResourceMock = patchResource as jest.MockedFunction<typeof patchResource>
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
-const useRecoilValueMock = useRecoilValue as jest.Mock
+const useSharedValueMock = useSharedValue as jest.Mock
 
 describe('multicluster-role-assignment-client', function () {
   const mockMulticlusterRoleAssignments: MulticlusterRoleAssignment[] =
@@ -120,7 +120,7 @@ describe('multicluster-role-assignment-client', function () {
   describe('RoleAssignment to FlattenedRoleAssignment mapping', () => {
     beforeEach(() => {
       useSharedAtomsMock.mockReturnValue({ multiclusterRoleAssignmentState: {} })
-      useRecoilValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
+      useSharedValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
     })
 
     it('relatedMulticlusterRoleAssignment properly mapped', () => {
@@ -255,7 +255,7 @@ describe('multicluster-role-assignment-client', function () {
   describe('useFindRoleAssignments', () => {
     beforeEach(() => {
       useSharedAtomsMock.mockReturnValue({ multiclusterRoleAssignmentState: {} })
-      useRecoilValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
+      useSharedValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
     })
 
     it('should return all role assignments when no query filters are provided', () => {
@@ -417,7 +417,7 @@ describe('multicluster-role-assignment-client', function () {
           'placement-2'
         ),
       ]
-      useRecoilValueMock.mockReturnValue(mockMRAs)
+      useSharedValueMock.mockReturnValue(mockMRAs)
 
       // Act
       const { result } = renderHook(() =>
@@ -435,7 +435,7 @@ describe('multicluster-role-assignment-client', function () {
 
       // Restore original mocks
       ;(placementClient.useGetPlacementClusters as jest.Mock).mockReturnValue(mockPlacementClustersArray)
-      useRecoilValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
+      useSharedValueMock.mockReturnValue(mockMulticlusterRoleAssignments)
     })
 
     it('should filter by cluster set name combined with other criteria', () => {

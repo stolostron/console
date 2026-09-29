@@ -24,8 +24,8 @@ jest.mock('../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: () => mockSettings,
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: () => mockSettings,
   useSharedAtoms: () => ({ settingsState: 'settingsState' }),
 }))
 

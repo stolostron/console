@@ -12,7 +12,7 @@ import { ArgoWizard, setRepositoryTypeForSources } from '~/wizards/Argo/ArgoWiza
 import { AcmToastContext } from '~/ui-components'
 import { useContext, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '~/shared-atoms'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { isType } from '~/lib/is-type'
@@ -92,19 +92,19 @@ export function CreatePullApplicationSet() {
   const navigate = useNavigate()
   const { timeZones } = useTimezones()
   const toast = useContext(AcmToastContext)
-  const placements = useRecoilValue(placementsState)
-  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
-  const channels = useRecoilValue(channelsState)
-  const namespaces = useRecoilValue(namespacesState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const placements = useSharedValue(placementsState)
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const channels = useSharedValue(channelsState)
+  const namespaces = useSharedValue(namespacesState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
-  const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const availableAnsibleCredentials = useSharedValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)
     .filter(isType)
 
@@ -112,7 +112,7 @@ export function CreatePullApplicationSet() {
   const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
   const [loadingAppSets, setLoadingAppSets] = useState(true)
 
-  // instead of burdoning recoil with appsets, use old fashioned fetch
+  // instead of burdoning shared state with appsets, use old fashioned fetch
   // opening wizard may take longer, but the longer the wait the more likelihood
   // user is creating appsets with the cli and not this wizard
   useEffect(() => {

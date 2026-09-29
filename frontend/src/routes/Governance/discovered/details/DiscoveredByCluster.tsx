@@ -9,7 +9,7 @@ import {
   colorThemes,
 } from '../../../../ui-components'
 import { useTranslation } from '../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   byClusterCols,
   convertYesNoCell,
@@ -33,9 +33,9 @@ export default function DiscoveredByCluster() {
 
   const { t } = useTranslation()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
+  const helmReleases = useSharedValue(helmReleaseState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
   const locationPath = useLocation().pathname
   const kindHead = policyKind.split('Policy')[0].toLowerCase()
   const policyName = policies?.[0]?.name ?? ''

@@ -9,7 +9,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { Policy } from '../../../resources'
 import { SecurityGroupViolations } from './Overview'
-import { useSharedAtoms } from '../../../shared-recoil'
+import { useSharedAtoms } from '../../../shared-atoms'
 import { body, sectionSeparator } from '../common/policySidebarStyles'
 import { Icon } from '@patternfly/react-core'
 

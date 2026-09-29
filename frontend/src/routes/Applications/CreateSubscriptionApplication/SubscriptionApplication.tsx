@@ -17,7 +17,7 @@ import { Dispatch, SetStateAction, useCallback, useContext, useEffect, useState 
 // include monaco editor
 import MonacoEditor from 'react-monaco-editor'
 import { useLocation, useNavigate, Location, generatePath } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import TemplateEditor from '../../../components/TemplateEditor'
 import { getErrorInfo } from '../../../components/ErrorPage'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -73,7 +73,7 @@ export default function CreateSubscriptionApplicationPage() {
   const [toggledControl, setToggledControl] = useState<any>()
   const [newSecret, setNewSecret] = useState<Secret>()
   const { secretsState } = useSharedAtoms()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const { projects } = useProjects()
 
   const [connectionControl, setConnectionControl] = useState<any>()
@@ -191,7 +191,7 @@ export function CreateSubscriptionApplication({
   const [createdResource, setCreatedResource] = useState<any>()
   const { applicationsState, channelsState, secretsState, subscriptionsState, placementsState } = useSharedAtoms()
   const toastContext = useContext(AcmToastContext)
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const providerConnections = secrets.map(unpackProviderConnection)
   const ansibleCredentials = providerConnections.filter(
     (providerConnection) => providerConnection.metadata?.labels?.['cluster.open-cluster-management.io/type'] === 'ans'
@@ -373,10 +373,10 @@ export function CreateSubscriptionApplication({
   Handlebars.registerPartial('templatePlacement', Handlebars.compile(placementTemplate))
   Handlebars.registerPartial('templateOther', Handlebars.compile(otherTemplate))
   const [fetchControl, setFetchControl] = useState<any>(null)
-  const applications = useRecoilValue(applicationsState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
-  const placements = useRecoilValue(placementsState)
+  const applications = useSharedValue(applicationsState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
+  const placements = useSharedValue(placementsState)
   const location = useLocation()
   const editApplication = getEditApplication(location)
   const searchParams = useSearchParams()
@@ -384,7 +384,7 @@ export function CreateSubscriptionApplication({
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)
 
-  // don't navigate to details page until application exists in recoil
+  // don't navigate to details page until application exists in shared state
   useEffect(() => {
     if (createdResource) {
       if (
@@ -410,7 +410,7 @@ export function CreateSubscriptionApplication({
       const { selectedAppName, selectedAppNamespace } = editApplication
       const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
       const fetchApplication = async () => {
-        // get application object from recoil states
+        // get application object from shared state states
         const application = await getApplication(selectedAppNamespace, selectedAppName, backendUrl, allChannels, {
           applications,
           subscriptions,

@@ -4,7 +4,7 @@ import { Placement, ArgoApplication, ApplicationSet } from '../../../../../resou
 import { getApplication } from './application'
 import { nockGet, nockAggegateRequest, nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { waitForNocks } from '../../../../../lib/test-util'
-import { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
+import { ApplicationModel, ManagedCluster, SharedStates } from '../types'
 
 describe('getApplication Argo', () => {
   it('returns Argo app model', async () => {
@@ -15,7 +15,7 @@ describe('getApplication Argo', () => {
       appData.name,
       process.env.JEST_DEFAULT_HOST as string,
       appData.selectedChannel,
-      appData.recoilStates,
+      appData.sharedStates,
       appData.cluster,
       appData.apiversion,
       appData.clusters
@@ -39,7 +39,7 @@ describe('getApplication AppSet', () => {
       appData2.name,
       process.env.JEST_DEFAULT_HOST as string,
       appData2.selectedChannel,
-      appData2.recoilStates,
+      appData2.sharedStates,
       appData2.cluster,
       appData2.apiversion,
       appData2.clusters
@@ -63,7 +63,7 @@ describe('getApplication AppSet pull model', () => {
       appData3.name,
       process.env.JEST_DEFAULT_HOST as string,
       appData3.selectedChannel,
-      appData3.recoilStates,
+      appData3.sharedStates,
       appData3.cluster,
       appData3.apiversion,
       appData3.clusters
@@ -77,7 +77,7 @@ interface TestAppData {
   namespace: string
   name: string
   selectedChannel: string | undefined
-  recoilStates: RecoilStates
+  sharedStates: SharedStates
   cluster: string | undefined
   apiversion: string
   clusters: ManagedCluster[]
@@ -88,7 +88,7 @@ const appData: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'feng-argo',
   selectedChannel: undefined,
-  recoilStates: {} as RecoilStates,
+  sharedStates: {} as SharedStates,
   cluster: undefined,
   apiversion: 'application.argoproj.io',
   clusters: [
@@ -177,7 +177,7 @@ const appData2: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'magchen-old-appset',
   selectedChannel: undefined,
-  recoilStates: {
+  sharedStates: {
     applications: [
       {
         apiVersion: 'app.k8s.io/v1beta1',
@@ -21152,7 +21152,7 @@ const appData3: TestAppData = {
   namespace: 'openshift-gitops',
   name: 'feng-pm',
   selectedChannel: undefined,
-  recoilStates: {
+  sharedStates: {
     applications: [
       {
         apiVersion: 'app.k8s.io/v1beta1',

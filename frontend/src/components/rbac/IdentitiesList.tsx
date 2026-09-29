@@ -6,7 +6,7 @@ import { Group, User } from '../../resources/rbac'
 import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { useMergedGroups, useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
 import { UsersTable } from '../../routes/UserManagement/Identities/Users/UsersTable'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
 
@@ -20,7 +20,7 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const isDirectAuthenticationEnabled = useRecoilValue(isDirectAuthenticationEnabledState)
+  const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
   const users = useMergedUsers()
   const groups = useMergedGroups()
 

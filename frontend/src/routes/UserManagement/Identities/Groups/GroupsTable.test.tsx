@@ -2,12 +2,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { ButtonVariant } from '@patternfly/react-core'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { Group } from '../../../../resources/rbac'
 import { IAcmTableButtonAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { GroupsTable } from './GroupsTable'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -16,8 +16,8 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   Trans: ({ children }: { children: React.ReactNode }) => children,
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -33,7 +33,7 @@ jest.mock('../../../../ui-components/IdentityStatus/IdentityStatus', () => ({
   isIdentityActive: jest.fn(() => true),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const groupsAtom = Symbol('groupsState')
@@ -104,11 +104,11 @@ const mockMras: MulticlusterRoleAssignment[] = [
 
 function Component(props: any = {}) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <GroupsTable {...props} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -118,7 +118,7 @@ function setupMocks(groups: Group[] = mockGroups, mras: MulticlusterRoleAssignme
     multiclusterRoleAssignmentState: mraAtom,
   } as any)
 
-  mockUseRecoilValue.mockImplementation((atom: any) => {
+  mockUseSharedValue.mockImplementation((atom: any) => {
     if (atom === groupsAtom) return groups
     if (atom === mraAtom) return mras
     return []
@@ -328,7 +328,7 @@ describe('GroupsTable', () => {
 
   describe('empty state create button', () => {
     beforeEach(() => {
-      mockUseRecoilValue.mockReturnValue([])
+      mockUseSharedValue.mockReturnValue([])
     })
 
     test('should not show create button in empty state by default', async () => {

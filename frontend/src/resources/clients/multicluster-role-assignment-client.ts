@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { sha256 } from 'js-sha256'
 import { useMemo } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { ManagedClusterSetBinding } from '../managed-cluster-set-binding'
 import {
   MulticlusterRoleAssignment,
@@ -251,7 +251,7 @@ export const findRoleAssignments = (
  */
 export const useFindRoleAssignments = (query: MulticlusterRoleAssignmentQuery): FlattenedRoleAssignment[] => {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
-  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const multiclusterRoleAssignments = useSharedValue(multiclusterRoleAssignmentState)
   const clustersForPlacements = useGetPlacementClustersForMulticlusterRoleAssignments(multiclusterRoleAssignments)
 
   return useMemo(

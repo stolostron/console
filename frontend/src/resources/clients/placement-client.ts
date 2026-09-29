@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { sha256 } from 'js-sha256'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import {
   GlobalPlacementName,
@@ -144,14 +144,14 @@ const findPlacements = (placements: Placement[], query: PlacementQuery): Placeme
 }
 
 /**
- * React hook to find placements matching the query from the global Recoil state.
+ * React hook to find placements matching the query from the global shared state state.
  *
  * @param query - Query parameters for filtering placements
  * @returns Array of Placement resources matching the query
  */
 export const useFindPlacements = (query: PlacementQuery): Placement[] => {
   const { placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
+  const placements = useSharedValue(placementsState)
 
   return findPlacements(placements, query)
 }

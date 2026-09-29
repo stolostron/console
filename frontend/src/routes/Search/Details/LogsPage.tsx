@@ -13,7 +13,7 @@ import { Trans, useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
 import { fetchRetry, getBackendUrl } from '../../../resources/utils'
 import { fleetLogsRequest } from '../../../resources/utils/fleet-logs-request'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmAlert, AcmLoadingPage } from '../../../ui-components'
 import { useSearchDetailsContext } from './DetailsPage'
 import { LogViewerSearch } from './LogsViewerSearch'
@@ -289,7 +289,7 @@ export default function LogsPage() {
   const [previousLogs, setPreviousLogs] = useState(false)
   const [containerHasPreviousLogs, setContainerHasPreviousLogs] = useState(false)
   const { managedClustersState } = useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusters = useSharedValue(managedClustersState)
 
   useEffect(() => {
     if (containers.length > 0 && sessionStorage.getItem(`${name}-${cluster}-container`) === null) {

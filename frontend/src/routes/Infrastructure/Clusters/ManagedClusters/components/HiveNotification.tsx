@@ -15,7 +15,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 
 const logsButton = css({
   padding: 0,
@@ -30,8 +30,8 @@ export function HiveNotification() {
   const { cluster } = useClusterDetailsContext()
   const { t } = useTranslation()
   const { clusterProvisionsState, configMapsState } = useSharedAtoms()
-  const clusterProvisions = useRecoilValue(clusterProvisionsState)
-  const configMaps = useRecoilValue(configMapsState)
+  const clusterProvisions = useSharedValue(clusterProvisionsState)
+  const configMaps = useSharedValue(configMapsState)
 
   const clusterProvisionList = clusterProvisions.filter((cp) => cp.metadata.namespace === cluster?.namespace)
   const latestClusterProvision = getLatest<ClusterProvision>(clusterProvisionList, 'metadata.creationTimestamp')

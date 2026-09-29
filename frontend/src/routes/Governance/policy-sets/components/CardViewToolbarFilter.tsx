@@ -4,7 +4,7 @@ import { SelectOption, SelectGroup } from '@patternfly/react-core'
 import { AcmSelectBase, SelectVariant } from '../../../../components/AcmSelectBase'
 import { FilterIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { NavigationPath } from '../../../../NavigationPath'
 import { PolicySet } from '../../../../resources/policy-set'
 import { useTranslation } from '../../../../lib/acm-i18next'
@@ -16,7 +16,7 @@ export default function CardViewToolbarFilter(props: {
   const { setViolationFilters, preSelectedFilters } = props
   const { policySetsState } = useSharedAtoms()
   const [selectedFilters, setSelectedFilters] = useState<string[]>(preSelectedFilters ?? [])
-  const policySets = useRecoilValue(policySetsState)
+  const policySets = useSharedValue(policySetsState)
   const { t } = useTranslation()
 
   const onFilterSelect = useCallback(

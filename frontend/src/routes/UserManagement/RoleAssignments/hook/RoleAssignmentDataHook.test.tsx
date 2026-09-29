@@ -12,8 +12,8 @@ jest.mock('../../../../resources', () => ({
   listUsers: jest.fn(),
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -35,13 +35,13 @@ jest.mock('../../../../ui-components/AcmTable/AcmTable', () => ({
 
 import { useQuery } from '../../../../lib/useQuery'
 import { listGroups, listUsers } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { useSearchResultItemsQuery } from '../../../Search/search-sdk/search-sdk'
 import { useClusterNamespaceMap } from '../../../../utils/useClusterNamespaceMap'
 
 const mockUseQuery = useQuery as jest.MockedFunction<typeof useQuery>
 const mockUseClusterNamespaceMap = useClusterNamespaceMap as jest.MockedFunction<typeof useClusterNamespaceMap>
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
 
@@ -136,7 +136,7 @@ describe('useRoleAssignmentData', () => {
       useSearchResultLimit: jest.fn(),
     } as any)
 
-    mockUseRecoilValue.mockImplementation((atom) => {
+    mockUseSharedValue.mockImplementation((atom) => {
       if (atom === mockManagedClusterSetsState) return mockManagedClusterSets
       if (atom === mockManagedClustersState) return mockManagedClusters
       return []
@@ -308,7 +308,7 @@ describe('useRoleAssignmentData', () => {
       mockUseQuery.mockReturnValue({ data: undefined, loading: false } as any)
       mockUseSearchResultItemsQuery.mockReturnValue({ data: undefined, loading: false } as any)
       mockUseClusterNamespaceMap.mockReturnValue({ clusterNamespaceMap: {}, isLoading: false })
-      mockUseRecoilValue.mockReturnValue([])
+      mockUseSharedValue.mockReturnValue([])
 
       const { result } = renderHook(() => useRoleAssignmentData())
 
@@ -394,7 +394,7 @@ describe('useRoleAssignmentData', () => {
         useSearchResultLimit: jest.fn(),
       } as any)
 
-      mockUseRecoilValue.mockImplementation((atom) => {
+      mockUseSharedValue.mockImplementation((atom) => {
         if (atom === mockManagedClustersState) return mockMultiClusters
         if (atom === mockManagedClusterSetsState) return mockManagedClusterSets
         return []

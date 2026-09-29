@@ -23,12 +23,12 @@ import { ActionGroup, Button, SelectOption } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { canUser } from '../../../../../lib/rbac-util'
 
 export function useClusterSetBindings(clusterSet?: ManagedClusterSet) {
   const { managedClusterSetBindingsState } = useSharedAtoms()
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
 
   if (clusterSet) {
     return managedClusterSetBindings.filter((mcsb) => mcsb.spec.clusterSet === clusterSet.metadata.name!)
@@ -53,7 +53,7 @@ const getAllowedNamespaces = (results: PromiseSettledResult<SelfSubjectAccessRev
 export function ManagedClusterSetBindingModal(props: { clusterSet?: ManagedClusterSet; onClose: () => void }) {
   const { t } = useTranslation()
   const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
+  const namespaces = useSharedValue(namespacesState)
   const clusterSetBindings = useClusterSetBindings(props.clusterSet)
   const [selectedNamespaces, setSelectedNamespaces] = useState<string[] | undefined>(undefined)
   const [rbacNamespaces, setRbacNamespaces] = useState<string[] | undefined>(undefined)

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ClusterList } from './ClusterList'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 import { Provider } from '../../../../ui-components'
@@ -26,7 +26,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
 }))
 
 // Mock the shared atoms
-jest.mock('../../../../shared-recoil', () => ({
+jest.mock('../../../../shared-atoms', () => ({
   useSharedAtoms: () => ({
     clusterCuratorsState: 'clusterCuratorsState',
     hostedClustersState: 'hostedClustersState',
@@ -35,7 +35,7 @@ jest.mock('../../../../shared-recoil', () => ({
     clusterImageSetsState: 'clusterImageSetsState',
     useIsObservabilityInstalled: () => false,
   }),
-  useRecoilValue: (state: string) => {
+  useSharedValue: (state: string) => {
     switch (state) {
       case 'clusterCuratorsState':
         return []
@@ -332,9 +332,9 @@ mockUseAllClusters.mockReturnValue(mockClusters)
 
 const renderWithProviders = (component: React.ReactElement) => {
   return render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>{component}</MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -481,11 +481,11 @@ describe('ClusterList', () => {
 
       // Re-render with same props should work correctly
       rerender(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterList onSelectCluster={mockOnSelectCluster} namespaces={['namespace-1']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       expect(document.body).toBeInTheDocument()

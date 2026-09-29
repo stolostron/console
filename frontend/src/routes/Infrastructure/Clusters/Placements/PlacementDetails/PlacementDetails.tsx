@@ -2,7 +2,7 @@
 
 import { useParams, useNavigate, Outlet, generatePath, useMatch, useOutletContext } from 'react-router'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { ErrorPage } from '../../../../../components/ErrorPage'
 import { RbacDropdown } from '../../../../../components/Rbac'
 import { Placement, PlacementDefinition } from '../../../../../resources'
@@ -31,11 +31,11 @@ export default function PlacementDetailsPage() {
   const { name = '', namespace = '' } = useParams()
   const { placementsState, placementBindingsState, policiesState, gitOpsClustersState, policySetsState } =
     useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const policies = useRecoilValue(policiesState)
-  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
-  const policySets = useRecoilValue(policySetsState)
+  const placements = useSharedValue(placementsState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const policies = useSharedValue(policiesState)
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const policySets = useSharedValue(policySetsState)
 
   const placement = placements.find(
     (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace

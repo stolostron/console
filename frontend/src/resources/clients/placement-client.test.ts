@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
 import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
@@ -36,8 +36,8 @@ import {
 } from './placement-client.fixtures'
 import * as placementDecisionClient from './placement-decision-client'
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -48,7 +48,7 @@ jest.mock('../utils', () => ({
 const createResourceMock = createResource as jest.MockedFunction<typeof createResource>
 
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
-const useRecoilValueMock = useRecoilValue as jest.Mock
+const useSharedValueMock = useSharedValue as jest.Mock
 
 /** Global placement included in placement lists when includeGlobalPlacement is used. */
 const globalPlacement: Placement = {
@@ -129,7 +129,7 @@ describe('placement-client', () => {
   describe('useFindPlacements', () => {
     beforeEach(() => {
       useSharedAtomsMock.mockReturnValue({ placementsState: {} })
-      useRecoilValueMock.mockReturnValue(mockPlacements)
+      useSharedValueMock.mockReturnValue(mockPlacements)
     })
 
     it('should return placements matching by name', () => {
@@ -226,7 +226,7 @@ describe('placement-client', () => {
           spec: { clusterSets: ['set-1', 'set-2'] },
         },
       ]
-      useRecoilValueMock.mockReturnValue(placementsWithClusterSets)
+      useSharedValueMock.mockReturnValue(placementsWithClusterSets)
 
       // Act
       const { result } = renderHook(() =>
@@ -250,7 +250,7 @@ describe('placement-client', () => {
           spec: { clusterSets: ['set-1', 'set-2'] },
         },
       ]
-      useRecoilValueMock.mockReturnValue(placementsWithClusterSets)
+      useSharedValueMock.mockReturnValue(placementsWithClusterSets)
 
       // Act
       const { result } = renderHook(() =>
@@ -295,7 +295,7 @@ describe('placement-client', () => {
           spec: { clusterSets: ['set-x'] },
         },
       ]
-      useRecoilValueMock.mockReturnValue(placementsWithMixed)
+      useSharedValueMock.mockReturnValue(placementsWithMixed)
 
       // Act
       const { result } = renderHook(() =>
@@ -338,7 +338,7 @@ describe('placement-client', () => {
           spec: { clusterSets: ['set-a'] }, // missing cluster predicates
         },
       ]
-      useRecoilValueMock.mockReturnValue(placementsWithMixed)
+      useSharedValueMock.mockReturnValue(placementsWithMixed)
 
       // Act
       const { result } = renderHook(() =>
@@ -364,7 +364,7 @@ describe('placement-client', () => {
           spec: { clusterSets: [] },
         },
       ]
-      useRecoilValueMock.mockReturnValue(placementsWithEmptySets)
+      useSharedValueMock.mockReturnValue(placementsWithEmptySets)
 
       // Act
       const { result } = renderHook(() =>
@@ -441,7 +441,7 @@ describe('placement-client', () => {
 
     describe('labels query', () => {
       it.each(useFindPlacementsLabelsQueryTestCases)('$description', (testCase) => {
-        useRecoilValueMock.mockReturnValue(testCase.placements)
+        useSharedValueMock.mockReturnValue(testCase.placements)
 
         const { result } = renderHook(() => useFindPlacements(testCase.query))
 
@@ -941,7 +941,7 @@ describe('placement-client', () => {
       it('should extract cluster names from placement predicates with key=name', () => {
         // Arrange
         const placement = createPlacementWithPredicates('placement-with-clusters', ['cluster-a', 'cluster-b'])
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -962,7 +962,7 @@ describe('placement-client', () => {
           metadata: { name: 'no-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {},
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -982,7 +982,7 @@ describe('placement-client', () => {
           metadata: { name: 'empty-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: { predicates: [] },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1015,7 +1015,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1049,7 +1049,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1075,7 +1075,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1103,7 +1103,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1133,7 +1133,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1163,7 +1163,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1193,7 +1193,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1229,7 +1229,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1269,7 +1269,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1313,7 +1313,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1331,7 +1331,7 @@ describe('placement-client', () => {
         // Arrange
         const placement = createPlacementWithPredicates('combined', ['cluster-from-predicate'])
         const placementDecision = createPlacementDecision('decision-1', 'combined', ['cluster-from-decision'])
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['cluster-from-decision'])
 
@@ -1354,7 +1354,7 @@ describe('placement-client', () => {
           'shared-cluster',
           'decision-only',
         ])
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['shared-cluster', 'decision-only'])
 
@@ -1374,7 +1374,7 @@ describe('placement-client', () => {
         // Arrange
         const placement = createPlacementWithPredicates('orphan-test', ['cluster-a'])
         const placementDecision = createPlacementDecision('orphan-decision', 'different-placement', ['cluster-b'])
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
 
         // Act
@@ -1398,7 +1398,7 @@ describe('placement-client', () => {
           'decision-cluster-1',
           'decision-cluster-2',
         ])
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([placementDecision])
         getClustersFromPlacementDecisionSpy.mockReturnValue(['decision-cluster-1', 'decision-cluster-2'])
 
@@ -1418,7 +1418,7 @@ describe('placement-client', () => {
         const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
         const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
         const placement3 = createPlacementWithPredicates('placement-c', ['cluster-3'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1437,7 +1437,7 @@ describe('placement-client', () => {
 
       it('should return empty array when no placements match', () => {
         // Arrange
-        useRecoilValueMock.mockReturnValue([])
+        useSharedValueMock.mockReturnValue([])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1453,7 +1453,7 @@ describe('placement-client', () => {
         const placement2 = createPlacementWithPredicates('p2', [])
         const decision1 = createPlacementDecision('d1', 'p1', ['c1'])
         const decision2 = createPlacementDecision('d2', 'p2', ['c2'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement1, placement2, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([decision1, decision2])
         getClustersFromPlacementDecisionSpy.mockImplementation((decision: PlacementDecision) => {
           if (decision.metadata.name === 'd1') return ['c1']
@@ -1478,7 +1478,7 @@ describe('placement-client', () => {
         const placement1 = createPlacementWithPredicates('placement-a', ['cluster-1'])
         const placement2 = createPlacementWithPredicates('placement-b', ['cluster-2'])
         const placement3 = createPlacementWithPredicates('placement-c', ['cluster-3'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement1, placement2, placement3, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1496,7 +1496,7 @@ describe('placement-client', () => {
         // Arrange
         const placement1 = createPlacementWithPredicates('p1', ['c1'])
         const placement2 = createPlacementWithPredicates('p2', ['c2'])
-        useRecoilValueMock.mockReturnValue([placement1, placement2, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement1, placement2, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         // Act
@@ -1527,7 +1527,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
+        useSharedValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         const { result } = renderHook(() => useGetPlacementClusters(['with-label', 'without-label']))
@@ -1555,7 +1555,7 @@ describe('placement-client', () => {
             ],
           },
         }
-        useRecoilValueMock.mockReturnValue([placement, globalPlacement])
+        useSharedValueMock.mockReturnValue([placement, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         const { result } = renderHook(() => useGetPlacementClusters(['unmanaged']))
@@ -1575,7 +1575,7 @@ describe('placement-client', () => {
           metadata: { name: 'missing-label', namespace: 'default' },
           spec: {},
         }
-        useRecoilValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
+        useSharedValueMock.mockReturnValue([withLabel, withoutLabel, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([])
 
         renderHook(() => useGetPlacementClusters(['found-placement', 'missing-label']))
@@ -1591,7 +1591,7 @@ describe('placement-client', () => {
         const placementB = createPlacementWithPredicates('placement-b', [])
         const decisionA = createPlacementDecision('d-a', 'placement-a', ['cluster-a'])
         const decisionB = createPlacementDecision('d-b', 'placement-b', ['cluster-b'])
-        useRecoilValueMock.mockReturnValue([placementA, placementB, globalPlacement])
+        useSharedValueMock.mockReturnValue([placementA, placementB, globalPlacement])
         useFindPlacementDecisionsSpy.mockReturnValue([decisionA, decisionB])
         getClustersFromPlacementDecisionSpy.mockImplementation((d: PlacementDecision) =>
           d.metadata.name === 'd-a' ? ['cluster-a'] : ['cluster-b']

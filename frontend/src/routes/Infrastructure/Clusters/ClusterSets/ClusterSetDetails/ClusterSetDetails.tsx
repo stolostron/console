@@ -18,7 +18,7 @@ import {
   managedClusterSetLabel,
 } from '../../../../../resources'
 import { Cluster, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmButton, AcmPageProcess } from '../../../../../ui-components'
 import { useClusterSetBindings } from '../components/ManagedClusterSetBindingModal'
 import { useClusters } from '../components/useClusters'
@@ -41,16 +41,16 @@ export default function ClusterSetDetails() {
   const { clusterDeploymentsState, clusterPoolsState, managedClusterAddonsState, managedClusterSetsState } =
     useSharedAtoms()
 
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
+  const managedClusterAddons = useSharedValue(managedClusterAddonsState)
 
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
 
   const clusterSet = managedClusterSets.find((mcs) => mcs.metadata.name === match.params.id)
   const prevClusterSet = usePrevious(clusterSet)
 
   const clusters = useClusters({ managedClusterSets: [clusterSet] })
-  const clusterPools = useRecoilValue(clusterPoolsState)
+  const clusterPools = useSharedValue(clusterPoolsState)
   const clusterSetClusterPools = clusterPools.filter(
     (cp) => cp.metadata.labels?.[managedClusterSetLabel] === clusterSet?.metadata.name
   )

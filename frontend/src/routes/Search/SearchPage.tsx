@@ -12,7 +12,7 @@ import { KubevirtProviderAlert } from '../../components/KubevirtProviderAlert'
 import { useTranslation } from '../../lib/acm-i18next'
 import { NavigationPath } from '../../NavigationPath'
 import { getUserPreference, SavedSearch, UserPreference } from '../../resources/userpreference'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { AcmActionGroup, AcmButton, AcmDropdown, AcmPage } from '../../ui-components'
 import HeaderWithNotification from './components/HeaderWithNotification'
 import { SaveAndEditSearchModal } from './components/Modals/SaveAndEditSearchModal'
@@ -124,8 +124,8 @@ function RenderSearchBar(props: Readonly<SearchbarProps>) {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const [currentSearch, setCurrentSearch] = useState<string>(presetSearchQuery)
   const [saveSearch, setSaveSearch] = useState<SavedSearch>()
   const [toggleOpen, setToggleOpen] = useState<boolean>(false)
@@ -379,9 +379,9 @@ export default function SearchPage() {
   const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
   const { useSearchResultLimit, configMapsState, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
-  const configMaps = useRecoilValue(configMapsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
+  const configMaps = useSharedValue(configMapsState)
   const [selectedSearch, setSelectedSearch] = useState(savedSearchesText)
   const [queryErrors, setQueryErrors] = useState(false)
   const [isUserPreferenceLoading, setIsUserPreferenceLoading] = useState(true)

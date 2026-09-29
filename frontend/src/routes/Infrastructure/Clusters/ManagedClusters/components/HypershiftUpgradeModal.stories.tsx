@@ -4,8 +4,8 @@ import { Button } from '@patternfly/react-core'
 import { action } from '@storybook/addon-actions'
 import type { Meta, StoryObj } from '@storybook/react'
 import { useState } from 'react'
-// Storybook decorator must bootstrap Recoil and seed configMapsState; shared-recoil requires an existing provider.
-import { RecoilRoot } from 'recoil' // eslint-disable-line @typescript-eslint/no-restricted-imports
+// Storybook decorator must bootstrap shared state and seed configMapsState; shared-atoms requires an existing provider.
+import { StateProvider } from '~/lib/state-provider'
 import { configMapsState } from '../../../../../atoms' // eslint-disable-line @typescript-eslint/no-restricted-imports
 import { ConfigMap, NodePool } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
@@ -159,14 +159,14 @@ const mockAvailableUpdates: Record<string, string> = {
   '4.16.0': 'quay.io/openshift-release-dev/ocp-release:4.16.0-x86_64',
 }
 
-const RecoilDecorator = (Story: React.ComponentType<any>) => (
-  <RecoilRoot
-    initializeState={({ set }) => {
-      set(configMapsState, [supportedVersionsConfigMap])
+const StateDecorator = (Story: React.ComponentType<any>) => (
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(configMapsState, [supportedVersionsConfigMap])
     }}
   >
     <Story />
-  </RecoilRoot>
+  </StateProvider>
 )
 
 const meta: Meta<typeof HypershiftUpgradeModal> = {
@@ -175,7 +175,7 @@ const meta: Meta<typeof HypershiftUpgradeModal> = {
   parameters: {
     layout: 'padded',
   },
-  decorators: [RecoilDecorator],
+  decorators: [StateDecorator],
   argTypes: {
     open: { control: 'boolean', description: 'Whether the modal is open' },
     close: { action: 'close', description: 'Called when the modal is closed' },

@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { useRoleAssignmentData } from '../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { RoleAssignmentPreselected } from '../../routes/UserManagement/RoleAssignments/model/role-assignment-preselected'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { RoleAssignmentWizardFormData } from './types'
 
 interface UsePreselectedDataProps {
@@ -32,7 +32,7 @@ export const usePreselectedData = ({
 }: UsePreselectedDataProps) => {
   const { roleAssignmentData } = useRoleAssignmentData()
   const { managedClusterSetsState } = useSharedAtoms()
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
   const hasAppliedPreselection = useRef(false)
 
   useEffect(() => {

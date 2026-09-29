@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { subscriptionOperatorsState } from '../atoms'
 import { KubevirtProviderAlert } from './KubevirtProviderAlert'
 import { SubscriptionOperator, SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from '../resources'
@@ -20,8 +20,8 @@ jest.mock('../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock shared-recoil
-jest.mock('../shared-recoil', () => ({
+// Mock shared-atoms
+jest.mock('../shared-atoms', () => ({
   useSharedSelectors: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     localHubNameState: 'mockLocalHubNameState',
@@ -87,7 +87,7 @@ jest.mock('../lib/doc-util', () => ({
   },
 }))
 
-import { useSharedSelectors } from '../shared-recoil'
+import { useSharedSelectors } from '../shared-atoms'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { useSearchResultRelatedCountQuery } from '../routes/Search/search-sdk/search-sdk'
 import { useAllClusters } from '../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
@@ -163,15 +163,15 @@ describe('KubevirtProviderAlert', () => {
     } as any)
 
     return render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionOperatorsState, operators)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionOperatorsState, operators)
         }}
       >
         <MemoryRouter>
           <KubevirtProviderAlert {...defaultProps} {...{ variant: 'search', ...props }} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

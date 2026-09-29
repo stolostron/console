@@ -24,7 +24,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { canUser } from '../../../lib/rbac-util'
 import { NavigationPath } from '../../../NavigationPath'
 import { ConfigMap, OwnerReference } from '../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmAlert, AcmButton, AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { useSearchDetailsContext } from './DetailsPage'
@@ -221,8 +221,8 @@ export default function DetailsOverviewPage() {
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
   const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
-  const configMaps = useRecoilValue(configMapsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const configMaps = useSharedValue(configMapsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const isObservabilityInstalled = useIsObservabilityInstalled()
   const [canEditResource, setCanEditResource] = useState<boolean>(false)
 

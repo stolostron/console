@@ -11,7 +11,7 @@ import {
   Namespace,
   ResourceAttributes,
 } from '../resources'
-import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../shared-atoms'
 
 const SELF_ACCESS_CHECK_BATCH_SIZE = 40
 
@@ -243,7 +243,7 @@ export function canUser(
 
 export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<ResourceAttributes>) {
   const { namespacesState } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
+  const namespaces = useSharedValue(namespacesState)
   const [someNamespaceIsAuthorized, setSomeNamespaceIsAuthorized] = useState(false)
 
   const resourceAttributesAsString = JSON.stringify(resourceAttributes)

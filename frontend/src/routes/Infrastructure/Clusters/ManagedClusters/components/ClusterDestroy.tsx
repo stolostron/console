@@ -9,7 +9,7 @@ import { NavigationPath } from '../../../../../NavigationPath'
 import { AddCluster } from './AddCluster'
 import { launchLogs } from './HiveNotification'
 import { ButtonVariant } from '@patternfly/react-core'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 
 const getLoadingMsgI18nKey = (
   cluster: Cluster | undefined,
@@ -49,7 +49,7 @@ export function ClusterDestroy({
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { configMapsState } = useSharedAtoms()
-  const configMaps = useRecoilValue(configMapsState)
+  const configMaps = useSharedValue(configMapsState)
   const isHybrid =
     cluster?.provider &&
     [Provider.hostinventory, Provider.nutanix].includes(cluster?.provider) &&

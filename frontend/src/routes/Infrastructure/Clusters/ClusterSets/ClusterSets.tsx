@@ -7,7 +7,7 @@ import { ClusterSetsTable } from '../../../../components/ClusterSets/ClusterSets
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { PluginContext } from '../../../../lib/PluginContext'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   AcmAlertContext,
   AcmButton,
@@ -25,7 +25,7 @@ export default function ClusterSetsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => alertContext.clearAlerts, [])
 
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
 
   return (
     <AcmPageContent id="clusters">

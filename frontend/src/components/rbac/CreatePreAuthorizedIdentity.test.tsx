@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { CreatePreAuthorizedIdentity } from './CreatePreAuthorizedIdentity'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { ClaimMappings } from '~/resources/authentication'
 import { clickElement } from '~/lib/test-util'
 
@@ -15,8 +15,8 @@ jest.mock('../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -65,7 +65,7 @@ jest.mock('../../wizards/RoleAssignment/Identities/CreateIdentityFormDirectAuthe
 }))
 
 const mockUseSharedAtoms = useSharedAtoms as jest.Mock
-const mockUseRecoilValue = useRecoilValue as jest.Mock
+const mockUseSharedValue = useSharedValue as jest.Mock
 
 function setupMocks(directAuth = false, claimMappings?: ClaimMappings) {
   const isDirectAuthEnabledAtom = Symbol('isDirectAuthenticationEnabledState')
@@ -76,7 +76,7 @@ function setupMocks(directAuth = false, claimMappings?: ClaimMappings) {
     claimMappingsState: claimMappingsAtom,
   })
 
-  mockUseRecoilValue.mockImplementation((atom: unknown) => {
+  mockUseSharedValue.mockImplementation((atom: unknown) => {
     if (atom === isDirectAuthEnabledAtom) return directAuth
     if (atom === claimMappingsAtom) return claimMappings
     return undefined

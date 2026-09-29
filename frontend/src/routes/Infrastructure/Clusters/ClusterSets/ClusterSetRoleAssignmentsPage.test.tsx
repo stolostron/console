@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import ClusterSetRoleAssignmentsPage from './ClusterSetRoleAssignmentsPage'
-import { useRecoilValue } from '../../../../shared-recoil'
+import { useSharedValue } from '../../../../shared-atoms'
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     isFineGrainedRbacEnabledState: 'isFineGrainedRbacEnabledState',
   })),
@@ -21,7 +21,7 @@ jest.mock('./ClusterSetDetails/ClusterSetRoleAssignments/ClusterSetRoleAssignmen
 }))
 
 const Component = ({ id = 'default-cluster-set' }: { id?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/multicloud/infrastructure/clusters/cluster-sets/${id}/role-assignments`]}>
       <Routes>
         <Route
@@ -30,17 +30,17 @@ const Component = ({ id = 'default-cluster-set' }: { id?: string } = {}) => (
         />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterSetRoleAssignmentsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useRecoilValue as jest.Mock).mockClear()
+    ;(useSharedValue as jest.Mock).mockClear()
   })
 
   it('renders ClusterSetRoleAssignments when fine-grained RBAC is enabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(true)
+    ;(useSharedValue as jest.Mock).mockReturnValue(true)
 
     const { container } = render(<Component />)
 
@@ -49,7 +49,7 @@ describe('ClusterSetRoleAssignmentsPage', () => {
   })
 
   it('does not render ClusterSetRoleAssignments when fine-grained RBAC is disabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(false)
+    ;(useSharedValue as jest.Mock).mockReturnValue(false)
 
     render(<Component id="test-cluster-set" />)
 
@@ -57,7 +57,7 @@ describe('ClusterSetRoleAssignmentsPage', () => {
   })
 
   it('renders with different cluster set id parameters', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(true)
+    ;(useSharedValue as jest.Mock).mockReturnValue(true)
 
     const { container } = render(<Component id="production-cluster-set" />)
 
@@ -66,7 +66,7 @@ describe('ClusterSetRoleAssignmentsPage', () => {
   })
 
   it('renders ClusterSetRoleAssignments component inside PageSection when RBAC is enabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(true)
+    ;(useSharedValue as jest.Mock).mockReturnValue(true)
 
     render(<Component />)
 
@@ -74,7 +74,7 @@ describe('ClusterSetRoleAssignmentsPage', () => {
   })
 
   it('redirects to cluster set details when fine-grained RBAC is disabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(false)
+    ;(useSharedValue as jest.Mock).mockReturnValue(false)
 
     render(<Component id="my-cluster-set" />)
 
@@ -84,12 +84,12 @@ describe('ClusterSetRoleAssignmentsPage', () => {
   })
 
   it('handles default empty id parameter gracefully', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(false)
+    ;(useSharedValue as jest.Mock).mockReturnValue(false)
 
     // When id is empty and RBAC is disabled, it should redirect
     // The generatePath will use the default empty string for id
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/multicloud/infrastructure/clusters/cluster-sets/test-set/role-assignments']}>
           <Routes>
             <Route
@@ -98,7 +98,7 @@ describe('ClusterSetRoleAssignmentsPage', () => {
             />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // When RBAC is disabled, Navigate is rendered and ClusterSetRoleAssignments is not called

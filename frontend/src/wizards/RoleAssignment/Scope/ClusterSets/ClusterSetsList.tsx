@@ -4,7 +4,7 @@ import { useMemo } from 'react'
 import { ClusterSetsTable } from '../../../../components/ClusterSets/ClusterSetsTable'
 import { isGlobalClusterSet, ManagedClusterSet } from '../../../../resources'
 import { useAllClusters } from '../../../../routes/Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 interface ClusterSetsListProps {
   onSelectClusterSet: (clusters: ManagedClusterSet[]) => void
@@ -13,7 +13,7 @@ interface ClusterSetsListProps {
 
 export const ClusterSetsList = ({ onSelectClusterSet, selectedClusterSets }: ClusterSetsListProps) => {
   const { managedClusterSetsState } = useSharedAtoms()
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
   const clusters = useAllClusters(true)
   const extendedManagedClusterSets = useMemo(
     () =>

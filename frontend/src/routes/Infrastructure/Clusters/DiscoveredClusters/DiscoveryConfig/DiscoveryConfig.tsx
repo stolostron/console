@@ -30,7 +30,7 @@ import {
   Secret,
 } from '../../../../../resources'
 import { deleteResource, ResourceError, ResourceErrorCode } from '../../../../../resources/utils'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 import {
   AcmAlertContext,
   AcmButton,
@@ -122,8 +122,8 @@ export default function DiscoveryConfigPage() {
 
 export function AddDiscoveryConfigData() {
   const { discoveryConfigState, secretsState } = useSharedAtoms()
-  const discoveryConfigs = useRecoilValue(discoveryConfigState)
-  const secrets = useRecoilValue(secretsState)
+  const discoveryConfigs = useSharedValue(discoveryConfigState)
+  const secrets = useSharedValue(secretsState)
   const [credentials, setCredentials] = useState<Secret[]>([])
   const [discoveryNamespaces, setDiscoveryNamespaces] = useState<string[]>([])
 
