@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmSelectBase, SelectVariant } from './AcmSelectBase'
-import { clickElement, typeElement, tab, clearElement } from '~/lib/test-util'
+import { clickElement, typeElement, tab, clearElement, pressEnter } from '~/lib/test-util'
 
 describe('AcmSelectBase', () => {
   describe('single variant', () => {
@@ -96,6 +96,21 @@ describe('AcmSelectBase', () => {
 
       expect(screen.getByText('Red')).toBeInTheDocument()
     })
+
+    it('displays a selected option with a zero value', () => {
+      render(
+        <AcmSelectBase
+          variant={SelectVariant.single}
+          selections="0"
+          placeholder="Select a color"
+          aria-label="Select a color"
+        >
+          <SelectOption value={0} />
+        </AcmSelectBase>
+      )
+
+      expect(screen.getByText('0')).toBeInTheDocument()
+    })
   })
 
   describe('typeahead variant', () => {
@@ -121,6 +136,30 @@ describe('AcmSelectBase', () => {
       await clickElement(screen.getByText('Alpha'))
 
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('alpha'))
+    })
+
+    it('filters and selects options provided as children', async () => {
+      const onSelect = jest.fn()
+      render(
+        <AcmSelectBase
+          id="children-select"
+          variant={SelectVariant.typeahead}
+          selections=""
+          onSelect={onSelect}
+          placeholder="Select a child option"
+        >
+          <SelectOption value="alpha">Alpha</SelectOption>
+          <SelectOption value="beta" description="Beta description">
+            Beta
+          </SelectOption>
+        </AcmSelectBase>
+      )
+
+      await typeElement(getTypeaheadInput('children-select'), 'beta')
+      await waitFor(() => expect(screen.getByText('Beta description')).toBeVisible())
+      await clickElement(screen.getByText('Beta'))
+
+      await waitFor(() => expect(onSelect).toHaveBeenCalledWith('beta'))
     })
 
     it('shows no results when there are no children or options', async () => {
@@ -471,6 +510,27 @@ describe('AcmSelectBase', () => {
       await clickElement(screen.getByRole('combobox', { name: /checkbox select/i }))
       await waitFor(() => expect(screen.getByRole('checkbox', { name: /red/i })).toBeInTheDocument())
       await clickElement(screen.getByRole('checkbox', { name: /red/i }))
+      await waitFor(() => expect(onSelect).toHaveBeenCalledWith('red'))
+    })
+
+    it('selects a checkbox option with Enter', async () => {
+      const onSelect = jest.fn()
+      render(
+        <AcmSelectBase
+          variant={SelectVariant.checkbox}
+          selections={[]}
+          onSelect={onSelect}
+          onClear={jest.fn()}
+          placeholder="Checkbox select"
+          aria-label="Checkbox select"
+        >
+          <SelectOption value="red">Red</SelectOption>
+        </AcmSelectBase>
+      )
+
+      await clickElement(screen.getByRole('combobox', { name: /checkbox select/i }))
+      await pressEnter(screen.getByRole('checkbox', { name: /red/i }))
+
       await waitFor(() => expect(onSelect).toHaveBeenCalledWith('red'))
     })
   })

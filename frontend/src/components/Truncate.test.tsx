@@ -38,7 +38,7 @@ describe('Truncate', () => {
     const makeSegments = (highlight: string) => [
       React.createElement('span', { 'data-highlight': 'true' }, highlight),
       ' ',
-      React.createElement('span', null, 'remaining text'),
+      React.createElement('span', { key: 'remaining' }, 'remaining text'),
     ]
 
     const { rerender } = render(
@@ -59,10 +59,16 @@ describe('Truncate', () => {
   })
 
   it('renders tooltip content from iterable children', () => {
-    const segments = new Set<React.ReactNode>([React.createElement('span', { key: 'segment' }, 'iterable segment')])
+    const segments = new Set<React.ReactNode>([
+      React.createElement('span', null, 'iterable segment'),
+      ' ',
+      React.createElement('span', null, 'remaining segment'),
+    ])
 
     render(<Truncate content="iterable segment" children={segments} />)
 
-    expect(within(screen.getByTestId('tooltip-content')).getByText('iterable segment')).toBeInTheDocument()
+    const tooltip = within(screen.getByTestId('tooltip-content'))
+    expect(tooltip.getByText('iterable segment')).toBeInTheDocument()
+    expect(tooltip.getByText('remaining segment')).toBeInTheDocument()
   })
 })

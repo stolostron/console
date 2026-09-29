@@ -114,11 +114,9 @@ const createTooltipContent = (children: React.ReactNode, content: string, isLink
     if (childrenArray.length > 0) {
       return (
         <>
-          {childrenArray.map((child, index) => {
+          {childrenArray.map((child) => {
             if (React.isValidElement<{ children?: React.ReactNode }>(child)) {
-              // Use the existing key or fall back to the array index
-              const stableKey = child.key || `tooltip-fragment-${index}`
-              return React.cloneElement(createStyledTooltipElement(child), { key: stableKey })
+              return React.cloneElement(createStyledTooltipElement(child), { key: child.key })
             }
             return child
           })}

@@ -70,7 +70,7 @@ globalThis.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(240 * 1000)
 
-async function setupBeforeAll(): Promise<void> {
+function setupBeforeAll(): void {
   nock.disableNetConnect()
   nock.enableNetConnect('127.0.0.1')
   nock.enableNetConnect('localhost')
@@ -235,12 +235,12 @@ async function setupAfterEach(): Promise<void> {
   expect(missingNocks).hasNoPendingNocks()
 }
 
-async function setupAfterEachNock(): Promise<void> {
+function setupAfterEachNock(): void {
   nock.emitter.off('no match', logNoMatch)
   nock.cleanAll()
 }
 
-async function setupAfterAll(): Promise<void> {
+function setupAfterAll(): void {
   nock.enableNetConnect()
   nock.restore()
 }
@@ -251,7 +251,7 @@ afterEach(setupAfterEach)
 afterEach(setupAfterEachNock)
 afterAll(setupAfterAll)
 
-i18n
+void i18n
   // pass the i18n instance to react-i18next
   .use(initReactI18next)
   // init i18next
