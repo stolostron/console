@@ -13,7 +13,7 @@ import {
   type ReactNode,
 } from 'react'
 import { Step, Wizard } from '@patternfly-labs/react-form-wizard'
-import type { WizardProps } from '@patternfly-labs/react-form-wizard'
+import type { StepProps, WizardProps } from '@patternfly-labs/react-form-wizard'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
 import './WizardPage.css'
 import { LostChangesMonitor, LostChangesPrompt } from '../components/LostChanges'
@@ -32,7 +32,9 @@ function getWizardYamlEditor() {
 
 function renderWizardSteps(children: ReactNode) {
   return (
-    Children.toArray(children).filter((child) => isValidElement(child) && child.type === Step) as ReactElement[]
+    Children.toArray(children).filter(
+      (child) => isValidElement(child) && child.type === Step
+    ) as ReactElement<StepProps>[]
   ).map((child, index) => {
     return index === 0
       ? cloneElement(child, {

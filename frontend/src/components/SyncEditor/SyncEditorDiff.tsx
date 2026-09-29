@@ -36,7 +36,7 @@ export interface SyncEditorDiffProps {
   /** Notifies parent when either diff pane gains or loses text focus. */
   onDiffEditorFocusChange: (focused: boolean) => void
   /** Observed for layout when the editor page resizes. */
-  resizeRootRef: RefObject<HTMLDivElement>
+  resizeRootRef: RefObject<HTMLDivElement | null>
   /** Called when the modified (editable) side of the diff changes. */
   onChange?: ChangeHandler
   /** Invoked after a diff editor is created and again right before it is disposed (parent can re-run form sync). */

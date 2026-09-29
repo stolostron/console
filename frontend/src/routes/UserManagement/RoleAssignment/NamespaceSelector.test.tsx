@@ -30,7 +30,7 @@ jest.mock('../../../ui-components', () => ({
         <div data-testid="multiselect-placeholder">{placeholder}</div>
         <div data-testid="multiselect-value">{JSON.stringify(value || [])}</div>
         <div data-testid="multiselect-options">
-          {children?.map((child: React.ReactElement) => (
+          {children?.map((child: React.ReactElement<{ value: string; children?: React.ReactNode }>) => (
             <button
               key={child.key}
               data-testid={`option-${child.props.value}`}

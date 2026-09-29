@@ -187,6 +187,6 @@ describe('DetailsTable', () => {
   })
 
   it('renders as expected', () => {
-    expect(screen.getAllByText('feng-argo-perf').length).toBe(3)
+    expect(screen.getAllByText('feng-argo-perf')).toHaveLength(3)
   })
 })

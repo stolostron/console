@@ -156,7 +156,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
       })
     } else if (children.length > 0) {
       initialFilteredOptions = children.map((child) => {
-        const props = (child as React.ReactElement).props
+        const props = (child as ReactElement<SelectOptionProps>).props
         const { value, children, description } = props
         return {
           value: value ?? '',
@@ -208,7 +208,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
 
   const [focusedItemIndex, setFocusedItemIndex] = useState<number | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
-  const menuRef = useRef<HTMLDivElement>(undefined)
+  const menuRef = useRef<HTMLDivElement>(null)
   const textInputRef = useRef<HTMLInputElement>(undefined)
   const skipBlurCommitRef = useRef(false)
   const {
@@ -293,7 +293,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
     resetActiveAndFocusedItem()
   }, [resetActiveAndFocusedItem, variant])
 
-  const onTextInputChange = (_event: React.FormEvent<HTMLInputElement>, value: string) => {
+  const onTextInputChange = (_event: React.SyntheticEvent<HTMLInputElement>, value: string) => {
     setInputValue(value)
     setFilterValue(value)
 
@@ -605,15 +605,14 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
   const renderSinglePlaceholder = () => {
     if (selections) {
       const item = Children.toArray(props.children).find(
-        (child) =>
-          (child as React.ReactElement).props.value &&
-          (child as React.ReactElement).props.value.toString() === selections!.toString()
-      ) as any
+        (child): child is ReactElement<SelectOptionProps> =>
+          isValidElement<SelectOptionProps>(child) && child.props.value?.toString() === selections.toString()
+      )
       if (item) {
-        if (item?.props.children) {
+        if (item.props.children) {
           return item.props.children
         }
-        return item.props.value.toString()
+        return item.props.value?.toString()
       }
     }
     return placeholder
@@ -799,7 +798,7 @@ export function AcmSelectBase(props: AcmSelectBaseProps) {
         appendTo:
           menuAppendTo && menuAppendTo !== 'parent' ? (menuAppendTo as HTMLElement | (() => HTMLElement)) : 'inline',
       }}
-      innerRef={menuRef as React.MutableRefObject<any>}
+      innerRef={menuRef}
     >
       {renderSelectList()}
       {footer && <MenuFooter>{footer}</MenuFooter>}
