@@ -5,7 +5,7 @@ import { css } from '@emotion/css'
 import { Button, Checkbox, PageSection, SelectOption, Tooltip } from '@patternfly/react-core'
 import { CompressIcon, DownloadIcon, ExpandIcon, OutlinedWindowRestoreIcon } from '@patternfly/react-icons'
 import { LogViewer } from '@patternfly/react-log-viewer'
-import { Dispatch, MutableRefObject, ReactNode, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
+import { Dispatch, ReactNode, RefObject, SetStateAction, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router'
 import screenfull from 'screenfull'
 import { AcmSelectBase, SelectOptionObject, SelectVariant } from '../../../components/AcmSelectBase'
@@ -253,7 +253,7 @@ export function LogsHeader(props: { cluster: string; namespace: string; linesLen
 }
 
 export function LogsFooterButton(props: {
-  logViewerRef: MutableRefObject<any>
+  logViewerRef: RefObject<any>
   showJumpToBottomBtn: boolean
   setShowJumpToBottomBtn: Dispatch<SetStateAction<boolean>>
 }) {

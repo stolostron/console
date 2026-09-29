@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { subscriptionOperatorsState } from '../atoms'
 import { clickByRole, waitForText } from '../lib/test-util'
 import { SubscriptionOperator, SubscriptionOperatorApiVersion, SubscriptionOperatorKind } from '../resources'
@@ -59,15 +59,15 @@ const acm: SubscriptionOperator = {
 
 function WrappedACMNotReadyWarning(props: { acmOperators?: SubscriptionOperator[] }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(subscriptionOperatorsState, props.acmOperators || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, props.acmOperators || [])
       }}
     >
       <MemoryRouter>
         <ACMNotReadyWarning>Default Content</ACMNotReadyWarning>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

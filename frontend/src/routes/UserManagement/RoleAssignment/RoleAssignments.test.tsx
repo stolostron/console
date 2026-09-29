@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
@@ -515,7 +515,7 @@ const Component = ({
   hiddenColumns?: ('subject' | 'role' | 'clusters' | 'clusterSets' | 'name')[]
   hiddenFilters?: ('role' | 'identity' | 'clusters' | 'clusterSets' | 'namespace' | 'status')[]
 } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter>
       <PluginContext.Provider value={defaultPlugin}>
         <AcmToastContext.Provider value={mockToastContext}>
@@ -533,7 +533,7 @@ const Component = ({
         </AcmToastContext.Provider>
       </PluginContext.Provider>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('RoleAssignments', () => {

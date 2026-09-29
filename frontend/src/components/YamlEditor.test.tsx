@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import YAMLEditor, { findResourceFieldLineNumber } from './YamlEditor'
 describe('YamlEditor', () => {
   it('findResourceFieldLineNumber - returns properly', async () => {
@@ -26,7 +26,7 @@ describe('YamlEditor', () => {
 
   it('YamlEditor renders properly', async () => {
     const { baseElement } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <YAMLEditor
             resourceYAML={
@@ -38,7 +38,7 @@ describe('YamlEditor', () => {
             defaultScrollToLine={1}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly

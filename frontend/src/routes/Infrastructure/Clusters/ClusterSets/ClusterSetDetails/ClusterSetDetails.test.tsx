@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import * as YAML from 'yaml'
 import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import {
@@ -1487,11 +1487,11 @@ const mockHostedClusterBaremetal: HostedClusterK8sResource = {
 }
 
 const Component = (props: { isGlobal?: boolean }) => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(managedClusterSetsState, [props.isGlobal ? mockGlobalManagedClusterSet : mockManagedClusterSet])
-      snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-      snapshot.set(managedClusterInfosState, [
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(managedClusterSetsState, [props.isGlobal ? mockGlobalManagedClusterSet : mockManagedClusterSet])
+      store.set(clusterDeploymentsState, mockClusterDeployments)
+      store.set(managedClusterInfosState, [
         ...mockManagedClusterInfos,
         mockManagedClusterInfoExtra,
         mockManagedClusterInfoAzure,
@@ -1509,7 +1509,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterInfoOpenstack,
         mockManagedClusterInfoNoCredentialsOpenstack,
       ])
-      snapshot.set(managedClustersState, [
+      store.set(managedClustersState, [
         ...mockManagedClusters,
         mockManagedClusterExtra,
         mockManagedClusterAzure,
@@ -1527,13 +1527,13 @@ const Component = (props: { isGlobal?: boolean }) => (
         mockManagedClusterOpenstack,
         mockManagedClusterNoCredentialsOpenstack,
       ])
-      snapshot.set(certificateSigningRequestsState, [])
-      snapshot.set(managedClusterAddonsState, mockSubmarinerAddon)
-      snapshot.set(submarinerConfigsState, [mockSubmarinerConfig])
-      snapshot.set(clusterPoolsState, [])
-      snapshot.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
-      snapshot.set(usersState, [mockUser])
-      snapshot.set(groupsState, [mockGroup])
+      store.set(certificateSigningRequestsState, [])
+      store.set(managedClusterAddonsState, mockSubmarinerAddon)
+      store.set(submarinerConfigsState, [mockSubmarinerConfig])
+      store.set(clusterPoolsState, [])
+      store.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
+      store.set(usersState, [mockUser])
+      store.set(groupsState, [mockGroup])
     }}
   >
     <MemoryRouter
@@ -1547,7 +1547,7 @@ const Component = (props: { isGlobal?: boolean }) => (
         <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 const mockClusterRoleBinding: ClusterRoleBinding = {
@@ -2046,13 +2046,13 @@ describe('Global ClusterSetDetails page', () => {
 
 describe('ClusterSetDetails error', () => {
   const Component = () => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterSetsState, [])
-        snapshot.set(clusterDeploymentsState, [])
-        snapshot.set(managedClusterInfosState, [])
-        snapshot.set(managedClustersState, [])
-        snapshot.set(certificateSigningRequestsState, [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterSetsState, [])
+        store.set(clusterDeploymentsState, [])
+        store.set(managedClusterInfosState, [])
+        store.set(managedClustersState, [])
+        store.set(certificateSigningRequestsState, [])
       }}
     >
       <MemoryRouter
@@ -2062,7 +2062,7 @@ describe('ClusterSetDetails error', () => {
           <Route path={NavigationPath.clusterSetDetails} element={<ClusterSetDetails />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   test('renders error page when cluster set does not exist', async () => {
     nockIgnoreApiPaths()
@@ -2076,13 +2076,13 @@ describe('ClusterSetDetails deletion', () => {
   const clusterSet = JSON.parse(JSON.stringify(mockManagedClusterSet))
   clusterSet.metadata.deletionTimestamp = '2021-04-16T15:26:18Z'
   const Component = () => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterSetsState, [clusterSet])
-        snapshot.set(clusterDeploymentsState, [])
-        snapshot.set(managedClusterInfosState, [])
-        snapshot.set(managedClustersState, [])
-        snapshot.set(certificateSigningRequestsState, [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterSetsState, [clusterSet])
+        store.set(clusterDeploymentsState, [])
+        store.set(managedClusterInfosState, [])
+        store.set(managedClustersState, [])
+        store.set(certificateSigningRequestsState, [])
       }}
     >
       <MemoryRouter
@@ -2092,7 +2092,7 @@ describe('ClusterSetDetails deletion', () => {
           <Route path={NavigationPath.clusterSetDetails + '/*'} element={<ClusterSetDetails />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   test('renders deletion page when the cluster set has a deletionTimestamp', async () => {
     nockIgnoreApiPaths()

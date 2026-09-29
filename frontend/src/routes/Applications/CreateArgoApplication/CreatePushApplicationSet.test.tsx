@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   channelsState,
   gitOpsClustersState,
@@ -331,16 +331,16 @@ describe('Create Argo Application Set', () => {
   })
   const AddApplicationSet = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, [mockPlacement])
-          snapshot.set(gitOpsClustersState, [gitOpsCluster])
-          snapshot.set(channelsState, [channelGit, channelHelm])
-          snapshot.set(namespacesState, [namespace])
-          snapshot.set(secretsState, [])
-          snapshot.set(managedClusterSetsState, [clusterSet])
-          snapshot.set(managedClusterSetBindingsState, [clusterSetBinding])
-          snapshot.set(subscriptionOperatorsState, gitOpsOperators)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [mockPlacement])
+          store.set(gitOpsClustersState, [gitOpsCluster])
+          store.set(channelsState, [channelGit, channelHelm])
+          store.set(namespacesState, [namespace])
+          store.set(secretsState, [])
+          store.set(managedClusterSetsState, [clusterSet])
+          store.set(managedClusterSetBindingsState, [clusterSetBinding])
+          store.set(subscriptionOperatorsState, gitOpsOperators)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
@@ -348,7 +348,7 @@ describe('Create Argo Application Set', () => {
             <Route path={NavigationPath.createApplicationArgo} element={<CreatePushApplicationSet />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -474,13 +474,13 @@ describe('Create Argo Application Set', () => {
       ),
     ]
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
           <Routes>
             <Route path={NavigationPath.editApplicationArgo} element={<EditApplicationSetPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForNocks(initialNocks)
 

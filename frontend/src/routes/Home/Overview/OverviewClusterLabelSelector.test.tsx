@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { useState } from 'react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   clusterManagementAddonsState,
   managedClusterAddonsState,
@@ -22,38 +22,38 @@ describe('OverviewClusterLabelSelector', () => {
   const RenderOverviewClusterLabelSelector = () => {
     const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({})
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, managedClusters)
-          snapshot.set(managedClusterInfosState, managedClusterInfos)
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
-          snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, managedClusters)
+          store.set(managedClusterInfosState, managedClusterInfos)
+          store.set(managedClusterAddonsState, mockManagedClusterAddons)
+          store.set(clusterManagementAddonsState, mockClusterManagementAddons)
         }}
       >
         <OverviewClusterLabelSelector
           selectedClusterLabels={selectedClusterLabels}
           setSelectedClusterLabels={setSelectedClusterLabels}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
   const RenderPresetOverviewClusterLabelSelector = () => {
     const [selectedClusterLabels, setSelectedClusterLabels] = useState<Record<string, string[]>>({ env: ['dev'] })
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, managedClusters)
-          snapshot.set(managedClusterInfosState, managedClusterInfos)
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
-          snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, managedClusters)
+          store.set(managedClusterInfosState, managedClusterInfos)
+          store.set(managedClusterAddonsState, mockManagedClusterAddons)
+          store.set(clusterManagementAddonsState, mockClusterManagementAddons)
         }}
       >
         <OverviewClusterLabelSelector
           selectedClusterLabels={selectedClusterLabels}
           setSelectedClusterLabels={setSelectedClusterLabels}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

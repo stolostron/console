@@ -6,7 +6,7 @@ import { t as t } from '~/lib/test-helpers'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useMemo, useState } from 'react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { DropdownSuggestionsProps } from '../search-helper'
 import { getSearchDefinitions } from '../searchDefinitions'
 import { generateSearchResultExport } from '../SearchResults/utils'
@@ -94,7 +94,7 @@ export const BlankSearchbar = () => {
   }, [currentQuery])
 
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <MockedProvider mocks={[]}>
           <Searchbar
@@ -120,12 +120,12 @@ export const BlankSearchbar = () => {
           />
         </MockedProvider>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 const LoadingSearchbar = () => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter>
       <MockedProvider mocks={[]}>
         <Searchbar
@@ -161,11 +161,11 @@ const LoadingSearchbar = () => (
         />
       </MockedProvider>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 const PrefilledSearchbar = () => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter>
       <MockedProvider mocks={[]}>
         <Searchbar
@@ -245,7 +245,7 @@ const PrefilledSearchbar = () => (
         />
       </MockedProvider>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('Searchbar tests', () => {

@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   certificateSigningRequestsState,
   clusterClaimsState,
@@ -47,21 +47,21 @@ const Component = ({
   hiddenColumns?: string[]
   showExportButton?: boolean
 }) => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(certificateSigningRequestsState, [])
-      snapshot.set(clusterClaimsState, [])
-      snapshot.set(clusterDeploymentsState, [])
-      snapshot.set(managedClusterAddonsState, {})
-      snapshot.set(clusterManagementAddonsState, [])
-      snapshot.set(managedClusterInfosState, [])
-      snapshot.set(managedClustersState, [])
-      snapshot.set(agentClusterInstallsState, [])
-      snapshot.set(clusterCuratorsState, [])
-      snapshot.set(hostedClustersState, [])
-      snapshot.set(nodePoolsState, [])
-      snapshot.set(managedClusterSetBindingsState, [])
-      snapshot.set(discoveredClusterState, [])
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(certificateSigningRequestsState, [])
+      store.set(clusterClaimsState, [])
+      store.set(clusterDeploymentsState, [])
+      store.set(managedClusterAddonsState, {})
+      store.set(clusterManagementAddonsState, [])
+      store.set(managedClusterInfosState, [])
+      store.set(managedClustersState, [])
+      store.set(agentClusterInstallsState, [])
+      store.set(clusterCuratorsState, [])
+      store.set(hostedClustersState, [])
+      store.set(nodePoolsState, [])
+      store.set(managedClusterSetBindingsState, [])
+      store.set(discoveredClusterState, [])
     }}
   >
     <MemoryRouter>
@@ -73,7 +73,7 @@ const Component = ({
         showExportButton={showExportButton}
       />
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterSetsTable', () => {

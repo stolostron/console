@@ -8,7 +8,7 @@
 
 import { cleanup, render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
@@ -171,20 +171,20 @@ describe('Clusters Page', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddon)
-          snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(clusterDeploymentsState, mockClusterDeployments)
+          store.set(managedClusterInfosState, mockManagedClusterInfos)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+          store.set(managedClusterAddonsState, mockManagedClusterAddon)
+          store.set(clusterManagementAddonsState, [mockClusterManagementAddon])
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
   })
@@ -272,20 +272,20 @@ describe('Clusters Page Empty State', () => {
 
     // Render with empty clusters
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForTestId('clusters-table')
@@ -313,18 +313,18 @@ describe('Clusters Page RBAC', () => {
     nockIgnoreApiPaths()
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(clusterDeploymentsState, mockClusterDeployments)
+          store.set(managedClusterInfosState, mockManagedClusterInfos)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
 
@@ -349,19 +349,19 @@ describe('Clusters Page hypershift', () => {
     nockIgnoreApiPaths()
     const hypershiftMockManagedClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo6, mockManagedClusterInfo7]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, hypershiftMockManagedClusters)
-          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-          snapshot.set(managedClusterInfosState, hypershiftMockManagedClusterInfos)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
-          snapshot.set(hostedClustersState, mockHostedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, hypershiftMockManagedClusters)
+          store.set(clusterDeploymentsState, mockClusterDeployments)
+          store.set(managedClusterInfosState, hypershiftMockManagedClusterInfos)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+          store.set(hostedClustersState, mockHostedClusters)
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
   })
@@ -378,18 +378,18 @@ describe('Clusters Page regional hub cluster', () => {
     nockIgnoreApiPaths()
     const mockRegionalHubClusterInfos: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, mockRegionalHubClusters)
-          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-          snapshot.set(managedClusterInfosState, mockRegionalHubClusterInfos)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, mockRegionalHubClusters)
+          store.set(clusterDeploymentsState, mockClusterDeployments)
+          store.set(managedClusterInfosState, mockRegionalHubClusterInfos)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
   })
@@ -403,17 +403,17 @@ describe('Clusters Page regional hub cluster', () => {
     nockIgnoreApiPaths()
     const mockRegionalHubClusterInfosUnreachable: ManagedClusterInfo[] = [mockManagedClusterInfo8]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, mockRegionalHubClustersUnreachable)
-          snapshot.set(managedClusterInfosState, mockRegionalHubClusterInfosUnreachable)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, mockRegionalHubClustersUnreachable)
+          store.set(managedClusterInfosState, mockRegionalHubClusterInfosUnreachable)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
   })
@@ -428,20 +428,20 @@ describe('Clusters Page export', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(clusterDeploymentsState, mockClusterDeployments)
-          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-          snapshot.set(certificateSigningRequestsState, mockCertificateSigningRequests)
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddon)
-          snapshot.set(clusterManagementAddonsState, [mockClusterManagementAddon])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(clusterDeploymentsState, mockClusterDeployments)
+          store.set(managedClusterInfosState, mockManagedClusterInfos)
+          store.set(certificateSigningRequestsState, mockCertificateSigningRequests)
+          store.set(managedClusterAddonsState, mockManagedClusterAddon)
+          store.set(clusterManagementAddonsState, [mockClusterManagementAddon])
         }}
       >
         <MemoryRouter>
           <ManagedClusters />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForTestId('clusters-table')
 

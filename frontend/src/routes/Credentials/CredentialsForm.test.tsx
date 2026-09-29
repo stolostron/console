@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { namespacesState } from '../../atoms'
 import {
   nockCreate,
@@ -42,11 +42,11 @@ describe('add credentials page', () => {
 
   const Component = (props: { credentialsType: CredentialsType }) => {
     return (
-      <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+      <StateProvider initializeStore={(store) => store.set(namespacesState, mockNamespaces)}>
         <MemoryRouter initialEntries={[`${NavigationPath.addCredentials}?credentialsType=${props.credentialsType}`]}>
           <CreateCredentialsFormPage credentialsType={props.credentialsType} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -493,13 +493,13 @@ describe('add credentials page', () => {
       }
       const ComponentWithToast = (props: { credentialsType: CredentialsType }) => (
         <AcmToastContext.Provider value={toastContext as any}>
-          <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+          <StateProvider initializeStore={(store) => store.set(namespacesState, mockNamespaces)}>
             <MemoryRouter
               initialEntries={[`${NavigationPath.addCredentials}?credentialsType=${props.credentialsType}`]}
             >
               <CreateCredentialsFormPage credentialsType={props.credentialsType} />
             </MemoryRouter>
-          </RecoilRoot>
+          </StateProvider>
         </AcmToastContext.Provider>
       )
 
@@ -576,13 +576,13 @@ describe('add credentials page', () => {
 
       const ComponentWithToast = () => (
         <AcmToastContext.Provider value={toastContext as any}>
-          <RecoilRoot initializeState={(snapshot) => snapshot.set(namespacesState, mockNamespaces)}>
+          <StateProvider initializeStore={(store) => store.set(namespacesState, mockNamespaces)}>
             <MemoryRouter initialEntries={[editPath]}>
               <Routes>
                 <Route path={NavigationPath.editCredentials} element={<ViewEditCredentialsFormPage />} />
               </Routes>
             </MemoryRouter>
-          </RecoilRoot>
+          </StateProvider>
         </AcmToastContext.Provider>
       )
 

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   managedClustersState,
   placementBindingsState,
@@ -48,13 +48,13 @@ describe('Policy Details Results', () => {
   test('Should render Policy Details Results Page content correctly', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(policiesState, [mockPolicy[1]])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
+          store.set(policiesState, [mockPolicy[1]])
         }}
       >
         <MemoryRouter>
@@ -64,7 +64,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -91,13 +91,13 @@ describe('Policy Details Results', () => {
     async (propagatedPolicies, expected) => {
       const context: PolicyDetailsContext = { policy: mockPolicy[0] }
       render(
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(placementsState, mockPlacements)
-            snapshot.set(policySetsState, [mockPolicySets[0]])
-            snapshot.set(placementBindingsState, mockPlacementBindings)
-            snapshot.set(placementDecisionsState, mockPlacementDecision)
-            snapshot.set(policiesState, propagatedPolicies)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(placementsState, mockPlacements)
+            store.set(policySetsState, [mockPolicySets[0]])
+            store.set(placementBindingsState, mockPlacementBindings)
+            store.set(placementDecisionsState, mockPlacementDecision)
+            store.set(policiesState, propagatedPolicies)
           }}
         >
           <MemoryRouter>
@@ -107,7 +107,7 @@ describe('Policy Details Results', () => {
               </Route>
             </Routes>
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       // wait page load
@@ -118,12 +118,12 @@ describe('Policy Details Results', () => {
   test('Should render Policy Details Results Page correctly for policy with description', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[2] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -133,7 +133,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -146,12 +146,12 @@ describe('Policy Details Results', () => {
   test('Should render Policy Details Page content correctly for pending policy', async () => {
     const context: PolicyDetailsContext = { policy: mockPendingPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -161,7 +161,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -187,12 +187,12 @@ describe('Policy Details Results', () => {
     }
     const context: PolicyDetailsContext = { policy: policyWithManyClusters }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -202,7 +202,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -246,12 +246,12 @@ describe('Policy Details Results', () => {
     }
     const context: PolicyDetailsContext = { policy: policyWithMixedStatus }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -261,7 +261,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -320,12 +320,12 @@ describe('Policy Details Results', () => {
     }
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, [mockPlacement])
-          snapshot.set(policySetsState, [])
-          snapshot.set(placementBindingsState, [mockPlacementBindingForRule])
-          snapshot.set(placementDecisionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [mockPlacement])
+          store.set(policySetsState, [])
+          store.set(placementBindingsState, [mockPlacementBindingForRule])
+          store.set(placementDecisionsState, [])
         }}
       >
         <MemoryRouter>
@@ -335,7 +335,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -348,12 +348,12 @@ describe('Policy Details Results', () => {
   test('Should handle policy with no placements', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, [])
-          snapshot.set(policySetsState, [])
-          snapshot.set(placementBindingsState, [])
-          snapshot.set(placementDecisionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [])
+          store.set(policySetsState, [])
+          store.set(placementBindingsState, [])
+          store.set(placementDecisionsState, [])
         }}
       >
         <MemoryRouter>
@@ -363,7 +363,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -387,12 +387,12 @@ describe('Policy Details Results', () => {
     }
     const context: PolicyDetailsContext = { policy: policyWithNoStatus }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -402,7 +402,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -416,14 +416,14 @@ describe('Policy Details Results', () => {
     // policiesState has the propagated copy for local-cluster → visiblePropagatedClusters = {'local-cluster'}
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(policiesState, [mockPolicy[1]])
-          snapshot.set(managedClustersState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
+          store.set(policiesState, [mockPolicy[1]])
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -433,7 +433,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('local-cluster')
@@ -446,14 +446,14 @@ describe('Policy Details Results', () => {
     // policiesState is empty → visiblePropagatedClusters = {} → local-cluster in status.status gets disabled
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
-          snapshot.set(policiesState, [])
-          snapshot.set(managedClustersState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
+          store.set(policiesState, [])
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -463,7 +463,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('local-cluster')
@@ -486,15 +486,15 @@ describe('Policy Details Results', () => {
     }
     const context: PolicyDetailsContext = { policy: rootPolicyTwoClusters }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
           // Only local-cluster's propagated policy is visible
-          snapshot.set(policiesState, [mockPolicy[1]])
-          snapshot.set(managedClustersState, [])
+          store.set(policiesState, [mockPolicy[1]])
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -504,7 +504,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('local-cluster')
@@ -523,12 +523,12 @@ describe('Policy Details Results', () => {
   test('Should render placement link with correct URL parameters', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(policySetsState, [mockPolicySets[0]])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecision)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(policySetsState, [mockPolicySets[0]])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecision)
         }}
       >
         <MemoryRouter>
@@ -538,7 +538,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load

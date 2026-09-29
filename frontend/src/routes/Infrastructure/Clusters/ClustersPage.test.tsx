@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { createClusterVersionMock, waitForText } from '../../../lib/test-util'
 import Clusters from './Clusters'
@@ -23,13 +23,13 @@ describe('Cluster Management', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.managedClusters]}>
           <Routes>
             <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Cluster list')
     await waitForText('Discovered clusters')

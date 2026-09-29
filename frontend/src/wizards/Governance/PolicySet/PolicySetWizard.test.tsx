@@ -10,13 +10,13 @@ import {
 import { PolicySetWizard } from './PolicySetWizard'
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { BrowserRouter as Router } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnorePlacementDebug } from '../../../lib/nock-util'
 import { clickElement, typeElement } from '~/lib/test-util'
 
 function TestPolicySetWizard() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <Router>
         <PolicySetWizard
           title="Testing the policy set wizard"
@@ -30,7 +30,7 @@ function TestPolicySetWizard() {
           onCancel={() => {}}
         />
       </Router>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

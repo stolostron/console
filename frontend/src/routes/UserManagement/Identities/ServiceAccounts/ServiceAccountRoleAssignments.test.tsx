@@ -1,13 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { ServiceAccountRoleAssignments } from './ServiceAccountRoleAssignments'
 
 function Component({ serviceAccountId = 'test-service-account' }: { serviceAccountId?: string }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter
         initialEntries={[
           `/multicloud/user-management/identities/service-accounts/${serviceAccountId}/role-assignments`,
@@ -15,7 +15,7 @@ function Component({ serviceAccountId = 'test-service-account' }: { serviceAccou
       >
         <ServiceAccountRoleAssignments />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

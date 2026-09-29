@@ -4,7 +4,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Settings, settingsState } from '../../../atoms'
 import { nockSearch } from '../../../lib/nock-util'
 import { wait, waitForNocks, clickElement } from '~/lib/test-util'
@@ -104,9 +104,9 @@ describe('SavedSearchQueries Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -147,7 +147,7 @@ describe('SavedSearchQueries Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.queryByText('Suggested search templates')).not.toBeInTheDocument()
@@ -297,9 +297,9 @@ describe('SavedSearchQueries Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -327,7 +327,7 @@ describe('SavedSearchQueries Page', () => {
             />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.queryByText('Suggested search templates')).not.toBeInTheDocument()

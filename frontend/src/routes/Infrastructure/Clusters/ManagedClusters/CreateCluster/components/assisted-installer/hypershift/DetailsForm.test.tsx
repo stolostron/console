@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import * as dynamicPluginSdk from '@openshift-console/dynamic-plugin-sdk'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../../../../lib/nock-util'
@@ -20,7 +20,7 @@ describe('DetailsForm', () => {
   const handleChange = jest.fn()
   const Component = () => {
     return (
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
           <Routes>
             <Route
@@ -65,7 +65,7 @@ describe('DetailsForm', () => {
             />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

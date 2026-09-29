@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths } from '../../lib/nock-util'
 import { clickByTestId, clickElement } from '~/lib/test-util'
 import { NavigationPath } from '../../NavigationPath'
@@ -14,13 +14,13 @@ describe('CreateCredentialsPage', () => {
   })
   const Component = () => {
     return (
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.addCredentials]}>
           <Routes>
             <Route path={NavigationPath.addCredentials} element={<CreateCredentialsPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

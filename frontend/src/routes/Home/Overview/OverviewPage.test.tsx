@@ -4,7 +4,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   applicationsState,
   clusterManagementAddonsState,
@@ -174,11 +174,11 @@ it('should render overview page with expected data', async () => {
   )
 
   const { getAllByText, getByText } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(applicationsState, mockApplications)
-        snapshot.set(managedClustersState, managedClusters)
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(applicationsState, mockApplications)
+        store.set(managedClustersState, managedClusters)
+        store.set(managedClusterInfosState, [
           ...managedClusterInfos,
           {
             apiVersion: 'internal.open-cluster-management.io/v1beta1',
@@ -202,14 +202,14 @@ it('should render overview page with expected data', async () => {
             },
           } as ManagedClusterInfo,
         ])
-        snapshot.set(policiesState, policies)
-        snapshot.set(policyreportState, policyReports)
-        snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
-        snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
-        snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(helmReleaseState, [])
-        snapshot.set(subscriptionsState, [])
-        snapshot.set(settingsState, mockSettings)
+        store.set(policiesState, policies)
+        store.set(policyreportState, policyReports)
+        store.set(managedClusterAddonsState, mockManagedClusterAddons)
+        store.set(clusterManagementAddonsState, mockClusterManagementAddons)
+        store.set(placementDecisionsState, placementDecisions)
+        store.set(helmReleaseState, [])
+        store.set(subscriptionsState, [])
+        store.set(settingsState, mockSettings)
       }}
     >
       <QueryClientProvider client={queryClient}>
@@ -219,7 +219,7 @@ it('should render overview page with expected data', async () => {
           </MockedProvider>
         </MemoryRouter>
       </QueryClientProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   // Wait for prometheus nocks to finish
@@ -269,11 +269,11 @@ it('should toggle card sections correctly', async () => {
   )
 
   const { container } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(applicationsState, mockApplications)
-        snapshot.set(managedClustersState, managedClusters)
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(applicationsState, mockApplications)
+        store.set(managedClustersState, managedClusters)
+        store.set(managedClusterInfosState, [
           ...managedClusterInfos,
           {
             apiVersion: 'internal.open-cluster-management.io/v1beta1',
@@ -297,14 +297,14 @@ it('should toggle card sections correctly', async () => {
             },
           } as ManagedClusterInfo,
         ])
-        snapshot.set(policiesState, policies)
-        snapshot.set(policyreportState, policyReports)
-        snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
-        snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
-        snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(helmReleaseState, [])
-        snapshot.set(subscriptionsState, [])
-        snapshot.set(settingsState, mockSettings)
+        store.set(policiesState, policies)
+        store.set(policyreportState, policyReports)
+        store.set(managedClusterAddonsState, mockManagedClusterAddons)
+        store.set(clusterManagementAddonsState, mockClusterManagementAddons)
+        store.set(placementDecisionsState, placementDecisions)
+        store.set(helmReleaseState, [])
+        store.set(subscriptionsState, [])
+        store.set(settingsState, mockSettings)
       }}
     >
       <QueryClientProvider client={queryClient}>
@@ -314,7 +314,7 @@ it('should toggle card sections correctly', async () => {
           </MockedProvider>
         </MemoryRouter>
       </QueryClientProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   // Wait for prometheus nocks to finish
@@ -392,11 +392,11 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
   )
 
   const { container } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(applicationsState, mockApplications)
-        snapshot.set(managedClustersState, managedClusters)
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(applicationsState, mockApplications)
+        store.set(managedClustersState, managedClusters)
+        store.set(managedClusterInfosState, [
           ...managedClusterInfos,
           {
             apiVersion: 'internal.open-cluster-management.io/v1beta1',
@@ -420,14 +420,14 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
             },
           } as ManagedClusterInfo,
         ])
-        snapshot.set(policiesState, policies)
-        snapshot.set(policyreportState, policyReports)
-        snapshot.set(managedClusterAddonsState, mockManagedClusterAddons)
-        snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
-        snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(helmReleaseState, [])
-        snapshot.set(subscriptionsState, [])
-        snapshot.set(settingsState, mockSettings)
+        store.set(policiesState, policies)
+        store.set(policyreportState, policyReports)
+        store.set(managedClusterAddonsState, mockManagedClusterAddons)
+        store.set(clusterManagementAddonsState, mockClusterManagementAddons)
+        store.set(placementDecisionsState, placementDecisions)
+        store.set(helmReleaseState, [])
+        store.set(subscriptionsState, [])
+        store.set(settingsState, mockSettings)
       }}
     >
       <QueryClientProvider client={queryClient}>
@@ -437,7 +437,7 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
           </MockedProvider>
         </MemoryRouter>
       </QueryClientProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   await waitForNocks([

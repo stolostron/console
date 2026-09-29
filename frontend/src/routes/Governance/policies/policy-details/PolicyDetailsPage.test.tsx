@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
@@ -15,15 +15,15 @@ describe('PolicyDetailsPage Page', () => {
   })
   test('Should render error message correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.policyTemplateDetails, 'namespace-unkown', 'test-unknown']}>
           <PolicyDetailsPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Back to policies')

@@ -20,7 +20,7 @@ import {
   ValidatedOptions,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
-import { Dispatch, FC, FormEvent, SetStateAction, useEffect, useMemo, useState } from 'react'
+import { Dispatch, FC, SetStateAction, SyntheticEvent, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../lib/doc-util'
 import { IResource } from '../../../../resources'
@@ -65,7 +65,7 @@ const SnapshotDeadlineFormField: FC<{
     return undefined
   }
 
-  const handleDeadlineChange = (value: string, event: FormEvent<HTMLInputElement>) => {
+  const handleDeadlineChange = (value: string, event: SyntheticEvent<HTMLInputElement>) => {
     event.preventDefault()
     const error = validateSnapshotDeadline(value)
     setIsError(!!error)
@@ -73,7 +73,7 @@ const SnapshotDeadlineFormField: FC<{
     setDeadline(value)
   }
 
-  const handleDeadlineUnitChange = (value: deadlineUnits, event: FormEvent<HTMLSelectElement>) => {
+  const handleDeadlineUnitChange = (value: deadlineUnits, event: SyntheticEvent<HTMLSelectElement>) => {
     event.preventDefault()
     setDeadlineUnit(value)
   }

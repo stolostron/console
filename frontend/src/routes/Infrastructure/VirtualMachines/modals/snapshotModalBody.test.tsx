@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { wait } from '../../../../lib/test-util'
@@ -45,9 +45,9 @@ describe('SnapshotModalBody', () => {
   })
   test('Should render SnapshotModalBody correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, true)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <SnapshotModalBody
@@ -78,7 +78,7 @@ describe('SnapshotModalBody', () => {
           getVMError={undefined}
           setGetVMError={() => {}}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await wait()
 
@@ -90,9 +90,9 @@ describe('SnapshotModalBody', () => {
 
   test('Should render SnapshotModalBody correctly with isFineGrainedRbacEnabledState=false', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, false)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, false)
         }}
       >
         <SnapshotModalBody
@@ -123,7 +123,7 @@ describe('SnapshotModalBody', () => {
           getVMError={undefined}
           setGetVMError={() => {}}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await wait()
 

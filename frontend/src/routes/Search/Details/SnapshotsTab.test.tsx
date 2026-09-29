@@ -3,7 +3,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { v4 as uuidv4 } from 'uuid'
 import { isFineGrainedRbacEnabledState, Settings, settingsState } from '../../../atoms'
 import nock from 'nock'
@@ -154,9 +154,9 @@ describe('SnapshotsTab', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -164,7 +164,7 @@ describe('SnapshotsTab', () => {
             <SnapshotsTab />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while  queries finish
     expect(screen.getByText('Loading')).toBeInTheDocument()
@@ -213,9 +213,9 @@ describe('SnapshotsTab', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -223,7 +223,7 @@ describe('SnapshotsTab', () => {
             <SnapshotsTab />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Wait for managed cluster view requests to finish
     await wait()
@@ -301,9 +301,9 @@ describe('SnapshotsTab', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -311,7 +311,7 @@ describe('SnapshotsTab', () => {
             <SnapshotsTab />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Wait for managed cluster view requests to finish
     await wait()
@@ -395,10 +395,10 @@ describe('SnapshotsTab', () => {
       },
     })
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
-          snapshot.set(isFineGrainedRbacEnabledState, true)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
+          store.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <MemoryRouter>
@@ -406,7 +406,7 @@ describe('SnapshotsTab', () => {
             <SnapshotsTab />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Wait for vm requests to finish
     await wait()

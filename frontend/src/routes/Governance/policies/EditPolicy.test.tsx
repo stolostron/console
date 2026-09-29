@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { placementBindingsState, policiesState, namespacesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
 import { clickByText, clickElement, waitForNotText, waitForText, waitForNocks } from '../../../lib/test-util'
@@ -23,11 +23,11 @@ function TestEditPolicyPage() {
     name: mockPolicyCopy.metadata.name!,
   })
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policiesState, [mockPolicyCopy])
-        snapshot.set(placementBindingsState, [mockPlacementBindingCopy])
-        snapshot.set(namespacesState, mockNamespaces)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(policiesState, [mockPolicyCopy])
+        store.set(placementBindingsState, [mockPlacementBindingCopy])
+        store.set(namespacesState, mockNamespaces)
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
@@ -35,7 +35,7 @@ function TestEditPolicyPage() {
           <Route path={NavigationPath.editPolicy} element={<EditPolicy />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

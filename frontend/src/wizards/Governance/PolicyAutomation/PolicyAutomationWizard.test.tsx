@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../../../atoms'
 import { nockIgnoreOperatorCheck, nockIgnoreClusterVersion } from '../../../lib/nock-util'
 import { PolicyAutomationWizard, PolicyAutomationWizardProps } from './PolicyAutomationWizard'
@@ -16,16 +16,16 @@ const mockGetansiblejobscallback = jest.fn().mockResolvedValue([{ name: 'job', i
 describe('PolicyAutomationWizard tests', () => {
   const Component = (props: PolicyAutomationWizardProps) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(subscriptionOperatorsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [])
+          store.set(subscriptionOperatorsState, [])
         }}
       >
         <MemoryRouter>
           <PolicyAutomationWizard {...props} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

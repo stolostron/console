@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { machinePoolsState } from '../../../../../atoms'
 import { waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -29,9 +29,9 @@ const Component = () => {
 describe('ScaleClusterAlert', () => {
   it('does not render without MachinePools', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <Component />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNotText('Scaling up in progress')
@@ -39,13 +39,13 @@ describe('ScaleClusterAlert', () => {
   })
   it('does not render if nodes and machinepool size are equal', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [mockMachinePoolManual])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(machinePoolsState, [mockMachinePoolManual])
         }}
       >
         <Component />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNotText('Scaling up in progress')
@@ -53,26 +53,26 @@ describe('ScaleClusterAlert', () => {
   })
   it('detects scale up', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
         }}
       >
         <Component />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Scaling up in progress')
   })
   it('detects scale down', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [mockMachinePoolOther])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(machinePoolsState, [mockMachinePoolOther])
         }}
       >
         <Component />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Scaling down in progress')

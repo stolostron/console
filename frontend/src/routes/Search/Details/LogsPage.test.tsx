@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import React, { useRef, useState } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState } from '../../../atoms'
 import { nockOff, nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { waitForNocks, clickElement } from '~/lib/test-util'
@@ -420,7 +420,7 @@ describe('LogsPage', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -428,7 +428,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -443,9 +443,9 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, managedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, managedClusters)
         }}
       >
         <MemoryRouter>
@@ -455,7 +455,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -470,7 +470,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
@@ -478,7 +478,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -493,7 +493,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -501,7 +501,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
@@ -520,7 +520,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -528,7 +528,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
@@ -546,7 +546,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
@@ -554,7 +554,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -574,7 +574,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -582,7 +582,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
@@ -628,7 +628,7 @@ describe('LogsPage', () => {
       const [container, setContainer] = useState<string>('testContainer')
       const [previousLogs, setPreviousLogs] = useState<boolean>(false)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsToolbar
             logs={'testLogs'}
             name={'testPod'}
@@ -644,7 +644,7 @@ describe('LogsPage', () => {
             previousLogs={previousLogs}
             setPreviousLogs={setPreviousLogs}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Toolbar />)
@@ -701,7 +701,7 @@ describe('LogsPage', () => {
       const [container, setContainer] = useState<string>('testContainer')
       const [previousLogs, setPreviousLogs] = useState<boolean>(false)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsToolbar
             logs={'testLogs'}
             name={'testPod'}
@@ -717,7 +717,7 @@ describe('LogsPage', () => {
             previousLogs={previousLogs}
             setPreviousLogs={setPreviousLogs}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Toolbar />)
@@ -739,13 +739,13 @@ describe('LogsPage', () => {
       const logViewerRef = useRef<any>(undefined)
       const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(true)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsFooterButton
             logViewerRef={logViewerRef}
             showJumpToBottomBtn={showJumpToBottomBtn}
             setShowJumpToBottomBtn={setShowJumpToBottomBtn}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Footer />)

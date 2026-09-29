@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ClusterSetClustersPageContent } from './ClusterSetClusters'
 
 // Mock the ClustersTable component
@@ -80,11 +80,11 @@ jest.mock('../../../../../../NavigationPath', () => ({
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <ClusterSetClustersPageContent />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

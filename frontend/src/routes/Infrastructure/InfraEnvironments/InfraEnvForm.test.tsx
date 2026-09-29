@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 
 import { infraEnvironmentsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
@@ -55,9 +55,9 @@ const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
 
 const Component = () => {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(infraEnvironmentsState, mockInfraEnvironments)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
@@ -68,7 +68,7 @@ const Component = () => {
           />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

@@ -6,7 +6,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { configMapsState, isGlobalHubState, Settings, settingsState } from '../../atoms'
 import { nockIgnoreOperatorCheck, nockRequest } from '../../lib/nock-util'
 import { wait, waitForNocks, clickElement, typeElement } from '~/lib/test-util'
@@ -93,9 +93,9 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
         <MemoryRouter>
@@ -103,7 +103,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for username resource requests to finish
@@ -140,9 +140,9 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
         <MemoryRouter>
@@ -150,7 +150,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for username resource requests to finish
@@ -193,11 +193,11 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isGlobalHubState, true)
-          snapshot.set(settingsState, mockSettings)
-          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isGlobalHubState, true)
+          store.set(settingsState, mockSettings)
+          store.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
         <MemoryRouter>
@@ -205,7 +205,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for username resource requests to finish
@@ -262,9 +262,9 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
         <MemoryRouter>
@@ -272,7 +272,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for username resource requests to finish
@@ -372,9 +372,9 @@ describe('SearchPage', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, mockSuggestedSearchConfigMap)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, mockSuggestedSearchConfigMap)
         }}
       >
         <MemoryRouter
@@ -386,7 +386,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for username resource requests to finish
@@ -425,7 +425,7 @@ describe('SearchPage', () => {
     ]
 
     render(
-      <RecoilRoot initializeState={(snapshot) => snapshot.set(configMapsState, mockSuggestedSearchConfigMap)}>
+      <StateProvider initializeStore={(store) => store.set(configMapsState, mockSuggestedSearchConfigMap)}>
         <MemoryRouter
           initialEntries={[
             { pathname: '/multicloud/search', search: '?filters={"textsearch":"kind%3AVirtualMachine"}' },
@@ -435,7 +435,7 @@ describe('SearchPage', () => {
             <SearchPage />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([getUserPreferenceNock])

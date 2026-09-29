@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { RecoilState, RecoilValue, SetterOrUpdater } from 'recoil'
+import { RecoilRoot, RecoilState, RecoilValue, SetterOrUpdater, type MutableSnapshot } from 'recoil'
+
+export { RecoilRoot }
+export type { MutableSnapshot }
 
 import { PluginContext } from './lib/PluginContext'
 import { useContext } from 'react'

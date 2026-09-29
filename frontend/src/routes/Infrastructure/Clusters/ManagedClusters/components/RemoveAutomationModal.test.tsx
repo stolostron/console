@@ -4,7 +4,7 @@ import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { ClusterCurator } from '../../../../../resources'
 import { render, screen, waitFor } from '@testing-library/react'
 import { RemoveAutomationModal } from './RemoveAutomationModal'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter } from 'react-router'
 import { clusterCuratorsState } from '../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
@@ -22,15 +22,15 @@ describe('RemoveAutomationModal', () => {
 
   const Component = (props: any) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, mockClusterCurators)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, mockClusterCurators)
         }}
       >
         <MemoryRouter>
           <RemoveAutomationModal {...props} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

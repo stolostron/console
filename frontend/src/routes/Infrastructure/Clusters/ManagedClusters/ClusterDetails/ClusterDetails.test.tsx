@@ -6,7 +6,7 @@ import _ from 'lodash'
 import cloneDeep from 'lodash/cloneDeep'
 import { Scope } from 'nock/types'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   agentClusterInstallsState,
   certificateSigningRequestsState,
@@ -1277,21 +1277,21 @@ const nockListHiveProvisionJobs = () =>
   )
 
 const Component = ({ clusterDeployment = mockClusterDeployment }) => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(managedClusterAddonsState, mockManagedClusterAddOns)
-      snapshot.set(clusterManagementAddonsState, mockClusterManagementAddons)
-      snapshot.set(managedClustersState, [mockManagedCluster])
-      snapshot.set(clusterDeploymentsState, [clusterDeployment])
-      snapshot.set(managedClusterInfosState, [mockManagedClusterInfo])
-      snapshot.set(certificateSigningRequestsState, [])
-      snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-      snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
-      snapshot.set(clusterProvisionsState, [mockClusterProvisions])
-      snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
-      snapshot.set(clusterCuratorsState, [mockClusterCurator])
-      snapshot.set(agentClusterInstallsState, [mockAgentClusterInstall])
-      snapshot.set(clusterClaimsState, [mockClusterClaim])
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(managedClusterAddonsState, mockManagedClusterAddOns)
+      store.set(clusterManagementAddonsState, mockClusterManagementAddons)
+      store.set(managedClustersState, [mockManagedCluster])
+      store.set(clusterDeploymentsState, [clusterDeployment])
+      store.set(managedClusterInfosState, [mockManagedClusterInfo])
+      store.set(certificateSigningRequestsState, [])
+      store.set(managedClusterSetsState, [mockManagedClusterSet])
+      store.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+      store.set(clusterProvisionsState, [mockClusterProvisions])
+      store.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto])
+      store.set(clusterCuratorsState, [mockClusterCurator])
+      store.set(agentClusterInstallsState, [mockAgentClusterInstall])
+      store.set(clusterClaimsState, [mockClusterClaim])
     }}
   >
     <MemoryRouter
@@ -1306,7 +1306,7 @@ const Component = ({ clusterDeployment = mockClusterDeployment }) => (
         <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterDetails', () => {
@@ -1569,16 +1569,16 @@ describe('ClusterDetails with not found', () => {
   })
   test('page renders error state to return to cluster page', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(configMapsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(clusterManagementAddonsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(configMapsState, [])
         }}
       >
         <MemoryRouter
@@ -1593,7 +1593,7 @@ describe('ClusterDetails with not found', () => {
             <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Not found')
     await clickByRole('link', { name: /back to clusters/i })
@@ -1602,17 +1602,17 @@ describe('ClusterDetails with not found', () => {
   test('page renders error state, should have option to import', async () => {
     nockGet(mockSecret, undefined, 404)
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(managedClusterSetsState, [mockManagedClusterSet])
-          snapshot.set(configMapsState, [])
-          snapshot.set(hostedClustersState, mockHostedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(clusterManagementAddonsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(managedClusterSetsState, [mockManagedClusterSet])
+          store.set(configMapsState, [])
+          store.set(hostedClustersState, mockHostedClusters)
         }}
       >
         <MemoryRouter
@@ -1627,7 +1627,7 @@ describe('ClusterDetails with not found', () => {
             <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockHostedCluster1.metadata?.name!, true)

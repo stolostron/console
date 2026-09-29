@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
@@ -58,7 +58,7 @@ describe('VMActionModal', () => {
   test('renders VMActionModal correctly and successfully calls start action on hub vm', async () => {
     const abortController = new AbortController()
     const { getByTestId } = render(
-      <RecoilRoot>
+      <StateProvider>
         <VMActionModal
           open={true}
           close={() => {}}
@@ -72,7 +72,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('start VirtualMachine?')).toBeInTheDocument())
     await waitFor(() =>
@@ -107,7 +107,7 @@ describe('VMActionModal', () => {
   test('renders VMActionModal correctly and successfully calls unpause action on hub vm', async () => {
     const abortController = new AbortController()
     const { getByTestId } = render(
-      <RecoilRoot>
+      <StateProvider>
         <VMActionModal
           open={true}
           close={() => {}}
@@ -121,7 +121,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('unpause VirtualMachine?')).toBeInTheDocument())
     await waitFor(() =>
@@ -156,7 +156,7 @@ describe('VMActionModal', () => {
   test('renders VMActionModal correctly and successfully calls delete vm action', async () => {
     const abortController = new AbortController()
     const { getByTestId } = render(
-      <RecoilRoot>
+      <StateProvider>
         <VMActionModal
           open={true}
           close={() => {}}
@@ -170,7 +170,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('delete VirtualMachine?')).toBeInTheDocument())
     await waitFor(() =>
@@ -206,9 +206,9 @@ describe('VMActionModal', () => {
     Date.now = jest.fn(() => 1234)
     const abortController = new AbortController()
     const { getByTestId } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, true)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <VMActionModal
@@ -225,7 +225,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('restore VirtualMachineSnapshot?')).toBeInTheDocument())
     await waitFor(() =>
@@ -283,7 +283,7 @@ describe('VMActionModal', () => {
 
   test('renders VMActionModal correctly and returns action error', async () => {
     const { getByTestId } = render(
-      <RecoilRoot>
+      <StateProvider>
         <VMActionModal
           open={true}
           close={() => {}}
@@ -297,7 +297,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('noop VirtualMachine?')).toBeInTheDocument())
     await waitFor(() =>
@@ -316,7 +316,7 @@ describe('VMActionModal', () => {
 
   test('renders VMActionModal correctly and returns unauthorized error', async () => {
     const { getByTestId } = render(
-      <RecoilRoot>
+      <StateProvider>
         <VMActionModal
           open={true}
           close={() => {}}
@@ -330,7 +330,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('unauthorized VirtualMachine?')).toBeInTheDocument())
     await waitFor(() =>
@@ -351,9 +351,9 @@ describe('VMActionModal', () => {
     Date.now = jest.fn(() => 1234)
     const abortController = new AbortController()
     const { getByTestId } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, false)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, false)
         }}
       >
         <VMActionModal
@@ -370,7 +370,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('restore VirtualMachineSnapshot?')).toBeInTheDocument())
     await waitFor(() =>
@@ -450,9 +450,9 @@ describe('VMActionModal', () => {
 
     Date.now = jest.fn(() => 1234)
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, false)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, false)
         }}
       >
         <VMActionModal
@@ -469,7 +469,7 @@ describe('VMActionModal', () => {
             _hubClusterResource: 'true',
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitFor(() => expect(screen.queryByText('restore VirtualMachineSnapshot?')).toBeInTheDocument())
     await waitFor(() =>

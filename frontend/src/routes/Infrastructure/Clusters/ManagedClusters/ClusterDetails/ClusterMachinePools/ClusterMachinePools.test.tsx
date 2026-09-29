@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { Scope } from 'nock/types'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { machinePoolsState } from '../../../../../../atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
 import {
@@ -29,9 +29,9 @@ describe('ClusterMachinePools', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster, addons: undefined }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto, mockMachinePoolOther])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(machinePoolsState, [mockMachinePoolManual, mockMachinePoolAuto, mockMachinePoolOther])
         }}
       >
         <MemoryRouter>
@@ -41,7 +41,7 @@ describe('ClusterMachinePools', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 

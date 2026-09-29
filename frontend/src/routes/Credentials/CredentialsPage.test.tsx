@@ -3,7 +3,7 @@ import { Provider } from '../../ui-components'
 import { render, screen } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { discoveryConfigState, secretsState } from '../../atoms'
 import {
   mockBadRequestStatus,
@@ -153,10 +153,10 @@ function TestProviderConnectionsPage(props: {
   discoveryConfigs?: DiscoveryConfig[]
 }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, props.providerConnections as Secret[])
-        snapshot.set(discoveryConfigState, props.discoveryConfigs || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, props.providerConnections as Secret[])
+        store.set(discoveryConfigState, props.discoveryConfigs || [])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.credentials]}>
@@ -165,7 +165,7 @@ function TestProviderConnectionsPage(props: {
           <Route path={NavigationPath.credentials} element={<CredentialsPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

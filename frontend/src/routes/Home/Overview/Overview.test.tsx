@@ -3,7 +3,7 @@ import { MockedProvider } from '@apollo/client/testing'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockGet, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { clickByText, waitForNocks, waitForText } from '../../../lib/test-util'
@@ -22,7 +22,7 @@ it('should render overview page with extension', async () => {
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   render(
-    <RecoilRoot>
+    <StateProvider>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <MockedProvider mocks={[]}>
@@ -51,7 +51,7 @@ it('should render overview page with extension', async () => {
           </MockedProvider>
         </MemoryRouter>
       </QueryClientProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   await waitForText('Overview')
@@ -66,7 +66,7 @@ it('should render overview page layout when extension tab crashes', async () => 
   const apiPathNock = nockIgnoreApiPaths()
   const getAddonNock = nockGet(getAddonRequest, getAddonResponse)
   render(
-    <RecoilRoot>
+    <StateProvider>
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>
           <MockedProvider mocks={[]}>
@@ -97,7 +97,7 @@ it('should render overview page layout when extension tab crashes', async () => 
           </MockedProvider>
         </MemoryRouter>
       </QueryClientProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   await waitForText('Overview')

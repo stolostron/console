@@ -3,7 +3,7 @@
 // Copyright Contributors to the Open Cluster Management project
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockSearch } from '~/lib/nock-util'
 import { waitForNocks } from '~/lib/test-util'
 import { isGlobalHubState, Settings, settingsState } from '../../../atoms'
@@ -42,11 +42,11 @@ test('renders without search disabled message', async () => {
     }
   )
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <HeaderWithNotification />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   await waitForNocks([searchIsDisabledMock])
   expect(baseElement).toMatchSnapshot()
@@ -111,11 +111,11 @@ test('renders with search disabled message', async () => {
     }
   )
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <HeaderWithNotification />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   await waitForNocks([searchIsNotDisabledMock])
   expect(baseElement).toMatchSnapshot()
@@ -157,16 +157,16 @@ test('renders with Global Search alert & no message', async () => {
     }
   )
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, true)
-        snapshot.set(settingsState, mockSettings)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(isGlobalHubState, true)
+        store.set(settingsState, mockSettings)
       }}
     >
       <MemoryRouter>
         <HeaderWithNotification />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   await waitForNocks([searchIsNotDisabledMock])
   expect(baseElement).toMatchSnapshot()

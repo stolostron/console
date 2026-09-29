@@ -9,7 +9,7 @@ import {
 } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterProvisionsState, configMapsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockNamespacedList } from '../../../../../lib/nock-util'
 import { mockOpenShiftConsoleConfigMap } from '../../../../../lib/test-metadata'
@@ -117,10 +117,10 @@ describe('HiveNotification', () => {
   const Component = () => {
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
-          snapshot.set(clusterProvisionsState, [mockClusterProvision])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+          store.set(clusterProvisionsState, [mockClusterProvision])
         }}
       >
         <MemoryRouter>
@@ -130,7 +130,7 @@ describe('HiveNotification', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
   test('renders null for exempt cluster status', async () => {
@@ -224,10 +224,10 @@ describe('HiveNotification', () => {
     const AIComponent = () => {
       const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
       return (
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
-            snapshot.set(clusterProvisionsState, [mockClusterProvision])
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+            store.set(clusterProvisionsState, [mockClusterProvision])
           }}
         >
           <MemoryRouter>
@@ -237,7 +237,7 @@ describe('HiveNotification', () => {
               </Route>
             </Routes>
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<AIComponent />)
@@ -286,10 +286,10 @@ test('wont render if cluster has statusMessage', async () => {
   const AIComponent = () => {
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(configMapsState, [mockOpenShiftConsoleConfigMap])
-          snapshot.set(clusterProvisionsState, [mockClusterProvision])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+          store.set(clusterProvisionsState, [mockClusterProvision])
         }}
       >
         <MemoryRouter>
@@ -299,7 +299,7 @@ test('wont render if cluster has statusMessage', async () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
   render(<AIComponent />)

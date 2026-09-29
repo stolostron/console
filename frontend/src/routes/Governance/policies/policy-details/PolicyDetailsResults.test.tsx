@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, policiesState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import {
@@ -39,10 +39,10 @@ describe('Policy Details Results', () => {
   test('Should render Policy Details Results Page content correctly', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -52,7 +52,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -74,10 +74,10 @@ describe('Policy Details Results', () => {
   test('Should render Policy Details Results Page with Remediation enforce', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicyBinding[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicyBinding)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicyBinding)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -87,7 +87,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Remediation')
     await waitForText('enforce')
@@ -128,10 +128,10 @@ describe('Policy Details Results', () => {
 
     const context: PolicyDetailsContext = { policy: mockRootPolicy }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockRootPolicy, mockReplPolicy])
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockRootPolicy, mockReplPolicy])
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -141,7 +141,7 @@ describe('Policy Details Results', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     screen.getByText(/template-error; failed .+/i)
     await waitForNotText('View details')
@@ -162,10 +162,10 @@ describe('Policy results of policy of a hosted cluster', () => {
       'klusterlet-local-cluster'
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicy[0], mockReplicatedPolicyCopy, mockPolicy[2]])
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicy[0], mockReplicatedPolicyCopy, mockPolicy[2]])
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -175,7 +175,7 @@ describe('Policy results of policy of a hosted cluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -194,10 +194,10 @@ describe('Policy Details Results with pending status', () => {
   test('Should render Policy Details Results Page content correctly for pending status', async () => {
     const context: PolicyDetailsContext = { policy: mockPendingPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPendingPolicy)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPendingPolicy)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -207,7 +207,7 @@ describe('Policy Details Results with pending status', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -229,10 +229,10 @@ describe('Namespace-scoped user without cluster access', () => {
   test('Should render cluster names as disabled links when managedClustersState is empty', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
-          snapshot.set(managedClustersState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -242,7 +242,7 @@ describe('Namespace-scoped user without cluster access', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Clusters')
@@ -257,10 +257,10 @@ describe('Namespace-scoped user without cluster access', () => {
     // (simulates a namespace-scoped user who cannot access the cluster namespace)
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicy[0]])
-          snapshot.set(managedClustersState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicy[0]])
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -270,7 +270,7 @@ describe('Namespace-scoped user without cluster access', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Access permissions needed')
@@ -287,10 +287,10 @@ describe('Namespace-scoped user without cluster access', () => {
     }
     const context: PolicyDetailsContext = { policy: rootPolicyNoStatus }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [rootPolicyNoStatus])
-          snapshot.set(managedClustersState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [rootPolicyNoStatus])
+          store.set(managedClustersState, [])
         }}
       >
         <MemoryRouter>
@@ -300,7 +300,7 @@ describe('Namespace-scoped user without cluster access', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('No results found')
@@ -323,10 +323,10 @@ describe('Namespace-scoped user without cluster access', () => {
     // Only the local-cluster propagated policy is visible (cluster-2 is inaccessible)
     const context: PolicyDetailsContext = { policy: rootPolicyTwoClusters }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [rootPolicyTwoClusters, mockPolicy[1]])
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [rootPolicyTwoClusters, mockPolicy[1]])
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -336,7 +336,7 @@ describe('Namespace-scoped user without cluster access', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Clusters')
@@ -355,10 +355,10 @@ describe('Export from policy details results table', () => {
   test('export button should produce a file for download', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter>
@@ -368,7 +368,7 @@ describe('Export from policy details results table', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait page load
@@ -405,10 +405,10 @@ describe('Search prefill from URL query string', () => {
   test('Should prefill search bar when location.search contains a search param', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter initialEntries={['?search=local-cluster']}>
@@ -418,7 +418,7 @@ describe('Search prefill from URL query string', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Clusters')
@@ -430,10 +430,10 @@ describe('Search prefill from URL query string', () => {
   test('Should have empty search bar when location.search is empty', async () => {
     const context: PolicyDetailsContext = { policy: mockPolicy[0] }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
-          snapshot.set(managedClustersState, [mockManagedCluster])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
+          store.set(managedClustersState, [mockManagedCluster])
         }}
       >
         <MemoryRouter initialEntries={['/']}>
@@ -443,7 +443,7 @@ describe('Search prefill from URL query string', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Clusters')
