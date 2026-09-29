@@ -80,6 +80,22 @@ describe('AcmSelectBase', () => {
       )
       expect(screen.getByText('bare')).toBeInTheDocument()
     })
+
+    it('skips options without values when resolving the selected label', () => {
+      render(
+        <AcmSelectBase
+          variant={SelectVariant.single}
+          selections="red"
+          placeholder="Select a color"
+          aria-label="Select a color"
+        >
+          <SelectOption>Unavailable</SelectOption>
+          <SelectOption value="red">Red</SelectOption>
+        </AcmSelectBase>
+      )
+
+      expect(screen.getByText('Red')).toBeInTheDocument()
+    })
   })
 
   describe('typeahead variant', () => {
