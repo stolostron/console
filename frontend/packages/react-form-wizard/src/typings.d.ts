@@ -1,4 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
+declare module '*.css'
+
 declare module '*.hbs' {
   const content: string
   export = content

@@ -367,7 +367,7 @@ multi-cluster resources.
 
 | Function | Type |
 | ---------- | ---------- |
-| `FleetResourceLink` | `React.FC<FleetResourceLinkProps>` |
+| `FleetResourceLink` | `FC<FleetResourceLinkProps>` |
 
 Parameters:
 

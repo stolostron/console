@@ -10,11 +10,11 @@ import {
 
 // Mock WebSocket
 class MockWebSocket {
-  static CONNECTING = 0
-  static OPEN = 1
-  static CLOSED = 2
+  static CONNECTING = 0 as const
+  static OPEN = 1 as const
+  static CLOSED = 2 as const
 
-  private _readyState = MockWebSocket.CONNECTING
+  private _readyState: 0 | 1 | 2 | 3 = MockWebSocket.CONNECTING
   url: string
 
   constructor(url: string) {
@@ -29,7 +29,7 @@ class MockWebSocket {
     return this._readyState
   }
 
-  set readyState(value: number) {
+  set readyState(value: 0 | 1 | 2 | 3) {
     this._readyState = value
   }
 
