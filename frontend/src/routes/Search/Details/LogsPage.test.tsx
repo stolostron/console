@@ -14,9 +14,10 @@ import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
 
 jest.mock('@patternfly/react-log-viewer', () => ({
   __esModule: true,
-  LogViewer: ({ height }: { height?: string }) => {
+  LogViewer: ({ height, toolbar }: { height?: string; toolbar?: React.ReactNode }) => {
     return (
       <div id="log-viewer" data-height={height}>
+        {toolbar}
         <div>
           <p>{'Cluster:'}</p>
           {'testCluster'}
@@ -29,9 +30,10 @@ jest.mock('@patternfly/react-log-viewer', () => ({
       </div>
     )
   },
-  LogViewerSearch: () => {
-    return <div>{'Search'}</div>
-  },
+}))
+
+jest.mock('./LogsViewerSearch', () => ({
+  LogViewerSearch: () => <div>{'Search'}</div>,
 }))
 
 jest.mock('screenfull', () => {
@@ -61,10 +63,6 @@ jest.mock('screenfull', () => {
       state.isFullscreen = false
       state.changeHandler = undefined
     },
-    __setFullscreen(value: boolean) {
-      state.isFullscreen = value
-      state.changeHandler?.()
-    },
   }
 })
 
@@ -72,7 +70,6 @@ import screenfull from 'screenfull'
 
 type MockScreenfull = typeof screenfull & {
   __reset: () => void
-  __setFullscreen: (value: boolean) => void
 }
 
 const mockScreenfull = screenfull as MockScreenfull
@@ -566,7 +563,7 @@ describe('LogsPage', () => {
     await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
   })
 
-  it('should expand LogViewer to full height when entering fullscreen (ACM-45133)', async () => {
+  it('should toggle LogViewer fullscreen when clicking Expand and Collapse (ACM-45133)', async () => {
     const localClusterLogs = nockOff(
       '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000',
       'testLogs',
@@ -589,9 +586,15 @@ describe('LogsPage', () => {
     await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
     expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '450px')
 
-    mockScreenfull.__setFullscreen(true)
-
+    await clickElement(screen.getByRole('button', { name: 'Expand' }))
+    expect(screenfull.toggle).toHaveBeenCalledWith(expect.any(HTMLElement))
     await waitFor(() => expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '100%'))
+    expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument()
+
+    await clickElement(screen.getByRole('button', { name: 'Collapse' }))
+    expect(screenfull.toggle).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '450px'))
+    expect(screen.getByRole('button', { name: 'Expand' })).toBeInTheDocument()
   })
 
   it('should render logs toolbar & click wrap lines and raw buttons', async () => {
