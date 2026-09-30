@@ -94,6 +94,7 @@ const SnapshotDeadlineFormField: FC<{
         <GridItem span={4}>
           <FormSelect
             id="deadline-unit"
+            aria-label={t('Deadline unit')}
             onChange={(event, value) => handleDeadlineUnitChange(value as deadlineUnits, event)}
             value={deadlineUnit}
           >
@@ -318,7 +319,7 @@ export function SnapshotModalBody(
           variant={AlertVariant.info}
         />
       ) : null}
-      <FormGroup fieldId="name" isRequired label={t('Name')}>
+      <FormGroup fieldId="vmName" isRequired label={t('Name')}>
         <TextInput
           id="vmName"
           onChange={(_, newName: string) => setSnapshotName(newName)}
