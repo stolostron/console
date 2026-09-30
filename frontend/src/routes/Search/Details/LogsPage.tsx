@@ -400,7 +400,7 @@ export default function LogsPage() {
 
   const toggleFullscreen = () => {
     if (resourceLogRef.current && screenfull.isEnabled) {
-      screenfull.toggle(resourceLogRef.current)
+      void screenfull.toggle(resourceLogRef.current)
     }
   }
 
