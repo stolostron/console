@@ -329,6 +329,9 @@ export const getNetworkingPatches = (
     }
     appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
   }
+  if (values.ntpSources?.length) {
+    appendPatch(agentClusterInstallPatches, '/spec/ntpSources', values.ntpSources, agentClusterInstall.spec?.proxy)
+  }
   appendPatch(
     agentClusterInstallPatches,
     '/spec/networking/networkType',
