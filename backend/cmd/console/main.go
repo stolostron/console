@@ -262,6 +262,7 @@ func run() error {
 			return
 		}
 		informers.StartCache(ctx, infCache, infDyn, mapper)
+		eventHub.Start(ctx)
 		aggEng.Start(ctx)
 	})
 }

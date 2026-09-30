@@ -24,6 +24,7 @@ type client struct {
 type Hub struct {
 	cache    *informers.InformerCache
 	settings func() map[string]string
+	flap     *flapState
 
 	mu      sync.Mutex
 	clients map[*client]struct{}
@@ -39,6 +40,7 @@ func New(cache *informers.InformerCache, settings func() map[string]string) *Hub
 	return &Hub{
 		cache:    cache,
 		settings: settings,
+		flap:     newFlapState(defaultFlapConfig()),
 		clients:  map[*client]struct{}{},
 		buf:      defaultBuffer,
 		purge:    defaultPurge,
@@ -121,7 +123,22 @@ func (h *Hub) OnResource(ev informers.ResourceEvent) {
 	if ev.Object != nil && ev.Object.Object != nil {
 		obj = ev.Object.Object
 	}
-	h.push(Event{Type: ev.Type, Object: obj, GVR: ev.GVR})
+	suppress := false
+	if ev.Type == informers.EventModified && h.flap != nil {
+		h.flap.rememberRoot(obj, ev.GVR)
+		suppress = h.flap.shouldThrottle(obj, h.flap.clock(), ev.GVR)
+	}
+	if !suppress {
+		if h.flap != nil {
+			h.flap.decorateRoot(obj)
+		}
+		h.push(Event{Type: ev.Type, Object: obj, GVR: ev.GVR})
+	}
+	if h.flap != nil {
+		for _, extra := range h.flap.takeDirtyRoots() {
+			h.push(Event{Type: TypeModified, Object: extra.object, GVR: extra.gvr})
+		}
+	}
 }
 
 func (h *Hub) push(ev Event) {

@@ -6,9 +6,13 @@ import (
 	"context"
 	"strings"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic/fake"
 
 	"github.com/stolostron/console/backend/internal/informers"
 )
@@ -95,6 +99,168 @@ func TestSnapshotEventsShape(t *testing.T) {
 	}
 	if got[2].Type != TypeEOP {
 		t.Fatalf("empty snapshot should EOP before LOADED, got %v", typesOf(got))
+	}
+}
+
+func TestApplyFlapOverlayNilSafe(t *testing.T) {
+	var nilHub *Hub
+	nilHub.applyFlapOverlay(nil)
+	h := New(nil, nil)
+	h.flap = nil
+	h.applyFlapOverlay([]informers.ForwardedObject{fwd("Policy", "policy.open-cluster-management.io/v1", "ns", "p")})
+}
+
+func TestApplyFlapOverlaySkipsNonPolicyAndNonThrottled(t *testing.T) {
+	h := New(nil, nil)
+	h.flap = newFlapState(testFlapConfig())
+	ns := fwd("Namespace", "v1", "", "default")
+	policy := fwd("Policy", "policy.open-cluster-management.io/v1", "ns", "quiet")
+	objs := []informers.ForwardedObject{ns, policy}
+	h.applyFlapOverlay(objs)
+	if objs[0].Object.Object["throttled"] != nil {
+		t.Fatal("namespace must not be overlaid")
+	}
+	if objs[1].Object.Object["throttled"] != nil {
+		t.Fatal("non-throttled policy must not be overlaid")
+	}
+}
+
+func TestApplyFlapOverlayReplacesThrottledPolicy(t *testing.T) {
+	h := New(nil, nil)
+	h.flap = newFlapState(testFlapConfig())
+	at := time.Unix(1_700_000_000, 0)
+	throttlePolicyAt(h.flap, "sticky", "default", at)
+	objs := []informers.ForwardedObject{{
+		Object: unstructured.Unstructured{Object: policyWithCompliant("sticky", "default", 0)},
+	}}
+	h.applyFlapOverlay(objs)
+	if objs[0].Object.Object["throttled"] != true {
+		t.Fatalf("overlay %+v", objs[0].Object.Object)
+	}
+}
+
+func TestSnapshotEventsAppliesFlapOverlay(t *testing.T) {
+	policyGVR := schema.GroupVersionResource{
+		Group: "policy.open-cluster-management.io", Version: "v1", Resource: "policies",
+	}
+	policy := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "policy.open-cluster-management.io/v1",
+		"kind":       "Policy",
+		"metadata":   map[string]any{"name": "sticky", "namespace": "default", "uid": "uid-policy"},
+		"status":     map[string]any{"compliant": "Compliant"},
+	}}
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		policyGVR: "PolicyList",
+	}, policy)
+	mapper := staticMapper{lists: map[string]*metav1.APIResourceList{
+		"policy.open-cluster-management.io/v1": {
+			GroupVersion: "policy.open-cluster-management.io/v1",
+			APIResources: []metav1.APIResource{
+				{Name: "policies", Kind: "Policy", Namespaced: true, Verbs: []string{"list", "watch"}},
+			},
+		},
+	}}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	cache := informers.New([]informers.WatchSpec{{
+		Kind: "Policy", APIVersion: "policy.open-cluster-management.io/v1", ForwardEventsToClients: true,
+	}})
+	informers.StartCache(ctx, cache, client, mapper)
+	deadline := time.Now().Add(8 * time.Second)
+	for time.Now().Before(deadline) {
+		if cache.HasSynced() {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if !cache.HasSynced() {
+		t.Fatal("cache sync")
+	}
+
+	h := New(cache, nil)
+	h.flap = newFlapState(testFlapConfig())
+	at := time.Unix(1_700_000_000, 0)
+	throttlePolicyAt(h.flap, "sticky", "default", at)
+
+	got := h.snapshotEvents()
+	var found bool
+	for _, ev := range got {
+		if ev.Type != TypeModified {
+			continue
+		}
+		if kind, _ := ev.Object["kind"].(string); kind != "Policy" {
+			continue
+		}
+		found = true
+		if ev.Object["throttled"] != true {
+			t.Fatalf("snapshot must overlay throttled policy %+v", ev.Object)
+		}
+	}
+	if !found {
+		t.Fatalf("missing Policy in snapshot %v", typesOf(got))
+	}
+}
+
+func TestAuthorizedSnapshotAppliesFlapOverlay(t *testing.T) {
+	policyGVR := schema.GroupVersionResource{
+		Group: "policy.open-cluster-management.io", Version: "v1", Resource: "policies",
+	}
+	policy := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "policy.open-cluster-management.io/v1",
+		"kind":       "Policy",
+		"metadata":   map[string]any{"name": "sticky", "namespace": "default", "uid": "uid-policy"},
+		"status":     map[string]any{"compliant": "Compliant"},
+	}}
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		policyGVR: "PolicyList",
+	}, policy)
+	mapper := staticMapper{lists: map[string]*metav1.APIResourceList{
+		"policy.open-cluster-management.io/v1": {
+			GroupVersion: "policy.open-cluster-management.io/v1",
+			APIResources: []metav1.APIResource{
+				{Name: "policies", Kind: "Policy", Namespaced: true, Verbs: []string{"list", "watch"}},
+			},
+		},
+	}}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	cache := informers.New([]informers.WatchSpec{{
+		Kind: "Policy", APIVersion: "policy.open-cluster-management.io/v1", ForwardEventsToClients: true,
+	}})
+	informers.StartCache(ctx, cache, client, mapper)
+	deadline := time.Now().Add(8 * time.Second)
+	for time.Now().Before(deadline) {
+		if cache.HasSynced() {
+			break
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	if !cache.HasSynced() {
+		t.Fatal("cache sync")
+	}
+
+	hub := New(cache, nil)
+	hub.flap = newFlapState(testFlapConfig())
+	at := time.Unix(1_700_000_000, 0)
+	throttlePolicyAt(hub.flap, "sticky", "default", at)
+	handler := NewHandler(hub, StaticAuth{OK: true}, AllowAllAccess{})
+
+	got := handler.authorizedSnapshot(context.Background(), "tok")
+	var found bool
+	for _, ev := range got {
+		if ev.Type != TypeModified {
+			continue
+		}
+		if kind, _ := ev.Object["kind"].(string); kind != "Policy" {
+			continue
+		}
+		found = true
+		if ev.Object["throttled"] != true {
+			t.Fatalf("authorized snapshot must overlay throttled policy %+v", ev.Object)
+		}
+	}
+	if !found {
+		t.Fatalf("missing Policy in authorized snapshot %v", typesOf(got))
 	}
 }
 
