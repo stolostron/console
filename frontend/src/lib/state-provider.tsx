@@ -12,7 +12,7 @@ type StateProviderProps = PropsWithChildren<{
 
 export function StateProvider({ children, initializeStore }: StateProviderProps) {
   const parentPluginContext = useContext(PluginContext)
-  const parentContext = useContext(PluginDataContext)
+  const parentContext = useContext(parentPluginContext.dataContext)
   const contextValue = useMemo(() => ({ ...defaultContext, ...parentContext }), [parentContext])
   const pluginContextValue = useMemo(
     () => ({ ...defaultPlugin, ...parentPluginContext, dataContext: PluginDataContext }),

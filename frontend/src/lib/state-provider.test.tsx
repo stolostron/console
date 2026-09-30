@@ -2,15 +2,16 @@
 
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import { useContext } from 'react'
+import { createContext, useContext } from 'react'
 import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
 import { defaultContext, PluginDataContext } from './PluginDataContext'
+import type { PluginData } from './PluginDataContext'
 import { defaultPlugin, PluginContext } from './PluginContext'
 import { StateProvider } from './state-provider'
 
 function StateProviderConsumer() {
   const plugin = useContext(PluginContext)
-  const pluginData = useContext(PluginDataContext)
+  const pluginData = useContext(plugin.dataContext)
   const { settingsState } = useSharedAtoms()
   const settings = useRecoilValue(settingsState)
 
@@ -25,19 +26,24 @@ function StateProviderConsumer() {
 
 describe('StateProvider', () => {
   it('inherits plugin contexts and initializes Recoil state', async () => {
-    const pluginContext = { ...defaultPlugin, isSearchAvailable: false }
-    const pluginDataContext = { ...defaultContext, backendUrl: 'https://backend.example.com' }
+    const pluginDataContext = createContext<PluginData>(defaultContext)
+    const parentData = { ...defaultContext, backendUrl: 'https://backend.example.com' }
+    const pluginContext = { ...defaultPlugin, isSearchAvailable: false, dataContext: pluginDataContext }
     expect(defaultPlugin.dataContext).toBe(PluginDataContext)
 
     const { container } = render(
       <PluginContext.Provider value={pluginContext}>
-        <PluginDataContext.Provider value={pluginDataContext}>
+        <pluginDataContext.Provider value={parentData}>
           <StateProvider
             initializeStore={(store) => store.set(defaultContext.atoms.settingsState, { SAVED_SEARCH_LIMIT: '7' })}
           >
-            <StateProviderConsumer />
+            <StateProvider
+              initializeStore={(store) => store.set(defaultContext.atoms.settingsState, { SAVED_SEARCH_LIMIT: '7' })}
+            >
+              <StateProviderConsumer />
+            </StateProvider>
           </StateProvider>
-        </PluginDataContext.Provider>
+        </pluginDataContext.Provider>
       </PluginContext.Provider>
     )
 
