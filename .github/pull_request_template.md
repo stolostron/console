@@ -15,6 +15,9 @@
 - [ ] 🧪 Test-related  
 - [ ] 📄 Docs
 
+**AI Contribution:**  
+<!-- Use percentage or none -->
+
 ---
 
 ## ✅ Checklist
