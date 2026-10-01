@@ -480,7 +480,6 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacDeleteManagedCluster()), // destroy
       nockRBAC(await rbacDeleteClusterDeployment()),
       nockRBAC(await rbacDeleteManagedCluster()), //detach
-      nockRBAC(await rbacDeleteManagedCluster()), // repeated delete permission check
       // update automation template
       nockRBAC(await rbacPatchClusterCurator()),
       nockRBAC(await rbacCreateClusterCurator()),
@@ -504,7 +503,6 @@ describe('ClusterActionDropdown', () => {
       nockRBAC(await rbacPatchClusterDeployment()), // resume
       nockRBAC(await rbacDeleteManagedCluster()),
       nockRBAC(await rbacDeleteClusterDeployment()),
-      nockRBAC(await rbacDeleteManagedCluster()), // repeated delete permission check
       //delete automation template
       nockRBAC(await rbacDeleteClusterCurator()),
       nockRBAC(await rbacDeleteSecret()),

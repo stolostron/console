@@ -150,12 +150,10 @@ export function ClusterActionDropdown(props: { cluster: Cluster; isKebab: boolea
         cluster.namespace,
         cluster.name
       ),
+      ...(cluster.isManaged ? [rbacDelete(ManagedClusterDefinition, undefined, cluster.name)] : []),
     ],
-    [cluster.name, cluster.namespace, cluster.isHypershift]
+    [cluster.name, cluster.namespace, cluster.isHypershift, cluster.isManaged]
   )
-  if (cluster.isManaged) {
-    destroyRbac.push(rbacDelete(ManagedClusterDefinition, undefined, cluster.name))
-  }
 
   const importTemplate = useCallback(
     (action: (item: Cluster, options?: { [key: string]: boolean } | undefined) => IRequestResult) => {
