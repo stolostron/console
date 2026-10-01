@@ -634,13 +634,24 @@ export function LoadData(props: { children?: ReactNode }) {
 
   // Update global value setters when data has finished
   const isGlobalHub = useAtomValue(isGlobalHubState)
-  if (globalHubRes && !globalHubLoading && !isGlobalHub) {
-    setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
-    setlocalHubName(globalHubRes[0]?.localHubName)
-    setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
-    setIsDirectAuthenticationEnabled(globalHubRes[0]?.authentication?.isDirectAuthenticationEnabled ?? false)
-    setClaimMappings(globalHubRes[0]?.authentication?.claimMappings)
-  }
+  useEffect(() => {
+    if (globalHubRes && !globalHubLoading && !isGlobalHub) {
+      setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
+      setlocalHubName(globalHubRes[0]?.localHubName)
+      setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
+      setIsDirectAuthenticationEnabled(globalHubRes[0]?.authentication?.isDirectAuthenticationEnabled ?? false)
+      setClaimMappings(globalHubRes[0]?.authentication?.claimMappings)
+    }
+  }, [
+    globalHubRes,
+    globalHubLoading,
+    isGlobalHub,
+    setIsGlobalHub,
+    setlocalHubName,
+    setIsHubSelfManaged,
+    setIsDirectAuthenticationEnabled,
+    setClaimMappings,
+  ])
 
   const {
     data: mchResponse,
