@@ -178,7 +178,8 @@ func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 		a.mu.Unlock()
 		return c, err
 	}
-	st.clientWait = make(chan struct{})
+	wait := make(chan struct{})
+	st.clientWait = wait
 	a.mu.Unlock()
 
 	client, err := a.newClient(token)
@@ -191,9 +192,11 @@ func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 	}
 	st.client = client
 	st.clientErr = err
-	close(st.clientWait)
-	st.clientWait = nil
+	if st.clientWait == wait {
+		st.clientWait = nil
+	}
 	a.mu.Unlock()
+	close(wait)
 	return client, err
 }
 

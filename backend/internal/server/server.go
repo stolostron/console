@@ -484,12 +484,17 @@ func ListenAndServe(ctx context.Context, cfg *config.Config, handler http.Handle
 	go func() {
 		certFile := filepath.Join(cfg.CertsDir, "tls.crt")
 		keyFile := filepath.Join(cfg.CertsDir, "tls.key")
-		if _, err := os.Stat(certFile); err == nil {
-			if _, err := os.Stat(keyFile); err == nil {
-				applog.Logger().Info("server start", "secure", true, "addr", addr)
-				errCh <- srv.ServeTLS(ln, certFile, keyFile)
-				return
-			}
+		_, certErr := os.Stat(certFile)
+		_, keyErr := os.Stat(keyFile)
+		if (certErr == nil) != (keyErr == nil) {
+			errCh <- errors.New("tls.crt and tls.key must both be present in " + cfg.CertsDir)
+			_ = ln.Close()
+			return
+		}
+		if certErr == nil {
+			applog.Logger().Info("server start", "secure", true, "addr", addr)
+			errCh <- srv.ServeTLS(ln, certFile, keyFile)
+			return
 		}
 		applog.Logger().Info("server start", "secure", false, "addr", addr)
 		errCh <- srv.Serve(ln)

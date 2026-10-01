@@ -4,7 +4,9 @@ package aggregate
 
 import (
 	"context"
+	"sync"
 	"testing"
+	"time"
 
 	authzv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -106,5 +108,43 @@ func TestSSARRemoteManagedClusterView(t *testing.T) {
 	got := a.Authorized(context.Background(), "tok", items, 0, 1)
 	if len(got) != 1 {
 		t.Fatal("remote app should pass MCV create")
+	}
+}
+
+func TestClientForSurvivesCleanupDuringCreate(t *testing.T) {
+	started := make(chan struct{})
+	release := make(chan struct{})
+	client := fake.NewSimpleClientset()
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
+		close(started)
+		<-release
+		return client, nil
+	})
+
+	var wg sync.WaitGroup
+	errCh := make(chan error, 2)
+	for i := 0; i < 2; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			_, err := a.clientFor("tok", hashToken("tok"))
+			errCh <- err
+		}()
+	}
+
+	select {
+	case <-started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("newClient not started")
+	}
+	// Evict the in-flight token state (empty entries) while creators wait.
+	a.cleanup(time.Now())
+	close(release)
+	wg.Wait()
+	close(errCh)
+	for err := range errCh {
+		if err != nil {
+			t.Fatalf("clientFor after cleanup: %v", err)
+		}
 	}
 }

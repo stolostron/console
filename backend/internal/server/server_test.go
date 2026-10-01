@@ -8,6 +8,8 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -126,6 +128,35 @@ func TestListenAndServeOnListeningAfterBind(t *testing.T) {
 	}
 	close(releaseSync)
 	t.Fatalf("ping failed before timeout: %v", lastErr)
+}
+
+func TestListenAndServeRejectsPartialTLS(t *testing.T) {
+	cases := []struct {
+		name string
+		file string
+	}{
+		{name: "cert-only", file: "tls.crt"},
+		{name: "key-only", file: "tls.key"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			dir := t.TempDir()
+			if err := os.WriteFile(filepath.Join(dir, tc.file), []byte("not-a-real-pem"), 0o600); err != nil {
+				t.Fatal(err)
+			}
+			port := freePort(t)
+			cfg := &config.Config{Port: port, CertsDir: dir}
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			err := server.ListenAndServe(ctx, cfg, newHandler(t))
+			if err == nil {
+				t.Fatal("expected error for partial TLS material")
+			}
+			if !strings.Contains(err.Error(), "tls.crt and tls.key must both be present") {
+				t.Fatalf("error=%v", err)
+			}
+		})
+	}
 }
 
 func TestUnknownRouteNotFound(t *testing.T) {
