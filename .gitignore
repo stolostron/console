@@ -5,7 +5,7 @@
 **/dist/
 **/build/
 **/.eslintcache
-**/tsconfig.tsbuildinfo
+**/*.tsbuildinfo
 **/.env
 **/ocp-console/
 

@@ -1,7 +1,7 @@
 {
     "compilerOptions": {
         "lib": ["dom", "dom.iterable", "esnext"],
-        "module": "commonjs",
+        "module": "esnext",
         "target": "ES2022",
         "jsx": "react-jsx",
         "types": ["node", "jest"],
@@ -29,11 +29,10 @@
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "forceConsistentCasingInFileNames": true,
-        "moduleResolution": "node",
-        "baseUrl": ".",
+        "moduleResolution": "bundler",
         "paths": {
-            "~": ["src"],
-            "~/*": ["src/*"]
+            "~": ["./src"],
+            "~/*": ["./src/*"]
         },
         "resolveJsonModule": true,
         "isolatedModules": true,

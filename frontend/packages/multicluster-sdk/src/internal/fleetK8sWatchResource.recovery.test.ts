@@ -31,7 +31,7 @@ class TestWebSocket extends EventTarget implements WebSocket {
   onmessage: ((this: WebSocket, event: MessageEvent) => unknown) | null = null
   onopen: ((this: WebSocket, event: Event) => unknown) | null = null
   readonly protocol = ''
-  readyState = this.OPEN
+  readyState: 0 | 1 | 2 | 3 = this.OPEN
   readonly url: string
 
   constructor(url: string) {

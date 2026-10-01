@@ -25,9 +25,9 @@
   "license": "Apache-2.0",
   "homepage": "https://github.com/stolostron/console/tree/main/frontend/packages/multicluster-sdk#readme",
   "scripts": {
-    "build": "tsc --build tsconfig.build.json",
+    "build": "tsc6 --build tsconfig.build.json",
     "watch": "npm run build && watch 'npm run build' src",
-    "tsc": "tsc --noEmit",
+    "tsc": "tsc --noEmit -p tsconfig.typecheck.json",
     "lint": "eslint src --max-warnings=0",
     "lint:fix": "npm run lint -- --fix",
     "prettier": "prettier --check src",
@@ -60,7 +60,7 @@
     "jest-sonar-reporter": "^2.0.0",
     "react-router": "^7.18.4",
     "tsdoc-markdown": "^1.5.0",
-    "typescript": "^5.9.3",
+    "typescript": "npm:@typescript/typescript6@^6.0.2",
     "watch": "^1.0.2"
   },
   "prettier": "@stolostron/prettier-config",
