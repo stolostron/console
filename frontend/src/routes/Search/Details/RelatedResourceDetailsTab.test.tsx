@@ -4,7 +4,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import { SearchResultRelatedItemsDocument } from '../search-sdk/search-sdk'
 import { SearchDetailsContext } from './DetailsPage'
@@ -119,7 +119,7 @@ describe('RelatedResourceDetailsTab', () => {
       resource: testResourceNs,
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <Routes>
@@ -129,7 +129,7 @@ describe('RelatedResourceDetailsTab', () => {
             </Routes>
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data
@@ -203,7 +203,7 @@ describe('RelatedResourceDetailsTab', () => {
       resource: testResourceNonNs,
     }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <Routes>
@@ -213,7 +213,7 @@ describe('RelatedResourceDetailsTab', () => {
             </Routes>
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data

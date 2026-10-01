@@ -1251,6 +1251,7 @@
   "Deadline": "Deadline",
   "Deadline must be a number": "Deadline must be a number",
   "Deadline must be greater than 0": "Deadline must be greater than 0",
+  "Deadline unit": "Deadline unit",
   "Decisions": "Decisions",
   "decoupled control plane and workers": "decoupled control plane and workers",
   "dedicated control plane nodes": "dedicated control plane nodes",

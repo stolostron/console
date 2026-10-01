@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAWSControlPlane } from './CreateAWSControlPlane'
@@ -23,10 +23,10 @@ describe('CreateAWSControlPlane', () => {
 
   const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
-          snapshot.set(multiClusterEnginesState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, mockManagedClusterAddOn)
+          store.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])
         }}
@@ -36,7 +36,7 @@ describe('CreateAWSControlPlane', () => {
             <Route path={NavigationPath.createAWSControlPlane} element={<CreateAWSControlPlane />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

@@ -4,7 +4,7 @@ jest.mock('./discoveredPoliciesWorker.factory')
 import { waitFor } from '@testing-library/react'
 import { useFetchPolicies } from './useFetchPolicies'
 import { renderHook } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 
 /** Stable identity — a new `data` object every render can make Apollo re-render until OOM. */
@@ -92,7 +92,7 @@ describe('useFetchPolicies custom hook', () => {
   })
 
   test('Should parse discovered policy labels', async () => {
-    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: StateProvider })
 
     await waitFor(() => {
       expect(result.current.labelData).toBeDefined()
@@ -108,7 +108,7 @@ describe('useFetchPolicies custom hook', () => {
       error: undefined,
     })
 
-    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: StateProvider })
 
     await waitFor(() => {
       expect(result.current.isFetching).toBe(true)
@@ -123,7 +123,7 @@ describe('useFetchPolicies custom hook', () => {
       error: new Error('search failed'),
     })
 
-    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: StateProvider })
 
     await waitFor(() => {
       expect(result.current.isFetching).toBe(false)
@@ -139,7 +139,7 @@ describe('useFetchPolicies custom hook', () => {
       error: undefined,
     })
 
-    const { result } = renderHook(() => useFetchPolicies(), { wrapper: RecoilRoot })
+    const { result } = renderHook(() => useFetchPolicies(), { wrapper: StateProvider })
 
     await waitFor(() => {
       expect(result.current.isFetching).toBe(false)

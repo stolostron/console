@@ -2,7 +2,7 @@
 import { render, screen } from '@testing-library/react'
 import { AgentK8sResource, AgentServiceConfigK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 
 import { infraEnvironmentsState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
@@ -77,9 +77,9 @@ const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
 
 const Component = () => {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(infraEnvironmentsState, mockInfraEnvironments)
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
@@ -87,7 +87,7 @@ const Component = () => {
           <Route path={NavigationPath.infraEnvironments} element={<InfraEnvironmentsPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

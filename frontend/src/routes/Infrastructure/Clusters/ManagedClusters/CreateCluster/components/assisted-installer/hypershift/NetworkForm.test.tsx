@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '../../../../../../../../NavigationPath'
 import { normalizeGeneratedOuiaIds } from '../../../../../../../../lib/test-util'
 
@@ -60,7 +60,7 @@ describe('NetworkForm', () => {
   const onNext = jest.fn()
   const Component = () => {
     return (
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
           <Routes>
             <Route
@@ -84,7 +84,7 @@ describe('NetworkForm', () => {
             />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

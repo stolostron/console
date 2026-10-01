@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { policiesState } from '../../../atoms'
 import { waitForText, clickByText, clickByLabel, getCSVExportSpies, getCSVDownloadLink } from '../../../lib/test-util'
 import { ManagedCluster, Policy } from '../../../resources'
@@ -96,15 +96,15 @@ const mockCluster: ManagedCluster = {
 describe('Policies Page', () => {
   test('Should render empty Policies page correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter>
           <ClusterPolicySummarySidebar cluster={mockCluster} compliance={'compliant'} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(rootPolicy0.metadata.name!)
@@ -115,15 +115,15 @@ describe('Policies Page', () => {
 describe('Export from ClusterPolicySummarySidebar table', () => {
   test('export button should produce a file for download', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter>
           <ClusterPolicySummarySidebar cluster={mockCluster} compliance={'compliant'} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     window.URL.createObjectURL = jest.fn()
     window.URL.revokeObjectURL = jest.fn()

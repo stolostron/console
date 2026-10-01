@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { axe } from 'jest-axe'
+import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { nockIgnoreApiPaths } from '../../../../lib/nock-util'
-import { wait } from '../../../../lib/test-util'
+import { selectOptionsElement, typeElement, wait } from '../../../../lib/test-util'
 import { SnapshotModalBody } from './snapshotModalBody'
 
 jest.mock('../../../../resources/utils/resource-request', () => ({
@@ -44,10 +45,10 @@ describe('SnapshotModalBody', () => {
     nockIgnoreApiPaths()
   })
   test('Should render SnapshotModalBody correctly', async () => {
-    render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, true)
+    const { container } = render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <SnapshotModalBody
@@ -78,21 +79,31 @@ describe('SnapshotModalBody', () => {
           getVMError={undefined}
           setGetVMError={() => {}}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await wait()
 
     await waitFor(() => expect(screen.queryByText('Name')).toBeInTheDocument())
+    expect(container.querySelector('label[for="vmName"]')).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText('Description')).toBeInTheDocument())
     await waitFor(() => expect(screen.queryByText('Deadline')).toBeInTheDocument())
     await waitFor(() => expect(screen.queryByText('Disks included in this snapshot (0)')).toBeInTheDocument())
+
+    const deadline = screen.getByLabelText('Deadline')
+    await typeElement(deadline, '30')
+    expect(deadline).toHaveValue('30')
+
+    const deadlineUnit = screen.getByRole('combobox', { name: 'Deadline unit' })
+    await selectOptionsElement(deadlineUnit, 'm')
+    expect(deadlineUnit).toHaveValue('m')
+    expect(await axe(container)).toHaveNoViolations()
   })
 
   test('Should render SnapshotModalBody correctly with isFineGrainedRbacEnabledState=false', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, false)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, false)
         }}
       >
         <SnapshotModalBody
@@ -123,7 +134,7 @@ describe('SnapshotModalBody', () => {
           getVMError={undefined}
           setGetVMError={() => {}}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     await wait()
 

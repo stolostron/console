@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { GroupYaml } from './GroupYaml'
 import { Group, UserApiVersion, GroupKind } from '../../../../resources/rbac'
 import { useGroupDetailsContext } from './GroupPage'
@@ -21,11 +21,11 @@ const mockUseGroupDetailsContext = useGroupDetailsContext as jest.MockedFunction
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <GroupYaml />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

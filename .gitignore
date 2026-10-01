@@ -25,6 +25,7 @@ frontend/packages/react-form-wizard/lib/
 #ai related files
 .cursor/
 .claude
+.codex/
 test-results
 playwright.config.ts
 .env
@@ -34,4 +35,3 @@ e2e-template/.auth-state.json
 .playwright-mcp
 e2e-scratch/
 playwriter-verification/
-

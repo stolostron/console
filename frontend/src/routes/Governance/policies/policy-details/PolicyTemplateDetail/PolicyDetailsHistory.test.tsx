@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, generatePath, Routes, Route } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { policiesState } from '../../../../../atoms'
 import {
   waitForText,
@@ -187,9 +187,9 @@ describe('Policy Details History content', () => {
 
   test('Should render Policy Details History Page content correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter
@@ -209,7 +209,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.policyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -224,9 +224,9 @@ describe('Policy Details History content', () => {
 
   test('Should render Policy Details History Page content correctly for pending policies', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPendingPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPendingPolicy)
         }}
       >
         <MemoryRouter
@@ -246,7 +246,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.policyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -263,7 +263,7 @@ describe('Policy Details History content', () => {
     mockTemplateDetailsContext(mockConfigurationPolicyTemplate)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -280,7 +280,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.discoveredPolicyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -295,7 +295,7 @@ describe('Policy Details History content', () => {
     mockTemplateDetailsContext(mockOperatorPolicyTemplate)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -312,7 +312,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.discoveredPolicyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -327,7 +327,7 @@ describe('Policy Details History content', () => {
     mockTemplateDetailsContext(mockCertificatePolicyTemplate)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -344,7 +344,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.discoveredPolicyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -366,7 +366,7 @@ describe('Policy Details History content', () => {
     mockTemplateDetailsContext(templateWithNoHistory)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter
           initialEntries={[
             generatePath(NavigationPath.discoveredPolicyDetailsHistory, {
@@ -383,7 +383,7 @@ describe('Policy Details History content', () => {
             <Route path={NavigationPath.discoveredPolicyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load
@@ -406,9 +406,9 @@ describe('Export from policy details history table', () => {
 
   test('export button should produce a file for download', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter
@@ -428,7 +428,7 @@ describe('Export from policy details history table', () => {
             <Route path={NavigationPath.policyDetailsHistory} element={<PolicyDetailsHistory />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait template name load

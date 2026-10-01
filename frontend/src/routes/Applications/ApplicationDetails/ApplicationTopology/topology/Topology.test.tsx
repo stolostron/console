@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
 import { nockSearch } from '../../../../../lib/nock-util'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   mockSearchQuerySearchDisabledManagedClusters,
   mockSearchResponseSearchDisabledManagedClusters,
@@ -93,9 +93,9 @@ describe('Topology tests', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <Topology {...propsWithSearchDisabledClusters} />
-      </RecoilRoot>
+      </StateProvider>
     )
     await new Promise((resolve) => setTimeout(resolve, 500))
 
@@ -128,9 +128,9 @@ describe('Topology tests', () => {
     nockSearch(mockSearchQuerySearchDisabledManagedClusters, emptySearchResponse)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <Topology {...props1} />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait to ensure the component has processed the empty response

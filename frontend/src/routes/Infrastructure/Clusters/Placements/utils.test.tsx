@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { PlacementDecision, PlacementDecisionApiVersion, PlacementDecisionKind } from '~/resources/placement-decision'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
 import {
@@ -239,21 +239,21 @@ describe('Placement utils', () => {
 
   test('PlacementLinkList display one Placement', () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PlacementLinkList placementsForCluster={[mockPlacement1]} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
   test('PlacementLinkList display Placements and click show more', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PlacementLinkList placementsForCluster={[mockPlacement1, mockPlacement2, mockPlacement3, mockPlacement4]} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // find and click show more button
@@ -265,22 +265,22 @@ describe('Placement utils', () => {
   describe('ClusterLinkList', () => {
     test('renders dash when clusterNames is empty', () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterLinkList clusterNames={[]} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('-')).toBeInTheDocument()
     })
 
     test('renders all cluster names when 3 or fewer', () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterLinkList clusterNames={['cluster-a', 'cluster-b']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('cluster-a,')).toBeInTheDocument()
       expect(screen.getByText('cluster-b')).toBeInTheDocument()
@@ -288,11 +288,11 @@ describe('Placement utils', () => {
 
     test('shows first 3 clusters and show more button when more than 3', async () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterLinkList clusterNames={['c1', 'c2', 'c3', 'c4', 'c5']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       expect(screen.getByText('c1,')).toBeInTheDocument()
@@ -308,11 +308,11 @@ describe('Placement utils', () => {
 
     test('clicking show less collapses the list', async () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterLinkList clusterNames={['c1', 'c2', 'c3', 'c4']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await clickElement(screen.getByRole('button', { name: /1 more/i }))
@@ -326,22 +326,22 @@ describe('Placement utils', () => {
   describe('ClusterSetLinkList', () => {
     test('renders dash when clusterSets is empty', () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterSetLinkList clusterSets={[]} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('-')).toBeInTheDocument()
     })
 
     test('renders all cluster set names when 3 or fewer', () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterSetLinkList clusterSets={['set-a', 'set-b', 'set-c']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
       expect(screen.getByText('set-a,')).toBeInTheDocument()
       expect(screen.getByText('set-b,')).toBeInTheDocument()
@@ -350,11 +350,11 @@ describe('Placement utils', () => {
 
     test('shows first 3 cluster sets and show more button when more than 3', async () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterSetLinkList clusterSets={['s1', 's2', 's3', 's4', 's5']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       expect(screen.getByText('s1,')).toBeInTheDocument()
@@ -370,11 +370,11 @@ describe('Placement utils', () => {
 
     test('clicking show less collapses the list', async () => {
       render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <ClusterSetLinkList clusterSets={['s1', 's2', 's3', 's4']} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await clickElement(screen.getByRole('button', { name: /1 more/i }))

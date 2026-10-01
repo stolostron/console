@@ -11,7 +11,7 @@ import {
 import { IResource } from '@patternfly-labs/react-form-wizard'
 import { ReactNode } from 'react'
 import { BrowserRouter as Router } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { waitForText, typeElement, clickElement } from '~/lib/test-util'
 import { Policy } from '../../../resources'
 import { WizardSyncEditor } from '../../../routes/Governance/policies/CreatePolicy'
@@ -32,7 +32,7 @@ describe('ExistingTemplateName', () => {
 
 function TestPolicyWizard(props?: { yamlEditor?: () => ReactNode }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <Router>
         <PolicyWizard
           title="Testing the policy wizard"
@@ -47,7 +47,7 @@ function TestPolicyWizard(props?: { yamlEditor?: () => ReactNode }) {
           yamlEditor={props?.yamlEditor}
         />
       </Router>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -73,7 +73,7 @@ function TestPolicyWizardGK() {
   ]
 
   return (
-    <RecoilRoot>
+    <StateProvider>
       <Router>
         <PolicyWizard
           title="Testing the policy wizard"
@@ -88,7 +88,7 @@ function TestPolicyWizardGK() {
           resources={[mockPolicyGK as IResource]}
         />
       </Router>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -106,7 +106,7 @@ function TestPolicyWizardOperatorPolicy() {
   ]
 
   return (
-    <RecoilRoot>
+    <StateProvider>
       <Router>
         <PolicyWizard
           title="Testing the policy wizard"
@@ -122,7 +122,7 @@ function TestPolicyWizardOperatorPolicy() {
           yamlEditor={() => <WizardSyncEditor />}
         />
       </Router>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

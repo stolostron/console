@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   managedClusterSetBindingsState,
   managedClusterSetsState,
@@ -33,15 +33,15 @@ function EditPolicySetTest() {
     name: mockPolicySets[0].metadata.name!,
   })
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policySetsState, [mockPolicySets[0]])
-        snapshot.set(policiesState, [mockPolicy[0]])
-        snapshot.set(namespacesState, mockNamespaces)
-        snapshot.set(placementsState, mockPlacements)
-        snapshot.set(placementBindingsState, mockPlacementBindings)
-        snapshot.set(managedClusterSetsState, [mockClusterSet])
-        snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(policySetsState, [mockPolicySets[0]])
+        store.set(policiesState, [mockPolicy[0]])
+        store.set(namespacesState, mockNamespaces)
+        store.set(placementsState, mockPlacements)
+        store.set(placementBindingsState, mockPlacementBindings)
+        store.set(managedClusterSetsState, [mockClusterSet])
+        store.set(managedClusterSetBindingsState, [mockClusterSetBinding])
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
@@ -49,7 +49,7 @@ function EditPolicySetTest() {
           <Route path={NavigationPath.editPolicySet} element={<EditPolicySet />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

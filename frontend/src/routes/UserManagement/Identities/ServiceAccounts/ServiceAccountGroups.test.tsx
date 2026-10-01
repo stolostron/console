@@ -1,19 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { ServiceAccountGroups } from './ServiceAccountGroups'
 
 function Component({ serviceAccountId = 'test-service-account' }: { serviceAccountId?: string }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter
         initialEntries={[`/multicloud/user-management/identities/service-accounts/${serviceAccountId}/groups`]}
       >
         <ServiceAccountGroups />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

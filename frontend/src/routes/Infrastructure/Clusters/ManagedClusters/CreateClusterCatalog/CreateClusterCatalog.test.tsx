@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { secretsState } from '../../../../../atoms'
 import { clickByTestId } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
@@ -25,9 +25,9 @@ const providerConnectionAws: Secret = {
 describe('CreateClusterCatalog', () => {
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(secretsState, [providerConnectionAws])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(secretsState, [providerConnectionAws])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createCluster]}>
@@ -35,7 +35,7 @@ describe('CreateClusterCatalog', () => {
             <Route path={NavigationPath.createCluster} element={<CreateClusterCatalog />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

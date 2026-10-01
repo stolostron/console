@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { placementsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { waitForText } from '../../../../lib/test-util'
@@ -47,9 +47,9 @@ const mockPlacement2: Placement = {
 }
 
 const Component = ({ placements = [mockPlacement1, mockPlacement2] }: { placements?: Placement[] }) => (
-  <RecoilRoot
-    initializeState={(snapshot) => {
-      snapshot.set(placementsState, placements)
+  <StateProvider
+    initializeStore={(store) => {
+      store.set(placementsState, placements)
     }}
   >
     <MemoryRouter initialEntries={[NavigationPath.placements]}>
@@ -57,7 +57,7 @@ const Component = ({ placements = [mockPlacement1, mockPlacement2] }: { placemen
         <Route path={`${NavigationPath.clusters}/*`} element={<Clusters />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('Placements page', () => {

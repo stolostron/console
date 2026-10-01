@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ClusterRoleAssignments } from './ClusterRoleAssignments'
 
 const mockUseFindRoleAssignments = jest.fn()
@@ -18,13 +18,13 @@ jest.mock('../../UserManagement/RoleAssignment/RoleAssignments', () => ({
 }))
 
 const Component = ({ clusterName = 'local-cluster' }: { clusterName?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/clusters/details/${clusterName}/${clusterName}/role-assignments`]}>
       <Routes>
         <Route path="/clusters/details/:namespace/:name/role-assignments" element={<ClusterRoleAssignments />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterRoleAssignments', () => {

@@ -2,7 +2,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { Scope } from 'nock/types'
 import { generatePath, MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   applicationsState,
   channelsState,
@@ -428,13 +428,13 @@ describe('Create Subscription Application page', () => {
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(secretsState, mockSecrets)
-          snapshot.set(namespacesState, mockNamespaces)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(managedClusterSetsState, [mockGlobalClusterSet])
-          snapshot.set(placementsState, [mockPlacement])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(secretsState, mockSecrets)
+          store.set(namespacesState, mockNamespaces)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(managedClusterSetsState, [mockGlobalClusterSet])
+          store.set(placementsState, [mockPlacement])
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.createApplicationSubscription]}>
@@ -445,7 +445,7 @@ describe('Create Subscription Application page', () => {
             />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -664,13 +664,13 @@ describe('Create Subscription Application page', () => {
       ),
     ]
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(secretsState, mockSecrets)
-          snapshot.set(namespacesState, mockNamespaces)
-          snapshot.set(applicationsState, [mockApplication0])
-          snapshot.set(channelsState, mockHubChannels)
-          snapshot.set(placementsState, [mockPlacement])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(secretsState, mockSecrets)
+          store.set(namespacesState, mockNamespaces)
+          store.set(applicationsState, [mockApplication0])
+          store.set(channelsState, mockHubChannels)
+          store.set(placementsState, [mockPlacement])
         }}
       >
         <MemoryRouter
@@ -685,7 +685,7 @@ describe('Create Subscription Application page', () => {
             <Route path={NavigationPath.editApplicationSubscription} element={<CreateSubscriptionApplicationPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForNocks(initialNocks)
     expect(

@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { isGlobalHubState, Settings, settingsState } from '../../../atoms'
 import ReuseableSearchbar from './ReuseableSearchbar'
 
@@ -10,16 +10,16 @@ test('renders with default Search link', () => {
     globalSearchFeatureFlag: 'disabled',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, false)
-        snapshot.set(settingsState, mockSettings)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(isGlobalHubState, false)
+        store.set(settingsState, mockSettings)
       }}
     >
       <MemoryRouter>
         <ReuseableSearchbar />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -29,16 +29,16 @@ test('renders with Global Search link', () => {
     globalSearchFeatureFlag: 'enabled',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(isGlobalHubState, true)
-        snapshot.set(settingsState, mockSettings)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(isGlobalHubState, true)
+        store.set(settingsState, mockSettings)
       }}
     >
       <MemoryRouter>
         <ReuseableSearchbar />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })

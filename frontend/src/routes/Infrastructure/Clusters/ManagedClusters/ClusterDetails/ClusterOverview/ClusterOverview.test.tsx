@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   agentClusterInstallsState,
   agentsState,
@@ -96,22 +96,22 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -121,7 +121,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -144,22 +144,22 @@ describe('ClusterOverview with BM hypershift cluster', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -169,7 +169,7 @@ describe('ClusterOverview with BM hypershift cluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -194,22 +194,22 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -219,7 +219,7 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -242,22 +242,22 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -267,7 +267,7 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -284,22 +284,22 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockAWSHypershiftCluster, canGetSecret: true }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -309,7 +309,7 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -328,22 +328,22 @@ describe('ClusterOverview with regional hub cluster information', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -353,7 +353,7 @@ describe('ClusterOverview with regional hub cluster information', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -372,22 +372,22 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockRegionalHubCluster }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -397,7 +397,7 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -464,22 +464,22 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -489,7 +489,7 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify cluster name is shown
@@ -510,22 +510,22 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -535,7 +535,7 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify cluster name is shown
@@ -771,7 +771,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
       hostedCluster: mockHostedCluster1,
     }
     const { queryAllByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -792,7 +792,7 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await clickElement(
@@ -844,22 +844,22 @@ describe('ClusterOverview automation template', () => {
       clusterCurator: clusterCuratorWithTemplate,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [clusterCuratorWithTemplate])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [clusterCuratorWithTemplate])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -869,7 +869,7 @@ describe('ClusterOverview automation template', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockCluster.name)
@@ -882,22 +882,22 @@ describe('ClusterOverview automation template', () => {
       cluster: mockCluster,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -907,7 +907,7 @@ describe('ClusterOverview automation template', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockCluster.name)
@@ -941,22 +941,22 @@ describe('ClusterOverview hypershift hook status', () => {
       canGetSecret: true,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, clusterCurator ? [clusterCurator] : [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [mockAWSHostedCluster])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, clusterCurator ? [clusterCurator] : [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [mockAWSHostedCluster])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -966,7 +966,7 @@ describe('ClusterOverview hypershift hook status', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 
@@ -1023,22 +1023,22 @@ describe('ClusterOverview description display', () => {
       canGetSecret: true,
     }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -1048,7 +1048,7 @@ describe('ClusterOverview description display', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(clusterWithWhitespaceDescription.name)
@@ -1079,22 +1079,22 @@ describe('ClusterOverview description display', () => {
       canGetSecret: true,
     }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -1104,7 +1104,7 @@ describe('ClusterOverview description display', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(clusterWithDescription.name)
@@ -1145,22 +1145,22 @@ describe('ClusterOverview labels truncation', () => {
       canGetSecret: true,
     }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policyreportState, [])
-          snapshot.set(managedClustersState, [])
-          snapshot.set(clusterDeploymentsState, [])
-          snapshot.set(managedClusterInfosState, [])
-          snapshot.set(certificateSigningRequestsState, [])
-          snapshot.set(managedClusterAddonsState, {})
-          snapshot.set(clusterManagementAddonsState, [])
-          snapshot.set(clusterClaimsState, [])
-          snapshot.set(clusterCuratorsState, [])
-          snapshot.set(agentClusterInstallsState, [])
-          snapshot.set(agentsState, [])
-          snapshot.set(infraEnvironmentsState, [])
-          snapshot.set(hostedClustersState, [])
-          snapshot.set(nodePoolsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policyreportState, [])
+          store.set(managedClustersState, [])
+          store.set(clusterDeploymentsState, [])
+          store.set(managedClusterInfosState, [])
+          store.set(certificateSigningRequestsState, [])
+          store.set(managedClusterAddonsState, {})
+          store.set(clusterManagementAddonsState, [])
+          store.set(clusterClaimsState, [])
+          store.set(clusterCuratorsState, [])
+          store.set(agentClusterInstallsState, [])
+          store.set(agentsState, [])
+          store.set(infraEnvironmentsState, [])
+          store.set(hostedClustersState, [])
+          store.set(nodePoolsState, [])
         }}
       >
         <MemoryRouter>
@@ -1170,7 +1170,7 @@ describe('ClusterOverview labels truncation', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(clusterWithManyLabels.name)

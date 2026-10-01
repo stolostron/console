@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { AcmDrawerContext } from '../../../../ui-components'
 import { waitForText } from '../../../../lib/test-util'
 import { PolicySet, Placement, PlacementBinding } from '../../../../resources'
@@ -113,7 +113,7 @@ export const mockPlacementBindings: PlacementBinding[] = [mockPlacementBinding]
 describe('Policy Set Card', () => {
   test('Should render Policy Set Card content correctly', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySet}
@@ -125,7 +125,7 @@ describe('Policy Set Card', () => {
             setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait card title - PolicySet name
@@ -142,7 +142,7 @@ describe('Policy Set Card', () => {
 describe('Policy Set Card for Pending policy', () => {
   test('Should render Policy Set Card content correctly', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySetPending}
@@ -154,7 +154,7 @@ describe('Policy Set Card for Pending policy', () => {
             setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // wait card title - PolicySet name
@@ -183,7 +183,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
 
   test('card shows selected state when selectedCardID matches card ID', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySet}
@@ -195,7 +195,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
             setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     const card = document.getElementById(cardID)
@@ -206,7 +206,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
   test('setSelectedCardID is called when clicking card title', async () => {
     const setSelectedCardID = jest.fn()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySet}
@@ -218,7 +218,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
             setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
@@ -228,7 +228,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
   test('setCardIdActionMenuOpen is called when opening action menu', async () => {
     const setCardIdActionMenuOpen = jest.fn()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySet}
@@ -240,7 +240,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
             setCardIdActionMenuOpen={setCardIdActionMenuOpen}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     const card = document.getElementById(cardID)
@@ -255,7 +255,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
 
   test('dropdown menu is open when cardIdActionMenuOpen matches card ID', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <PolicySetCard
             policySet={policySet}
@@ -267,7 +267,7 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
             setCardIdActionMenuOpen={() => {}}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
@@ -292,7 +292,7 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
   test('clicking card title opens the drawer', async () => {
     const setDrawerContext = jest.fn()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
             <PolicySetCard
@@ -306,7 +306,7 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
             />
           </AcmDrawerContext.Provider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
@@ -324,7 +324,7 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
     const setDrawerContext = jest.fn()
     const setSelectedCardID = jest.fn()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <AcmDrawerContext.Provider value={{ drawerContext: undefined, setDrawerContext }}>
             <PolicySetCard
@@ -338,7 +338,7 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
             />
           </AcmDrawerContext.Provider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     expect(screen.getByRole('menuitem', { name: 'View details' })).toBeInTheDocument()
@@ -357,10 +357,10 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
   test('drawer title includes placement name when placement exists', async () => {
     const setDrawerContext = jest.fn()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(placementBindingsState, mockPlacementBindings)
         }}
       >
         <MemoryRouter>
@@ -376,7 +376,7 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
             />
           </AcmDrawerContext.Provider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('policy-set-with-1-placement')
     fireEvent.click(screen.getByRole('button', { name: 'policy-set-with-1-placement' }))
@@ -386,14 +386,14 @@ describe('Policy Set Card drawer behavior (onSelect vs onViewDetails)', () => {
 
     // Render the title in a new wrapper with router context to verify it contains the placement name
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, mockPlacements)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, mockPlacements)
+          store.set(placementBindingsState, mockPlacementBindings)
         }}
       >
         <MemoryRouter>{drawerProps.title}</MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(container.textContent).toContain('policy-set-with-1-placement')
   })

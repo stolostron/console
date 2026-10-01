@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import React, { useRef, useState } from 'react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState } from '../../../atoms'
 import { nockOff, nockIgnoreRBAC, nockIgnoreApiPaths } from '../../../lib/nock-util'
 import { waitForNocks, clickElement } from '~/lib/test-util'
@@ -14,9 +14,10 @@ import LogsPage, { LogsFooterButton, LogsHeader, LogsToolbar } from './LogsPage'
 
 jest.mock('@patternfly/react-log-viewer', () => ({
   __esModule: true,
-  LogViewer: ({ height }: { height?: string }) => {
+  LogViewer: ({ height, toolbar }: { height?: string; toolbar?: React.ReactNode }) => {
     return (
       <div id="log-viewer" data-height={height}>
+        {toolbar}
         <div>
           <p>{'Cluster:'}</p>
           {'testCluster'}
@@ -29,9 +30,10 @@ jest.mock('@patternfly/react-log-viewer', () => ({
       </div>
     )
   },
-  LogViewerSearch: () => {
-    return <div>{'Search'}</div>
-  },
+}))
+
+jest.mock('./LogsViewerSearch', () => ({
+  LogViewerSearch: () => <div>{'Search'}</div>,
 }))
 
 jest.mock('screenfull', () => {
@@ -61,10 +63,6 @@ jest.mock('screenfull', () => {
       state.isFullscreen = false
       state.changeHandler = undefined
     },
-    __setFullscreen(value: boolean) {
-      state.isFullscreen = value
-      state.changeHandler?.()
-    },
   }
 })
 
@@ -72,7 +70,6 @@ import screenfull from 'screenfull'
 
 type MockScreenfull = typeof screenfull & {
   __reset: () => void
-  __setFullscreen: (value: boolean) => void
 }
 
 const mockScreenfull = screenfull as MockScreenfull
@@ -420,7 +417,7 @@ describe('LogsPage', () => {
     }
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -428,7 +425,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -443,9 +440,9 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClustersState, managedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClustersState, managedClusters)
         }}
       >
         <MemoryRouter>
@@ -455,7 +452,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -470,7 +467,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
@@ -478,7 +475,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -493,7 +490,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -501,7 +498,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
@@ -520,7 +517,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -528,7 +525,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
@@ -546,7 +543,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={testClusterSearchDetailsContext} />}>
@@ -554,7 +551,7 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([managedClusterLogs])
@@ -566,7 +563,7 @@ describe('LogsPage', () => {
     await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
   })
 
-  it('should expand LogViewer to full height when entering fullscreen (ACM-45133)', async () => {
+  it('should toggle LogViewer fullscreen when clicking Expand and Collapse (ACM-45133)', async () => {
     const localClusterLogs = nockOff(
       '/api/v1/namespaces/testNamespace/pods/testName/log?container=testContainer&tailLines=1000',
       'testLogs',
@@ -574,7 +571,7 @@ describe('LogsPage', () => {
     )
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={localClusterSearchDetailsContext} />}>
@@ -582,16 +579,22 @@ describe('LogsPage', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks([localClusterLogs])
     await waitFor(() => expect(screen.getByText('testLogs')).toBeInTheDocument())
     expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '450px')
 
-    mockScreenfull.__setFullscreen(true)
-
+    await clickElement(screen.getByRole('button', { name: 'Expand' }))
+    expect(screenfull.toggle).toHaveBeenCalledWith(expect.any(HTMLElement))
     await waitFor(() => expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '100%'))
+    expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument()
+
+    await clickElement(screen.getByRole('button', { name: 'Collapse' }))
+    expect(screenfull.toggle).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(screen.getByTestId('log-viewer')).toHaveAttribute('data-height', '450px'))
+    expect(screen.getByRole('button', { name: 'Expand' })).toBeInTheDocument()
   })
 
   it('should render logs toolbar & click wrap lines and raw buttons', async () => {
@@ -628,7 +631,7 @@ describe('LogsPage', () => {
       const [container, setContainer] = useState<string>('testContainer')
       const [previousLogs, setPreviousLogs] = useState<boolean>(false)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsToolbar
             logs={'testLogs'}
             name={'testPod'}
@@ -644,7 +647,7 @@ describe('LogsPage', () => {
             previousLogs={previousLogs}
             setPreviousLogs={setPreviousLogs}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Toolbar />)
@@ -701,7 +704,7 @@ describe('LogsPage', () => {
       const [container, setContainer] = useState<string>('testContainer')
       const [previousLogs, setPreviousLogs] = useState<boolean>(false)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsToolbar
             logs={'testLogs'}
             name={'testPod'}
@@ -717,7 +720,7 @@ describe('LogsPage', () => {
             previousLogs={previousLogs}
             setPreviousLogs={setPreviousLogs}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Toolbar />)
@@ -739,13 +742,13 @@ describe('LogsPage', () => {
       const logViewerRef = useRef<any>(undefined)
       const [showJumpToBottomBtn, setShowJumpToBottomBtn] = useState<boolean>(true)
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogsFooterButton
             logViewerRef={logViewerRef}
             showJumpToBottomBtn={showJumpToBottomBtn}
             setShowJumpToBottomBtn={setShowJumpToBottomBtn}
           />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Footer />)

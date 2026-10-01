@@ -4,7 +4,7 @@ jest.mock('../discoveredPoliciesWorker.factory')
 import { ApolloError } from '@apollo/client'
 import { render, screen, within } from '@testing-library/react'
 import { generatePath, MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { channelsState, helmReleaseState, subscriptionsState } from '../../../../atoms'
 import { waitForNotText, waitForText, clickElement } from '~/lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
@@ -75,11 +75,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -98,7 +98,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Response action')
@@ -158,11 +158,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -181,7 +181,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Response action')
@@ -264,11 +264,11 @@ describe('DiscoveredByCluster', () => {
         apiGroup: 'policy.open-cluster-management.io',
       }
       const { container } = render(
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(channelsState, [])
-            snapshot.set(helmReleaseState, [])
-            snapshot.set(subscriptionsState, [])
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(channelsState, [])
+            store.set(helmReleaseState, [])
+            store.set(subscriptionsState, [])
           }}
         >
           <MemoryRouter
@@ -287,7 +287,7 @@ describe('DiscoveredByCluster', () => {
               </Route>
             </Routes>
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForText('Cluster')
@@ -436,11 +436,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'constraints.gatekeeper.sh',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -459,7 +459,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Response action')
@@ -491,11 +491,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -514,7 +514,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Header
@@ -532,11 +532,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -555,7 +555,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Header
@@ -573,11 +573,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -596,7 +596,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Header
@@ -614,11 +614,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'policy.open-cluster-management.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -637,7 +637,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('Loading')
@@ -707,11 +707,11 @@ describe('DiscoveredByCluster', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -730,7 +730,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels column header exists
@@ -789,11 +789,11 @@ describe('DiscoveredByCluster', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -812,7 +812,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify Labels column header exists even with no labels
@@ -916,11 +916,11 @@ describe('DiscoveredByCluster', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -939,7 +939,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Verify all clusters are visible initially
@@ -1055,11 +1055,11 @@ describe('DiscoveredByCluster', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -1078,7 +1078,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // All three clusters should be visible initially
@@ -1176,11 +1176,11 @@ describe('DiscoveredByCluster', () => {
       apiGroup: 'kyverno.io',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(channelsState, [])
-          snapshot.set(helmReleaseState, [])
-          snapshot.set(subscriptionsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(channelsState, [])
+          store.set(helmReleaseState, [])
+          store.set(subscriptionsState, [])
         }}
       >
         <MemoryRouter
@@ -1199,7 +1199,7 @@ describe('DiscoveredByCluster', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(screen.getByText('1 with violations')).toBeInTheDocument()

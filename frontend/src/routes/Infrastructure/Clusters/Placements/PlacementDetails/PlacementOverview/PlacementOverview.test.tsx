@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   placementBindingsState,
   placementDecisionsState,
@@ -189,13 +189,13 @@ function OverviewComponent({
 }: OverviewComponentProps) {
   const context: PlacementDetailsContext = { placement }
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(placementDecisionsState, placementDecisions)
-        snapshot.set(placementBindingsState, bindings)
-        snapshot.set(policiesState, pols)
-        snapshot.set(policySetsState, polSets)
-        snapshot.set(gitOpsClustersState, gcs)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(placementDecisionsState, placementDecisions)
+        store.set(placementBindingsState, bindings)
+        store.set(policiesState, pols)
+        store.set(policySetsState, polSets)
+        store.set(gitOpsClustersState, gcs)
       }}
     >
       <MemoryRouter>
@@ -205,7 +205,7 @@ function OverviewComponent({
           </Route>
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react'
 import { configureAxe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clickByTestId, isCardEnabled, waitForNocks } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { CreateAzureControlPlane } from './CreateAzureControlPlane'
@@ -29,10 +29,10 @@ describe('CreateAzureControlPlane', () => {
 
   const Component = ({ enableHypershift = true }: { enableHypershift?: boolean }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
-          snapshot.set(multiClusterEnginesState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, mockManagedClusterAddOn)
+          store.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])
         }}
@@ -42,7 +42,7 @@ describe('CreateAzureControlPlane', () => {
             <Route path={NavigationPath.createAzureControlPlane} element={<CreateAzureControlPlane />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

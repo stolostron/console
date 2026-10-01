@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, namespacesState, policiesState, policySetsState } from '../../../atoms'
 import { nockIgnoreRBAC, nockCreate, nockIgnoreApiPaths, nockIgnorePlacementDebug } from '../../../lib/nock-util'
 import { clickElement, waitForNocks, waitForText, typeElement } from '~/lib/test-util'
@@ -12,12 +12,12 @@ import { Placement, PlacementBinding } from '../../../resources'
 
 function TestCreatePolicySet() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policySetsState, mockPolicySets)
-        snapshot.set(namespacesState, [mockNamespaces[0]])
-        snapshot.set(managedClustersState, mockManagedClusters)
-        snapshot.set(policiesState, mockPolicy)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(policySetsState, mockPolicySets)
+        store.set(namespacesState, [mockNamespaces[0]])
+        store.set(managedClustersState, mockManagedClusters)
+        store.set(policiesState, mockPolicy)
       }}
     >
       <MemoryRouter initialEntries={[`${NavigationPath.createPolicySet}`]}>
@@ -25,7 +25,7 @@ function TestCreatePolicySet() {
           <Route path={NavigationPath.createPolicySet} element={<CreatePolicySet />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

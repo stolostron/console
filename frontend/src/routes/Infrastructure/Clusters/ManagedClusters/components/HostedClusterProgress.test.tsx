@@ -5,7 +5,7 @@ import { render } from '@testing-library/react'
 import { nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForText } from '../../../../../lib/test-util'
 import HostedClusterProgress from './HostedClusterProgress'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Routes, Route, Outlet, MemoryRouter } from 'react-router'
 
 const handleModalToggle = () => {}
@@ -216,7 +216,7 @@ describe('HostedClusterProgress', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={{}} />}>
@@ -227,7 +227,7 @@ describe('HostedClusterProgress', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -240,7 +240,7 @@ describe('HostedClusterProgress click launchToOCP link', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={{}} />}>
@@ -251,7 +251,7 @@ describe('HostedClusterProgress click launchToOCP link', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 

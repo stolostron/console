@@ -3,7 +3,7 @@ import { Icon, Spinner } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from '@patternfly/react-icons'
 import { render, screen } from '@testing-library/react'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import NodePoolsProgress, { getNodePoolsStatus, getNodePoolStatus } from './NodePoolsProgress'
 import { ClusterImageSetApiVersion, ClusterImageSetKind } from '../../../../../resources'
 import { ClusterImageSetK8sResource } from '@openshift-assisted/ui-lib/cim'
@@ -334,7 +334,7 @@ describe('NodePoolsProgress', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={{}} />}>
@@ -345,7 +345,7 @@ describe('NodePoolsProgress', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
   it('should show all cluster pool names and button', async () => {

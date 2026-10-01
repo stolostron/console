@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { UserGroups } from './UserGroups'
 import { User, Group } from '../../../../resources/rbac'
 import { useUserDetailsContext } from './UserPage'
@@ -83,11 +83,11 @@ const mockUseUserDetailsContext = useUserDetailsContext as jest.MockedFunction<t
 
 function renderWithCtx() {
   return render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <UserGroups />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

@@ -28,7 +28,9 @@ export const defaultPlugin: Plugin = {
   isApplicationsAvailable: true,
   isGovernanceAvailable: true,
   isSearchAvailable: true,
-  dataContext: PluginDataContext,
+  get dataContext() {
+    return PluginDataContext
+  },
   acmExtensions: {},
   ocpApi: {
     useK8sWatchResource: () => [[] as any, true, undefined],

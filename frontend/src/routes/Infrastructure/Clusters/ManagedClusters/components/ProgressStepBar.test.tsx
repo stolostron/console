@@ -17,7 +17,7 @@ import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ansibleJobState, ansibleWorkflowState, clusterCuratorsState } from '../../../../../atoms'
 import { clickByTestId, clickByText, waitForCalled, waitForNocks, waitForText } from '../../../../../lib/test-util'
 import { ClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
@@ -338,7 +338,7 @@ describe('ProgressStepBar', () => {
   test('renders progress bar', async () => {
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <RecoilRoot initializeState={(snapshot) => snapshot.set(clusterCuratorsState, [clusterCurator1])}>
+      <StateProvider initializeStore={(store) => store.set(clusterCuratorsState, [clusterCurator1])}>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -346,7 +346,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Creating cluster')
     await waitForText('0 of 4 steps completed')
@@ -359,10 +359,10 @@ describe('ProgressStepBar', () => {
     window.open = jest.fn()
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCurator1])
-          snapshot.set(ansibleJobState, [ansibleJob])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCurator1])
+          store.set(ansibleJobState, [ansibleJob])
         }}
       >
         <MemoryRouter>
@@ -372,7 +372,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Creating cluster')
     await waitForText('0 of 4 steps completed')
@@ -388,11 +388,11 @@ describe('ProgressStepBar', () => {
     window.open = jest.fn()
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCurator1])
-          snapshot.set(ansibleJobState, [ansibleJobFailedPrehook])
-          snapshot.set(ansibleWorkflowState, [ansibleWorkflowPrehook])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCurator1])
+          store.set(ansibleJobState, [ansibleJobFailedPrehook])
+          store.set(ansibleWorkflowState, [ansibleWorkflowPrehook])
         }}
       >
         <MemoryRouter>
@@ -402,7 +402,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickByText('View logs')
     expect(window.open).toHaveBeenCalledWith('https://aap.example.com/#/jobs/workflow/1')
@@ -422,11 +422,11 @@ describe('ProgressStepBar', () => {
     }
     const context: Partial<ClusterDetailsContext> = { cluster }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [curator])
-          snapshot.set(ansibleJobState, [])
-          snapshot.set(ansibleWorkflowState, [workflow])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [curator])
+          store.set(ansibleJobState, [])
+          store.set(ansibleWorkflowState, [workflow])
         }}
       >
         <MemoryRouter>
@@ -436,7 +436,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickByText('View logs')
     expect(window.open).toHaveBeenCalledWith('https://aap.example.com/#/jobs/workflow/1')
@@ -446,10 +446,10 @@ describe('ProgressStepBar', () => {
     window.open = jest.fn()
     const context: Partial<ClusterDetailsContext> = { cluster: mockClusterUpdatesAvailable }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCurator1])
-          snapshot.set(ansibleJobState, [ansibleJob])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCurator1])
+          store.set(ansibleJobState, [ansibleJob])
         }}
       >
         <MemoryRouter>
@@ -459,7 +459,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickByText('View logs')
   })
@@ -476,10 +476,10 @@ describe('ProgressStepBar', () => {
     ]
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPrehook])
-          snapshot.set(ansibleJobState, [ansibleJobFailedPrehook])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCuratorConditionFailedPrehook])
+          store.set(ansibleJobState, [ansibleJobFailedPrehook])
         }}
       >
         <MemoryRouter>
@@ -489,7 +489,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickByText('View logs')
     await waitForNocks(nocks)
@@ -507,10 +507,10 @@ describe('ProgressStepBar', () => {
     ]
     const context: Partial<ClusterDetailsContext> = { cluster: mockClusterPosthook }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCuratorConditionFailedPosthook])
-          snapshot.set(ansibleJobState, [ansibleJobFailedPosthook])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCuratorConditionFailedPosthook])
+          store.set(ansibleJobState, [ansibleJobFailedPosthook])
         }}
       >
         <MemoryRouter>
@@ -520,7 +520,7 @@ describe('ProgressStepBar', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickByTestId('posthook-link')
     await waitForNocks(nocks)

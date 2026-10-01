@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
 import { nockCreate, nockIgnoreApiPaths } from '../../../../lib/nock-util'
 import { mockCRHCredential, mockDiscoveryConfig } from '../../../../lib/test-metadata'
@@ -33,17 +33,17 @@ describe('DiscoveredClusters', () => {
   beforeEach(() => nockIgnoreApiPaths())
   test('DiscoveredClusters Table', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(secretsState, [mockCRHCredential])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
         }}
       >
         <MemoryRouter>
           <DiscoveredClustersPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockDiscoveredClusters[0].spec.displayName)
@@ -58,17 +58,17 @@ describe('DiscoveredClusters', () => {
 
   test('No provider connections or discoveryconfig (Empty State 1)', async () => {
     const { queryAllByText } = await render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, [])
-          snapshot.set(discoveryConfigState, [])
-          snapshot.set(secretsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [])
+          store.set(discoveryConfigState, [])
+          store.set(secretsState, [])
         }}
       >
         <MemoryRouter>
           <DiscoveredClustersPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText("You don't have any discovered clusters yet")
     await waitForText('Red Hat OpenShift Cluster Manager')
@@ -82,11 +82,11 @@ describe('DiscoveredClusters', () => {
     )
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, [])
-          snapshot.set(discoveryConfigState, [])
-          snapshot.set(secretsState, mockRHOCMSecrets)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [])
+          store.set(discoveryConfigState, [])
+          store.set(secretsState, mockRHOCMSecrets)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.discoveredClusters]}>
@@ -95,7 +95,7 @@ describe('DiscoveredClusters', () => {
             <Route path={NavigationPath.discoveredClusters} element={<DiscoveredClustersPage />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText("You don't have any discovered clusters yet")
     await waitForText('Configure Discovery')
@@ -113,17 +113,17 @@ describe('DiscoveredClusters', () => {
 
   test('CRH and discoveryconfig exist, but no discoveredclusters (Empty State 3)', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, [])
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(secretsState, [mockCRHCredential])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
         }}
       >
         <MemoryRouter>
           <DiscoveredClustersPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText("You don't have any discovered clusters yet")
@@ -133,17 +133,17 @@ describe('DiscoveredClusters', () => {
 
   test('export button should produce a file for download', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(discoveredClusterState, mockDiscoveredClusters)
-          snapshot.set(discoveryConfigState, [mockDiscoveryConfig])
-          snapshot.set(secretsState, [mockCRHCredential])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
         }}
       >
         <MemoryRouter>
           <DiscoveredClustersPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     window.URL.createObjectURL = jest.fn()

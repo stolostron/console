@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { secretsState } from '../../../../../../../atoms'
 import { Secret } from '../../../../../../../resources'
 import { RosaHCPModal } from './RosaHCPModal'
@@ -35,9 +35,9 @@ describe('RosaHCPModal', () => {
     secrets?: Secret[]
     selectedSecret?: Secret[]
   }) => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, secrets as any)
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, secrets as any)
       }}
     >
       <MemoryRouter>
@@ -48,7 +48,7 @@ describe('RosaHCPModal', () => {
           setSelectedSecret={mockSetSelectedSecret}
         />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   beforeEach(() => {

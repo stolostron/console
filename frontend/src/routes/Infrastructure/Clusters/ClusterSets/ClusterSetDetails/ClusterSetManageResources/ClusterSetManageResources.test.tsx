@@ -18,7 +18,7 @@ import {
 import { testMapClusters } from '../../../../../../resources/utils'
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
@@ -252,25 +252,25 @@ const Component = () => {
     clusterRoleBindings: [],
   }
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClustersState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClustersState, [
           mockManagedClusterAdd,
           mockManagedClusterRemove,
           mockManagedClusterUnchanged,
           mockManagedClusterTransfer,
           mockManagedClusterClaimed,
         ])
-        snapshot.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
-        snapshot.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
-        snapshot.set(managedClusterInfosState, [])
-        snapshot.set(certificateSigningRequestsState, [])
-        snapshot.set(clusterDeploymentsState, [
+        store.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
+        store.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
+        store.set(managedClusterInfosState, [])
+        store.set(certificateSigningRequestsState, [])
+        store.set(clusterDeploymentsState, [
           mockClusterDeploymentAdd,
           mockClusterDeploymentRemove,
           mockClusterDeploymentClaimed,
         ])
-        snapshot.set(clusterPoolsState, [mockClusterPool])
+        store.set(clusterPoolsState, [mockClusterPool])
       }}
     >
       <MemoryRouter
@@ -283,7 +283,7 @@ const Component = () => {
           </Route>
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

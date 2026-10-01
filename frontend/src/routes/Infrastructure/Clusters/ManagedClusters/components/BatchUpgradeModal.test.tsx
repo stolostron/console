@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } from '../../../../../lib/nock-util'
 import { waitForNocks, clickElement } from '~/lib/test-util'
 import { ClusterCuratorDefinition } from '../../../../../resources'
@@ -336,11 +336,11 @@ describe('BatchUpgradeModal', () => {
   beforeEach(() => nockIgnoreApiPaths())
   it('should only show upgradeable ones, and select latest version as default', () => {
     const { queryByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(queryByText('cluster-0-no-available')).toBeFalsy()
     expect(queryByText('cluster-1-ready1')).toBeTruthy()
@@ -356,7 +356,7 @@ describe('BatchUpgradeModal', () => {
   it('should close modal when succeed', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal
             clusters={allClusters}
@@ -366,7 +366,7 @@ describe('BatchUpgradeModal', () => {
             }}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 404)
@@ -384,7 +384,7 @@ describe('BatchUpgradeModal', () => {
   it('should show loading when click upgrade, and upgrade button should be disabled when loading', async () => {
     let isClosed = false
     const { getByText, queryByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal
             clusters={allClusters}
@@ -394,7 +394,7 @@ describe('BatchUpgradeModal', () => {
             }}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
@@ -412,7 +412,7 @@ describe('BatchUpgradeModal', () => {
   it('should close modal if click cancel', async () => {
     let isClosed = false
     const { getByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal
             clusters={allClusters}
@@ -422,7 +422,7 @@ describe('BatchUpgradeModal', () => {
             }}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickElement(getByText('Cancel'))
     expect(isClosed).toBe(true)
@@ -430,11 +430,11 @@ describe('BatchUpgradeModal', () => {
   it('should show alert when failed; keep failed rows in table with error messages', async () => {
     jest.spyOn(console, 'error').mockImplementation(() => {})
     const { getByText, queryByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal clusters={allClusters} open={true} close={() => {}} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
     const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'), undefined, 400)
@@ -458,11 +458,11 @@ describe('BatchUpgradeModal', () => {
       mockUpgradeRisksPredictions
     )
     const { getByText } = render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <BatchUpgradeModal clusters={[mockClusterWithUpgrade]} open={true} close={() => {}} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Wait for prometheus nocks to finish
     await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -551,11 +551,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { getByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -594,11 +594,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { getByText, queryByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -640,11 +640,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { queryByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -681,11 +681,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { getByText, queryByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -728,11 +728,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { getByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])
@@ -768,11 +768,11 @@ describe('BatchUpgradeModal', () => {
       )
 
       const { getByText, queryByText } = render(
-        <RecoilRoot>
+        <StateProvider>
           <MemoryRouter>
             <BatchUpgradeModal clusters={[mockClusterWithOperatorRisk]} open={true} close={() => {}} />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       )
 
       await waitForNocks([getUpgradeRisksPredictionsNock])

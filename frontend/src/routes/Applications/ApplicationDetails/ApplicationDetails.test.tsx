@@ -3,7 +3,7 @@
 import { MockedProvider } from '@apollo/client/testing'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   applicationsState,
   channelsState,
@@ -336,15 +336,15 @@ describe('Applications Page', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(applicationsState, mockApplications)
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(placementDecisionsState, mockPlacementsDecisions)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(managedClusterInfosState, mockManagedClusterInfos)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(applicationsState, mockApplications)
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(placementDecisionsState, mockPlacementsDecisions)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(managedClusterInfosState, mockManagedClusterInfos)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -359,7 +359,7 @@ describe('Applications Page', () => {
             </PluginContext.Provider>
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // wait for page to load
     await waitForText(mockApplication0.metadata.name!, true)

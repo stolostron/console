@@ -2,7 +2,7 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Settings, settingsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../../lib/nock-util'
 import { wait, waitForNocks } from '../../../../lib/test-util'
@@ -85,9 +85,9 @@ describe('DeleteResourceModal', () => {
     nockIgnoreApiPaths()
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <DeleteResourceModal
@@ -104,7 +104,7 @@ describe('DeleteResourceModal', () => {
           close={() => {}}
           relatedResource={false}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await act(async () => {

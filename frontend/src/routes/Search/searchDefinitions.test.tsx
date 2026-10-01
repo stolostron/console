@@ -4,7 +4,7 @@
 import { render } from '@testing-library/react'
 import { t as t } from '~/lib/test-helpers'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
 import { ConfigMapApiVersion, ConfigMapKind } from '../../resources'
 import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../resources/managed-cluster-info'
@@ -68,11 +68,11 @@ test('Correctly returns CreateDetailsLink - Cluster', () => {
     kind: 'Cluster',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -87,11 +87,11 @@ test('Correctly returns CreateDetailsLink - ACM-Application', () => {
     apiversion: 'v1beta1',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -105,11 +105,11 @@ test('Correctly returns CreateDetailsLink - NON-Application', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -123,11 +123,11 @@ test('Correctly returns CreateDetailsLink - HUB-Policy', () => {
     apigroup: 'policy.open-cluster-management.io',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -141,11 +141,11 @@ test('Correctly returns CreateDetailsLink - Managed-Policy', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -159,11 +159,11 @@ test('Correctly returns CreateDetailsLink - PolicyReport', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -177,11 +177,11 @@ test('Correctly returns CreateDetailsLink - Default', () => {
     selfLink: '/self/link',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -196,9 +196,9 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub default resour
     managedHub: 'global-hub',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterInfosState, [
           {
             apiVersion: ManagedClusterInfoApiVersion,
             kind: ManagedClusterInfoKind,
@@ -218,7 +218,7 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub default resour
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -233,9 +233,9 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster default re
     managedHub: 'leaf-hub',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterInfosState, [
           {
             apiVersion: ManagedClusterInfoApiVersion,
             kind: ManagedClusterInfoKind,
@@ -255,7 +255,7 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster default re
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -268,11 +268,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Cluster resour
     managedHub: 'global-hub',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -285,11 +285,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Cluster re
     managedHub: 'leaf-hub',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -306,11 +306,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Application re
     _hubClusterResource: 'true',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -326,11 +326,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Applicatio
     cluster: 'leaf-cluster',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -347,11 +347,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub Policy resourc
     namespace: 'default',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -369,11 +369,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster Policy res
     _hubClusterResource: 'true',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -390,11 +390,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed hub PolicyReport r
     _hubClusterResource: 'true',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -410,11 +410,11 @@ test('Correctly returns CreateGlobalSearchDetailsLink managed cluster PolicyRepo
     cluster: 'leaf-cluster',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateGlobalSearchDetailsLink item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -428,11 +428,11 @@ test('Correctly returns CreateApplicationTopologyLink', () => {
     apigroup: 'app.k8s.io',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateApplicationTopologyLink item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -448,11 +448,11 @@ test('Correctly returns CreateApplicationTopologyLink - global search', () => {
     cluster: 'test-cluster',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateApplicationTopologyLink item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -464,11 +464,11 @@ test('Correctly returns empty CreateApplicationTopologyLink', () => {
     dashboard: '',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateApplicationTopologyLink item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -644,9 +644,9 @@ test('Correctly returns CreateExternalVMLink', () => {
     namespace: 'testVM',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(managedClusterInfosState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterInfosState, [
           {
             apiVersion: ManagedClusterInfoApiVersion,
             kind: ManagedClusterInfoKind,
@@ -666,7 +666,7 @@ test('Correctly returns CreateExternalVMLink', () => {
       <MemoryRouter>
         <CreateExternalVMLink item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -678,11 +678,11 @@ test('Correctly returns empty CreateExternalVMLink', () => {
     namespace: 'testVM',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <CreateExternalVMLink item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -694,9 +694,9 @@ test('Correctly returns VMLaunchLinks', () => {
     namespace: 'testVM',
   }
   const { baseElement } = render(
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(configMapsState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(configMapsState, [
           {
             apiVersion: ConfigMapApiVersion,
             kind: ConfigMapKind,
@@ -709,7 +709,7 @@ test('Correctly returns VMLaunchLinks', () => {
             },
           },
         ])
-        snapshot.set(clusterManagementAddonsState, [
+        store.set(clusterManagementAddonsState, [
           {
             apiVersion: 'addon.open-cluster-management.io/v1alpha1',
             kind: 'ClusterManagementAddOn',
@@ -731,7 +731,7 @@ test('Correctly returns VMLaunchLinks', () => {
       <MemoryRouter>
         <VMLaunchLinks item={item} t={t} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -743,11 +743,11 @@ test('Correctly returns VirtualMachineSnapshot indications', () => {
     indications: 'indication1; indication2',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <VMSnapshotIndications item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })
@@ -758,11 +758,11 @@ test('Correctly returns empty VirtualMachineSnapshot indications', () => {
     namespace: 'testNamespace',
   }
   const { baseElement } = render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <VMSnapshotIndications item={item} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
 })

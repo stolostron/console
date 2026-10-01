@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { multiClusterEnginesState } from '../../../../../../../atoms'
 import { HostedCard } from './HostedCard'
 import { clickElement } from '~/lib/test-util'
@@ -19,9 +19,9 @@ describe('HostedCard', () => {
     areCapiCapaEnabled?: boolean
     isHypershiftEnabled?: boolean
   } = {}) => (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(multiClusterEnginesState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(multiClusterEnginesState, [
           {
             spec: {
               overrides: {
@@ -40,7 +40,7 @@ describe('HostedCard', () => {
           isHypershiftEnabled={isHypershiftEnabled}
         />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   beforeEach(() => {

@@ -2,7 +2,7 @@
 import { readFileSync } from 'fs'
 import { join } from 'path'
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { argoCDsState } from '../../atoms'
 import { AcmToastContext } from '../../ui-components'
 import { CreateArgoResources } from './CreateArgoResources'
@@ -56,15 +56,15 @@ function TestCreateArgoResources({
   }
 
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(argoCDsState, [mockArgoCD])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(argoCDsState, [mockArgoCD])
       }}
     >
       <AcmToastContext.Provider value={toastContextValue}>
         <CreateArgoResources handleModalToggle={mockHandleModalToggle} clusterSets={mockClusterSets} />
       </AcmToastContext.Provider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
