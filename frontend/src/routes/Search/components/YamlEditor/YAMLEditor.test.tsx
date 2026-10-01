@@ -5,9 +5,9 @@ import { MemoryRouter } from 'react-router'
 import { PluginContext, defaultPlugin } from '../../../../lib/PluginContext'
 import YAMLEditor from './YAMLEditor'
 
-jest.mock('../../../../shared-recoil', () => ({
+jest.mock('../../../../shared-atoms', () => ({
   useSharedAtoms: jest.fn(() => ({ isFineGrainedRbacEnabledState: {} })),
-  useRecoilValue: jest.fn(() => false),
+  useSharedValue: jest.fn(() => false),
 }))
 
 const mockOnSave = jest.fn()

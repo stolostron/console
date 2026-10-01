@@ -19,7 +19,7 @@ import './ApplicationTopology.css'
 import './topology/css/Drawer.css'
 import { ArgoApp, ClusterDetailsContainerControl } from './types'
 import { nodeDetailsProvider } from './model/NodeDetailsProvider'
-import { useSharedAtoms, useRecoilValue } from '~/shared-recoil'
+import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 
 type ProcessingSaveState = {
   isProcessingSave: boolean
@@ -64,7 +64,7 @@ export function ApplicationTopologyPageContent() {
   } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { placementsState } = useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
+  const placements = useSharedValue(placementsState)
   const { refreshTime, topology, statuses, application } = applicationData
   let hubClusterName = ''
   if (topology) {

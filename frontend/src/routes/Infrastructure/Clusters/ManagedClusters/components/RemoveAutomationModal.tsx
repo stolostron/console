@@ -8,7 +8,7 @@ import { Button, ButtonVariant, Stack, StackItem } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useMemo, useState, type JSX } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue, useSharedSelectors } from '../../../../../shared-atoms'
 import { useClusterDistributionColumn, useClusterProviderColumn } from '../../../../../components/Clusters'
 import { automationCuratorNamespace } from '../utils/cluster-actions'
 
@@ -26,9 +26,9 @@ export function RemoveAutomationModal(props: {
   const { t } = useTranslation()
   const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
   const [isRemoving, setIsRemoving] = useState(false)
   const clusterProviders = useClusterProviderColumn()
   const distributionVersion = useClusterDistributionColumn(props.clusters, clusterCurators, hostedClusters)

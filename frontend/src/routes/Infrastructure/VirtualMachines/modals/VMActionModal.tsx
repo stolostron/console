@@ -9,7 +9,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmModal, AcmToastContext, IAlertContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SnapshotModalBody } from './snapshotModalBody'
@@ -115,7 +115,7 @@ export const VMActionModal = (props: IVMActionModalProps) => {
   const { t } = useTranslation()
   const toast = useContext(AcmToastContext)
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const [vm, setVM] = useState<any>({})
   const [vmLoading, setVMLoading] = useState<any>(true)
   const [reqBody, setReqBody] = useState({})

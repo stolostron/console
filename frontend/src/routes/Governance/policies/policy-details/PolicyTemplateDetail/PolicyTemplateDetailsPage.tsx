@@ -5,7 +5,7 @@ import { generatePath, Outlet, useOutletContext, useParams } from 'react-router'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmAlert, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../../ui-components'
 import { TemplateDetailTitle } from '../../../components/TemplateDetailTitle'
 
@@ -23,7 +23,7 @@ export function PolicyTemplateDetailsPage() {
   const [templateError, setTemplateError] = useState<string>()
   const [auditViolations, setAuditViolations] = useState<number | undefined>()
   const { managedClusterAddonsState } = useSharedAtoms()
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
+  const managedClusterAddOns = useSharedValue(managedClusterAddonsState)
 
   const urlParams = useParams()
   const policyNamespace = urlParams.namespace ?? ''

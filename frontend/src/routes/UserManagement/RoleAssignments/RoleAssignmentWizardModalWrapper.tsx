@@ -5,7 +5,7 @@ import { RoleAssignment } from '../../../resources'
 import { FlattenedRoleAssignment } from '../../../resources/clients/model/flattened-role-assignment'
 import { deleteRoleAssignment } from '../../../resources/clients/multicluster-role-assignment-client'
 import { useGetPlacementClusters } from '../../../resources/clients/placement-client'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmToastContext } from '../../../ui-components'
 import { RoleAssignmentWizardModal } from '../../../wizards/RoleAssignment/RoleAssignmentWizardModal'
 import { wizardDataToRoleAssignmentToSave } from '../../../wizards/RoleAssignment/roleAssignmentWizardHelper'
@@ -30,11 +30,11 @@ export const RoleAssignmentWizardModalWrapper = ({
   const [isSaving, setIsSaving] = useState<boolean>(false)
 
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
-  const multiClusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const multiClusterRoleAssignments = useSharedValue(multiclusterRoleAssignmentState)
   const placementClusters = useGetPlacementClusters()
 
   const { managedClusterSetBindingsState } = useSharedAtoms()
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
 
   const toastContext = useContext(AcmToastContext)
   const { t } = useTranslation()

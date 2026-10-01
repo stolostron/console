@@ -6,14 +6,14 @@ import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { SupportedAggregate, useAggregate } from '../../../../../lib/useAggregates'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 export function StatusSummaryCount() {
   const { policyreportState, usePolicies } = useSharedAtoms()
-  const policyReports = useRecoilValue(policyreportState)
+  const policyReports = useSharedValue(policyreportState)
   const policies = usePolicies()
   const { cluster } = useClusterDetailsContext()
 

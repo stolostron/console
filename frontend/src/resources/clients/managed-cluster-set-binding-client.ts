@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import {
   ManagedClusterSetBinding,
   ManagedClusterSetBindingApiVersion,
@@ -71,14 +71,14 @@ export const findManagedClusterSetBinding = (
   )
 
 /**
- * React hook to find ManagedClusterSetBindings matching the query from global Recoil state.
+ * React hook to find ManagedClusterSetBindings matching the query from global shared state state.
  *
  * @param query - Query parameters for filtering bindings
  * @returns Array of ManagedClusterSetBindings matching the query
  */
 export const useFindManagedClusterSetBinding = (query: ManagedClusterSetBindingQuery): ManagedClusterSetBinding[] => {
   const { managedClusterSetBindingsState } = useSharedAtoms()
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
 
   return findManagedClusterSetBinding(managedClusterSetBindings, query)
 }

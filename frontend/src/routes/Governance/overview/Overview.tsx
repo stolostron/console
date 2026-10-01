@@ -23,7 +23,7 @@ import { AcmMasonry } from '../../../components/AcmMasonry'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
 import { ManagedCluster, Policy, PolicyDefinition } from '../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmDrawerContext, AcmVisitedLink, compareStrings } from '../../../ui-components'
 import {
   GovernanceCreatePolicyEmptyState,
@@ -254,7 +254,7 @@ function SecurityGroupCard(props: { title: string; group: string; policies: Poli
 function ClustersCard() {
   const { t } = useTranslation()
   const { usePolicies, managedClustersState } = useSharedAtoms()
-  const clusters = useRecoilValue(managedClustersState)
+  const clusters = useSharedValue(managedClustersState)
   const policies = usePolicies()
   const { setDrawerContext } = useContext(AcmDrawerContext)
 

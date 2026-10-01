@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { snapshot_UNSTABLE } from 'recoil'
+import { createStore } from 'jotai'
 import { clusterExtensionsState, subscriptionOperatorsState } from './atoms'
 import {
   ClusterExtensionApiVersion,
@@ -48,19 +48,17 @@ const notInstalledClusterExtension: ClusterExtension = {
 
 describe('operator subscription selectors', () => {
   it('returns Subscription when only Subscription is present', () => {
-    const snapshot = snapshot_UNSTABLE(({ set }) => {
-      set(subscriptionOperatorsState, [healthyGitOpsSubscription])
-      set(clusterExtensionsState, [])
-    })
-    expect(snapshot.getLoadable(gitOpsOperatorSubscriptionsValue).contents).toEqual([healthyGitOpsSubscription])
+    const store = createStore()
+    store.set(subscriptionOperatorsState, [healthyGitOpsSubscription])
+    store.set(clusterExtensionsState, [])
+    expect(store.get(gitOpsOperatorSubscriptionsValue)).toEqual([healthyGitOpsSubscription])
   })
 
   it('returns mapped ClusterExtension when only ClusterExtension is present', () => {
-    const snapshot = snapshot_UNSTABLE(({ set }) => {
-      set(subscriptionOperatorsState, [])
-      set(clusterExtensionsState, [installedKubevirtClusterExtension])
-    })
-    const result = snapshot.getLoadable(kubevirtOperatorSubscriptionsValue).contents as SubscriptionOperator[]
+    const store = createStore()
+    store.set(subscriptionOperatorsState, [])
+    store.set(clusterExtensionsState, [installedKubevirtClusterExtension])
+    const result = store.get(kubevirtOperatorSubscriptionsValue) as SubscriptionOperator[]
     expect(result).toHaveLength(1)
     expect(result[0].spec.name).toBe('kubevirt-hyperconverged')
     expect(result[0].status?.installedCSV).toBe('4.17.0')
@@ -69,30 +67,28 @@ describe('operator subscription selectors', () => {
   })
 
   it('prefers Subscription when both Subscription and ClusterExtension are present', () => {
-    const snapshot = snapshot_UNSTABLE(({ set }) => {
-      set(subscriptionOperatorsState, [healthyGitOpsSubscription])
-      set(clusterExtensionsState, [
-        {
-          ...installedKubevirtClusterExtension,
-          metadata: { name: 'openshift-gitops-operator' },
-          spec: {
-            namespace: 'openshift-gitops',
-            source: {
-              sourceType: 'Catalog',
-              catalog: { packageName: 'openshift-gitops-operator' },
-            },
+    const store = createStore()
+    store.set(subscriptionOperatorsState, [healthyGitOpsSubscription])
+    store.set(clusterExtensionsState, [
+      {
+        ...installedKubevirtClusterExtension,
+        metadata: { name: 'openshift-gitops-operator' },
+        spec: {
+          namespace: 'openshift-gitops',
+          source: {
+            sourceType: 'Catalog',
+            catalog: { packageName: 'openshift-gitops-operator' },
           },
         },
-      ])
-    })
-    expect(snapshot.getLoadable(gitOpsOperatorSubscriptionsValue).contents).toEqual([healthyGitOpsSubscription])
+      },
+    ])
+    expect(store.get(gitOpsOperatorSubscriptionsValue)).toEqual([healthyGitOpsSubscription])
   })
 
   it('ignores ClusterExtension that is not installed', () => {
-    const snapshot = snapshot_UNSTABLE(({ set }) => {
-      set(subscriptionOperatorsState, [])
-      set(clusterExtensionsState, [notInstalledClusterExtension])
-    })
-    expect(snapshot.getLoadable(kubevirtOperatorSubscriptionsValue).contents).toEqual([])
+    const store = createStore()
+    store.set(subscriptionOperatorsState, [])
+    store.set(clusterExtensionsState, [notInstalledClusterExtension])
+    expect(store.get(kubevirtOperatorSubscriptionsValue)).toEqual([])
   })
 })

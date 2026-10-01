@@ -16,7 +16,7 @@ import {
   useAssistedServiceConfigMap,
   useOnDeleteHost,
 } from '../../Clusters/ManagedClusters/CreateCluster/components/assisted-installer/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   AgentAlerts,
   AgentK8sResource,
@@ -39,7 +39,7 @@ const HostsTab: React.FC = () => {
     infraNMStates = [],
   } = useInfraEnvironmentDetailsContext()
   const { agentMachinesState } = useSharedAtoms()
-  const agentMachines = useRecoilValue(agentMachinesState)
+  const agentMachines = useSharedValue(agentMachinesState)
   const [editBMH, setEditBMH] = useState<BareMetalHostK8sResource>()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
   const [bulkModalProps, setBulkModalProps] = useState<

@@ -3,19 +3,19 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { ButtonVariant } from '@patternfly/react-core'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { User } from '../../../../resources/rbac'
 import { IAcmTableButtonAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { UsersTable } from './UsersTable'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const usersAtom = Symbol('usersState')
@@ -74,11 +74,11 @@ const mockMras: MulticlusterRoleAssignment[] = [
 
 function Component(props: any = {}) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <UsersTable {...props} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -88,7 +88,7 @@ function setupMocks(users: User[] = mockUsers, mras: MulticlusterRoleAssignment[
     multiclusterRoleAssignmentState: mraAtom,
   } as any)
 
-  mockUseRecoilValue.mockImplementation((atom: any) => {
+  mockUseSharedValue.mockImplementation((atom: any) => {
     if (atom === usersAtom) return users
     if (atom === mraAtom) return mras
     return []
@@ -243,7 +243,7 @@ describe('UsersTable', () => {
 
   describe('empty state create button', () => {
     beforeEach(() => {
-      mockUseRecoilValue.mockReturnValue([])
+      mockUseSharedValue.mockReturnValue([])
     })
 
     test('should not show create button in empty state by default', async () => {

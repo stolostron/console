@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { PlacementDecision } from '../placement-decision'
 
 /**
@@ -37,7 +37,7 @@ const isNameMatch = (placement: PlacementDecision, query: PlacementDecisionQuery
   query.names?.length && placement.metadata.name && query.names.includes(placement.metadata.name)
 
 /**
- * React hook to find PlacementDecisions matching the query from global Recoil state.
+ * React hook to find PlacementDecisions matching the query from global shared state state.
  * Matches by name OR by owner Placement name (logical OR).
  *
  * @param query - Query parameters for filtering PlacementDecisions
@@ -45,7 +45,7 @@ const isNameMatch = (placement: PlacementDecision, query: PlacementDecisionQuery
  */
 export const useFindPlacementDecisions = (query: PlacementDecisionQuery): PlacementDecision[] => {
   const { placementDecisionsState } = useSharedAtoms()
-  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
 
   return placementDecisions?.filter((placement) => isNameMatch(placement, query) || isPlacementMatch(placement, query))
 }

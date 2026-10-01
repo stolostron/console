@@ -111,8 +111,8 @@ export default [
               importNames: ['Trans', 'useTranslation'],
             },
             {
-              message: 'Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot',
-              name: 'recoil',
+              message: 'Please use hooks from ./src/shared-atoms to access the ACM/MCE shared state store',
+              name: 'jotai',
             },
             {
               message:
@@ -132,7 +132,7 @@ export default [
           patterns: [
             {
               message:
-                'Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot',
+                'Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-atoms to access shared atoms/selectors',
               group: ['**/atoms', '**/selectors'],
             },
           ],

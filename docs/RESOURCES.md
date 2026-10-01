@@ -2,11 +2,12 @@
 
 1. Add a watch to `/backend/src/routes/events.ts` for the resource.
 2. Add a resource definition in `/fronend/src/resources`.
-3. Add recoil setup for the resource in `/frontend/src/atoms.tsx`.
+3. Add atom setup for the resource in `/frontend/src/atoms.ts`.
 4. In `frontend` use the resources by
 
     ```
-    const namespaces = useRecoilValue(namespacesState)
+    const { namespacesState } = useSharedAtoms()
+    const namespaces = useSharedValue(namespacesState)
     ```
 
 # Update console chart or backplane operator

@@ -437,7 +437,7 @@ export class ServerSideEvents {
       sending.push(...rbac.splice(0, 200))
       sending.push(...other.splice(0, 100))
 
-      // EOP tells browser (LoadData) to process and recoil resources that have been sent so far
+      // EOP tells the browser (LoadData) to process and emit the resources sent so far
       sending.push({ id: '999999', data: { type: 'EOP' } }) // END OF PACKET
     } while (
       clusters.length ||

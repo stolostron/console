@@ -2,17 +2,17 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { RolesTable } from './RolesTable'
 import { ClusterRole } from '../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = jest.mocked(useRecoilValue)
+const mockUseSharedValue = jest.mocked(useSharedValue)
 const mockUseSharedAtoms = jest.mocked(useSharedAtoms)
 
 // Mock the entire ui-components module with all necessary exports
@@ -68,11 +68,11 @@ jest.mock('../../../ui-components', () => ({
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <RolesTable />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
@@ -130,7 +130,7 @@ describe('RolesTable', () => {
   })
 
   it('should render roles when data is available', () => {
-    mockUseRecoilValue.mockReturnValue([mockClusterRole])
+    mockUseSharedValue.mockReturnValue([mockClusterRole])
 
     render(<Component />)
 
@@ -139,7 +139,7 @@ describe('RolesTable', () => {
   })
 
   it('should show empty state when no roles', () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     render(<Component />)
 
@@ -148,7 +148,7 @@ describe('RolesTable', () => {
   })
 
   it('should handle undefined clusterRoles', () => {
-    mockUseRecoilValue.mockReturnValue(undefined)
+    mockUseSharedValue.mockReturnValue(undefined)
 
     render(<Component />)
 
@@ -157,7 +157,7 @@ describe('RolesTable', () => {
   })
 
   it('should process multiple cluster roles correctly', () => {
-    mockUseRecoilValue.mockReturnValue([mockClusterRole, mockClusterRoleNoPermissions, mockClusterRoleNoAnnotations])
+    mockUseSharedValue.mockReturnValue([mockClusterRole, mockClusterRoleNoPermissions, mockClusterRoleNoAnnotations])
 
     render(<Component />)
 

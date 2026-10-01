@@ -19,7 +19,7 @@ import { rbacDelete, rbacPatch } from '../../../../../../lib/rbac-util'
 import { ScaleClusterAlert } from '../../components/ScaleClusterAlert'
 import { showMachinePools, useClusterDetailsContext } from '../ClusterDetails'
 import { ScaleMachinePoolModal, ScaleMachinePoolModalProps } from './components/ScaleMachinePoolModal'
-import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../../shared-atoms'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
 
 export function MachinePoolsPageContent() {
@@ -44,7 +44,7 @@ export function MachinePoolsTable() {
     open: false,
   })
   const [scaleMachinePool, setScaleMachinePool] = useState<ScaleMachinePoolModalProps | undefined>()
-  const machinePoolState = useRecoilValue(machinePoolsState)
+  const machinePoolState = useSharedValue(machinePoolsState)
   const machinePools = machinePoolState.filter((mp) => mp.metadata.namespace === cluster.namespace)
 
   function getInstanceType(machinePool: MachinePool) {

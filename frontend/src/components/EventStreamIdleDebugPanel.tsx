@@ -4,7 +4,7 @@ import { css } from '@emotion/css'
 import { useContext, useEffect, useRef, useState } from 'react'
 import { usePageActivity } from '../lib/usePageActivity'
 import { PluginDataContext } from '~/lib/PluginDataContext'
-// This component is rendered in the PluginDataContextProvider, so can use recoil directly
+// This component is rendered in the PluginDataContextProvider, so can use shared state directly
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import { useEventStreamIdleGracePeriod, useEventStreamIdleTimeout } from '~/atoms'
 

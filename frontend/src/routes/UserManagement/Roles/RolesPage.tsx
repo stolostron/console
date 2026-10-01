@@ -3,14 +3,14 @@ import { PageSection } from '@patternfly/react-core'
 import { useMemo } from 'react'
 import { useParams } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmPage, AcmPageContent, AcmPageHeader, AcmTableStateProvider } from '../../../ui-components'
 import { RolesTable } from './RolesTable'
 
 export const useCurrentRole = () => {
   const { id } = useParams()
   const { vmClusterRolesState } = useSharedAtoms()
-  const clusterRoles = useRecoilValue(vmClusterRolesState)
+  const clusterRoles = useSharedValue(vmClusterRolesState)
 
   return useMemo(
     () =>

@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { Meta } from '@storybook/react'
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   ClusterClaim,
   ClusterClaimApiVersion,
@@ -257,10 +256,10 @@ ClusterPoolClustersTableEmpty.storyName = 'ClusterPoolClustersTable - Empty'
 
 export function ClusterPoolsTableStory() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(clusterClaimsState, mockClusterClaims)
-        snapshot.set(clusterImageSetsState, [
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(clusterClaimsState, mockClusterClaims)
+        store.set(clusterImageSetsState, [
           {
             apiVersion: ClusterImageSetApiVersion,
             kind: ClusterImageSetKind,
@@ -268,17 +267,17 @@ export function ClusterPoolsTableStory() {
             spec: { releaseImage: 'quay.io/openshift-release-dev/ocp-release:4.14.5-x86_64' },
           },
         ])
-        snapshot.set(certificateSigningRequestsState, [])
-        snapshot.set(clusterDeploymentsState, [])
-        snapshot.set(managedClusterAddonsState, {})
-        snapshot.set(clusterManagementAddonsState, [])
-        snapshot.set(managedClusterInfosState, [])
-        snapshot.set(managedClustersState, [])
-        snapshot.set(agentClusterInstallsState, [])
-        snapshot.set(clusterCuratorsState, [])
-        snapshot.set(hostedClustersState, [])
-        snapshot.set(nodePoolsState, [])
-        snapshot.set(discoveredClusterState, [])
+        store.set(certificateSigningRequestsState, [])
+        store.set(clusterDeploymentsState, [])
+        store.set(managedClusterAddonsState, {})
+        store.set(clusterManagementAddonsState, [])
+        store.set(managedClusterInfosState, [])
+        store.set(managedClustersState, [])
+        store.set(agentClusterInstallsState, [])
+        store.set(clusterCuratorsState, [])
+        store.set(hostedClustersState, [])
+        store.set(nodePoolsState, [])
+        store.set(discoveredClusterState, [])
       }}
     >
       <AcmAlertProvider>
@@ -288,28 +287,28 @@ export function ClusterPoolsTableStory() {
           emptyState={<div>No cluster pools</div>}
         />
       </AcmAlertProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 ClusterPoolsTableStory.storyName = 'ClusterPoolsTable'
 
 export function ClusterPoolsTableEmpty() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(clusterClaimsState, [])
-        snapshot.set(clusterImageSetsState, [])
-        snapshot.set(certificateSigningRequestsState, [])
-        snapshot.set(clusterDeploymentsState, [])
-        snapshot.set(managedClusterAddonsState, {})
-        snapshot.set(clusterManagementAddonsState, [])
-        snapshot.set(managedClusterInfosState, [])
-        snapshot.set(managedClustersState, [])
-        snapshot.set(agentClusterInstallsState, [])
-        snapshot.set(clusterCuratorsState, [])
-        snapshot.set(hostedClustersState, [])
-        snapshot.set(nodePoolsState, [])
-        snapshot.set(discoveredClusterState, [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(clusterClaimsState, [])
+        store.set(clusterImageSetsState, [])
+        store.set(certificateSigningRequestsState, [])
+        store.set(clusterDeploymentsState, [])
+        store.set(managedClusterAddonsState, {})
+        store.set(clusterManagementAddonsState, [])
+        store.set(managedClusterInfosState, [])
+        store.set(managedClustersState, [])
+        store.set(agentClusterInstallsState, [])
+        store.set(clusterCuratorsState, [])
+        store.set(hostedClustersState, [])
+        store.set(nodePoolsState, [])
+        store.set(discoveredClusterState, [])
       }}
     >
       <AcmAlertProvider>
@@ -319,7 +318,7 @@ export function ClusterPoolsTableEmpty() {
           emptyState={<div>No cluster pools found. Create one to get started.</div>}
         />
       </AcmAlertProvider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 ClusterPoolsTableEmpty.storyName = 'ClusterPoolsTable - Empty'

@@ -3,14 +3,14 @@ import { SearchIcon } from '@patternfly/react-icons'
 import { Link } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmButton } from '../../../ui-components'
 
 export default function ReuseableSearchbar() {
   const { t } = useTranslation()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
 
   return (
     <Link to={NavigationPath.search}>

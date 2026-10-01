@@ -8,17 +8,17 @@ import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { launchLogs } from './HiveNotification'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 import { launchToOCP } from '../../../../../lib/ocp-utils'
 
 export function ProgressStepBar() {
   const { t } = useTranslation()
   const { cluster, clusterDeployment } = useClusterDetailsContext()
   const { ansibleJobState, ansibleWorkflowState, clusterCuratorsState, configMapsState } = useSharedAtoms()
-  const curators = useRecoilValue(clusterCuratorsState)
-  const ansibleJobs = useRecoilValue(ansibleJobState)
-  const ansibleWorkflows = useRecoilValue(ansibleWorkflowState)
-  const configMaps = useRecoilValue(configMapsState)
+  const curators = useSharedValue(clusterCuratorsState)
+  const ansibleJobs = useSharedValue(ansibleJobState)
+  const ansibleWorkflows = useSharedValue(ansibleWorkflowState)
+  const configMaps = useSharedValue(configMapsState)
   const latestJobs = cluster.namespace
     ? getLatestAnsibleHook(ansibleJobs, ansibleWorkflows, cluster.namespace)
     : { prehook: undefined, posthook: undefined }

@@ -62,7 +62,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import { TemplateLinkOut, TemplateSummaryExpandable } from '../../../../../components/TemplateSummaryModal'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { useRecoilValue, useSharedSelectors } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedSelectors } from '../../../../../shared-atoms'
 import { AutomationProviderHint } from '../../../../../components/AutomationProviderHint'
 import { useValidation } from '../../../../../hooks/useValidation'
 import { useWizardStrings } from '../../../../../lib/wizardStrings'
@@ -233,7 +233,7 @@ export default function ImportClusterPage() {
   const [submitButtonText, setSubmitButtonText] = useState<string>()
   const [submittingButtonText, setSubmittingButtonText] = useState<string>()
   const { RHOCMCredentials } = useSharedSelectors()
-  const ocmCredentials = useRecoilValue(RHOCMCredentials)
+  const ocmCredentials = useSharedValue(RHOCMCredentials)
   let initialClusterID = ''
   let initialDiscoveryCredential = ''
   let initialStringData: ProviderConnectionStringData = {}
@@ -783,7 +783,7 @@ const AutoImportControls = (props: { state: State; dispatch: Dispatch<Action> })
   const resources = useItem() as any[]
   const { update } = useData()
   const { RHOCMCredentials } = useSharedSelectors()
-  const ocmCredentials = useRecoilValue(RHOCMCredentials)
+  const ocmCredentials = useSharedValue(RHOCMCredentials)
   let ocmCredentialNamespaces = ocmCredentials.map((credential) => credential.metadata.namespace!)
   ocmCredentialNamespaces = [...new Set(ocmCredentialNamespaces)]
 
@@ -1069,9 +1069,9 @@ const AutomationTemplate = (props: { state: State; dispatch: Dispatch<Action> })
   const { t } = useTranslation()
   const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
     useSharedSelectors()
-  const curatorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-  const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const curatorTemplates = useSharedValue(validClusterCuratorTemplatesValue)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
+  const ansibleCredentials = useSharedValue(ansibleCredentialsValue)
   const resources = useItem() as any[]
   const {
     state: { clusterName, templateName },

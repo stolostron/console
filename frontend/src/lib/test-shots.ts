@@ -140,9 +140,9 @@ window.propShot = (props: any, customFilters?: string[], max?: number) => {
   }
 }
 
-window.coilShot = (recoil: any, stateName: string, customFilters?: string[], max?: number) => {
+window.stateShot = (state: any, stateName: string, customFilters?: string[], max?: number) => {
   if (process.env.NODE_ENV === 'production') {
-    console.log('!!!! REMOVE coilShot FROM CODE !!!!')
+    console.log('!!!! REMOVE stateShot FROM CODE !!!!')
     return
   }
   if (process.env.NODE_ENV !== 'test') {
@@ -150,19 +150,20 @@ window.coilShot = (recoil: any, stateName: string, customFilters?: string[], max
     const className = stack[1].getFunctionName().split('.')[0]
     const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
     const filters = [...(customFilters || []), ...['controlData']]
-    const { snapshot } = getSnapshot(recoil, false, filters, max || 10)
+    const { snapshot } = getSnapshot(state, false, filters, max || 10)
     const snippets = [
+      `//import { StateProvider } from '~/lib/state-provider'`,
       `//import {${stateName}} from '../../atoms'\n\n`,
       `//const ${dataName} = ${snapshot}\n\n`,
       `//   render(`,
-      `    <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`,
+      `    <StateProvider initializeStore={(store) => { store.set(${stateName}, ${dataName}) }}>`,
       `        <${className} />`,
-      `     </RecoilRoot>`,
+      `     </StateProvider>`,
       `//   )`,
     ]
 
     const snip: { [index: string]: string } = {}
-    const key = `${stateName}CoilShot`
+    const key = `${stateName}StateShot`
     snip[key] = snippets.join('\n')
     console.log(snip)
   }

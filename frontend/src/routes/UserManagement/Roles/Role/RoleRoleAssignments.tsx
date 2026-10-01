@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { useCurrentRole } from '../RolesPage'
 
@@ -9,7 +9,7 @@ const RoleRoleAssignments = () => {
   const currentRole = useCurrentRole()
 
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
-  const multiclusterRoleAssignments = useRecoilValue(multiclusterRoleAssignmentState)
+  const multiclusterRoleAssignments = useSharedValue(multiclusterRoleAssignmentState)
   const isRoleAssignmentsLoading = multiclusterRoleAssignments === undefined
 
   const roleAssignments = useFindRoleAssignments({ roles: [currentRole?.metadata.name ?? ''] })

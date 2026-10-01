@@ -26,7 +26,7 @@ import { DOC_LINKS } from '../../../../lib/doc-util'
 import { IResource } from '../../../../resources'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest } from '../../../../resources/utils/resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { printableVMStatus } from '../utils'
 
 // kubevirt modal - https://github.com/kubevirt-ui/kubevirt-plugin/blob/5f2e9729034fcd97ebdb2ad2e8fed214a16d77a9/src/utils/components/SnapshotModal/SnapshotModal.tsx
@@ -202,7 +202,7 @@ export function SnapshotModalBody(
   const { item, setSnapshotReqBody, getVMError, setGetVMError } = props
   const { t } = useTranslation()
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const [vmLoading, setVMLoading] = useState<any>(true)
   const [vm, setVM] = useState<any>({})
   const [snapshotName, setSnapshotName] = useState<string>(generateSnapshotName(item.name))

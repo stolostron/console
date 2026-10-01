@@ -5,7 +5,7 @@ import { GlobalPlacementName, GroupKind, UserKind } from '../../resources'
 import { RoleAssignmentWizardFormData } from './types'
 import { usePreselectedData } from './usePreselectedData'
 
-// Mock managedClusterSets for Recoil
+// Mock managedClusterSets for shared state
 const mockManagedClusterSets = [
   {
     metadata: { name: 'cluster-set-1' },
@@ -39,12 +39,12 @@ jest.mock('../../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHo
   }),
 }))
 
-// Mock Recoil
-jest.mock('../../shared-recoil', () => ({
+// Mock shared state
+jest.mock('../../shared-atoms', () => ({
   useSharedAtoms: () => ({
     managedClusterSetsState: 'managedClusterSetsState',
   }),
-  useRecoilValue: () => mockManagedClusterSets,
+  useSharedValue: () => mockManagedClusterSets,
 }))
 
 describe('usePreselectedData', () => {

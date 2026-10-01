@@ -5,7 +5,7 @@ import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { ReactNode, useCallback, useContext, useMemo } from 'react'
 import { Link } from 'react-router'
 import { ObservabilityEndpoint, useMetricsPoll } from '~/lib/useMetricsPoll'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../../lib/PluginContext'
 import { quantityToScalar, scalarToQuantity } from '../../../../../../lib/units'
@@ -96,7 +96,7 @@ export function NodesPoolsTable() {
   const { isSearchAvailable } = useContext(PluginContext)
   const { clusterManagementAddonsState, useIsObservabilityInstalled } = useSharedAtoms()
   const isObservabilityInstalled = useIsObservabilityInstalled()
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const obsCont = clusterManagementAddons.find((cma) => cma.metadata.name === 'observability-controller')
   let grafanaLink: string | undefined
   try {

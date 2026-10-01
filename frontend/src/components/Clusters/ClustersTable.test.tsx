@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ButtonVariant } from '@patternfly/react-core'
 import { ClustersTable } from './ClustersTable'
 import { Cluster, ClusterStatus } from '../../resources/utils'
@@ -25,7 +25,7 @@ jest.mock('../../lib/acm-i18next', () => ({
 }))
 
 // Mock the shared atoms
-jest.mock('../../shared-recoil', () => ({
+jest.mock('../../shared-atoms', () => ({
   useSharedAtoms: () => ({
     clusterCuratorsState: 'clusterCuratorsState',
     hostedClustersState: 'hostedClustersState',
@@ -34,7 +34,7 @@ jest.mock('../../shared-recoil', () => ({
     clusterImageSetsState: 'clusterImageSetsState',
     useIsObservabilityInstalled: () => false,
   }),
-  useRecoilValue: (state: string) => {
+  useSharedValue: (state: string) => {
     switch (state) {
       case 'clusterCuratorsState':
         return []
@@ -196,11 +196,11 @@ const defaultProps = {
 
 const renderWithProviders = (props: any) => {
   return render(
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <ClustersTable {...props} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

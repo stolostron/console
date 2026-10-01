@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import ClusterSetsPage from './ClusterSets'
 import { PluginContext, defaultPlugin } from '../../../../lib/PluginContext'
 import React from 'react'
@@ -38,9 +38,9 @@ jest.mock('../../../../ui-components', () => {
   }
 })
 
-// Mock shared-recoil
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(() => []),
+// Mock shared-atoms
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(() => []),
   useSharedAtoms: jest.fn(() => ({ managedClusterSetsState: {} })),
 }))
 
@@ -61,13 +61,13 @@ jest.mock('../../../../lib/doc-util', () => ({
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <PluginContext.Provider value={defaultPlugin}>
         <MemoryRouter>
           <ClusterSetsPage />
         </MemoryRouter>
       </PluginContext.Provider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

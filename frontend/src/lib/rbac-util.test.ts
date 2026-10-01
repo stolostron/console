@@ -11,7 +11,7 @@ import {
 } from './rbac-util'
 import { waitForNocks } from './test-util'
 
-// Mock the shared-recoil module
+// Mock the shared-atoms module
 const mockNamespaces: Namespace[] = [
   {
     ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
@@ -23,11 +23,11 @@ const mockNamespaces: Namespace[] = [
   },
 ]
 
-jest.mock('../shared-recoil', () => ({
+jest.mock('../shared-atoms', () => ({
   useSharedAtoms: () => ({
     namespacesState: 'namespacesState',
   }),
-  useRecoilValue: () => mockNamespaces,
+  useSharedValue: () => mockNamespaces,
 }))
 
 const adminAccess = { name: '*', namespace: '*', resource: '*', verb: '*' }

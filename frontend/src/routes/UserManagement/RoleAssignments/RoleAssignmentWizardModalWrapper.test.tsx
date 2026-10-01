@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { act, render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter } from 'react-router'
 import { RoleAssignmentWizardModalWrapper } from './RoleAssignmentWizardModalWrapper'
 import { AcmToastContext } from '../../../ui-components'
@@ -65,18 +65,18 @@ jest.mock('../../../wizards/RoleAssignment/roleAssignmentWizardHelper', () => ({
   }),
 }))
 
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { clickElement } from '~/lib/test-util'
 
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     multiclusterRoleAssignmentState: {},
     managedClusterSetBindingsState: {},
   })),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.Mock
+const mockUseSharedValue = useSharedValue as jest.Mock
 const mockUseSharedAtoms = useSharedAtoms as jest.Mock
 
 jest.mock('../../../resources/clients/placement-client', () => ({
@@ -100,11 +100,11 @@ const mockToastContext = {
 }
 
 const TestWrapper = ({ children }: { children: React.ReactNode }) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter>
       <AcmToastContext.Provider value={mockToastContext}>{children}</AcmToastContext.Provider>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('RoleAssignmentWizardModalWrapper', () => {
@@ -114,7 +114,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
     jest.clearAllMocks()
     capturedOnSubmit = null
     capturedIsLoading = undefined
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
     mockUseSharedAtoms.mockReturnValue({
       multiclusterRoleAssignmentState: {},
       managedClusterSetBindingsState: {},
@@ -127,7 +127,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           spec: {
             roleAssignments: [{ name: 'saved-role-assignment' }],
@@ -425,8 +425,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the Recoil state being updated after the save
-      mockUseRecoilValue.mockReturnValue([
+      // This simulates the shared state state being updated after the save
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -488,7 +488,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -543,7 +543,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment after save
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -699,8 +699,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the Recoil state being updated after the save
-      mockUseRecoilValue.mockReturnValue([
+      // This simulates the shared state state being updated after the save
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'mcra-1', namespace: 'test-ns' },
           spec: {
@@ -743,7 +743,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'mcra-1', namespace: 'test-ns' },
           spec: {
@@ -791,7 +791,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
         .mockResolvedValueOnce(savedRoleAssignment2 as never)
 
       // Mock multiClusterRoleAssignments to include both saved role assignments
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'mcra-1', namespace: 'test-ns' },
           spec: {
@@ -865,7 +865,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -927,7 +927,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -982,7 +982,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -1043,7 +1043,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -1162,8 +1162,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the Recoil state being updated after the save
-      mockUseRecoilValue.mockReturnValue([
+      // This simulates the shared state state being updated after the save
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -1236,7 +1236,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -1296,7 +1296,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'mcra-1', namespace: 'test-ns' },
           spec: {
@@ -1340,7 +1340,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       const savedRoleAssignment = { name: 'saved-role-assignment', clusterRole: 'admin' }
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
-      mockUseRecoilValue.mockReturnValue([
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
@@ -1422,8 +1422,8 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include both saved assignments
-      // This simulates the Recoil state being updated after both saves complete
-      mockUseRecoilValue.mockReturnValue([
+      // This simulates the shared state state being updated after both saves complete
+      mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
           spec: {
