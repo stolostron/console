@@ -50,46 +50,18 @@ func bitapScore(pattern, text string) float64 {
 	if plen == 0 {
 		return 0
 	}
-	maxErrors := int(float64(plen) * fuseThreshold)
-	if maxErrors < 0 {
-		maxErrors = 0
+	dist := substringDistance([]rune(p), []rune(t))
+	score := float64(dist) / float64(plen)
+	if score > 1 {
+		score = 1
 	}
-	best := 1.0
-	pr := []rune(p)
-	tr := []rune(t)
-	for start := 0; start < len(tr); start++ {
-		remain := len(tr) - start
-		if remain <= 0 {
-			break
-		}
-		window := remain
-		if window > plen+maxErrors {
-			window = plen + maxErrors
-		}
-		dist := levenshtein(pr, tr[start:start+window])
-		score := float64(dist) / float64(plen)
-		if score < best {
-			best = score
-		}
-		if best == 0 {
-			return 0
-		}
-	}
-	return best
+	return score
 }
 
-func levenshtein(a, b []rune) int {
-	if len(a) == 0 {
-		return len(b)
-	}
-	if len(b) == 0 {
-		return len(a)
-	}
-	prev := make([]int, len(b)+1)
+// substringDistance is the minimum edit distance between a and any substring of b (Sellers).
+func substringDistance(a, b []rune) int {
+	prev := make([]int, len(b)+1) // row 0 all zeros: free start in b
 	curr := make([]int, len(b)+1)
-	for j := 0; j <= len(b); j++ {
-		prev[j] = j
-	}
 	for i := 1; i <= len(a); i++ {
 		curr[0] = i
 		for j := 1; j <= len(b); j++ {
@@ -97,18 +69,13 @@ func levenshtein(a, b []rune) int {
 			if a[i-1] == b[j-1] {
 				cost = 0
 			}
-			del := prev[j] + 1
-			ins := curr[j-1] + 1
-			sub := prev[j-1] + cost
-			curr[j] = del
-			if ins < curr[j] {
-				curr[j] = ins
-			}
-			if sub < curr[j] {
-				curr[j] = sub
-			}
+			curr[j] = min(prev[j]+1, curr[j-1]+1, prev[j-1]+cost)
 		}
 		prev, curr = curr, prev
 	}
-	return prev[len(b)]
+	best := prev[0]
+	for _, v := range prev {
+		best = min(best, v)
+	}
+	return best
 }

@@ -108,13 +108,15 @@ func (e *Engine) Start(ctx context.Context) {
 func (e *Engine) discoverPrefixes(ctx context.Context) {
 	prefixes := []string{"openshift", "hive", "open-cluster-management"}
 	if e.Dynamic != nil {
-		ns, err := hubresources.MCHNamespace(ctx, e.Dynamic)
+		lctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		defer cancel()
+		ns, err := hubresources.MCHNamespace(lctx, e.Dynamic)
 		if err != nil {
 			applog.Logger().Error("mch namespace", "error", err)
 		} else if ns != "" && ns != "open-cluster-management" {
 			prefixes = append(prefixes, ns)
 		}
-		mce, err := hubresources.MCETargetNamespace(ctx, e.Dynamic)
+		mce, err := hubresources.MCETargetNamespace(lctx, e.Dynamic)
 		if err != nil || mce == "" {
 			prefixes = append(prefixes, "multicluster-engine")
 		} else {
@@ -136,28 +138,23 @@ func (e *Engine) searchLoop(ctx context.Context) {
 			return
 		}
 		if e.Search != nil {
-			for {
-				ok, err := e.Search.Ping(ctx)
-				if err != nil || !ok {
-					if !searchAPIMissing {
-						applog.Logger().Error("search API missing")
-						searchAPIMissing = true
-					}
-					select {
-					case <-ctx.Done():
-						return
-					case <-time.After(5 * time.Minute):
-					}
-					continue
+			ok, err := e.Search.Ping(ctx)
+			if err != nil || !ok {
+				if ctx.Err() != nil {
+					return
 				}
-				break
-			}
-			if searchAPIMissing {
-				applog.Logger().Info("search API found")
-				searchAPIMissing = false
-			}
-			if err := e.aggregateRemote(ctx, pass); err != nil {
-				applog.Logger().Error("aggregateRemoteApplications exception", "error", err)
+				if !searchAPIMissing {
+					applog.Logger().Error("search API missing")
+					searchAPIMissing = true
+				}
+			} else {
+				if searchAPIMissing {
+					applog.Logger().Info("search API found")
+					searchAPIMissing = false
+				}
+				if err := e.aggregateRemote(ctx, pass); err != nil {
+					applog.Logger().Error("aggregateRemoteApplications exception", "error", err)
+				}
 			}
 		}
 		e.mu.Lock()
@@ -165,7 +162,9 @@ func (e *Engine) searchLoop(ctx context.Context) {
 		e.mu.Unlock()
 		pass++
 		wait := 15 * time.Second
-		if pass > firstPassesFastInterval {
+		if searchAPIMissing {
+			wait = 5 * time.Minute
+		} else if pass > firstPassesFastInterval {
 			wait = e.searchInterval()
 		}
 		select {

@@ -164,6 +164,35 @@ func TestOnResourceFansDeletedDespiteThrottle(t *testing.T) {
 	}
 }
 
+func TestOnResourceForgetPreventsRecoveredModified(t *testing.T) {
+	h := New(nil, nil)
+	h.flap = newFlapState(testFlapConfig())
+	c := h.subscribe()
+	defer h.unsubscribe(c)
+
+	at := time.Unix(1_700_000_000, 0)
+	throttlePolicyAt(h.flap, "gone", "default", at)
+	h.flap.now = func() time.Time { return at.Add(100 * time.Millisecond) }
+	h.OnResource(informers.ResourceEvent{
+		Type: informers.EventDeleted,
+		Object: &unstructured.Unstructured{Object: map[string]any{
+			"kind": policyKind, "apiVersion": "policy.open-cluster-management.io/v1",
+			"metadata": map[string]any{"name": "gone", "namespace": "default"},
+		}},
+	})
+	drain(t, c.ch)
+
+	h.publishRecovered(at.Add(h.flap.cfg.cooldown + time.Millisecond))
+	select {
+	case ev := <-c.ch:
+		t.Fatalf("unexpected recovered event %+v", ev)
+	default:
+	}
+	if entry := h.flap.entry("Policy", "default", "gone"); entry != nil {
+		t.Fatal("deleted policy must leave no flap entry")
+	}
+}
+
 func TestOnResourceFansWhenFlapNil(t *testing.T) {
 	h := New(nil, nil)
 	h.flap = nil
@@ -233,5 +262,16 @@ func recv(t *testing.T, ch <-chan Event) Event {
 	case <-time.After(time.Second):
 		t.Fatal("timeout")
 		return Event{}
+	}
+}
+
+func drain(t *testing.T, ch <-chan Event) {
+	t.Helper()
+	for {
+		select {
+		case <-ch:
+		default:
+			return
+		}
 	}
 }

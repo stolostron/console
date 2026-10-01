@@ -24,7 +24,7 @@ export function executeCopyrightAction(action: CopyrightAction) {
     async function copyrightDirectory(directory: string, action: CopyrightAction) {
         const names = await readdir(directory)
         for (const name of names) {
-            if (ignoreDirectories.find((ignore) => name.includes(ignore))) continue
+            if (ignoreDirectories.includes(name)) continue
             const path = join(directory, name)
             await copyrightPath(path, action)
         }

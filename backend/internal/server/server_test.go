@@ -5,10 +5,13 @@ package server_test
 import (
 	"context"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stolostron/console/backend/internal/config"
 	"github.com/stolostron/console/backend/internal/oauth"
@@ -64,6 +67,65 @@ func TestProbes(t *testing.T) {
 			t.Fatalf("%s expected empty body", path)
 		}
 	}
+}
+
+func freePort(t *testing.T) string {
+	t.Helper()
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	return strconv.Itoa(ln.Addr().(*net.TCPAddr).Port)
+}
+
+func TestListenAndServeOnListeningAfterBind(t *testing.T) {
+	port := freePort(t)
+	cfg := &config.Config{Port: port, CertsDir: t.TempDir()}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	hookStarted := make(chan struct{})
+	releaseSync := make(chan struct{})
+
+	errCh := make(chan error, 1)
+	go func() {
+		errCh <- server.ListenAndServe(ctx, cfg, newHandler(t), func() {
+			close(hookStarted)
+			// Mimic async informer start: hook returns immediately while sync work continues.
+			go func() { <-releaseSync }()
+		})
+	}()
+
+	select {
+	case <-hookStarted:
+	case <-time.After(2 * time.Second):
+		t.Fatal("onListening not called")
+	}
+
+	deadline := time.Now().Add(2 * time.Second)
+	var lastErr error
+	for time.Now().Before(deadline) {
+		resp, getErr := http.Get("http://127.0.0.1:" + port + "/ping")
+		if getErr == nil {
+			resp.Body.Close()
+			if resp.StatusCode == http.StatusOK {
+				close(releaseSync)
+				cancel()
+				select {
+				case <-errCh:
+				case <-time.After(2 * time.Second):
+					t.Fatal("ListenAndServe did not exit")
+				}
+				return
+			}
+		} else {
+			lastErr = getErr
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	close(releaseSync)
+	t.Fatalf("ping failed before timeout: %v", lastErr)
 }
 
 func TestUnknownRouteNotFound(t *testing.T) {

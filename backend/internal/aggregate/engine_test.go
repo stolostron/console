@@ -8,13 +8,122 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"sync"
 	"testing"
+	"time"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/fake"
 
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
+
+func TestDiscoverPrefixesDefaultsWithoutDynamic(t *testing.T) {
+	e := NewEngine(nil, nil, nil)
+	e.discoverPrefixes(context.Background())
+	want := []string{"openshift", "hive", "open-cluster-management", "multicluster-engine"}
+	if !reflect.DeepEqual(e.systemPrefixes, want) {
+		t.Fatalf("prefixes=%v want %v", e.systemPrefixes, want)
+	}
+}
+
+func TestDiscoverPrefixesFromHub(t *testing.T) {
+	mch := &unstructured.Unstructured{}
+	mch.SetGroupVersionKind(schema.GroupVersionKind{
+		Group: "operator.open-cluster-management.io", Version: "v1", Kind: "MultiClusterHub",
+	})
+	mch.SetName("hub")
+	mch.SetNamespace("acm-install")
+
+	mce := &unstructured.Unstructured{}
+	mce.SetGroupVersionKind(schema.GroupVersionKind{
+		Group: "multicluster.openshift.io", Version: "v1", Kind: "MultiClusterEngine",
+	})
+	mce.SetName("engine")
+	if err := unstructured.SetNestedField(mce.Object, "custom-mce", "spec", "targetNamespace"); err != nil {
+		t.Fatal(err)
+	}
+
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+		{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}:        "MultiClusterEngineList",
+	}, mch, mce)
+	e := NewEngine(nil, nil, client)
+	e.discoverPrefixes(context.Background())
+	want := []string{"openshift", "hive", "open-cluster-management", "acm-install", "custom-mce"}
+	if !reflect.DeepEqual(e.systemPrefixes, want) {
+		t.Fatalf("prefixes=%v want %v", e.systemPrefixes, want)
+	}
+}
+
+func TestDiscoverPrefixesRespectsContextDeadline(t *testing.T) {
+	e := NewEngine(nil, nil, hangDynamic{})
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	e.discoverPrefixes(ctx)
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Fatalf("discoverPrefixes hung for %v past parent deadline", elapsed)
+	}
+	want := []string{"openshift", "hive", "open-cluster-management", "multicluster-engine"}
+	if !reflect.DeepEqual(e.systemPrefixes, want) {
+		t.Fatalf("prefixes=%v want %v", e.systemPrefixes, want)
+	}
+}
+
+// hangDynamic List calls block until the request context is done.
+type hangDynamic struct{}
+
+func (hangDynamic) Resource(schema.GroupVersionResource) dynamic.NamespaceableResourceInterface {
+	return hangResource{}
+}
+
+type hangResource struct{}
+
+func (hangResource) Namespace(string) dynamic.ResourceInterface { return hangResource{} }
+
+func (hangResource) List(ctx context.Context, _ metav1.ListOptions) (*unstructured.UnstructuredList, error) {
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+func (hangResource) Create(context.Context, *unstructured.Unstructured, metav1.CreateOptions, ...string) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) Update(context.Context, *unstructured.Unstructured, metav1.UpdateOptions, ...string) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) UpdateStatus(context.Context, *unstructured.Unstructured, metav1.UpdateOptions) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) Delete(context.Context, string, metav1.DeleteOptions, ...string) error {
+	panic("unexpected")
+}
+func (hangResource) DeleteCollection(context.Context, metav1.DeleteOptions, metav1.ListOptions) error {
+	panic("unexpected")
+}
+func (hangResource) Get(context.Context, string, metav1.GetOptions, ...string) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) Watch(context.Context, metav1.ListOptions) (watch.Interface, error) {
+	panic("unexpected")
+}
+func (hangResource) Patch(context.Context, string, types.PatchType, []byte, metav1.PatchOptions, ...string) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) Apply(context.Context, string, *unstructured.Unstructured, metav1.ApplyOptions, ...string) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
+func (hangResource) ApplyStatus(context.Context, string, *unstructured.Unstructured, metav1.ApplyOptions) (*unstructured.Unstructured, error) {
+	panic("unexpected")
+}
 
 func TestAddQueryInputs(t *testing.T) {
 	e := NewEngine(MapLister{

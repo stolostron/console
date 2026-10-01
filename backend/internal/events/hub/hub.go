@@ -124,6 +124,9 @@ func (h *Hub) OnResource(ev informers.ResourceEvent) {
 		obj = ev.Object.Object
 	}
 	suppress := false
+	if ev.Type == informers.EventDeleted && h.flap != nil {
+		h.flap.forget(obj)
+	}
 	if ev.Type == informers.EventModified && h.flap != nil {
 		h.flap.rememberRoot(obj, ev.GVR)
 		suppress = h.flap.shouldThrottle(obj, h.flap.clock(), ev.GVR)

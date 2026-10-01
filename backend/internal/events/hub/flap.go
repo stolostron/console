@@ -532,6 +532,29 @@ func (s *flapState) rememberRoot(obj map[string]any, gvr schema.GroupVersionReso
 	s.rootGVR[key] = gvr
 }
 
+// forget drops flap and root cache for a deleted Policy so recover / takeDirtyRoots
+// cannot republish it as MODIFIED after the cooldown.
+func (s *flapState) forget(obj map[string]any) {
+	if s == nil || obj == nil {
+		return
+	}
+	kind, namespace, name := kindNSName(obj)
+	if kind != policyKind {
+		return
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	key := flapKey(kind, namespace, name)
+	if entry := s.entries[key]; entry != nil {
+		s.releaseRootLocked(entry)
+		delete(s.entries, key)
+	}
+	rootKey := namespace + "/" + name
+	delete(s.rootObjs, rootKey)
+	delete(s.rootGVR, rootKey)
+	delete(s.rootDirty, rootKey)
+}
+
 func (s *flapState) decorateRoot(obj map[string]any) {
 	if s == nil || obj == nil {
 		return

@@ -144,6 +144,19 @@ func TestCheckThrottleStatusRecoversAfterCooldown(t *testing.T) {
 	}
 }
 
+func TestForgetDropsThrottledEntry(t *testing.T) {
+	s := newFlapState(testFlapConfig())
+	at := time.Unix(1_700_000_000, 0)
+	throttlePolicyAt(s, "gone", "default", at)
+	s.forget(policyWithCompliant("gone", "default", 0))
+	if entry := s.entry("Policy", "default", "gone"); entry != nil {
+		t.Fatal("expected entry removed")
+	}
+	if recovered := s.recover(at.Add(s.cfg.cooldown + time.Millisecond)); len(recovered) != 0 {
+		t.Fatalf("recovered %d after forget", len(recovered))
+	}
+}
+
 func replicatedFlappingPolicy(rootNS, rootName, cluster string) map[string]any {
 	return map[string]any{
 		"kind":       policyKind,

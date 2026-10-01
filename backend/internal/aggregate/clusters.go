@@ -221,7 +221,7 @@ func isLocalClusterURL(raw string, local *Cluster) bool {
 		}
 	}
 	u, err := url.Parse(raw)
-	if err != nil {
+	if err != nil || u.Hostname() == "" {
 		return false
 	}
 	host := u.Hostname()
@@ -230,6 +230,9 @@ func isLocalClusterURL(raw string, local *Cluster) bool {
 		return strings.Contains(localHost, host)
 	}
 	hostnameWithoutAPI := host[idx+4:]
+	if hostnameWithoutAPI == "" {
+		return false
+	}
 	return strings.Contains(localHost, hostnameWithoutAPI)
 }
 
@@ -353,6 +356,8 @@ func clusterProxyURL(service map[string]any, cluster string) string {
 	if ports := nestedSlice(service, "spec", "ports"); len(ports) > 0 {
 		if p, ok := ports[0].(map[string]any); ok {
 			switch v := p["port"].(type) {
+			case int64:
+				port = int(v)
 			case float64:
 				port = int(v)
 			case int:

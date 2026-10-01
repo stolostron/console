@@ -92,9 +92,6 @@ func run() error {
 		return err
 	}
 	store := rbacevents.NewStore()
-	if err = rbacevents.StartInformer(ctx, kube, store); err != nil {
-		return err
-	}
 	rbacSSAR := rbacevents.NewSSARAccess(restCfg)
 	rbacSSAR.StartCleanup(ctx)
 	rbacHandler := rbacevents.NewHandler(store, rbacevents.NewAPIAuth(restCfg), rbacSSAR)
@@ -257,6 +254,11 @@ func run() error {
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
 	return server.ListenAndServe(ctx, cfg, handler, func() {
+		go func() {
+			if err := rbacevents.StartInformer(ctx, kube, store); err != nil {
+				applog.Logger().Error("rbac informer", "error", err)
+			}
+		}()
 		if cfg.DisableEvents {
 			applog.Logger().Info("disable events", "DISABLE_EVENTS", os.Getenv("DISABLE_EVENTS"))
 			return
