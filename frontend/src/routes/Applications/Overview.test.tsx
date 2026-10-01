@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
@@ -104,11 +104,11 @@ describe('Applications Page', () => {
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(placementDecisionsState, mockPlacementsDecisions)
-          snapshot.set(managedClustersState, mockClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(placementDecisionsState, mockPlacementsDecisions)
+          store.set(managedClustersState, mockClusters)
         }}
       >
         <AcmToastProvider>
@@ -126,7 +126,7 @@ describe('Applications Page', () => {
             </PluginContext.Provider>
           </MemoryRouter>
         </AcmToastProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -297,11 +297,11 @@ describe('Create application dropdown', () => {
     nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
     nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(placementDecisionsState, mockPlacementsDecisions)
-          snapshot.set(managedClustersState, mockClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(placementDecisionsState, mockPlacementsDecisions)
+          store.set(managedClustersState, mockClusters)
         }}
       >
         <AcmToastProvider>
@@ -319,7 +319,7 @@ describe('Create application dropdown', () => {
             </PluginContext.Provider>
           </MemoryRouter>
         </AcmToastProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('feng-remote-argo8')

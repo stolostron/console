@@ -3,7 +3,7 @@
 import { AcmToastProvider, AcmToastGroup } from '../../../../../ui-components'
 import { render, waitFor, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { discoveryConfigState, secretsState } from '../../../../../atoms'
 import {
   nockCreate,
@@ -30,10 +30,10 @@ import {
 
 function TestAddDiscoveryConfigPage() {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(discoveryConfigState, [])
-        snapshot.set(secretsState, [mockRHOCMSecrets[0]])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(discoveryConfigState, [])
+        store.set(secretsState, [mockRHOCMSecrets[0]])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.createDiscovery]}>
@@ -45,16 +45,16 @@ function TestAddDiscoveryConfigPage() {
           </Routes>
         </AcmToastProvider>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 function TestEditConnectionPage() {
   nockIgnoreRBAC()
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(discoveryConfigState, [discoveryConfig])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(discoveryConfigState, [discoveryConfig])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.configureDiscovery]}>
@@ -66,7 +66,7 @@ function TestEditConnectionPage() {
           </Routes>
         </AcmToastProvider>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

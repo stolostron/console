@@ -2,7 +2,7 @@
 // Copyright (c) 2023 Red Hat, Inc.
 import { render, screen, waitFor } from '@testing-library/react'
 import React, { useState } from 'react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { LogViewerSearch, searchForKeyword } from './LogsViewerSearch'
 import { typeElement, clickElement } from '~/lib/test-util'
@@ -47,9 +47,9 @@ describe('LogsViewerSearch', () => {
         setCurrentSearchedItemCount,
       })
       return (
-        <RecoilRoot>
+        <StateProvider>
           <LogViewerSearch placeholder={'Search'} minSearchChars={1} />
-        </RecoilRoot>
+        </StateProvider>
       )
     }
     render(<Search />)

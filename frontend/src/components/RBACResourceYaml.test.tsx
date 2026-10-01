@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC, nockIgnoreApiPaths } from '../lib/nock-util'
 import { RBACResourceYaml } from './RBACResourceYaml'
 import { User, UserApiVersion, UserKind } from '../resources/rbac'
@@ -16,11 +16,11 @@ function Component({
   resourceType: 'User' | 'Group' | 'Role'
 }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <RBACResourceYaml resource={resource} loading={loading} resourceType={resourceType} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import * as nock from 'nock'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ansibleJobState, ansibleWorkflowState, clusterImageSetsState, nodePoolsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../../lib/nock-util'
 import { clickByText, waitForCalled, waitForNock, waitForNotText, waitForText, clickElement } from '~/lib/test-util'
@@ -800,16 +800,16 @@ describe('DistributionField', () => {
       isRegionalHubCluster: false,
     }
     const retResource = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(ansibleJobState, ansibleJobs)
-          snapshot.set(ansibleWorkflowState, ansibleWorkflows)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(ansibleJobState, ansibleJobs)
+          store.set(ansibleWorkflowState, ansibleWorkflows)
         }}
       >
         <MemoryRouter>
           <DistributionField cluster={mockCluster} clusterCurator={clusterCurator} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     if (nockAction) {
       await waitForNock(nockAction)
@@ -936,11 +936,11 @@ describe('DistributionField hypershift clusters', () => {
     }
 
     const retResource = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(ansibleJobState, [ansibleJob])
-          snapshot.set(nodePoolsState, mockNodepools)
-          snapshot.set(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(ansibleJobState, [ansibleJob])
+          store.set(nodePoolsState, mockNodepools)
+          store.set(
             clusterImageSetsState,
             setClusterImageSet
               ? [
@@ -962,7 +962,7 @@ describe('DistributionField hypershift clusters', () => {
           hostedCluster={hostedCluster}
           resource={resource}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     if (nockAction) {
       await waitForNock(nockAction)

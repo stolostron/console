@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, subscriptionOperatorsState } from '../atoms'
 import { createClusterVersionMock, waitForNotText, waitForText } from '../lib/test-util'
 import {
@@ -137,16 +137,16 @@ function WrappedAutomationProviderHint(props: {
   componentProps: React.ComponentProps<typeof AutomationProviderHint>
 }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(clusterCuratorsState, props.automationTemplates || [])
-        snapshot.set(subscriptionOperatorsState, props.ansibleOperators || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(clusterCuratorsState, props.automationTemplates || [])
+        store.set(subscriptionOperatorsState, props.ansibleOperators || [])
       }}
     >
       <MemoryRouter>
         <AutomationProviderHint {...props.componentProps} />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

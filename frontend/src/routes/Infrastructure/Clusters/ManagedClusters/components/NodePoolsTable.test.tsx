@@ -3,7 +3,7 @@
 import { ClusterImageSetK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { namespacesState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../lib/nock-util'
 import { waitForText, clickElement } from '~/lib/test-util'
@@ -813,9 +813,9 @@ describe('NodePoolsTable', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster0, hostedCluster: mockHostedCluster0 }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -828,7 +828,7 @@ describe('NodePoolsTable', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(nodePools[0].metadata.name)
@@ -912,7 +912,7 @@ describe('NodePoolsTable no status', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -920,7 +920,7 @@ describe('NodePoolsTable no status', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -981,7 +981,7 @@ describe('NodePoolsTable no conditions', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster0 }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -989,7 +989,7 @@ describe('NodePoolsTable no conditions', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -1118,7 +1118,7 @@ describe('NodePoolsTable - Azure', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster1 }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -1126,7 +1126,7 @@ describe('NodePoolsTable - Azure', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 
@@ -1179,7 +1179,7 @@ describe('NodePoolsTable - PowerVS', () => {
     nockIgnoreApiPaths()
     const context: Partial<ClusterDetailsContext> = { hostedCluster: mockHostedCluster2 }
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <Routes>
             <Route element={<Outlet context={context} />}>
@@ -1187,7 +1187,7 @@ describe('NodePoolsTable - PowerVS', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   })
 

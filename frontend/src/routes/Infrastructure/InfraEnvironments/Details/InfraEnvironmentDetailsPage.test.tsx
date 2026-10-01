@@ -5,7 +5,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { cloneDeep } from 'lodash'
 import set from 'lodash/set'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { infraEnvironmentsState, nmStateConfigsState } from '../../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockPatch } from '../../../../lib/nock-util'
 import { clickByText, clickHostAction, waitForNocks, waitForNotText, waitForText } from '../../../../lib/test-util'
@@ -45,10 +45,10 @@ jest.mock('react-router', () => {
 
 const Component = () => {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(infraEnvironmentsState, mockInfraEnvironments)
-        snapshot.set(nmStateConfigsState, [mockNMStateConfigInfraEnv])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(infraEnvironmentsState, mockInfraEnvironments)
+        store.set(nmStateConfigsState, [mockNMStateConfigInfraEnv])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.infraEnvironmentDetails]}>
@@ -56,7 +56,7 @@ const Component = () => {
           <Route path={`${NavigationPath.infraEnvironments}/*`} element={<InfraEnvironments />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

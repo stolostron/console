@@ -2,17 +2,17 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import RolesManagement from './RolesManagement'
 
 describe('RolesManagement Router', () => {
   test('should render without errors', () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/multicloud/user-management/roles']}>
           <RolesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(document.body).toBeInTheDocument()
@@ -20,11 +20,11 @@ describe('RolesManagement Router', () => {
 
   test('should render role detail route', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/multicloud/user-management/roles/test-role']}>
           <RolesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(document.body).toBeInTheDocument()

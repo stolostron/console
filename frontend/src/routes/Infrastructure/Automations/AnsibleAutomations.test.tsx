@@ -14,7 +14,7 @@ import {
 } from '../../../resources'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
   mockBadRequestStatus,
@@ -151,11 +151,11 @@ function TestIntegrationPage(props: {
   subscriptions?: SubscriptionOperator[]
 }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, props.providerConnections as Secret[])
-        snapshot.set(clusterCuratorsState, props.clusterCurators || [])
-        snapshot.set(subscriptionOperatorsState, props.subscriptions || [])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, props.providerConnections as Secret[])
+        store.set(clusterCuratorsState, props.clusterCurators || [])
+        store.set(subscriptionOperatorsState, props.subscriptions || [])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
@@ -163,15 +163,15 @@ function TestIntegrationPage(props: {
           <Route path={NavigationPath.ansibleAutomations} element={<AnsibleAutomationsPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 function EmptyStateAutomationPage(props: { providerConnections: ProviderConnection[] }) {
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(secretsState, props.providerConnections as Secret[])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(secretsState, props.providerConnections as Secret[])
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
@@ -179,7 +179,7 @@ function EmptyStateAutomationPage(props: { providerConnections: ProviderConnecti
           <Route path={NavigationPath.ansibleAutomations} element={<AnsibleAutomationsPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

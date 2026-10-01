@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { SnapshotRestoreModalBody } from './SnapshotRestoreModalBody'
 
 describe('SnapshotRestoreModalBody', () => {
   test('Should render SnapshotRestoreModalBody correctly', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <SnapshotRestoreModalBody
           item={{
             apigroup: 'snapshot.kubevirt.io',
@@ -51,7 +51,7 @@ describe('SnapshotRestoreModalBody', () => {
             status: {},
           }}
         />
-      </RecoilRoot>
+      </StateProvider>
     )
     // await wait()
 

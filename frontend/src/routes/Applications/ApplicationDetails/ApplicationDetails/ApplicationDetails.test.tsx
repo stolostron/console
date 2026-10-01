@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { channelsState, managedClustersState, namespacesState, subscriptionsState } from '../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
 import { clickByText, waitForNock, waitForText } from '../../../../lib/test-util'
@@ -501,12 +501,12 @@ describe('Overview Tab', () => {
       applicationData: mockApplicationDataSubscription,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -516,7 +516,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     // cluster
@@ -533,12 +533,12 @@ describe('Overview Tab', () => {
       applicationData: mockApplicationDataSubscriptionTimewindow,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -548,7 +548,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     // cluster
@@ -566,11 +566,11 @@ describe('Overview Tab', () => {
       applicationData: mockApplicationDataArgo,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
@@ -580,7 +580,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     // cluster
@@ -646,11 +646,11 @@ describe('Overview Tab', () => {
       },
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
         }}
       >
         <MemoryRouter>
@@ -660,7 +660,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     // cluster
@@ -720,10 +720,10 @@ describe('Overview Tab', () => {
       applicationData: mockArgoAppWithSource,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -733,7 +733,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('test-git-app')
@@ -795,10 +795,10 @@ describe('Overview Tab', () => {
       applicationData: mockArgoAppWithSources,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -808,7 +808,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('test-multi-source-app')
@@ -871,10 +871,10 @@ describe('Overview Tab', () => {
       applicationData: mockAppSetWithSource,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -884,7 +884,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('test-appset')
@@ -952,10 +952,10 @@ describe('Overview Tab', () => {
       applicationData: mockAppSetWithSources,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -965,7 +965,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('test-appset-multi')
@@ -1041,10 +1041,10 @@ describe('Overview Tab', () => {
       applicationData: mockAppSetWithSearchData,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [mockChannelForSearch])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [mockChannelForSearch])
         }}
       >
         <MemoryRouter>
@@ -1054,7 +1054,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('appset-with-search')
@@ -1101,10 +1101,10 @@ describe('Overview Tab', () => {
       applicationData: mockArgoAppNoSource,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -1114,7 +1114,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('test-no-source')
@@ -1167,10 +1167,10 @@ describe('Overview Tab', () => {
       applicationData: mockAppSetNoSource,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, [])
-          snapshot.set(channelsState, [])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, [])
+          store.set(channelsState, [])
         }}
       >
         <MemoryRouter>
@@ -1180,7 +1180,7 @@ describe('Overview Tab', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForText('appset-no-source')
@@ -1208,12 +1208,12 @@ describe('Overview Tab RBAC', () => {
       applicationData: mockApplicationDataArgo,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -1223,7 +1223,7 @@ describe('Overview Tab RBAC', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForNock(nock)
@@ -1248,12 +1248,12 @@ describe('Overview Tab RBAC', () => {
       applicationData: mockApplicationDataArgoApp,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -1263,7 +1263,7 @@ describe('Overview Tab RBAC', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForNock(nock)
@@ -1288,12 +1288,12 @@ describe('Overview Tab RBAC', () => {
       applicationData: mockApplicationDataArgo,
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(subscriptionsState, mockSubscriptions)
-          snapshot.set(channelsState, mockChannels)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(namespacesState, mockNamespaces)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(namespacesState, mockNamespaces)
         }}
       >
         <MemoryRouter>
@@ -1303,7 +1303,7 @@ describe('Overview Tab RBAC', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('Name')
     await waitForNock(nock)

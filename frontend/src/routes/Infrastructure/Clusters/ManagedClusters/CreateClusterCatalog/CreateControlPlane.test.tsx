@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { clickByTestId, isCardEnabled, waitForNocks, clickElement } from '~/lib/test-util'
 import { nockIgnoreApiPaths } from '../../../../../lib/nock-util'
 import { nockHypershiftStatus } from '../../../../../lib/nock-hypershift-status'
@@ -36,12 +36,12 @@ describe('CreateControlPlane', () => {
     enableHypershift?: boolean
   }) => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(infraEnvironmentsState, infraEnvsMock || [])
-          snapshot.set(agentsState, agentsMock || [])
-          snapshot.set(managedClusterAddonsState, mockManagedClusterAddOn)
-          snapshot.set(multiClusterEnginesState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(infraEnvironmentsState, infraEnvsMock || [])
+          store.set(agentsState, agentsMock || [])
+          store.set(managedClusterAddonsState, mockManagedClusterAddOn)
+          store.set(multiClusterEnginesState, [
             enableHypershift ? mockMultiClusterEngine : mockMultiClusterEngineWithHypershiftDisabled,
           ])
         }}
@@ -51,7 +51,7 @@ describe('CreateControlPlane', () => {
             <Route path={NavigationPath.createBMControlPlane} element={<CreateControlPlane />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

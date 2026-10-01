@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render } from '@testing-library/react'
-import React, { createElement, type ReactNode } from 'react'
-import { MutableSnapshot, RecoilRoot } from 'recoil'
+import { createElement, type ReactNode } from 'react'
+import { StateProvider } from '~/lib/state-provider'
 import { settingsState } from '../atoms'
 import { PluginDataContext, defaultContext } from '../lib/PluginDataContext'
 import { EventStreamIdleDebugPanel } from './EventStreamIdleDebugPanel'
@@ -25,12 +25,12 @@ function wrapper({ children }: { children: ReactNode }) {
     PluginDataContext.Provider,
     { value: { ...defaultContext, loadCompleted: true, loadStarted: true } },
     createElement(
-      RecoilRoot,
+      StateProvider,
       {
-        initializeState: (snapshot: MutableSnapshot) => {
-          snapshot.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
+        initializeStore: (store) => {
+          store.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
         },
-      } as React.ComponentProps<typeof RecoilRoot>,
+      },
       children
     )
   )
@@ -68,12 +68,12 @@ describe('EventStreamIdleDebugPanel rendering', () => {
         PluginDataContext.Provider,
         { value: idleCtx },
         createElement(
-          RecoilRoot,
+          StateProvider,
           {
-            initializeState: (snapshot: MutableSnapshot) => {
-              snapshot.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
+            initializeStore: (store) => {
+              store.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
             },
-          } as React.ComponentProps<typeof RecoilRoot>,
+          },
           children
         )
       )
@@ -89,12 +89,12 @@ describe('EventStreamIdleDebugPanel rendering', () => {
         PluginDataContext.Provider,
         { value: reconnCtx },
         createElement(
-          RecoilRoot,
+          StateProvider,
           {
-            initializeState: (snapshot: MutableSnapshot) => {
-              snapshot.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
+            initializeStore: (store) => {
+              store.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
             },
-          } as React.ComponentProps<typeof RecoilRoot>,
+          },
           children
         )
       )

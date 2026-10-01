@@ -5,7 +5,7 @@
 import React from 'react'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState, settingsState } from '../../../atoms'
 import { nockGet, nockIgnoreApiPaths, nockIgnoreRBAC, nockIgnoreClusterVersion } from '../../../lib/nock-util'
 import { waitForNocks } from '../../../lib/test-util'
@@ -135,13 +135,13 @@ describe('DetailsPage', () => {
       writable: true,
     })
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={[NavigationPath.resources]}>
           <Routes>
             <Route path={`${NavigationPath.search}/*`} element={<Search />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -232,9 +232,9 @@ describe('DetailsPage', () => {
       writable: true,
     })
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.resources]}>
@@ -242,7 +242,7 @@ describe('DetailsPage', () => {
             <Route path={`${NavigationPath.search}/*`} element={<Search />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -317,9 +317,9 @@ describe('DetailsPage', () => {
       writable: true,
     })
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, { VIRTUAL_MACHINE_ACTIONS: 'enabled' })
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.resources]}>
@@ -327,7 +327,7 @@ describe('DetailsPage', () => {
             <Route path={`${NavigationPath.search}/*`} element={<Search />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for delete resource requests to finish
@@ -441,9 +441,9 @@ describe('DetailsPage', () => {
       },
     })
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(isFineGrainedRbacEnabledState, true)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(isFineGrainedRbacEnabledState, true)
         }}
       >
         <MemoryRouter initialEntries={[NavigationPath.resources]}>
@@ -451,7 +451,7 @@ describe('DetailsPage', () => {
             <Route path={`${NavigationPath.search}/*`} element={<Search />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Test that the component has rendered correctly with data

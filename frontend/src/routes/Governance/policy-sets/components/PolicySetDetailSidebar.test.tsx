@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   managedClustersState,
   placementBindingsState,
@@ -314,19 +314,19 @@ describe('PolicySets Page', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicies)
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecisions)
-          snapshot.set(placementsState, mockPlacements)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicies)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecisions)
+          store.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
           <PolicySetDetailSidebar policySet={policySet} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check clusters Violation count - chart legend text may be split across elements
@@ -374,19 +374,19 @@ describe('PolicySets Page with Pending policyset', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicyPending])
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecisions)
-          snapshot.set(placementsState, mockPlacements)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicyPending])
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecisions)
+          store.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
           <PolicySetDetailSidebar policySet={policySet} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check policies Violation count - chart legend text may be split across elements
@@ -421,19 +421,19 @@ describe('Namespace-scoped cluster link gating', () => {
 
   test('Should render cluster name as a link when propagated policy copy is visible', async () => {
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicies) // includes propagated copy for local-cluster
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecisions)
-          snapshot.set(placementsState, mockPlacements)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicies) // includes propagated copy for local-cluster
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecisions)
+          store.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
           <PolicySetDetailSidebar policySet={policySet} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('local-cluster')
@@ -443,19 +443,19 @@ describe('Namespace-scoped cluster link gating', () => {
 
   test('Should render cluster name as disabled link when no propagated policy copy is visible', async () => {
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicy]) // only root policy visible — no propagated copies
-          snapshot.set(managedClustersState, [])
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecisions)
-          snapshot.set(placementsState, mockPlacements)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicy]) // only root policy visible — no propagated copies
+          store.set(managedClustersState, [])
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecisions)
+          store.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
           <PolicySetDetailSidebar policySet={policySet} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText('local-cluster')
@@ -489,19 +489,19 @@ describe('Export from policy details results table', () => {
     }
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicyPending])
-          snapshot.set(managedClustersState, mockManagedClusters)
-          snapshot.set(placementBindingsState, mockPlacementBindings)
-          snapshot.set(placementDecisionsState, mockPlacementDecisions)
-          snapshot.set(placementsState, mockPlacements)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicyPending])
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(placementBindingsState, mockPlacementBindings)
+          store.set(placementDecisionsState, mockPlacementDecisions)
+          store.set(placementsState, mockPlacements)
         }}
       >
         <MemoryRouter>
           <PolicySetDetailSidebar policySet={policySet} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check policies with violation count - chart legend text may be split across elements

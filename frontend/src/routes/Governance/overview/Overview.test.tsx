@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, policiesState } from '../../../atoms'
 import { nockIgnoreApiPaths } from '../../../lib/nock-util'
 import {
@@ -29,15 +29,15 @@ describe('Overview Page', () => {
     }
     const { queryAllByText } = await render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, mockEmptyPolicy)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, mockEmptyPolicy)
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 
@@ -52,15 +52,15 @@ describe('Overview Page', () => {
     }
     const { queryAllByText } = await render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, [mockPolicyNoStatus])
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, [mockPolicyNoStatus])
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
     expect(queryAllByText('Manage policies')).toHaveLength(2)
@@ -74,16 +74,16 @@ describe('Overview Page', () => {
     }
     render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, mockPolicy)
-            snapshot.set(managedClustersState, mockManagedClusters)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, mockPolicy)
+            store.set(managedClustersState, mockManagedClusters)
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 
@@ -98,16 +98,16 @@ describe('Overview Page', () => {
     }
     render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, mockPendingPolicy)
-            snapshot.set(managedClustersState, mockManagedClusters)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, mockPendingPolicy)
+            store.set(managedClustersState, mockManagedClusters)
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 
@@ -122,16 +122,16 @@ describe('Overview Page', () => {
     }
     const { queryByText } = render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, mockMultiPolicy)
-            snapshot.set(managedClustersState, mockMultiManagedClusters)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, mockMultiPolicy)
+            store.set(managedClustersState, mockMultiManagedClusters)
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 
@@ -197,16 +197,16 @@ describe('Overview Page', () => {
     }
     render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, [policyWithStandardFirstInList, policyWithStandardLastInList])
-            snapshot.set(managedClustersState, mockManagedClusters)
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, [policyWithStandardFirstInList, policyWithStandardLastInList])
+            store.set(managedClustersState, mockManagedClusters)
           }}
         >
           <MemoryRouter>
             <GovernanceOverview />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 
@@ -254,15 +254,15 @@ describe('Overview Page', () => {
     }
     render(
       <PluginDataContext.Provider value={pluginData}>
-        <RecoilRoot
-          initializeState={(snapshot) => {
-            snapshot.set(policiesState, [policyWithStandardLastInList])
+        <StateProvider
+          initializeStore={(store) => {
+            store.set(policiesState, [policyWithStandardLastInList])
           }}
         >
           <MemoryRouter>
             <SecurityGroupPolicySummarySidebar violation={violation} secGroupName="standards" compliance="compliant" />
           </MemoryRouter>
-        </RecoilRoot>
+        </StateProvider>
       </PluginDataContext.Provider>
     )
 

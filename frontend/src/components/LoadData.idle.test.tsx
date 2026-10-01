@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render } from '@testing-library/react'
-import React, { createElement, ReactElement } from 'react'
-import { MutableSnapshot, RecoilRoot } from 'recoil'
+import { createElement, ReactElement } from 'react'
+import { StateProvider } from '~/lib/state-provider'
 import { settingsState } from '../atoms'
 import { PluginDataContext, defaultContext, PluginData } from '../lib/PluginDataContext'
 import { LoadData } from './LoadData'
@@ -36,12 +36,12 @@ function Wrapper({ ctx, children }: { ctx: PluginData; children: ReactElement })
     PluginDataContext.Provider,
     { value: ctx },
     createElement(
-      RecoilRoot,
+      StateProvider,
       {
-        initializeState: (snapshot: MutableSnapshot) => {
-          snapshot.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
+        initializeStore: (store) => {
+          store.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0.5' })
         },
-      } as React.ComponentProps<typeof RecoilRoot>,
+      },
       children
     )
   )
@@ -52,12 +52,12 @@ function WrapperNoGrace({ ctx, children }: { ctx: PluginData; children: ReactEle
     PluginDataContext.Provider,
     { value: ctx },
     createElement(
-      RecoilRoot,
+      StateProvider,
       {
-        initializeState: (snapshot: MutableSnapshot) => {
-          snapshot.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0' })
+        initializeStore: (store) => {
+          store.set(settingsState, { EVENT_STREAM_IDLE_TIMEOUT: '1', EVENT_STREAM_IDLE_GRACE_PERIOD: '0' })
         },
-      } as React.ComponentProps<typeof RecoilRoot>,
+      },
       children
     )
   )

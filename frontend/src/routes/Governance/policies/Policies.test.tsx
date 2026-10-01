@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, waitFor, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import {
   placementBindingsState,
   placementsState,
@@ -31,15 +31,15 @@ describe('Policies Page', () => {
   })
   test('Should render empty Policies page correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockEmptyPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockEmptyPolicy)
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText("You don't have any policies yet")
@@ -47,15 +47,15 @@ describe('Policies Page', () => {
 
   test('Should render Policies page correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockPolicy[0].metadata.name!)
@@ -73,15 +73,15 @@ describe('Policies Page', () => {
 
   test('Should render Policies page correctly with Default selected Columns', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPendingPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPendingPolicy)
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockPendingPolicy[0].metadata.name!)
@@ -114,16 +114,16 @@ describe('Policies Page', () => {
 
   test('Should sort Policy automation correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockOrderPolicy)
-          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockOrderPolicy)
+          store.set(policyAutomationState, [mockPolicyAutomation])
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Add the automation column
     await clickElement(screen.getByRole('button', { name: /columns-management/i }))
@@ -148,16 +148,16 @@ describe('Policies Page', () => {
 
   test('Should sort Policy status correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockOrderPolicy)
-          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockOrderPolicy)
+          store.set(policyAutomationState, [mockPolicyAutomation])
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Add the status column
     await clickElement(screen.getByRole('button', { name: /columns-management/i }))
@@ -177,16 +177,16 @@ describe('Policies Page', () => {
 
   test('Should sort Policy source correctly', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockOrderPolicy)
-          snapshot.set(policyAutomationState, [mockPolicyAutomation])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockOrderPolicy)
+          store.set(policyAutomationState, [mockPolicyAutomation])
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     expect(screen.getByRole('columnheader', { name: /Source/i })).toBeInTheDocument()
     await clickElement(screen.getByRole('button', { name: /Source/i }))
@@ -201,16 +201,16 @@ describe('Policies Page', () => {
 
   test('Should have correct links to PolicySet & Policy detail results pages', async () => {
     const { container } = render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy.slice(0, 2))
-          snapshot.set(policySetsState, [mockPolicySets[0]])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy.slice(0, 2))
+          store.set(policySetsState, [mockPolicySets[0]])
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Wait for page load
@@ -236,15 +236,15 @@ describe('Policies Page', () => {
 
   test('should show enforce filter without (overridden)', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicyBinding)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicyBinding)
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await waitForText('enforce (overridden)')
     await waitForText('Filter')
@@ -263,10 +263,10 @@ describe('Add Policy to policy set', () => {
       source: 'Local',
     }
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, [mockPolicy[2]])
-          snapshot.set(policySetsState, [mockPolicySets[1]])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, [mockPolicy[2]])
+          store.set(policySetsState, [mockPolicySets[1]])
         }}
       >
         <MemoryRouter>
@@ -277,7 +277,7 @@ describe('Add Policy to policy set', () => {
             }}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     await clickElement(
       screen.getByRole('combobox', {
@@ -418,10 +418,10 @@ describe('Delete policy modal with shared placements and bindings', () => {
     const onClose = () => {}
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(placementsState, [placement, placementLegacy])
-          snapshot.set(placementBindingsState, [
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [placement, placementLegacy])
+          store.set(placementBindingsState, [
             placementBinding1,
             placementBinding2,
             placementBinding3,
@@ -430,7 +430,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
         }}
       >
         <DeletePolicyModal item={tableItem} onClose={onClose} />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     screen.getByRole('heading', { name: 'Warning alert: These PlacementBindings are in use elsewhere' })
@@ -446,15 +446,15 @@ describe('Export from policy table', () => {
   })
   test('export button should produce a file for download', async () => {
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicy)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicy)
         }}
       >
         <MemoryRouter>
           <PoliciesPage />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForText(mockPolicy[0].metadata.name!)
@@ -486,9 +486,9 @@ describe('Delete policy modal with delete prune behavior', () => {
     const onClose = () => {}
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <DeletePolicyModal item={tableItem} onClose={onClose} />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     screen.getByRole('heading', { name: 'Warning alert: Some policies have the Prune parameter set.' })
@@ -503,9 +503,9 @@ describe('Delete policy modal with delete prune behavior', () => {
     const onClose = () => {}
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <DeletePolicyModal item={tableItem} onClose={onClose} />
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(

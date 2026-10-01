@@ -13,7 +13,7 @@ import {
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { render, screen, waitFor } from '@testing-library/react'
 import { UpdateAutomationModal } from './UpdateAutomationModal'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter } from 'react-router'
 import { clusterCuratorsState, secretsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, /*nockCreate,*/ nockPatch } from '../../../../../lib/nock-util'
@@ -443,16 +443,16 @@ describe('UpdateAutomationModal', () => {
 
   const Component = () => {
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(clusterCuratorsState, [clusterCurator])
-          snapshot.set(secretsState, [providerConnectionAnsible as Secret])
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterCuratorsState, [clusterCurator])
+          store.set(secretsState, [providerConnectionAnsible as Secret])
         }}
       >
         <MemoryRouter>
           <UpdateAutomationModal clusters={mockClusters} open={true} close={() => {}} />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
 

@@ -7,7 +7,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import { GraphQLError } from 'graphql'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Settings, settingsState } from '../../../atoms'
 import { wait, clickElement } from '~/lib/test-util'
 import { SearchResultRelatedCountDocument } from '../search-sdk/search-sdk'
@@ -59,9 +59,9 @@ describe('RelatedResults', () => {
       },
     ]
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -69,7 +69,7 @@ describe('RelatedResults', () => {
             <RelatedTiles />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
@@ -129,9 +129,9 @@ describe('RelatedResults', () => {
     ]
 
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(settingsState, mockSettings)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(settingsState, mockSettings)
         }}
       >
         <MemoryRouter>
@@ -139,7 +139,7 @@ describe('RelatedResults', () => {
             <RelatedTiles />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()
@@ -208,13 +208,13 @@ describe('RelatedResults', () => {
     ]
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <MockedProvider mocks={mocks}>
             <RelatedTiles />
           </MockedProvider>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
     // Test the loading state while apollo query finishes
     expect(screen.getAllByTestId('loading-acc-item-1')).toBeTruthy()

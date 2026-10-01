@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { ClusterSetRoleAssignments } from './ClusterSetRoleAssignments'
 
 const mockUseFindRoleAssignments = jest.fn()
@@ -18,13 +18,13 @@ jest.mock('../../../../../UserManagement/RoleAssignment/RoleAssignments', () => 
 }))
 
 const Component = ({ clusterSetName = 'default-cluster-set' }: { clusterSetName?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/cluster-sets/${clusterSetName}/role-assignments`]}>
       <Routes>
         <Route path="/cluster-sets/:id/role-assignments" element={<ClusterSetRoleAssignments />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('ClusterSetRoleAssignments', () => {
@@ -73,13 +73,13 @@ describe('ClusterSetRoleAssignments', () => {
 
   it('passes empty clusterSetNames array when no id param is provided', () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/cluster-sets/role-assignments']}>
           <Routes>
             <Route path="/cluster-sets/role-assignments" element={<ClusterSetRoleAssignments />} />
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(mockUseFindRoleAssignments).toHaveBeenCalledWith({

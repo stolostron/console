@@ -151,14 +151,15 @@ window.coilShot = (recoil: any, stateName: string, customFilters?: string[], max
     const dataName = `mock${capitalize(stateName.replace('State', '').replace('state', ''))}`
     const filters = [...(customFilters || []), ...['controlData']]
     const { snapshot } = getSnapshot(recoil, false, filters, max || 10)
-    const snippets = []
-    snippets.push(`//import {${stateName}} from '../../atoms'\n\n`)
-    snippets.push(`//const ${dataName} = ${snapshot}\n\n`)
-    snippets.push(`//   render(`)
-    snippets.push(`    <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`)
-    snippets.push(`        <${className} />`)
-    snippets.push(`     </RecoilRoot>`)
-    snippets.push(`//   )`)
+    const snippets = [
+      `//import {${stateName}} from '../../atoms'\n\n`,
+      `//const ${dataName} = ${snapshot}\n\n`,
+      `//   render(`,
+      `    <RecoilRoot initializeState={(snapshot) => { snapshot.set(${stateName}, ${dataName}) }} >`,
+      `        <${className} />`,
+      `     </RecoilRoot>`,
+      `//   )`,
+    ]
 
     const snip: { [index: string]: string } = {}
     const key = `${stateName}CoilShot`

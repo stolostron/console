@@ -5,9 +5,7 @@ import { renderHook } from '@testing-library/react'
 import { useQuerySearchDisabledManagedClusters } from './search'
 import * as utils from '../resources/utils'
 import * as useLocalHub from '../hooks/use-local-hub'
-import { RecoilRoot } from 'recoil'
-
-// Mock the dependencies
+import { StateProvider } from '~/lib/state-provider'
 jest.mock('../resources/utils')
 jest.mock('../hooks/use-local-hub')
 
@@ -36,15 +34,15 @@ describe('useQuerySearchDisabledManagedClusters', () => {
     } as any)
   })
 
-  const renderHookWithRecoil = (callback: () => any) => {
+  const renderHookWithState = (callback: () => any) => {
     const Wrapper = ({ children }: { children: React.ReactNode }) => {
-      return React.createElement(RecoilRoot, { children })
+      return React.createElement(StateProvider, { children })
     }
     return renderHook(callback, { wrapper: Wrapper })
   }
 
   it('should return a function that makes a search request with correct parameters', async () => {
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const queryFunction = result.current
     await queryFunction()
@@ -78,7 +76,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
       jest.clearAllMocks()
       mockUseLocalHubName.mockReturnValue(testCase.hubName)
 
-      const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+      const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
       const queryFunction = result.current
       await queryFunction()
@@ -103,7 +101,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
   })
 
   it('should return the correct search query structure', async () => {
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const queryFunction = result.current
     const response = await queryFunction()
@@ -126,7 +124,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
     const error = new Error('API Error')
     mockPostRequest.mockRejectedValue(error as any)
 
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const queryFunction = result.current
 
@@ -134,7 +132,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
   })
 
   it('should maintain referential stability when localHubName does not change', () => {
-    const { result, rerender } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result, rerender } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const firstQueryFunction = result.current
 
@@ -148,7 +146,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
   })
 
   it('should use the correct API endpoint', async () => {
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const queryFunction = result.current
     await queryFunction()
@@ -157,7 +155,7 @@ describe('useQuerySearchDisabledManagedClusters', () => {
   })
 
   it('should include all required filters in the search query', async () => {
-    const { result } = renderHookWithRecoil(() => useQuerySearchDisabledManagedClusters())
+    const { result } = renderHookWithState(() => useQuerySearchDisabledManagedClusters())
 
     const queryFunction = result.current
     await queryFunction()

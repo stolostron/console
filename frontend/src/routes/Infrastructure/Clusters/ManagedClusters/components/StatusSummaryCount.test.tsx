@@ -2,7 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { policiesState, policyreportState } from '../../../../../atoms'
 import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
@@ -284,10 +284,10 @@ describe('StatusSummaryCount', () => {
   const Component = () => {
     const context: Partial<ClusterDetailsContext> = { cluster: mockCluster }
     return (
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(policiesState, mockPolicies)
-          snapshot.set(policyreportState, mockPolicyReports)
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(policiesState, mockPolicies)
+          store.set(policyreportState, mockPolicyReports)
         }}
       >
         <QueryClientProvider client={queryClient}>
@@ -299,7 +299,7 @@ describe('StatusSummaryCount', () => {
             </Routes>
           </MemoryRouter>
         </QueryClientProvider>
-      </RecoilRoot>
+      </StateProvider>
     )
   }
   test('renders', async () => {
