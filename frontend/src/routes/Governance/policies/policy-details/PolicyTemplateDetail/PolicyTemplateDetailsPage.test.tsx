@@ -1998,9 +1998,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2022,7 +2022,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
@@ -2093,9 +2093,9 @@ describe('Policy Template Details Page', () => {
 
     nockIgnoreRBAC()
     render(
-      <RecoilRoot
-        initializeState={(snapshot) => {
-          snapshot.set(managedClusterAddonsState, {})
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(managedClusterAddonsState, {})
         }}
       >
         <MemoryRouter
@@ -2117,7 +2117,7 @@ describe('Policy Template Details Page', () => {
             </Route>
           </Routes>
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitForNocks(mcvNocks)
