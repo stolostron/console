@@ -106,13 +106,35 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
         pullSecret: btoa(values.pullSecret),
       }
     }
-    if (values.enableNtpSources) {
+    if (values.useNTPSources) {
       control.active = {
         ...control.active,
-        additionalNtpSources: values.additionalNtpSources
+        useNTPSources: true,
+        useAdditionalNTPSources: false,
+        ntpSources: values.ntpSources
           .split(',')
           .map((s) => s.trim())
           .filter(Boolean),
+        additionalNTPSources: [],
+      }
+    } else if (values.useAdditionalNTPSources) {
+      control.active = {
+        ...control.active,
+        useAdditionalNTPSources: true,
+        useNTPSources: false,
+        additionalNTPSources: values.additionalNTPSources
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        ntpSources: [],
+      }
+    } else {
+      control.active = {
+        ...control.active,
+        useAdditionalNTPSources: false,
+        useNTPSources: false,
+        additionalNTPSources: [],
+        ntpSources: [],
       }
     }
     handleChange(control)

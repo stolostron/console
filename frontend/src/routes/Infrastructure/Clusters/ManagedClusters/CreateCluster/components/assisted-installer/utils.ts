@@ -329,6 +329,9 @@ export const getNetworkingPatches = (
     }
     appendPatch(agentClusterInstallPatches, '/spec/proxy', proxySettings, agentClusterInstall.spec?.proxy)
   }
+  if (values.ntpSources?.length) {
+    appendPatch(agentClusterInstallPatches, '/spec/ntpSources', values.ntpSources, agentClusterInstall.spec?.proxy)
+  }
   appendPatch(
     agentClusterInstallPatches,
     '/spec/networking/networkType',
@@ -786,22 +789,39 @@ export const savePullSecret = (values: any, infraEnv: InfraEnvK8sResource) => {
 
 export const onEditNtpSources = (values: any, infraEnv: InfraEnvK8sResource) => {
   const patches: any[] = []
-  if (values.enableNtpSources === 'auto') {
-    if (infraEnv.spec?.additionalNTPSources) {
-      patches.push({
-        op: 'remove',
-        path: '/spec/additionalNTPSources',
-      })
+  const parseNtpSources = (ntpSources: string) =>
+    ntpSources
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+
+  const removeIfPresent = (path: '/spec/ntpSources' | '/spec/additionalNTPSources') => {
+    const key = path === '/spec/ntpSources' ? 'ntpSources' : ('additionalNTPSources' as const)
+    if (infraEnv.spec?.[key] !== undefined) {
+      patches.push({ op: 'remove', path })
     }
-  } else {
+  }
+
+  if (values.useNTPSources) {
+    removeIfPresent('/spec/additionalNTPSources')
+    appendPatch(patches, '/spec/ntpSources', parseNtpSources(values.ntpSources), infraEnv.spec?.ntpSources)
+  } else if (values.useAdditionalNTPSources) {
+    removeIfPresent('/spec/ntpSources')
     appendPatch(
       patches,
       '/spec/additionalNTPSources',
-      (values.additionalNtpSources as string).split(',').map((s) => s.trim()),
+      parseNtpSources(values.additionalNTPSources),
       infraEnv.spec?.additionalNTPSources
     )
+  } else {
+    removeIfPresent('/spec/additionalNTPSources')
+    removeIfPresent('/spec/ntpSources')
   }
-  return patchResource(infraEnv as IResource, patches).promise as Promise<InfraEnvK8sResource>
+
+  if (patches.length) {
+    return patchResource(infraEnv as IResource, patches).promise as Promise<InfraEnvK8sResource>
+  }
+  return Promise.resolve(infraEnv)
 }
 
 export const onMassDeleteHost = (agent?: AgentK8sResource, bmh?: BareMetalHostK8sResource) => {
