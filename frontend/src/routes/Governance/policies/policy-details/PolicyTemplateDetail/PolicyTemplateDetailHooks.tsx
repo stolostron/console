@@ -34,7 +34,7 @@ export function useFetchVapb() {
     ) {
       let vapbNames: string[]
       if (apiGroup === 'constraints.gatekeeper.sh') {
-        vapbNames = [`gatekeeper-${kind.toLowerCase()}-${name}`]
+        vapbNames = [`gatekeeper-${kind.toLowerCase()}-${name}`, `gatekeeper-${name}`]
       } else {
         const prefix = kind === 'ClusterPolicy' ? 'cpol' : 'pol'
         vapbNames = [`${prefix}-${name}-binding`, `${name}-binding`]
