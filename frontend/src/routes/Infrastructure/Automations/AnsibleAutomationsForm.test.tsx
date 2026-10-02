@@ -264,7 +264,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')
@@ -353,7 +353,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType')
     await clickByText('Cancel', 1)
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
@@ -407,7 +407,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')
@@ -438,7 +438,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')
