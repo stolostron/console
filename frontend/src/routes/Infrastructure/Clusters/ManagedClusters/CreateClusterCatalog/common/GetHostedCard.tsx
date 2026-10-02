@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next'
 import { DOC_LINKS } from '../../../../../../lib/doc-util'
 import { Icon } from '@patternfly/react-core'
 
-function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean): ICatalogCard {
+function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean, loaded = true): ICatalogCard {
   return {
     id: 'hosted',
     title: t('Hosted'),
@@ -33,15 +33,17 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
       },
     ],
     onClick: isHypershiftEnabled ? onNext : undefined,
-    alertTitle: isHypershiftEnabled
-      ? undefined
-      : t('Hosted control plane operator must be enabled in order to continue'),
+    alertTitle:
+      loaded && !isHypershiftEnabled
+        ? t('Hosted control plane operator must be enabled in order to continue')
+        : undefined,
     alertVariant: 'info',
-    alertContent: (
-      <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-        {t('View documentation')} <ExternalLinkAltIcon />
-      </a>
-    ),
+    alertContent:
+      loaded && !isHypershiftEnabled ? (
+        <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
+          {t('View documentation')} <ExternalLinkAltIcon />
+        </a>
+      ) : undefined,
   }
 }
 export default GetHostedCard

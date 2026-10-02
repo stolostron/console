@@ -46,6 +46,16 @@ describe('CreateKubeVirtControlPlane', () => {
     expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
   })
 
+  test('does not show the disabled warning while hypershift status is loading', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { queryByText } = render(<Component />)
+    expect(queryByText(/Hosted control plane operator must be enabled/)).not.toBeInTheDocument()
+
+    await waitForNocks([hypershiftStatusNock])
+    expect(queryByText(/Hosted control plane operator must be enabled/)).not.toBeInTheDocument()
+  })
+
   test('Hosted should be disabled when hypershift is disabled', async () => {
     const hypershiftStatusNock = nockHypershiftStatus(false)
 
