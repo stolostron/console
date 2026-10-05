@@ -26,7 +26,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmAlert, AcmButton, AcmEmptyState, AcmSelect } from '../../../../../ui-components'
 import { ClusterAction, clusterSupportsAction } from '../utils/cluster-actions'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
@@ -84,7 +84,7 @@ export function BatchUpgradeModal(props: {
   const [upgradeRiskPredictions, setUpgradeRiskPredictions] = useState<any[]>([])
 
   const { clusterCuratorsState } = useSharedAtoms()
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
 
   const description = useMemo(() => {
     const hasUpgradeActions = upgradeableClusters.some((cluster) => {

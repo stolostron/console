@@ -21,7 +21,7 @@ import { useCheckClusterAPI } from '../components/rosahcp/hooks/useCheckClusterA
 import { HostedCard } from '../components/rosahcp/HostedCard/HostedCard'
 import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { DOC_LINKS } from '~/lib/doc-util'
 
 export function CreateAWSControlPlane() {
@@ -37,7 +37,7 @@ export function CreateAWSControlPlane() {
 
   const { isCapaEnabled, isCapiEnabled } = useCheckClusterAPI()
   const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
+  const settings = useSharedValue(settingsState)
   const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
 
   const areCapiCapaEnabled = isCapaEnabled && isCapiEnabled

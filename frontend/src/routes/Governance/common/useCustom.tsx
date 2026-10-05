@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { Policy } from '../../../resources/policy'
 import { getPolicyRemediation } from './util'
 import { cloneDeep } from 'lodash'
@@ -9,7 +9,7 @@ import { cloneDeep } from 'lodash'
 export function useAddRemediationPolicies() {
   const { policiesState, usePolicies } = useSharedAtoms()
   const policies = usePolicies()
-  const propaPolicies = useRecoilValue(policiesState)
+  const propaPolicies = useSharedValue(policiesState)
   const filteredPolicies: Policy[] = useMemo(() => {
     const resultPolicies = policies.map((p) => {
       const policyName = p.metadata.name ?? ''
@@ -28,7 +28,7 @@ export function useAddRemediationPolicies() {
 
 export function usePropagatedPolicies(policy: Policy) {
   const { policiesState } = useSharedAtoms()
-  const propaPolicies = useRecoilValue(policiesState)
+  const propaPolicies = useSharedValue(policiesState)
   const filteredPolicies: Policy[] = useMemo(() => {
     const policyName = policy.metadata.name ?? ''
     const policyNamespace = policy.metadata.namespace ?? ''

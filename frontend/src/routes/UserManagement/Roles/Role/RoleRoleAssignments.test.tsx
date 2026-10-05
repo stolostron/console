@@ -2,11 +2,11 @@
 import { PageSection } from '@patternfly/react-core'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { AcmLoadingPage } from '../../../../ui-components'
 import { RoleRoleAssignments } from './RoleRoleAssignments'
 import { useCurrentRole } from '../RolesPage'
-import { useSharedAtoms, useRecoilValue } from '../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
@@ -14,8 +14,8 @@ jest.mock('../RolesPage', () => ({
   useCurrentRole: jest.fn(),
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -148,13 +148,13 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
 }))
 
 const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/roles/${userId}/role-assignments`]}>
       <Routes>
         <Route path="/roles/:id/role-assignments" element={<RoleRoleAssignments />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('RoleRoleAssignments', () => {
@@ -165,8 +165,8 @@ describe('RoleRoleAssignments', () => {
       multiclusterRoleAssignmentState: {} as any,
     } as any)
 
-    // Default mock return value for useRecoilValue
-    ;(useRecoilValue as jest.Mock).mockReturnValue([])
+    // Default mock return value for useSharedValue
+    ;(useSharedValue as jest.Mock).mockReturnValue([])
   })
 
   it('renders RoleRoleAssignments component with no role found', async () => {
@@ -178,7 +178,7 @@ describe('RoleRoleAssignments', () => {
 
   it('renders RoleRoleAssignments component with role found', async () => {
     mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useSharedValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
 
     render(<Component userId="kubevirt.io:edit" />)
 
@@ -188,7 +188,7 @@ describe('RoleRoleAssignments', () => {
 
   it('renders with different role and shows their role assignments', async () => {
     mockUseCurrentRole.mockReturnValue(mockClusterRoles[1])
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useSharedValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
 
     // Test with network-admin role
     render(<Component userId="network-admin" />)
@@ -199,7 +199,7 @@ describe('RoleRoleAssignments', () => {
 
   it('passes correct hidden columns to RoleAssignments component', async () => {
     mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useSharedValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
     render(<Component userId="kubevirt.io:edit" />)
 
     // The component should render without crashing
@@ -208,7 +208,7 @@ describe('RoleRoleAssignments', () => {
 
   it('shows loading state correctly', async () => {
     mockUseCurrentRole.mockReturnValue(mockClusterRoles[0])
-    ;(useRecoilValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
+    ;(useSharedValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
     render(<Component userId="kubevirt.io:edit" />)
 
     // The component should render without crashing

@@ -18,7 +18,7 @@ import { ActionGroup, PageSection, Title } from '@patternfly/react-core'
 import { useState, useMemo } from 'react'
 import { Trans, useTranslation } from '../../../../../../lib/acm-i18next'
 import { generatePath, useNavigate } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../../shared-atoms'
 import { BulkActionModal, errorIsNot } from '../../../../../../components/BulkActionModal'
 import { patchClusterSetLabel } from '../../../../../../lib/patch-cluster'
 import { NavigationPath, SubRoutesRedirect } from '../../../../../../NavigationPath'
@@ -80,9 +80,9 @@ export function ClusterSetManageResourcesContent() {
 
   const clusters = useAllClusters()
   const { clusterCuratorsState, managedClusterSetsState, hostedClustersState } = useSharedAtoms()
-  const managedClusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
+  const managedClusterSets = useSharedValue(managedClusterSetsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
   const localHubName = useLocalHubName()
   const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
   const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)

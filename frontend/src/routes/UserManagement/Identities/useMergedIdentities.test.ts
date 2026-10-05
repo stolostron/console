@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Group, User } from '../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import {
   groupsFromMulticlusterRoleAssignments,
   useMergedGroups,
@@ -10,12 +10,12 @@ import {
   usersFromMulticlusterRoleAssignments,
 } from './useMergedIdentities'
 
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const usersAtom = Symbol('usersState')
@@ -204,7 +204,7 @@ describe('useMergedIdentities', () => {
     afterEach(() => jest.clearAllMocks())
 
     it('should return RBAC users merged with MRA-derived users sorted by name', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === usersAtom) return mockUsers
         if (atom === mraAtom) return mockMras
         return []
@@ -216,7 +216,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should not duplicate users that exist in both RBAC and MRA', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === usersAtom) return mockUsers
         if (atom === mraAtom) return mockMras
         return []
@@ -228,7 +228,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return only RBAC users when no MRAs exist', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === usersAtom) return mockUsers
         if (atom === mraAtom) return []
         return []
@@ -240,7 +240,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return only MRA-derived users when no RBAC users exist', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === usersAtom) return []
         if (atom === mraAtom) return mockMras
         return []
@@ -252,14 +252,14 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return empty array when both sources are empty', () => {
-      mockUseRecoilValue.mockImplementation(() => [])
+      mockUseSharedValue.mockImplementation(() => [])
 
       const { result } = renderHook(() => useMergedUsers())
       expect(result.current).toEqual([])
     })
 
     it('should exclude Group MRAs from users list', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === usersAtom) return []
         if (atom === mraAtom) return mockMras
         return []
@@ -281,7 +281,7 @@ describe('useMergedIdentities', () => {
     afterEach(() => jest.clearAllMocks())
 
     it('should return RBAC groups merged with MRA-derived groups sorted by name', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === groupsAtom) return mockGroups
         if (atom === mraAtom) return mockMras
         return []
@@ -293,7 +293,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should not duplicate groups that exist in both RBAC and MRA', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === groupsAtom) return mockGroups
         if (atom === mraAtom) return mockMras
         return []
@@ -305,7 +305,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return only RBAC groups when no MRAs exist', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === groupsAtom) return mockGroups
         if (atom === mraAtom) return []
         return []
@@ -317,7 +317,7 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return only MRA-derived groups when no RBAC groups exist', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === groupsAtom) return []
         if (atom === mraAtom) return mockMras
         return []
@@ -329,14 +329,14 @@ describe('useMergedIdentities', () => {
     })
 
     it('should return empty array when both sources are empty', () => {
-      mockUseRecoilValue.mockImplementation(() => [])
+      mockUseSharedValue.mockImplementation(() => [])
 
       const { result } = renderHook(() => useMergedGroups())
       expect(result.current).toEqual([])
     })
 
     it('should exclude User MRAs from groups list', () => {
-      mockUseRecoilValue.mockImplementation((atom: any) => {
+      mockUseSharedValue.mockImplementation((atom: any) => {
         if (atom === groupsAtom) return []
         if (atom === mraAtom) return mockMras
         return []

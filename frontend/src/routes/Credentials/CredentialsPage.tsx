@@ -15,7 +15,7 @@ import {
 } from '../../ui-components'
 import { Fragment, useMemo, useState } from 'react'
 import { Link, generatePath, useNavigate } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { BulkActionModal, BulkActionModalProps } from '../../components/BulkActionModal'
 import { RbacDropdown } from '../../components/Rbac'
 import { useTranslation } from '../../lib/acm-i18next'
@@ -35,7 +35,7 @@ import AcmTimestamp from '../../lib/AcmTimestamp'
 export default function CredentialsPage() {
   const { secretsState, discoveryConfigState } = useSharedAtoms()
   const { t } = useTranslation()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const credentialsSecrets = useMemo(
     () =>
       secrets.filter(
@@ -45,7 +45,7 @@ export default function CredentialsPage() {
   )
 
   const providerConnections = secrets.map(unpackProviderConnection)
-  const discoveryConfigs = useRecoilValue(discoveryConfigState)
+  const discoveryConfigs = useSharedValue(discoveryConfigState)
 
   return (
     <AcmPage header={<AcmPageHeader title={t('Credentials')} />}>

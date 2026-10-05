@@ -9,7 +9,7 @@ import { BatchChannelSelectModal } from '../../routes/Infrastructure/Clusters/Ma
 import { BatchUpgradeModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/BatchUpgradeModal'
 import { RemoveAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/RemoveAutomationModal'
 import { UpdateAutomationModal } from '../../routes/Infrastructure/Clusters/ManagedClusters/components/UpdateAutomationModal'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { AcmTable, IAcmTableButtonAction } from '../../ui-components'
 import { BulkActionModal, BulkActionModalProps } from '../BulkActionModal'
 import { useTableColumns, useTableActions, useAdvancedFilters, useFilters } from './ClustersTableHelper'
@@ -47,9 +47,9 @@ export function ClustersTable({
   }, [])
 
   const { clusterCuratorsState, hostedClustersState, infraEnvironmentsState } = useSharedAtoms()
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
   const localHubName = useLocalHubName()
 
   const [upgradeClusters, setUpgradeClusters] = useState<Array<Cluster> | undefined>()
@@ -63,8 +63,8 @@ export function ClustersTable({
   const keyFn = useCallback((cluster: Cluster) => cluster.name, [])
 
   const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
 
   const { columns, modalColumns } = useTableColumns({
     clusters,

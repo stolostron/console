@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { MemoryRouter, Routes, Route } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
-import { useRecoilValue } from '../../../../shared-recoil'
+import { useSharedValue } from '../../../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
@@ -22,9 +22,9 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock the Recoil state
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+// Mock the shared state
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     groupsState: 'groupsState',
     placementsState: 'placementsState',
@@ -144,23 +144,23 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
 
 function Component({ groupId = 'developers' }: { groupId?: string } = {}) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter initialEntries={[`/groups/${groupId}/role-assignments`]}>
         <Routes>
           <Route path="/groups/:id/role-assignments" element={<GroupRoleAssignments />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 describe('GroupRoleAssignments', () => {
   beforeEach(() => {
-    ;(useRecoilValue as jest.Mock).mockClear()
+    ;(useSharedValue as jest.Mock).mockClear()
   })
 
   it('renders GroupRoleAssignments component with no group found', async () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
+    ;(useSharedValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
 
     render(<Component groupId="non-existent-group" />)
     expect(screen.getByText('Loaded')).toBeInTheDocument()
@@ -168,7 +168,7 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders GroupRoleAssignments component with developers group found', async () => {
-    ;(useRecoilValue as jest.Mock)
+    ;(useSharedValue as jest.Mock)
       .mockReturnValueOnce(mockGroups)
       .mockReturnValueOnce(mockMulticlusterRoleAssignments)
       .mockReturnValueOnce(mockMulticlusterRoleAssignments)
@@ -190,7 +190,7 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders without crashing when multicluster role assignment state is undefined', async () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValueOnce(mockGroups).mockReturnValueOnce(undefined)
+    ;(useSharedValue as jest.Mock).mockReturnValueOnce(mockGroups).mockReturnValueOnce(undefined)
 
     render(<Component groupId="developers" />)
     expect(screen.getByText('Loaded')).toBeInTheDocument()

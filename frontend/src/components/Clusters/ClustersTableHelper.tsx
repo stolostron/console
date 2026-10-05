@@ -45,7 +45,7 @@ import {
 } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/cluster-actions'
 import { getClusterLabelData } from '../../routes/Infrastructure/Clusters/ManagedClusters/utils/utils'
 import { getDateTimeCell } from '../../routes/Infrastructure/helpers/table-row-helpers'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import {
   AcmButton,
   AcmEmptyState,
@@ -324,8 +324,8 @@ export function useClusterDistributionColumn(
 ): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   const { agentClusterInstallsState, clusterImageSetsState } = useSharedAtoms()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
 
   return {
     header: t('table.distribution'),
@@ -510,7 +510,7 @@ export function useGPUCountColumn(): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
   const { clusterManagementAddonsState, useIsObservabilityInstalled } = useSharedAtoms()
   const isObservabilityInstalled = useIsObservabilityInstalled()
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const obsCont = clusterManagementAddons.find((cma) => cma.metadata.name === 'observability-controller')
   let grafanaLink: string | undefined
   try {

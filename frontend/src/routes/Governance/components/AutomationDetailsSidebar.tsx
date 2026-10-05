@@ -20,7 +20,7 @@ import AcmTimestamp from '../../../lib/AcmTimestamp'
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleJob, Policy, PolicyAutomation, Secret } from '../../../resources'
 import { deleteResource } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmEmptyState, AcmTable } from '../../../ui-components'
 import { ClusterPolicyViolationIcons } from '../components/ClusterPolicyViolations'
 import { useGovernanceData } from '../useGovernanceData'
@@ -43,8 +43,8 @@ export function AutomationDetailsSidebar(props: {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { ansibleJobState, secretsState } = useSharedAtoms()
-  const ansibleJobs = useRecoilValue(ansibleJobState)
-  const secrets = useRecoilValue(secretsState)
+  const ansibleJobs = useSharedValue(ansibleJobState)
+  const secrets = useSharedValue(secretsState)
   const govData = useGovernanceData([policy])
   const clusterRiskScore =
     govData.clusterRisks.high +

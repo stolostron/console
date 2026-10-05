@@ -49,7 +49,7 @@ import { NavigationPath } from '../../../../../../NavigationPath'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { getInfraEnvNMStates } from '../../../../InfraEnvironments/utils'
 import { BulkActionModal, BulkActionModalProps } from '../../../../../../components/BulkActionModal'
-import { useSharedAtoms, useRecoilValue } from '../../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../../shared-atoms'
 import { DOC_VERSION } from '../../../../../../lib/doc-util'
 
 const TEMPLATE_EDITOR_OPEN_COOKIE = 'yaml'
@@ -63,11 +63,11 @@ const EditAICluster: React.FC = () => {
   const { agentsState, clusterImageSetsState, nmStateConfigsState, clusterCuratorsState, bareMetalHostsState } =
     useSharedAtoms()
   const [editAgent, setEditAgent] = useState<AgentK8sResource | undefined>()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const agents = useRecoilValue(agentsState)
-  const nmStateConfigs = useRecoilValue(nmStateConfigsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
+  const agents = useSharedValue(agentsState)
+  const nmStateConfigs = useSharedValue(nmStateConfigsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const bareMetalHosts = useSharedValue(bareMetalHostsState)
   const aiConfigMap = useAssistedServiceConfigMap()
 
   const clusterDeployment = useClusterDeployment({ name, namespace })

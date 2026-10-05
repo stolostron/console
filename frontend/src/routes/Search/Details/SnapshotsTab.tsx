@@ -6,7 +6,7 @@ import { useTranslation } from '../../../lib/acm-i18next'
 import { IResource } from '../../../resources'
 import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest } from '../../../resources/utils/resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmLoadingPage, AcmTable } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -35,7 +35,7 @@ export default function SnapshotsTab() {
   const { t } = useTranslation()
   const { cluster, kind, apiversion, namespace, name } = getResourceParams()
   const { useSearchResultLimit, useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const searchResultLimit = useSearchResultLimit()
   const searchDefinitions = useSearchDefinitions()
   const vmActionsEnabled = useVirtualMachineActionsEnabled()

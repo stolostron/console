@@ -259,10 +259,10 @@ export type SubscriptionChannelsMap = Record<string, SubscriptionChannelMapEntry
 
 export type SubscriptionPlacementsMap = Record<string, SubscriptionDecisionMapEntry[]>
 
-// Extend RecoilStates with optional resources used by subscription model helpers
+// Extend SharedStates with optional resources used by subscription model helpers
 
-// Minimal shape for global recoil-backed resource state consumed by model helpers
-export interface RecoilStates {
+// Minimal shape for global shared state-backed resource state consumed by model helpers
+export interface SharedStates {
   applications: Application[]
   placementDecisions?: PlacementDecision[]
   placements: Placement[]

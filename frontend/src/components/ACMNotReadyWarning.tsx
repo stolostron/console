@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PropsWithChildren, useCallback, useContext, useState } from 'react'
 import { Checkbox, Split, SplitItem, Stack, StackItem, Content, ContentVariants } from '@patternfly/react-core'
-import { useSharedSelectors } from '../shared-recoil'
+import { useSharedSelectors } from '../shared-atoms'
 import { SupportedOperator, useOperatorCheck } from '../lib/operatorCheck'
 import { AcmAlert, AcmButton, AcmModal } from '../ui-components'
 import { Trans, useTranslation } from '../lib/acm-i18next'

@@ -3,24 +3,24 @@
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { PrerequisitesPage } from './PrerequisitesPage'
 
-jest.mock('~/shared-recoil', () => ({
+jest.mock('~/shared-atoms', () => ({
   useSharedAtoms: jest.fn(() => ({
     secretsState: 'secretsState',
     multiClusterEnginesState: 'multiClusterEnginesState',
   })),
-  useRecoilValue: jest.fn(() => []),
+  useSharedValue: jest.fn(() => []),
 }))
 
 describe('PrerequisitesPage', () => {
   const Component = () => (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <PrerequisitesPage />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 
   test('should render the page title', () => {

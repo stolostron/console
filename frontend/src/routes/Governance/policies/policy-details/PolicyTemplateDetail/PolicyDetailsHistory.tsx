@@ -5,7 +5,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon } from 
 import { useMemo } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { Policy, PolicyStatusDetails } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../../ui-components'
 import { getISOStringTimestamp } from '../../../../../resources/utils'
 import AcmTimestamp from '../../../../../lib/AcmTimestamp'
@@ -27,7 +27,7 @@ export function PolicyDetailsHistory() {
   const clusterName = urlParams.clusterName ?? ''
   const templateName = urlParams.templateName ?? ''
 
-  const policies = useRecoilValue(policiesState)
+  const policies = useSharedValue(policiesState)
   const { template } = useTemplateDetailsContext()
 
   const statusItems: HistoryTableData[] = useMemo(() => {

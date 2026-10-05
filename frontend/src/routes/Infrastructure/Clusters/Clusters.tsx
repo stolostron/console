@@ -42,14 +42,14 @@ import CreatePlacement from './Placements/CreatePlacement/CreatePlacement'
 import { EditPlacement } from './Placements/CreatePlacement/EditPlacement'
 import { PrerequisitesPage } from './ManagedClusters/components/rosahcp/PrerequisitesPage/PrerequisitesPage'
 import { RosaHCPWrapper } from './ManagedClusters/components/rosahcp/RosaHCPWrapper'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
 export default function Clusters() {
   // Only enable wizard when feature flag is enabled
   const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
+  const settings = useSharedValue(settingsState)
   const rosaHcpWizardFeatureFlag = settings.rosaHcpWizard === 'enabled'
 
   return (

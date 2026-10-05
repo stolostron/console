@@ -10,7 +10,7 @@ import {
 import type { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
 import { useContext, useEffect, useState } from 'react'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '~/shared-atoms'
 import { LoadingPage } from '~/components/LoadingPage'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import type { ValidationStatus } from '~/components/SyncEditor/SyncEditor'
@@ -93,18 +93,18 @@ export function EditArgoApplicationSet({
     secretsState,
   } = useSharedAtoms()
   const { ansibleCredentialsValue } = useSharedSelectors()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const toast = useContext(AcmToastContext)
-  const placements = useRecoilValue(placementsState)
-  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
-  const channels = useRecoilValue(channelsState)
-  const namespaces = useRecoilValue(namespacesState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const placements = useSharedValue(placementsState)
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const channels = useSharedValue(channelsState)
+  const namespaces = useSharedValue(namespacesState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
-  const availableAnsibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const availableAnsibleCredentials = useSharedValue(ansibleCredentialsValue)
     .map((ansibleCredential) => ansibleCredential.metadata.name)
     .filter(isType)
 
@@ -113,7 +113,7 @@ export function EditArgoApplicationSet({
   const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
   const [loadingAppSets, setLoadingAppSets] = useState(true)
 
-  // instead of burdoning recoil with appsets, use old fashioned fetch
+  // instead of burdoning shared state with appsets, use old fashioned fetch
   // opening wizard may take longer, but argo wizards are probably seldom used
   useEffect(() => {
     const fetchAppSets = async () => {

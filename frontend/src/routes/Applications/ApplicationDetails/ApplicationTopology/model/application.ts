@@ -14,7 +14,7 @@ import {
 } from '../../../../../resources'
 import { getResource } from '../../../../../resources/utils'
 import { fleetResourceRequest } from '../../../../../resources/utils/fleet-resource-request'
-import type { ApplicationModel, ManagedCluster, RecoilStates } from '../types'
+import type { ApplicationModel, ManagedCluster, SharedStates } from '../types'
 import { safeSet } from '../utils'
 import { getSubscriptionAnnotations, isLocalSubscription } from '../../../helpers/subscriptions'
 import { addSubscriptionChannels } from './applicationSubscription'
@@ -31,7 +31,7 @@ export const getApplication = async (
   name: string,
   backendUrl: string,
   selectedChannel: string | undefined,
-  recoilStates: RecoilStates,
+  sharedStates: SharedStates,
   cluster?: string,
   apiversion?: string,
   clusters?: ManagedCluster[],
@@ -43,7 +43,7 @@ export const getApplication = async (
   const isArgoApp = apiVersion.indexOf('argoproj.io') > -1 && !isAppSet
   const isOCPApp = apiVersion === 'ocp'
   const isFluxApp = apiVersion === 'flux'
-  const { applications } = recoilStates
+  const { applications } = sharedStates
   let app: Application | undefined
 
   let model: ApplicationModel = {
@@ -59,7 +59,7 @@ export const getApplication = async (
   ///////////////////////////////////////////
   //////// SUBSCRIPTION /////////////////////
   ///////////////////////////////////////////
-  // application is in recoil
+  // application is in shared state
   if (apiVersion === 'application.app.k8s.io') {
     app = applications.find((a: Application) => {
       return a?.metadata?.name === name && a?.metadata?.namespace === namespace
@@ -67,10 +67,10 @@ export const getApplication = async (
     if (app) {
       ;(model as any).clusterList = getSubscriptionClusters(
         app,
-        recoilStates.subscriptions ?? [],
-        recoilStates.placementDecisions ?? []
+        sharedStates.subscriptions ?? [],
+        sharedStates.placementDecisions ?? []
       )
-      model = await addSubscriptionChannels(model as any, app, selectedChannel, recoilStates)
+      model = await addSubscriptionChannels(model as any, app, selectedChannel, sharedStates)
     }
   }
 
@@ -80,7 +80,7 @@ export const getApplication = async (
   // appset data is in backend to prevent downloading lots of stuff
   // get argo app set
   if (!app && isAppSet) {
-    // appset is not part of recoil
+    // appset is not part of shared state
     app = {
       apiVersion: ApplicationSetApiVersion,
       kind: ApplicationSetKind,

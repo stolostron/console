@@ -14,7 +14,7 @@ import { CheckCircleIcon, ExclamationCircleIcon, ExclamationTriangleIcon, LockIc
 import { AcmEmptyState, AcmTable, AcmTableStateProvider, compareStrings } from '../../../../ui-components'
 import { ReactNode, useMemo } from 'react'
 import { Link, generatePath, useLocation } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { usePropagatedPolicies } from '../../common/useCustom'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
@@ -100,7 +100,7 @@ export default function PolicyDetailsResults() {
   const filterPresets = transformBrowserUrlToFilterPresets(location.search)
   const { policy } = usePolicyDetailsContext()
   const { managedClustersState } = useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusters = useSharedValue(managedClustersState)
   const canCreatePolicy = useIsAnyNamespaceAuthorized(rbacCreate(PolicyDefinition))
   const managedClusterNames = useMemo(() => new Set(managedClusters.map((mc) => mc.metadata.name)), [managedClusters])
   const matchingPolicyResponses = usePropagatedPolicies(policy)

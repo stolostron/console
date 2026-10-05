@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
-import { useRecoilValue } from '../../../../shared-recoil'
+import { useSharedValue } from '../../../../shared-atoms'
 import { UserRoleAssignments } from './UserRoleAssignments'
 
 const mockMulticlusterRoleAssignments = [
@@ -63,9 +63,9 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock the Recoil state
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+// Mock the shared state
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     usersState: 'usersState',
     multiclusterRoleAssignmentState: 'multiclusterRoleAssignmentState',
@@ -121,13 +121,13 @@ jest.mock('../../RoleAssignment/RoleAssignments', () => ({
 }))
 
 const Component = ({ userId = 'mock-user-alice-trask' }: { userId?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter initialEntries={[`/users/${userId}/role-assignments`]}>
       <Routes>
         <Route path="/users/:id/role-assignments" element={<UserRoleAssignments />} />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('UserRoleAssignments', () => {
@@ -136,11 +136,11 @@ describe('UserRoleAssignments', () => {
     nockIgnoreApiPaths()
 
     // Reset mocks before each test
-    ;(useRecoilValue as jest.Mock).mockReset()
+    ;(useSharedValue as jest.Mock).mockReset()
   })
 
   it('renders UserRoleAssignments component with no user found', async () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
+    ;(useSharedValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
 
     render(<Component userId="non-existent-user" />)
     expect(screen.getByText('Loaded')).toBeInTheDocument()
@@ -148,7 +148,7 @@ describe('UserRoleAssignments', () => {
   })
 
   it('renders UserRoleAssignments component with user found', async () => {
-    ;(useRecoilValue as jest.Mock).mockImplementation((atom: string) => {
+    ;(useSharedValue as jest.Mock).mockImplementation((atom: string) => {
       if (atom === 'multiclusterRoleAssignmentState') return mockMulticlusterRoleAssignments
       if (atom === 'placementsState') return []
       if (atom === 'placementDecisionsState') return []
@@ -170,7 +170,7 @@ describe('UserRoleAssignments', () => {
   })
 
   it('renders without crashing when multicluster role assignment state is undefined', async () => {
-    ;(useRecoilValue as jest.Mock).mockImplementation((atom: string) => {
+    ;(useSharedValue as jest.Mock).mockImplementation((atom: string) => {
       if (atom === 'multiclusterRoleAssignmentState') return undefined
       if (atom === 'placementsState') return []
       if (atom === 'placementDecisionsState') return []

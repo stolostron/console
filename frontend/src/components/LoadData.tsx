@@ -2,7 +2,7 @@
 import get from 'lodash/get'
 import { Fragment, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { SetterOrUpdater, useRecoilValue, useSetRecoilState } from 'recoil'
+import { useAtomValue, useSetAtom } from 'jotai'
 import { tokenExpired } from '../logout'
 import {
   AgentClusterInstallApiVersion,
@@ -195,6 +195,8 @@ import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-compone
 import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
 
+type StateSetter<Value> = (value: Value | ((currentValue: Value) => Value)) => void
+
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
     useContext(PluginDataContext)
@@ -210,80 +212,80 @@ export function LoadData(props: { children?: ReactNode }) {
   const processIntervalRef = useRef<ReturnType<typeof setInterval>>(undefined)
   const [restartKey, setRestartKey] = useState(0)
 
-  const setAgentClusterInstalls = useSetRecoilState(agentClusterInstallsState)
-  const setAgentMachinesState = useSetRecoilState(agentMachinesState)
-  const setAgents = useSetRecoilState(agentsState)
-  const setAgentServiceConfigs = useSetRecoilState(agentServiceConfigsState)
-  const setAnsibleJobs = useSetRecoilState(ansibleJobState)
-  const setAnsibleWorkflows = useSetRecoilState(ansibleWorkflowState)
-  const setApplicationsState = useSetRecoilState(applicationsState)
-  const setArgoCDsState = useSetRecoilState(argoCDsState)
-  const setBareMetalHosts = useSetRecoilState(bareMetalHostsState)
-  const setCertificateSigningRequests = useSetRecoilState(certificateSigningRequestsState)
-  const setChannelsState = useSetRecoilState(channelsState)
-  const setClusterClaims = useSetRecoilState(clusterClaimsState)
-  const setClusterCurators = useSetRecoilState(clusterCuratorsState)
-  const setClusterDeployments = useSetRecoilState(clusterDeploymentsState)
-  const setClusterImageSets = useSetRecoilState(clusterImageSetsState)
-  const setClusterManagementAddons = useSetRecoilState(clusterManagementAddonsState)
-  const setClusterPools = useSetRecoilState(clusterPoolsState)
-  const setClusterProvisions = useSetRecoilState(clusterProvisionsState)
-  const setVMClusterRoles = useSetRecoilState(vmClusterRolesState)
-  const setClusterVerions = useSetRecoilState(clusterVersionState)
-  const setConfigMaps = useSetRecoilState(configMapsState)
-  const setDiscoveredClusters = useSetRecoilState(discoveredClusterState)
-  const setDiscoveryConfigs = useSetRecoilState(discoveryConfigState)
-  const setGitOpsClustersState = useSetRecoilState(gitOpsClustersState)
-  const setGroups = useSetRecoilState(groupsState)
-  const setHelmReleases = useSetRecoilState(helmReleaseState)
-  const setHostedClustersState = useSetRecoilState(hostedClustersState)
-  const setInfraEnvironments = useSetRecoilState(infraEnvironmentsState)
-  const setInfrastructure = useSetRecoilState(infrastructuresState)
-  const setClaimMappings = useSetRecoilState(claimMappingsState)
-  const setIsDirectAuthenticationEnabled = useSetRecoilState(isDirectAuthenticationEnabledState)
-  const setIsFineGrainedRbacEnabled = useSetRecoilState(isFineGrainedRbacEnabledState)
-  const setIsGlobalHub = useSetRecoilState(isGlobalHubState)
-  const setIsHubSelfManaged = useSetRecoilState(isHubSelfManagedState)
-  const setlocalHubName = useSetRecoilState(localHubNameState)
-  const setMachinePools = useSetRecoilState(machinePoolsState)
-  const setManagedClusterAddons = useSetRecoilState(managedClusterAddonsState)
-  const setManagedClusterInfos = useSetRecoilState(managedClusterInfosState)
-  const setManagedClusterSetBindings = useSetRecoilState(managedClusterSetBindingsState)
-  const setManagedClusterSets = useSetRecoilState(managedClusterSetsState)
-  const setManagedClusters = useSetRecoilState(managedClustersState)
-  const setMultiClusterEngines = useSetRecoilState(multiClusterEnginesState)
-  const setMulticlusterRoleAssignments = useSetRecoilState(multiclusterRoleAssignmentState)
-  const setNamespaces = useSetRecoilState(namespacesState)
-  const setNMStateConfigs = useSetRecoilState(nmStateConfigsState)
-  const setNodePoolsState = useSetRecoilState(nodePoolsState)
-  const setPlacementBindingsState = useSetRecoilState(placementBindingsState)
-  const setPlacementDecisionsState = useSetRecoilState(placementDecisionsState)
-  const setPlacementsState = useSetRecoilState(placementsState)
-  const setPoliciesState = useSetRecoilState(policiesState)
-  const setPolicyAutomationState = useSetRecoilState(policyAutomationState)
-  const setPolicyReports = useSetRecoilState(policyreportState)
-  const setPolicySetsState = useSetRecoilState(policySetsState)
-  const setSearchOperator = useSetRecoilState(searchOperatorState)
-  const setSecrets = useSetRecoilState(secretsState)
-  const setSettings = useSetRecoilState(settingsState)
-  const setServices = useSetRecoilState(servicesState)
-  const setStorageClassState = useSetRecoilState(storageClassState)
-  const setSubmarinerConfigs = useSetRecoilState(submarinerConfigsState)
-  const setSubscriptionOperatorsState = useSetRecoilState(subscriptionOperatorsState)
-  const setClusterExtensionsState = useSetRecoilState(clusterExtensionsState)
-  const setSubscriptionReportsState = useSetRecoilState(subscriptionReportsState)
-  const setSubscriptionsState = useSetRecoilState(subscriptionsState)
-  const setUsers = useSetRecoilState(usersState)
+  const setAgentClusterInstalls = useSetAtom(agentClusterInstallsState)
+  const setAgentMachinesState = useSetAtom(agentMachinesState)
+  const setAgents = useSetAtom(agentsState)
+  const setAgentServiceConfigs = useSetAtom(agentServiceConfigsState)
+  const setAnsibleJobs = useSetAtom(ansibleJobState)
+  const setAnsibleWorkflows = useSetAtom(ansibleWorkflowState)
+  const setApplicationsState = useSetAtom(applicationsState)
+  const setArgoCDsState = useSetAtom(argoCDsState)
+  const setBareMetalHosts = useSetAtom(bareMetalHostsState)
+  const setCertificateSigningRequests = useSetAtom(certificateSigningRequestsState)
+  const setChannelsState = useSetAtom(channelsState)
+  const setClusterClaims = useSetAtom(clusterClaimsState)
+  const setClusterCurators = useSetAtom(clusterCuratorsState)
+  const setClusterDeployments = useSetAtom(clusterDeploymentsState)
+  const setClusterImageSets = useSetAtom(clusterImageSetsState)
+  const setClusterManagementAddons = useSetAtom(clusterManagementAddonsState)
+  const setClusterPools = useSetAtom(clusterPoolsState)
+  const setClusterProvisions = useSetAtom(clusterProvisionsState)
+  const setVMClusterRoles = useSetAtom(vmClusterRolesState)
+  const setClusterVerions = useSetAtom(clusterVersionState)
+  const setConfigMaps = useSetAtom(configMapsState)
+  const setDiscoveredClusters = useSetAtom(discoveredClusterState)
+  const setDiscoveryConfigs = useSetAtom(discoveryConfigState)
+  const setGitOpsClustersState = useSetAtom(gitOpsClustersState)
+  const setGroups = useSetAtom(groupsState)
+  const setHelmReleases = useSetAtom(helmReleaseState)
+  const setHostedClustersState = useSetAtom(hostedClustersState)
+  const setInfraEnvironments = useSetAtom(infraEnvironmentsState)
+  const setInfrastructure = useSetAtom(infrastructuresState)
+  const setClaimMappings = useSetAtom(claimMappingsState)
+  const setIsDirectAuthenticationEnabled = useSetAtom(isDirectAuthenticationEnabledState)
+  const setIsFineGrainedRbacEnabled = useSetAtom(isFineGrainedRbacEnabledState)
+  const setIsGlobalHub = useSetAtom(isGlobalHubState)
+  const setIsHubSelfManaged = useSetAtom(isHubSelfManagedState)
+  const setlocalHubName = useSetAtom(localHubNameState)
+  const setMachinePools = useSetAtom(machinePoolsState)
+  const setManagedClusterAddons = useSetAtom(managedClusterAddonsState)
+  const setManagedClusterInfos = useSetAtom(managedClusterInfosState)
+  const setManagedClusterSetBindings = useSetAtom(managedClusterSetBindingsState)
+  const setManagedClusterSets = useSetAtom(managedClusterSetsState)
+  const setManagedClusters = useSetAtom(managedClustersState)
+  const setMultiClusterEngines = useSetAtom(multiClusterEnginesState)
+  const setMulticlusterRoleAssignments = useSetAtom(multiclusterRoleAssignmentState)
+  const setNamespaces = useSetAtom(namespacesState)
+  const setNMStateConfigs = useSetAtom(nmStateConfigsState)
+  const setNodePoolsState = useSetAtom(nodePoolsState)
+  const setPlacementBindingsState = useSetAtom(placementBindingsState)
+  const setPlacementDecisionsState = useSetAtom(placementDecisionsState)
+  const setPlacementsState = useSetAtom(placementsState)
+  const setPoliciesState = useSetAtom(policiesState)
+  const setPolicyAutomationState = useSetAtom(policyAutomationState)
+  const setPolicyReports = useSetAtom(policyreportState)
+  const setPolicySetsState = useSetAtom(policySetsState)
+  const setSearchOperator = useSetAtom(searchOperatorState)
+  const setSecrets = useSetAtom(secretsState)
+  const setSettings = useSetAtom(settingsState)
+  const setServices = useSetAtom(servicesState)
+  const setStorageClassState = useSetAtom(storageClassState)
+  const setSubmarinerConfigs = useSetAtom(submarinerConfigsState)
+  const setSubscriptionOperatorsState = useSetAtom(subscriptionOperatorsState)
+  const setClusterExtensionsState = useSetAtom(clusterExtensionsState)
+  const setSubscriptionReportsState = useSetAtom(subscriptionReportsState)
+  const setSubscriptionsState = useSetAtom(subscriptionsState)
+  const setUsers = useSetAtom(usersState)
 
   const { setters, mappers, caches } = useMemo(() => {
-    const setters: Record<string, Record<string, SetterOrUpdater<any[]>>> = {}
+    const setters: Record<string, Record<string, StateSetter<any[]>>> = {}
 
     const mappers: Record<
       string,
       Record<
         string,
         {
-          setter: SetterOrUpdater<Record<string, any[]>>
+          setter: StateSetter<Record<string, any[]>>
           mcaches: Record<string, Record<string, Record<string, IResource[]>>>
           keyBy: string[]
         }
@@ -291,19 +293,14 @@ export function LoadData(props: { children?: ReactNode }) {
     > = {}
     const caches: Record<string, Record<string, Record<string, IResource>>> = {}
     const mcaches: Record<string, Record<string, Record<string, IResource[]>>> = {}
-    function addSetter(apiVersion: string, kind: string, setter: SetterOrUpdater<any[]>) {
+    function addSetter(apiVersion: string, kind: string, setter: StateSetter<any[]>) {
       const groupVersion = apiVersion.split('/')[0]
       if (!setters[groupVersion]) setters[groupVersion] = {}
       setters[groupVersion][kind] = setter
       if (!caches[groupVersion]) caches[groupVersion] = {}
       caches[groupVersion][kind] = {}
     }
-    function addMapper(
-      apiVersion: string,
-      kind: string,
-      setter: SetterOrUpdater<Record<string, any[]>>,
-      keyBy: string[]
-    ) {
+    function addMapper(apiVersion: string, kind: string, setter: StateSetter<Record<string, any[]>>, keyBy: string[]) {
       const groupVersion = apiVersion.split('/')[0]
       if (!mappers[groupVersion]) mappers[groupVersion] = {}
       if (!mcaches[groupVersion]) mcaches[groupVersion] = {}
@@ -521,7 +518,7 @@ export function LoadData(props: { children?: ReactNode }) {
       }
     }
 
-    function flushCachesToRecoil() {
+    function flushStateCaches() {
       for (const groupVersion in setters) {
         for (const kind in setters[groupVersion]) {
           setters[groupVersion][kind](Object.values(caches[groupVersion]?.[kind]))
@@ -561,7 +558,7 @@ export function LoadData(props: { children?: ReactNode }) {
             case 'LOADED':
               processEventQueue()
               if (isReconnectingRef.current) {
-                flushCachesToRecoil()
+                flushStateCaches()
                 isReconnectingRef.current = false
                 setIsReconnecting(false)
               }
@@ -636,14 +633,25 @@ export function LoadData(props: { children?: ReactNode }) {
   }, [globalHubStartPoll, globalHubStopPoll])
 
   // Update global value setters when data has finished
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  if (globalHubRes && !globalHubLoading && !isGlobalHub) {
-    setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
-    setlocalHubName(globalHubRes[0]?.localHubName)
-    setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
-    setIsDirectAuthenticationEnabled(globalHubRes[0]?.authentication?.isDirectAuthenticationEnabled ?? false)
-    setClaimMappings(globalHubRes[0]?.authentication?.claimMappings)
-  }
+  const isGlobalHub = useAtomValue(isGlobalHubState)
+  useEffect(() => {
+    if (globalHubRes && !globalHubLoading && !isGlobalHub) {
+      setIsGlobalHub(globalHubRes[0]?.isGlobalHub)
+      setlocalHubName(globalHubRes[0]?.localHubName)
+      setIsHubSelfManaged(globalHubRes[0]?.isHubSelfManaged)
+      setIsDirectAuthenticationEnabled(globalHubRes[0]?.authentication?.isDirectAuthenticationEnabled ?? false)
+      setClaimMappings(globalHubRes[0]?.authentication?.claimMappings)
+    }
+  }, [
+    globalHubRes,
+    globalHubLoading,
+    isGlobalHub,
+    setIsGlobalHub,
+    setlocalHubName,
+    setIsHubSelfManaged,
+    setIsDirectAuthenticationEnabled,
+    setClaimMappings,
+  ])
 
   const {
     data: mchResponse,
@@ -664,7 +672,7 @@ export function LoadData(props: { children?: ReactNode }) {
   }, [startMCHPoll, stopMCHPoll])
 
   // Update fine-grained RBAC state from mch response
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useAtomValue(isFineGrainedRbacEnabledState)
   if (mchResponse && !mchLoading && !isFineGrainedRbacEnabled) {
     setIsFineGrainedRbacEnabled(mchResponse?.find((e) => e?.name === 'fine-grained-rbac')?.enabled ?? false)
   }
@@ -726,7 +734,7 @@ function resetMapperCaches(
     Record<
       string,
       {
-        setter: SetterOrUpdater<Record<string, any[]>>
+        setter: StateSetter<Record<string, any[]>>
         mcaches: Record<string, Record<string, Record<string, IResource[]>>>
         keyBy: string[]
       }
@@ -768,7 +776,7 @@ function updateSetterCache(
 
 function updateMapperCache(
   mapper: {
-    setter: SetterOrUpdater<Record<string, any[]>>
+    setter: StateSetter<Record<string, any[]>>
     mcaches: Record<string, Record<string, Record<string, IResource[]>>>
     keyBy: string[]
   },

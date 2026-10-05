@@ -2,9 +2,9 @@
 
 const mockTopologyProps: { current?: Record<string, unknown> } = {}
 
-jest.mock('~/shared-recoil', () => ({
+jest.mock('~/shared-atoms', () => ({
   useSharedAtoms: () => ({ placementsState: {} }),
-  useRecoilValue: () => [],
+  useSharedValue: () => [],
 }))
 
 jest.mock('~/lib/acm-i18next', () => ({

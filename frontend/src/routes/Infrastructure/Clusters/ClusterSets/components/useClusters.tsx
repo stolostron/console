@@ -21,7 +21,7 @@ import {
   managedClusterSetLabel,
 } from '../../../../../resources'
 import { mapClusters } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import keyBy from 'lodash/keyBy'
 
 // returns the clusters assigned to a ManagedClusterSet
@@ -47,18 +47,18 @@ export function useClusters({
     discoveredClusterState,
   } = useSharedAtoms()
 
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
-  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const clusterClaims = useRecoilValue(clusterClaimsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const nodePools = useRecoilValue(nodePoolsState)
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const managedClusterInfos = useSharedValue(managedClusterInfosState)
+  const certificateSigningRequests = useSharedValue(certificateSigningRequestsState)
+  const managedClusterAddons = useSharedValue(managedClusterAddonsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
+  const clusterClaims = useSharedValue(clusterClaimsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const nodePools = useSharedValue(nodePoolsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
 
   return getMappedClusterPoolClusterSetClusters({
     managedClusters,

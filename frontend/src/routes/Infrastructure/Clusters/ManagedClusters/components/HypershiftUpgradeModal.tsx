@@ -33,7 +33,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmAlert, AcmForm, AcmModal, AcmSelect, AcmSubmit, AcmTable } from '../../../../../ui-components'
 import { getNodepoolAgents } from '../utils/nodepool'
 import { ReleaseNotesLink } from './ReleaseNotesLink'
@@ -115,7 +115,7 @@ export function HypershiftUpgradeModal(props: {
   const hypershiftNodePoolsContentId = 'hypershift-nodepools-expandable-content-id'
 
   const { configMapsState } = useSharedAtoms()
-  const configMaps = useRecoilValue(configMapsState)
+  const configMaps = useSharedValue(configMapsState)
   const hypershiftSupportedVersionsConfigMap = configMaps.find(
     (cm) => cm.metadata?.name === 'supported-versions' && cm.metadata?.namespace === 'hypershift'
   )

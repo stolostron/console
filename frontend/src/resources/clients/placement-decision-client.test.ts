@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { PlacementDecision } from '../placement-decision'
 import { useFindPlacementDecisions, useGetClustersFromPlacementDecision } from './placement-decision-client'
 
-jest.mock('../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
 const useSharedAtomsMock = useSharedAtoms as jest.Mock
-const useRecoilValueMock = useRecoilValue as jest.Mock
+const useSharedValueMock = useSharedValue as jest.Mock
 
 describe('placement-decision-client', () => {
   const mockPlacementDecisions: PlacementDecision[] = [
@@ -101,7 +101,7 @@ describe('placement-decision-client', () => {
 
   beforeEach(() => {
     useSharedAtomsMock.mockReturnValue({ placementDecisionsState: {} })
-    useRecoilValueMock.mockReturnValue(mockPlacementDecisions)
+    useSharedValueMock.mockReturnValue(mockPlacementDecisions)
   })
 
   describe('useFindPlacementDecisions', () => {
@@ -221,7 +221,7 @@ describe('placement-decision-client', () => {
 
     it('should return unique cluster names across multiple placement decisions', () => {
       // Arrange
-      useRecoilValueMock.mockReturnValue([
+      useSharedValueMock.mockReturnValue([
         ...mockPlacementDecisions,
         {
           apiVersion: 'cluster.open-cluster-management.io/v1beta1',

@@ -23,7 +23,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import type { TFunction } from 'i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useSharedAtoms, useRecoilValue } from '../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 
 export function ImportCommandContainer() {
   const { t } = useTranslation()
@@ -180,7 +180,7 @@ function getImportCommand(importSecret: Secret, t: TFunction, oc?: boolean) {
 export const useImportCommand = (oc?: boolean) => {
   const { t } = useTranslation()
   const { secretsState } = useSharedAtoms()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const { cluster } = useClusterDetailsContext()
   const [error, setError] = useState<string | undefined>()
   const [loading, setLoading] = useState<boolean>(false)

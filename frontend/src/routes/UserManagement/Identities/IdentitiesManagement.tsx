@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Navigate, Route, Routes } from 'react-router'
 import { NavigationPath, createRoutePathFunction } from '../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import IdentitiesPage from './IdentitiesPage'
 import { ServiceAccounts } from './ServiceAccounts/ServiceAccounts'
 import { UserDetails } from './Users/UserDetails'
@@ -30,7 +30,7 @@ function RedirectToParent() {
 
 export default function IdentitiesManagement() {
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const isDirectAuth = useRecoilValue(isDirectAuthenticationEnabledState)
+  const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
 
   return (
     <Routes>

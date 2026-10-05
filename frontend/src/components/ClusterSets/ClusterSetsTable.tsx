@@ -24,7 +24,7 @@ import {
 } from '../../routes/Infrastructure/Clusters/ClusterSets/components/ClusterStatuses'
 import { GlobalClusterSetPopover } from '../../routes/Infrastructure/Clusters/ClusterSets/components/GlobalClusterSetPopover'
 import { CreateClusterSetModal } from '../../routes/Infrastructure/Clusters/ClusterSets/CreateClusterSet/CreateClusterSetModal'
-import { useSharedAtoms, useRecoilValue } from '../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../shared-atoms'
 import { getMappedClusterSetClusters } from '../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters'
 
 interface ClusterSetsTableProps {
@@ -74,19 +74,19 @@ export const ClusterSetsTable = ({
     nodePoolsState,
     discoveredClusterState,
   } = useSharedAtoms()
-  const managedClusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
-  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddOns = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddOns = useRecoilValue(clusterManagementAddonsState)
-  const clusterClaims = useRecoilValue(clusterClaimsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const nodePools = useRecoilValue(nodePoolsState)
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const managedClusterInfos = useSharedValue(managedClusterInfosState)
+  const certificateSigningRequests = useSharedValue(certificateSigningRequestsState)
+  const managedClusterAddOns = useSharedValue(managedClusterAddonsState)
+  const clusterManagementAddOns = useSharedValue(clusterManagementAddonsState)
+  const clusterClaims = useSharedValue(clusterClaimsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const nodePools = useSharedValue(nodePoolsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
 
   const managedClusterSetClusters: Record<string, Cluster[]> = {}
 

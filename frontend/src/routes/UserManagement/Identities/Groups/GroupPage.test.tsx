@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { Group, User } from '../../../../resources/rbac'
 import { GroupPage } from './GroupPage'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -18,12 +18,12 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockGroups: Group[] = [
@@ -81,19 +81,19 @@ const mockUsers: User[] = [
 
 function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter initialEntries={[`/groups/${groupId}`]}>
         <Routes>
           <Route path="/groups/:id" element={<GroupPage />} />
         </Routes>
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 describe('GroupPage', () => {
   beforeEach(() => {
-    mockUseRecoilValue.mockClear()
+    mockUseSharedValue.mockClear()
     mockUseSharedAtoms.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({
@@ -105,7 +105,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with data', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
       .mockReturnValueOnce(mockUsers) // GroupPage: usersState
@@ -119,7 +119,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group not found error', async () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     render(<Component groupId="non-existent-group" />)
 
@@ -130,7 +130,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with navigation tabs', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
       .mockReturnValueOnce(mockUsers) // GroupPage: usersState
@@ -149,7 +149,7 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with empty group name', async () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     render(<Component groupId="group-with-empty-name" />)
 
@@ -160,7 +160,7 @@ describe('GroupPage', () => {
   })
 
   test('should find group by UID', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
       .mockReturnValueOnce(mockUsers) // GroupPage: usersState
@@ -174,7 +174,7 @@ describe('GroupPage', () => {
   })
 
   test('should hide YAML and Users tabs when isDirectAuthenticationEnabled', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
       .mockReturnValueOnce(mockUsers) // GroupPage: usersState

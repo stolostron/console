@@ -48,7 +48,7 @@ import {
   Subscription,
 } from '../../resources'
 import { filterLabelFn, getISOStringTimestamp } from '../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import {
   AcmButton,
   AcmDropdown,
@@ -441,10 +441,10 @@ export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
 
-  const applications = useRecoilValue(applicationsState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
-  const placements = useRecoilValue(placementsState)
+  const applications = useSharedValue(applicationsState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
+  const placements = useSharedValue(placementsState)
   const { acmExtensions } = useContext(PluginContext)
   const { dataContext } = useContext(PluginContext)
   const { backendUrl } = useContext(dataContext)

@@ -17,7 +17,7 @@ import {
   PolicySet,
 } from '../../../../resources'
 import { Metadata } from '../../../../resources/metadata'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmDescriptionList, AcmDrawerContext } from '../../../../ui-components'
 import { usePropagatedPolicies } from '../../common/useCustom'
 import {
@@ -45,11 +45,11 @@ export default function PolicyDetailsOverview() {
   const { setDrawerContext } = useContext(AcmDrawerContext)
   const { placementBindingsState, placementDecisionsState, placementsState, policyAutomationState, policySetsState } =
     useSharedAtoms()
-  const placements = useRecoilValue(placementsState)
-  const policySets = useRecoilValue(policySetsState)
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
-  const policyAutomations = useRecoilValue(policyAutomationState)
+  const placements = useSharedValue(placementsState)
+  const policySets = useSharedValue(policySetsState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
+  const policyAutomations = useSharedValue(policyAutomationState)
   const policies = usePropagatedPolicies(policy)
 
   // Clusters whose propagated policy is visible to this user — used to gate cluster violation links.

@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { UsersTablePage } from './UsersTablePage'
 
 // Mock the UsersTable component and its dependencies
@@ -25,18 +25,18 @@ jest.mock('../../../../ui-components', () => ({
   ),
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(() => []),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(() => []),
   useSharedAtoms: jest.fn(() => ({ usersState: {} })),
 }))
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <UsersTablePage />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

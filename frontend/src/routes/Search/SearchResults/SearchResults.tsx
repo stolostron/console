@@ -21,7 +21,7 @@ import { useNavigate } from 'react-router'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import {
@@ -93,7 +93,7 @@ function RenderAccordionItem(
 
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { acmExtensions } = useContext(PluginContext)
   const [isExpanded, setIsExpanded] = useState<boolean>(defaultIsExpanded)
@@ -262,8 +262,8 @@ export default function SearchResults(
   const { alerts, addSearchAlert, removeSearchAlert } = useContext(SearchAlertContext)
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const [currentQueryState, setCurrentQueryState] = useState<string>(currentQuery)
   const [selectedRelatedKinds, setSelectedRelatedKinds] = useState<string[]>(preSelectedRelatedResources)
   const [deleteResource, setDeleteResource] = useState<IDeleteModalProps>(ClosedDeleteModalProps)

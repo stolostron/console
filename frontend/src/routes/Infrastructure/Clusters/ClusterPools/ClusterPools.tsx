@@ -20,7 +20,7 @@ import {
 } from '../../../../ui-components'
 import { Fragment, useContext, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { BulkActionModal, errorIsNot, BulkActionModalProps } from '../../../../components/BulkActionModal'
 import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
@@ -52,7 +52,7 @@ export default function ClusterPoolsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => alertContext.clearAlerts, [])
   const { clusterPoolsState } = useSharedAtoms()
-  const clusterPools = useRecoilValue(clusterPoolsState)
+  const clusterPools = useSharedValue(clusterPoolsState)
   const clusters = useAllClusters()
 
   /* t('preview.clusterPools') */
@@ -177,19 +177,19 @@ export function ClusterPoolsTable(props: {
     nodePoolsState,
     discoveredClusterState,
   } = useSharedAtoms()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
-  const clusterClaims = useRecoilValue(clusterClaimsState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
-  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const managedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const nodePools = useRecoilValue(nodePoolsState)
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
+  const clusterClaims = useSharedValue(clusterClaimsState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const managedClusterInfos = useSharedValue(managedClusterInfosState)
+  const certificateSigningRequests = useSharedValue(certificateSigningRequestsState)
+  const managedClusterAddons = useSharedValue(managedClusterAddonsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const nodePools = useSharedValue(nodePoolsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
 
   const { clusterPools } = props
   const { t } = useTranslation()

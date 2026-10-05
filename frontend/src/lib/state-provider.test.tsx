@@ -3,7 +3,7 @@
 import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { createContext, useContext } from 'react'
-import { useRecoilValue, useSharedAtoms } from '../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../shared-atoms'
 import { defaultContext, PluginDataContext } from './PluginDataContext'
 import type { PluginData } from './PluginDataContext'
 import { defaultPlugin, PluginContext } from './PluginContext'
@@ -13,7 +13,7 @@ function StateProviderConsumer() {
   const plugin = useContext(PluginContext)
   const pluginData = useContext(plugin.dataContext)
   const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
+  const settings = useSharedValue(settingsState)
 
   return (
     <div>
@@ -25,7 +25,7 @@ function StateProviderConsumer() {
 }
 
 describe('StateProvider', () => {
-  it('inherits plugin contexts and initializes Recoil state', async () => {
+  it('inherits plugin contexts and initializes Jotai state', async () => {
     const pluginDataContext = createContext<PluginData>(defaultContext)
     const parentData = { ...defaultContext, backendUrl: 'https://backend.example.com' }
     const pluginContext = { ...defaultPlugin, isSearchAvailable: false, dataContext: pluginDataContext }

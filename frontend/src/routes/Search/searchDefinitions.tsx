@@ -13,7 +13,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
 import { ConfigMap } from '../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 export interface ResourceDefinitions {
@@ -442,8 +442,8 @@ export const getSearchDefinitions: (t: TFunction, isGlobalHub?: boolean) => Reso
 export const useSearchDefinitions = () => {
   const { t } = useTranslation()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const globalHub = isGlobalHub && settings.globalSearchFeatureFlag === 'enabled'
 
   return useMemo(() => getSearchDefinitions(t, globalHub), [t, globalHub])
@@ -858,8 +858,8 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
 export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
-  const configMaps = useRecoilValue(configMapsState)
-  const clusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
+  const configMaps = useSharedValue(configMapsState)
+  const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const isObservabilityInstalled = useIsObservabilityInstalled()
   const allClusters = useAllClusters(true)
   const vmCluster = item.cluster

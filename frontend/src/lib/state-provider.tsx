@@ -1,19 +1,25 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useMemo } from 'react'
+import { useContext, useMemo, useState } from 'react'
 import type { PropsWithChildren } from 'react'
+// eslint-disable-next-line @typescript-eslint/no-restricted-imports
+import { createStore, Provider as JotaiProvider } from 'jotai'
+import type { Store } from 'jotai/vanilla/store'
 import { defaultContext, PluginDataContext } from './PluginDataContext'
 import { defaultPlugin, PluginContext } from './PluginContext'
-import { RecoilRoot } from '../shared-recoil'
-import type { MutableSnapshot } from '../shared-recoil'
 
 type StateProviderProps = PropsWithChildren<{
-  initializeStore?: (store: MutableSnapshot) => void
+  initializeStore?: (store: Store) => void
 }>
 
 export function StateProvider({ children, initializeStore }: StateProviderProps) {
   const parentPluginContext = useContext(PluginContext)
   const parentContext = useContext(parentPluginContext.dataContext)
-  const contextValue = useMemo(() => ({ ...defaultContext, ...parentContext }), [parentContext])
+  const [store] = useState(() => {
+    const store = createStore()
+    initializeStore?.(store)
+    return store
+  })
+  const contextValue = useMemo(() => ({ ...defaultContext, ...parentContext, store }), [parentContext, store])
   const pluginContextValue = useMemo(
     () => ({ ...defaultPlugin, ...parentPluginContext, dataContext: PluginDataContext }),
     [parentPluginContext]
@@ -22,7 +28,7 @@ export function StateProvider({ children, initializeStore }: StateProviderProps)
   return (
     <PluginContext.Provider value={pluginContextValue}>
       <PluginDataContext.Provider value={contextValue}>
-        <RecoilRoot initializeState={initializeStore}>{children}</RecoilRoot>
+        <JotaiProvider store={store}>{children}</JotaiProvider>
       </PluginDataContext.Provider>
     </PluginContext.Provider>
   )

@@ -34,7 +34,7 @@ import {
   replaceResource,
   ResourceErrorCode,
 } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '../../../shared-atoms'
 import {
   AcmAnsibleTagsInput,
   AcmChip,
@@ -64,7 +64,7 @@ export default function AnsibleAutomationsFormPage() {
   const [error, setError] = useState<Error>()
   const [clusterCuratorTemplate, setClusterCuratorTemplate] = useState<ClusterCurator | undefined>()
   const { ansibleCredentialsValue } = useSharedSelectors()
-  const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const ansibleCredentials = useSharedValue(ansibleCredentialsValue)
 
   useEffect(() => {
     if (isEditing || isViewing) {
@@ -119,9 +119,9 @@ export function AnsibleAutomationsForm(props: {
   const { validateKubernetesDnsName } = useValidation()
   const { ansibleCredentials, clusterCurator, isEditing, isViewing } = props
   const { settingsState } = useSharedAtoms()
-  const settings = useRecoilValue(settingsState)
+  const settings = useSharedValue(settingsState)
   const { clusterCuratorSupportedCurationsValue } = useSharedSelectors()
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
 
   const navigate = useNavigate()
   const [forceErrors, setForceErrors] = useState(false)

@@ -1,12 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import RoleAssignmentsPage from './RoleAssignmentsPage'
-import { useRecoilValue } from '../../../shared-recoil'
+import { useSharedValue } from '../../../shared-atoms'
 
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
     isFineGrainedRbacEnabledState: 'isFineGrainedRbacEnabledState',
   })),
@@ -24,7 +24,7 @@ const Component = ({
   name = 'local-cluster',
   namespace = 'local-cluster',
 }: { name?: string; namespace?: string } = {}) => (
-  <RecoilRoot>
+  <StateProvider>
     <MemoryRouter
       initialEntries={[`/multicloud/infrastructure/clusters/details/${namespace}/${name}/role-assignments`]}
     >
@@ -35,17 +35,17 @@ const Component = ({
         />
       </Routes>
     </MemoryRouter>
-  </RecoilRoot>
+  </StateProvider>
 )
 
 describe('RoleAssignmentsPage', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useRecoilValue as jest.Mock).mockClear()
+    ;(useSharedValue as jest.Mock).mockClear()
   })
 
   it('renders ClusterRoleAssignments when fine-grained RBAC is enabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(true)
+    ;(useSharedValue as jest.Mock).mockReturnValue(true)
 
     const { container } = render(<Component />)
 
@@ -54,7 +54,7 @@ describe('RoleAssignmentsPage', () => {
   })
 
   it('does not render ClusterRoleAssignments when fine-grained RBAC is disabled', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(false)
+    ;(useSharedValue as jest.Mock).mockReturnValue(false)
 
     render(<Component name="test-cluster" namespace="test-cluster" />)
 
@@ -62,7 +62,7 @@ describe('RoleAssignmentsPage', () => {
   })
 
   it('renders with different cluster parameters', () => {
-    ;(useRecoilValue as jest.Mock).mockReturnValue(true)
+    ;(useSharedValue as jest.Mock).mockReturnValue(true)
 
     const { container } = render(<Component name="prod-cluster" namespace="prod-namespace" />)
 

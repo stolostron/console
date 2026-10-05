@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { getAuthorizedNamespaces, rbacCreate } from '../lib/rbac-util'
 import { SecretDefinition } from '../resources'
-import { useSharedAtoms, useRecoilValueGetter } from '../shared-recoil'
+import { useSharedAtoms, useSharedValueGetter } from '../shared-atoms'
 
 /**
  * Custom hook to fetch and manage authorized projects (namespaces) for creation of secrets.
@@ -35,7 +35,7 @@ export function useProjects() {
   const [projects, setProjects] = useState<string[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
-  const getNamespaces = useRecoilValueGetter(namespacesState)
+  const getNamespaces = useSharedValueGetter(namespacesState)
 
   useEffect(() => {
     rbacCreate(SecretDefinition).then((attributes) =>
