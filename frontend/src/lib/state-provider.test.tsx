@@ -25,7 +25,7 @@ function StateProviderConsumer() {
 }
 
 describe('StateProvider', () => {
-  it('inherits plugin contexts and initializes Recoil state', async () => {
+  it('inherits plugin contexts and initializes Jotai state', async () => {
     const pluginDataContext = createContext<PluginData>(defaultContext)
     const parentData = { ...defaultContext, backendUrl: 'https://backend.example.com' }
     const pluginContext = { ...defaultPlugin, isSearchAvailable: false, dataContext: pluginDataContext }

@@ -47,8 +47,8 @@
             "importNames": ["Trans", "useTranslation"]
           },
           {
-            "message": "Please use hooks from ./src/shared-recoil for ACM/MCE dynamic plugins common RecoilRoot",
-            "name": "recoil"
+            "message": "Please use hooks from ./src/shared-atoms for ACM/MCE dynamic plugins common Jotai store",
+            "name": "jotai"
           },
           {
             "message": "Please use hooks from ./src/hooks/shared-react-query for ACM/MCE dynamic plugins common QueryClientProvider",
@@ -62,7 +62,7 @@
         ],
         "patterns": [
           {
-            "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-recoil to access atoms/selectors for ACM/MCE dynamic plugins common RecoilRoot",
+            "message": "Please use useSharedAtoms() or useSharedSelectors() from ./src/shared-atoms to access atoms/selectors for ACM/MCE dynamic plugins common Jotai store",
             "group": ["**/atoms", "**/selectors"]
           }
         ]
