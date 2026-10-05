@@ -1,14 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react-hooks'
 import { useVirtualMachineDetection } from './useVirtualMachineDetection'
-import { useSearchResultItemsQuery } from '../routes/Search/search-sdk/search-sdk'
+import { useSearchResultCountQuery } from '../routes/Search/search-sdk/search-sdk'
 
-// Mock the useSearchResultItemsQuery hook
+// Mock the useSearchResultCountQuery hook
 jest.mock('../routes/Search/search-sdk/search-sdk', () => ({
-  useSearchResultItemsQuery: jest.fn(),
+  useSearchResultCountQuery: jest.fn(),
 }))
 
-const mockUseSearchResultItemsQuery = useSearchResultItemsQuery as jest.MockedFunction<typeof useSearchResultItemsQuery>
+const mockUseSearchResultCountQuery = useSearchResultCountQuery as jest.MockedFunction<typeof useSearchResultCountQuery>
 
 describe('useVirtualMachineDetection', () => {
   beforeEach(() => {
@@ -16,13 +16,9 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should return hasVirtualMachines as true when VMs are found', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            items: [{ kind: 'VirtualMachine', name: 'test-vm' }],
-          },
-        ],
+        searchResult: [{ count: 3 }],
       },
       loading: false,
       error: undefined,
@@ -36,13 +32,9 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should return hasVirtualMachines as false when no VMs are found', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            items: [],
-          },
-        ],
+        searchResult: [{ count: 0 }],
       },
       loading: false,
       error: undefined,
@@ -57,7 +49,7 @@ describe('useVirtualMachineDetection', () => {
 
   it('should return hasVirtualMachines as false when there is an error', () => {
     const mockError = new Error('Search failed')
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: undefined,
       loading: false,
       error: mockError,
@@ -71,7 +63,7 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should return hasVirtualMachines as false when data is undefined', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: undefined,
       loading: false,
       error: undefined,
@@ -84,14 +76,10 @@ describe('useVirtualMachineDetection', () => {
     expect(result.current.error).toBeUndefined()
   })
 
-  it('should return hasVirtualMachines as false when related data is missing', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+  it('should return hasVirtualMachines as false when count is null', () => {
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            related: undefined,
-          },
-        ],
+        searchResult: [{ count: null }],
       },
       loading: false,
       error: undefined,
@@ -104,17 +92,10 @@ describe('useVirtualMachineDetection', () => {
     expect(result.current.error).toBeUndefined()
   })
 
-  it('should return hasVirtualMachines as false when no virtualmachine kind is found in related', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+  it('should return hasVirtualMachines as false when searchResult is empty', () => {
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            related: [
-              { kind: 'pod', count: 5 },
-              { kind: 'deployment', count: 2 },
-            ],
-          },
-        ],
+        searchResult: [],
       },
       loading: false,
       error: undefined,
@@ -128,7 +109,7 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should handle loading state correctly', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: undefined,
       loading: true,
       error: undefined,
@@ -142,13 +123,9 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should work with clusterName option', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            items: [{ kind: 'VirtualMachine', name: 'test-vm' }],
-          },
-        ],
+        searchResult: [{ count: 1 }],
       },
       loading: false,
       error: undefined,
@@ -162,13 +139,9 @@ describe('useVirtualMachineDetection', () => {
   })
 
   it('should work with pollInterval option', () => {
-    mockUseSearchResultItemsQuery.mockReturnValue({
+    mockUseSearchResultCountQuery.mockReturnValue({
       data: {
-        searchResult: [
-          {
-            items: [],
-          },
-        ],
+        searchResult: [{ count: 0 }],
       },
       loading: false,
       error: undefined,
