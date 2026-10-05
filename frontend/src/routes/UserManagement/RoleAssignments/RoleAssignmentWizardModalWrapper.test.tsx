@@ -425,7 +425,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the shared state state being updated after the save
+      // This simulates the shared state being updated after the save
       mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
@@ -699,7 +699,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       mockAddRoleAssignment.mockResolvedValue(savedRoleAssignment as never)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the shared state state being updated after the save
+      // This simulates the shared state being updated after the save
       mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'mcra-1', namespace: 'test-ns' },
@@ -1162,7 +1162,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include the saved role assignment
-      // This simulates the shared state state being updated after the save
+      // This simulates the shared state being updated after the save
       mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },
@@ -1422,7 +1422,7 @@ describe('RoleAssignmentWizardModalWrapper', () => {
       } as any)
 
       // Mock multiClusterRoleAssignments to include both saved assignments
-      // This simulates the shared state state being updated after both saves complete
+      // This simulates the shared state being updated after both saves complete
       mockUseSharedValue.mockReturnValue([
         {
           metadata: { name: 'test-mcra', namespace: 'multicluster-global-hub' },

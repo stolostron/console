@@ -273,7 +273,7 @@ describe('managed-cluster-set-binding-client', () => {
       useSharedValueMock.mockReturnValue(mockBindings)
     })
 
-    it('should return bindings from shared state state matching the query', () => {
+    it('should return bindings from shared state matching the query', () => {
       // Act
       const { result } = renderHook(() =>
         useFindManagedClusterSetBinding({
@@ -287,7 +287,7 @@ describe('managed-cluster-set-binding-client', () => {
       expect(result.current[0].metadata.name).toBe('binding-1')
     })
 
-    it('should return empty array when no matches in shared state state', () => {
+    it('should return empty array when no matches in shared state', () => {
       // Act
       const { result } = renderHook(() =>
         useFindManagedClusterSetBinding({

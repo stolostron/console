@@ -37,7 +37,7 @@ const isNameMatch = (placement: PlacementDecision, query: PlacementDecisionQuery
   query.names?.length && placement.metadata.name && query.names.includes(placement.metadata.name)
 
 /**
- * React hook to find PlacementDecisions matching the query from global shared state state.
+ * React hook to find PlacementDecisions matching the query from global shared state.
  * Matches by name OR by owner Placement name (logical OR).
  *
  * @param query - Query parameters for filtering PlacementDecisions

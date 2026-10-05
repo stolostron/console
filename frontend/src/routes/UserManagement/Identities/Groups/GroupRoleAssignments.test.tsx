@@ -22,7 +22,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock the shared state state
+// Mock the shared state
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({

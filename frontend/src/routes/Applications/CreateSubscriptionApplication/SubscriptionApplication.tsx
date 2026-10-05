@@ -410,7 +410,7 @@ export function CreateSubscriptionApplication({
       const { selectedAppName, selectedAppNamespace } = editApplication
       const allChannels = '__ALL__/__ALL__//__ALL__/__ALL__'
       const fetchApplication = async () => {
-        // get application object from shared state states
+        // get application object from shared states
         const application = await getApplication(selectedAppNamespace, selectedAppName, backendUrl, allChannels, {
           applications,
           subscriptions,

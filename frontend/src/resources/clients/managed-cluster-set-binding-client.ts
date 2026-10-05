@@ -71,7 +71,7 @@ export const findManagedClusterSetBinding = (
   )
 
 /**
- * React hook to find ManagedClusterSetBindings matching the query from global shared state state.
+ * React hook to find ManagedClusterSetBindings matching the query from global shared state.
  *
  * @param query - Query parameters for filtering bindings
  * @returns Array of ManagedClusterSetBindings matching the query

@@ -144,7 +144,7 @@ const findPlacements = (placements: Placement[], query: PlacementQuery): Placeme
 }
 
 /**
- * React hook to find placements matching the query from the global shared state state.
+ * React hook to find placements matching the query from the global shared state.
  *
  * @param query - Query parameters for filtering placements
  * @returns Array of Placement resources matching the query
