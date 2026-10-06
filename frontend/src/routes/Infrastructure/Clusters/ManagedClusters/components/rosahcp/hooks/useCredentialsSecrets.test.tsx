@@ -1,16 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { renderHook } from '@testing-library/react'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { useCredentialsSecrets } from './useCredentialsSecrets'
 import type { Secret } from '~/resources'
 
-jest.mock('~/shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('~/shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const secretsAtom = Symbol('secretsState')
 
@@ -59,7 +59,7 @@ describe('useCredentialsSecrets', () => {
   })
 
   test('should return only secrets with rhocm type and credentials label', () => {
-    mockUseRecoilValue.mockReturnValue([mockRhocmSecret, mockOtherSecret, mockNoLabelsSecret])
+    mockUseSharedValue.mockReturnValue([mockRhocmSecret, mockOtherSecret, mockNoLabelsSecret])
 
     const { result } = renderHook(() => useCredentialsSecrets())
 
@@ -68,7 +68,7 @@ describe('useCredentialsSecrets', () => {
   })
 
   test('should return empty array when no matching secrets exist', () => {
-    mockUseRecoilValue.mockReturnValue([mockOtherSecret, mockNoLabelsSecret])
+    mockUseSharedValue.mockReturnValue([mockOtherSecret, mockNoLabelsSecret])
 
     const { result } = renderHook(() => useCredentialsSecrets())
 
@@ -83,7 +83,7 @@ describe('useCredentialsSecrets', () => {
         name: 'second-rhocm-credential',
       },
     }
-    mockUseRecoilValue.mockReturnValue([mockRhocmSecret, secondRhocmSecret])
+    mockUseSharedValue.mockReturnValue([mockRhocmSecret, secondRhocmSecret])
 
     const { result } = renderHook(() => useCredentialsSecrets())
 
@@ -91,7 +91,7 @@ describe('useCredentialsSecrets', () => {
   })
 
   test('should return empty array when secrets state is empty', () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     const { result } = renderHook(() => useCredentialsSecrets())
 
@@ -99,11 +99,11 @@ describe('useCredentialsSecrets', () => {
   })
 
   test('should call useSharedAtoms to get secretsState atom', () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     renderHook(() => useCredentialsSecrets())
 
     expect(mockUseSharedAtoms).toHaveBeenCalled()
-    expect(mockUseRecoilValue).toHaveBeenCalledWith(secretsAtom)
+    expect(mockUseSharedValue).toHaveBeenCalledWith(secretsAtom)
   })
 })

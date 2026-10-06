@@ -2,13 +2,13 @@
 import { PageSection } from '@patternfly/react-core'
 import { generatePath, Navigate, useParams } from 'react-router'
 import { NavigationPath } from '../../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { ClusterSetRoleAssignments } from './ClusterSetDetails/ClusterSetRoleAssignments/ClusterSetRoleAssignments'
 
 export default function ClusterSetRoleAssignmentsPage() {
   const { id = '' } = useParams()
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
 
   return isFineGrainedRbacEnabled ? (
     <PageSection hasBodyWrapper={false}>

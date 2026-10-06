@@ -11,7 +11,7 @@ import {
 import { PolicyWizard } from '../../../wizards/Governance/Policy/PolicyWizard'
 import { useContext, useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate, generatePath } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { LoadingPage } from '../../../components/LoadingPage'
 import { SyncEditor, ValidationStatus } from '../../../components/SyncEditor/SyncEditor'
 import { useTranslation } from '../../../lib/acm-i18next'
@@ -80,12 +80,12 @@ export function EditPolicy() {
     usePolicies,
   } = useSharedAtoms()
   const policies = usePolicies()
-  const namespaces = useRecoilValue(namespacesState)
-  const placements = useRecoilValue(placementsState)
-  const managedClusters = useRecoilValue(managedClustersState)
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
+  const namespaces = useSharedValue(namespacesState)
+  const placements = useSharedValue(placementsState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const clusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const namespaceNames = useMemo(
     () =>
       namespaces
@@ -95,9 +95,9 @@ export function EditPolicy() {
     [namespaces]
   )
   const [existingResources, setExistingResources] = useState<IResource[]>()
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
+  const helmReleases = useSharedValue(helmReleaseState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
   const [gitSource, setGitSource] = useState('')
   const searchParams = useSearchParams()
 

@@ -12,7 +12,7 @@ import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor
 import schema from './schema.json'
 import { PlacementWizard } from './PlacementWizard'
 import { NavigationPath } from '~/NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { isType } from '~/lib/is-type'
 import { LostChangesContext } from '~/components/LostChanges'
 import { useContext, useEffect, useState } from 'react'
@@ -66,11 +66,11 @@ export function CreatePlacement() {
     managedClustersState,
     placementsState,
   } = useSharedAtoms()
-  const namespaces = useRecoilValue(namespacesState)
-  const clusterSets = useRecoilValue(managedClusterSetsState)
-  const clusterSetBindings = useRecoilValue(managedClusterSetBindingsState)
-  const clusters = useRecoilValue(managedClustersState)
-  const placements = useRecoilValue(placementsState)
+  const namespaces = useSharedValue(namespacesState)
+  const clusterSets = useSharedValue(managedClusterSetsState)
+  const clusterSetBindings = useSharedValue(managedClusterSetBindingsState)
+  const clusters = useSharedValue(managedClustersState)
+  const placements = useSharedValue(placementsState)
   const availableNamespaces = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)

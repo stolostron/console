@@ -7,14 +7,14 @@ import { useQuerySearchDisabledManagedClusters } from '~/lib/search'
 import { useQuery } from '~/lib/useQuery'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { NavigationPath } from '../../../NavigationPath'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmInlineStatus, AcmPageHeader, StatusType } from '../../../ui-components'
 
 export default function HeaderWithNotification() {
   const { t } = useTranslation()
   const { isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const [isSearchDisabled, setIsSearchDisabled] = useState(false)
   const queryDisabled = useQuerySearchDisabledManagedClusters()
   const { data, loading, error } = useQuery(queryDisabled)

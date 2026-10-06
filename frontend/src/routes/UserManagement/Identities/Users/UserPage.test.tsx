@@ -1,10 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import IdentitiesManagement from '../IdentitiesManagement'
 import { User, Group } from '../../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -18,12 +18,12 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('../../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockUser: User = {
@@ -53,17 +53,17 @@ const mockGroups: Group[] = [
 
 function Component({ userId = 'test-user' }: { userId?: string }) {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter initialEntries={[`/users/${userId}`]}>
         <IdentitiesManagement />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 
 describe('UserPage', () => {
   beforeEach(() => {
-    mockUseRecoilValue.mockClear()
+    mockUseSharedValue.mockClear()
     mockUseSharedAtoms.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({
@@ -75,7 +75,7 @@ describe('UserPage', () => {
   })
 
   test('should render user not found error', () => {
-    mockUseRecoilValue.mockReturnValue([])
+    mockUseSharedValue.mockReturnValue([])
 
     render(<Component userId="non-existent-user" />)
 
@@ -84,7 +84,7 @@ describe('UserPage', () => {
   })
 
   test('should render user page with navigation tabs', () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
@@ -106,7 +106,7 @@ describe('UserPage', () => {
       ...mockUser,
       fullName: undefined,
     }
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([userWithoutFullName]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
@@ -120,7 +120,7 @@ describe('UserPage', () => {
   })
 
   test('should find user by UID', () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
@@ -133,7 +133,7 @@ describe('UserPage', () => {
   })
 
   test('should hide YAML and Groups tabs when isDirectAuthenticationEnabled', () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState

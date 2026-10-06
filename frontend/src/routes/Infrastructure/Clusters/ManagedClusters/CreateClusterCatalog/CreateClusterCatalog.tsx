@@ -16,7 +16,7 @@ import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { ClusterImageSet } from '../../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import {
   AcmIcon,
   AcmPage,
@@ -67,8 +67,8 @@ export function CreateClusterCatalog() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const { clusterImageSetsState, secretsState } = useSharedAtoms()
-  const secrets = useRecoilValue(secretsState)
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const secrets = useSharedValue(secretsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
   const [isAdditionalProvidersExpanded, setIsAdditionalProvidersExpanded] = useState(true)
 
   const onAdditionalProvidersToggle = (isExpanded: boolean) => {

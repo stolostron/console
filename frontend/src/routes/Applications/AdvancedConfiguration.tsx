@@ -34,7 +34,7 @@ import {
   SubscriptionKind,
 } from '../../resources'
 import { getISOStringTimestamp } from '../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { AcmExpandableCard, IAcmRowAction, IAcmTableColumn } from '../../ui-components'
 import { IDeleteResourceModalProps } from './components/DeleteResourceModal'
 import { DeprecatedTitle } from './components/DeprecatedTitle'
@@ -56,10 +56,10 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementDecisionsState, subscriptionsState } = useSharedAtoms()
 
-  const applications = useRecoilValue(applicationsState)
-  const channels = useRecoilValue(channelsState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
-  const subscriptions = useRecoilValue(subscriptionsState)
+  const applications = useSharedValue(applicationsState)
+  const channels = useSharedValue(channelsState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
+  const subscriptions = useSharedValue(subscriptionsState)
 
   const subscriptionsWithoutLocal = subscriptions.filter((subscription) => {
     return !_.endsWith(subscription.metadata.name, '-local')

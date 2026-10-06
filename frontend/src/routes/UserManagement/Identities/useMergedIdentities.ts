@@ -2,7 +2,7 @@
 import { useMemo } from 'react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Group, GroupKind, User, UserApiVersion, UserKind } from '../../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { compareStrings } from '../../../ui-components'
 import { IdentityItem } from './IdentityTableHelper'
 
@@ -52,8 +52,8 @@ export function groupsFromMulticlusterRoleAssignments(
 
 export function useMergedUsers(): User[] {
   const { usersState, multiclusterRoleAssignmentState } = useSharedAtoms()
-  const rbacUsers = useRecoilValue(usersState)
-  const mras = useRecoilValue(multiclusterRoleAssignmentState)
+  const rbacUsers = useSharedValue(usersState)
+  const mras = useSharedValue(multiclusterRoleAssignmentState)
   return useMemo(() => {
     const existingNames = new Set(rbacUsers?.map((u) => u.metadata.name).filter(Boolean) as string[])
     const mraUsers = usersFromMulticlusterRoleAssignments(mras ?? [], existingNames)
@@ -65,8 +65,8 @@ export function useMergedUsers(): User[] {
 
 export function useMergedGroups(): Group[] {
   const { groupsState, multiclusterRoleAssignmentState } = useSharedAtoms()
-  const groupsData = useRecoilValue(groupsState)
-  const mras = useRecoilValue(multiclusterRoleAssignmentState)
+  const groupsData = useSharedValue(groupsState)
+  const mras = useSharedValue(multiclusterRoleAssignmentState)
   return useMemo(() => {
     const existingNames = new Set(groupsData?.map((g) => g.metadata.name).filter(Boolean) as string[])
     const mraGroups = groupsFromMulticlusterRoleAssignments(mras ?? [], existingNames)

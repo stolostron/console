@@ -20,7 +20,7 @@ flowchart LR
 ## Console Frontend
 
 The console frontend is a static single page application.
-Resources from the backend are automatically stored and updated globally in `recoil` `atoms`.
+Resources from the backend are automatically stored and updated globally in shared atoms.
 All data is stored in memory.
 All calls from the frontend to work with resources should use the resource utility functions. i.e. `createResource()`.
 The frontend should use PatternFly components without modifying the look and feel of the controls using CSS.

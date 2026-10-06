@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { MemoryRouter } from 'react-router'
 import { AutomationDetailsSidebar } from './AutomationDetailsSidebar'
 import { AnsibleJob, Policy, PolicyAutomation, Secret } from '../../../resources'
@@ -75,13 +75,13 @@ jest.mock('../../../ui-components', () => ({
   ),
 }))
 
-// Mock the Recoil shared atoms
-jest.mock('../../../shared-recoil', () => ({
+// Mock the shared state shared atoms
+jest.mock('../../../shared-atoms', () => ({
   useSharedAtoms: jest.fn().mockReturnValue({
     ansibleJobState: 'ansibleJobState',
     secretsState: 'secretsState',
   }),
-  useRecoilValue: jest.fn((atom: string) => {
+  useSharedValue: jest.fn((atom: string) => {
     if (atom === 'ansibleJobState') return mockAnsibleJobs
     if (atom === 'secretsState') return mockSecrets
     return []
@@ -231,7 +231,7 @@ describe('AutomationDetailsSidebar', () => {
 
   it('renders correctly with jobs', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <AutomationDetailsSidebar
             setModal={mockSetModal}
@@ -240,7 +240,7 @@ describe('AutomationDetailsSidebar', () => {
             onClose={mockOnClose}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     // Check for policy information
@@ -266,7 +266,7 @@ describe('AutomationDetailsSidebar', () => {
 
   it('navigates to edit page when Edit button is clicked', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <AutomationDetailsSidebar
             setModal={mockSetModal}
@@ -275,7 +275,7 @@ describe('AutomationDetailsSidebar', () => {
             onClose={mockOnClose}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await clickElement(screen.getByText('Edit'))
@@ -286,7 +286,7 @@ describe('AutomationDetailsSidebar', () => {
 
   it('calls onClose when Cancel button is clicked', async () => {
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter>
           <AutomationDetailsSidebar
             setModal={mockSetModal}
@@ -295,7 +295,7 @@ describe('AutomationDetailsSidebar', () => {
             onClose={mockOnClose}
           />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await clickElement(screen.getByText('Cancel'))

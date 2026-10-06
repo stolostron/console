@@ -3,7 +3,7 @@
 import { useContext } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Group, User } from '../../resources/rbac'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { AcmToastContext } from '../../ui-components/AcmAlert/AcmToast'
 import { CreateIdentityForm } from '../../wizards/RoleAssignment/Identities/CreateIdentityForm'
 import { CreateIdentityFormDirectAuthentication } from '../../wizards/RoleAssignment/Identities/CreateIdentityFormDirectAuthentication'
@@ -48,8 +48,8 @@ export function CreatePreAuthorizedIdentity({ subjectKind, onClose, onSuccess }:
   const { t } = useTranslation()
   const toastContext = useContext(AcmToastContext)
   const { isDirectAuthenticationEnabledState, claimMappingsState } = useSharedAtoms()
-  const isDirectAuthenticationEnabled = useRecoilValue(isDirectAuthenticationEnabledState)
-  const claimMappings = useRecoilValue(claimMappingsState)
+  const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
+  const claimMappings = useSharedValue(claimMappingsState)
 
   const isUser = subjectKind === 'User'
 

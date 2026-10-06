@@ -2,7 +2,7 @@
 
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { RolesPage } from './RolesPage'
 
 // Mock the RolesTable component
@@ -40,9 +40,9 @@ jest.mock('../../../ui-components', () => ({
   ),
 }))
 
-// Mock shared-recoil
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(() => []),
+// Mock shared-atoms
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(() => []),
   useSharedAtoms: jest.fn(() => ({ multiclusterRolesState: {} })),
 }))
 
@@ -61,11 +61,11 @@ jest.mock('../../../lib/acm-i18next', () => ({
 
 function Component() {
   return (
-    <RecoilRoot>
+    <StateProvider>
       <MemoryRouter>
         <RolesPage />
       </MemoryRouter>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

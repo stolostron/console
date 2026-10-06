@@ -19,7 +19,7 @@ import { Link, useNavigate } from 'react-router'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import { DiscoveredCluster, DiscoveryConfig, ProviderConnection, unpackProviderConnection } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { getISOStringTimestamp } from '../../../../resources/utils'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import {
@@ -151,10 +151,10 @@ function EmptyStateAwaitingDiscoveredClusters() {
 
 export function DiscoveredClustersPageContent() {
   const { discoveredClusterState, discoveryConfigState, secretsState } = useSharedAtoms()
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
-  const secrets = useRecoilValue(secretsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
+  const secrets = useSharedValue(secretsState)
   const credentials = secrets.map(unpackProviderConnection)
-  const discoveryConfigs = useRecoilValue(discoveryConfigState)
+  const discoveryConfigs = useSharedValue(discoveryConfigState)
 
   const RHOCMCredentials: ProviderConnection[] = []
   credentials.forEach((credential) => {

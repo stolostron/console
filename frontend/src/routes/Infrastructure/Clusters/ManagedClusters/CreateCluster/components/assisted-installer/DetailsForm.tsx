@@ -11,7 +11,7 @@ import { NavigationPath } from '../../../../../../../NavigationPath'
 import { Secret, ManagedClusterSet, getClusterImageSetVersion } from '../../../../../../../resources'
 import { useCanJoinClusterSets, useMustJoinClusterSet } from '../../../../ClusterSets/components/useCanJoinClusterSets'
 import { useClusterImages, getDefault } from './utils'
-import { useSharedAtoms, useRecoilValue } from '../../../../../../../shared-recoil'
+import { useSharedAtoms, useSharedValue } from '../../../../../../../shared-atoms'
 
 import { getValue } from '../../../../../../../components/TemplateEditor'
 import { AcmKubernetesLabelsInput, AcmSelect } from '../../../../../../../ui-components'
@@ -117,8 +117,8 @@ export const getExtensionAfter = ({
 
 const DetailsForm: FC<DetailsFormProps> = ({ control, handleChange, controlProps }) => {
   const { clusterDeploymentsState, clusterImageSetsState, agentServiceConfigsState } = useSharedAtoms()
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
   const formRef = useRef<FormikProps<any>>(null)
   const { t } = useTranslation()
 
@@ -221,7 +221,7 @@ const DetailsForm: FC<DetailsFormProps> = ({ control, handleChange, controlProps
   }, [control])
 
   const clusterImages = useClusterImages()
-  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
+  const agentServiceConfigs = useSharedValue(agentServiceConfigsState)
   const agentServiceConfig = getFirstAgentServiceConfig(agentServiceConfigs)
 
   const usedClusterNames = useMemo(() => clusterDeployments.map((cd) => cd.metadata.name || ''), [])

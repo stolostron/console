@@ -2,7 +2,7 @@
 // Discovered policy grouping runs in a Webpack-bundled Web Worker (see `discoveredPolicies.worker.ts`) for UI performance; Jest uses a main-thread fallback. Covered by e2e (Cypress) tests.
 import { useEffect, useState } from 'react'
 import { LabelMap } from '../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { SearchInput, useSearchResultItemsAndRelatedItemsQuery } from '../../Search/search-sdk/search-sdk'
 import {
@@ -77,9 +77,9 @@ export function useFetchPolicies(policyName?: string, policyKind?: string, apiGr
     labelMap: LabelMap
   }>()
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
+  const helmReleases = useSharedValue(helmReleaseState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
 
   let searchQuery: SearchInput[]
 

@@ -3,7 +3,7 @@
 import { Card, CardBody, CardTitle, CodeBlock, CodeBlockCode, PageSection, Tooltip } from '@patternfly/react-core'
 import { AcmDescriptionList, AcmPageContent, AcmTable, IAcmTableColumn } from '../../../../../../ui-components'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../../shared-atoms'
 import { usePlacementDetailsContext } from '../PlacementDetails'
 import { ClusterLinkList, ClusterSetLinkList } from '../../utils'
 import { generatePath, Link } from 'react-router'
@@ -44,11 +44,11 @@ export default function PlacementOverviewPageContent() {
   const localHubName = useLocalHubName()
   const { placementBindingsState, policiesState, policySetsState, gitOpsClustersState, placementDecisionsState } =
     useSharedAtoms()
-  const placementBindings = useRecoilValue(placementBindingsState)
-  const policies = useRecoilValue(policiesState)
-  const policySets = useRecoilValue(policySetsState)
-  const gitOpsClusters = useRecoilValue(gitOpsClustersState)
-  const placementDecisions = useRecoilValue(placementDecisionsState)
+  const placementBindings = useSharedValue(placementBindingsState)
+  const policies = useSharedValue(policiesState)
+  const policySets = useSharedValue(policySetsState)
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const placementDecisions = useSharedValue(placementDecisionsState)
 
   const placementDecisionsForPlacement = useMemo(
     () =>

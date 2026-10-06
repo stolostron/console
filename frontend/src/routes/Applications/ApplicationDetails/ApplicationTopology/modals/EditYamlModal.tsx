@@ -15,7 +15,7 @@ import { getGroupFromApiVersion, getResource } from '~/resources/utils'
 import { fleetCanUser } from '~/resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '~/resources/utils/fleet-resource-request'
 import { onReload, onSave } from '~/routes/Search/components/YamlEditor/utils'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { AcmAlert, AcmModal } from '~/ui-components'
 import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
 import '../components/ResourceNavigator.css'
@@ -91,7 +91,7 @@ function EditYamlModalContent({
     multiclusterApi: { useFleetK8sWatchResource },
   } = useContext(PluginContext)
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
 
   let name = node?.name ?? ''
   let cluster = node?.cluster ?? node?.specs?.clustersNames?.[0] ?? ''

@@ -6,7 +6,7 @@ import { AcmSelect } from '../../../../../ui-components'
 import { SelectOption } from '@patternfly/react-core'
 import { useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { BulkActionModal } from '../../../../../components/BulkActionModal'
 
 export type UpdateReleaseImageModalProps = {
@@ -18,7 +18,7 @@ export function UpdateReleaseImageModal(props: UpdateReleaseImageModalProps) {
   const { t } = useTranslation()
   const [imageSets, setImageSets] = useState<Record<string, string>>({})
   const { clusterImageSetsState } = useSharedAtoms()
-  const clusterImageSets = useRecoilValue(clusterImageSetsState)
+  const clusterImageSets = useSharedValue(clusterImageSetsState)
 
   const modalColumns = useMemo(
     () => [

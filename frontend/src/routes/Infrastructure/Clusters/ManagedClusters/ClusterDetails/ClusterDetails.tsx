@@ -34,7 +34,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import {
   AcmActionGroup,
   AcmButton,
@@ -106,20 +106,20 @@ export default function ClusterDetailsPage() {
     nodePoolsState,
     discoveredClusterState,
   } = useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
-  const clusterDeployments = useRecoilValue(clusterDeploymentsState)
-  const managedClusterInfos = useRecoilValue(managedClusterInfosState)
-  const certificateSigningRequests = useRecoilValue(certificateSigningRequestsState)
-  const allManagedClusterAddons = useRecoilValue(managedClusterAddonsState)
-  const allClusterManagementAddons = useRecoilValue(clusterManagementAddonsState)
-  const clusterClaims = useRecoilValue(clusterClaimsState)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const agents = useRecoilValue(agentsState)
-  const infraEnvs = useRecoilValue(infraEnvironmentsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const nodePools = useRecoilValue(nodePoolsState)
-  const discoveredClusters = useRecoilValue(discoveredClusterState)
+  const managedClusters = useSharedValue(managedClustersState)
+  const clusterDeployments = useSharedValue(clusterDeploymentsState)
+  const managedClusterInfos = useSharedValue(managedClusterInfosState)
+  const certificateSigningRequests = useSharedValue(certificateSigningRequestsState)
+  const allManagedClusterAddons = useSharedValue(managedClusterAddonsState)
+  const allClusterManagementAddons = useSharedValue(clusterManagementAddonsState)
+  const clusterClaims = useSharedValue(clusterClaimsState)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const agents = useSharedValue(agentsState)
+  const infraEnvs = useSharedValue(infraEnvironmentsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const nodePools = useSharedValue(nodePoolsState)
+  const discoveredClusters = useSharedValue(discoveredClusterState)
   const clusterManagementAddOns = keyBy(allClusterManagementAddons, 'metadata.name')
 
   const managedCluster = managedClusters.find((mc) => mc.metadata?.name === name)
@@ -217,7 +217,7 @@ export default function ClusterDetailsPage() {
   )
 
   const { isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
 
   const isClusterOverview = !!useMatch(NavigationPath.clusterOverview)
   const isClusterNodes = !!useMatch(NavigationPath.clusterNodes)

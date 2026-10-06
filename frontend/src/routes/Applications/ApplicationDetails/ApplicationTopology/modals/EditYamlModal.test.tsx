@@ -15,9 +15,9 @@ const mockCanUser = jest.fn()
 const mockFleetCanUser = jest.fn()
 const mockUseFleetK8sWatchResource = jest.fn()
 
-jest.mock('~/shared-recoil', () => ({
+jest.mock('~/shared-atoms', () => ({
   useSharedAtoms: jest.fn(() => ({ isFineGrainedRbacEnabledState: {} })),
-  useRecoilValue: jest.fn(() => false),
+  useSharedValue: jest.fn(() => false),
 }))
 
 jest.mock('~/resources/utils', () => {

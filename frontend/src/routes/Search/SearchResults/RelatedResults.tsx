@@ -23,7 +23,7 @@ import {
 import { useNavigate } from 'react-router'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { PluginContext } from '../../../lib/PluginContext'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmLoadingPage, AcmTable, compareStrings } from '../../../ui-components'
 import { useAllClusters } from '../../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { IVMActionModalProps } from '../../Infrastructure/VirtualMachines/modals/VMActionModal'
@@ -60,7 +60,7 @@ export function RenderItemContent(
   const navigate = useNavigate()
   const allClusters = useAllClusters(true)
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const { useSearchResultLimit } = useSharedAtoms()
   const searchResultLimit = useSearchResultLimit()
@@ -166,8 +166,8 @@ export default function RelatedResults(
   const { t } = useTranslation()
   const [pluginModal, setPluginModal] = useState<JSX.Element>()
   const { useSearchResultLimit, isGlobalHubState, settingsState } = useSharedAtoms()
-  const isGlobalHub = useRecoilValue(isGlobalHubState)
-  const settings = useRecoilValue(settingsState)
+  const isGlobalHub = useSharedValue(isGlobalHubState)
+  const settings = useSharedValue(settingsState)
   const searchResultLimit = useSearchResultLimit()
   // Related count should not have limit
   const queryFilters = convertStringToQuery(currentQuery, searchResultLimit)

@@ -25,7 +25,7 @@ import {
   ResourceError,
   ResourceErrorCode,
 } from '../../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '../../../../../shared-atoms'
 import {
   AcmAlert,
   AcmEmptyState,
@@ -65,11 +65,11 @@ export function UpdateAutomationModal(props: {
   const { clusterCuratorsState, hostedClustersState } = useSharedAtoms()
   const { ansibleCredentialsValue, clusterCuratorSupportedCurationsValue, validClusterCuratorTemplatesValue } =
     useSharedSelectors()
-  const validCuratorTemplates = useRecoilValue(validClusterCuratorTemplatesValue)
-  const clusterCurators = useRecoilValue(clusterCuratorsState)
-  const hostedClusters = useRecoilValue(hostedClustersState)
-  const supportedCurations = useRecoilValue(clusterCuratorSupportedCurationsValue)
-  const ansibleCredentials = useRecoilValue(ansibleCredentialsValue)
+  const validCuratorTemplates = useSharedValue(validClusterCuratorTemplatesValue)
+  const clusterCurators = useSharedValue(clusterCuratorsState)
+  const hostedClusters = useSharedValue(hostedClustersState)
+  const supportedCurations = useSharedValue(clusterCuratorSupportedCurationsValue)
+  const ansibleCredentials = useSharedValue(ansibleCredentialsValue)
   const [selectedCuratorTemplate, setSelectedCuratorTemplate] = useState<ClusterCurator | undefined>()
   const [isUpdating, setIsUpdating] = useState(false)
   const clusterProviders = useClusterProviderColumn()

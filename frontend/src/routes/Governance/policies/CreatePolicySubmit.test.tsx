@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, act } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { RecoilRoot, useSetRecoilState } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
+import { useSetSharedValue } from '~/shared-atoms'
 import {
   policiesState,
   namespacesState,
@@ -74,7 +75,7 @@ function PolicyStateUpdater({
   policyToAdd: Policy
   buttonLabel?: string
 }) {
-  const setPolicies = useSetRecoilState(policiesState)
+  const setPolicies = useSetSharedValue(policiesState)
   return (
     <button
       type="button"
@@ -108,14 +109,14 @@ function TestCreatePolicyPage({
     modifyAlert: jest.fn(),
   }
   return (
-    <RecoilRoot
-      initializeState={(snapshot) => {
-        snapshot.set(policiesState, initialPolicies)
-        snapshot.set(namespacesState, mockNamespaces)
-        snapshot.set(managedClustersState, mockManagedClusters)
-        snapshot.set(placementsState, mockPlacements)
-        snapshot.set(managedClusterSetsState, [mockClusterSet])
-        snapshot.set(managedClusterSetBindingsState, [mockClusterSetBinding])
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(policiesState, initialPolicies)
+        store.set(namespacesState, mockNamespaces)
+        store.set(managedClustersState, mockManagedClusters)
+        store.set(placementsState, mockPlacements)
+        store.set(managedClusterSetsState, [mockClusterSet])
+        store.set(managedClusterSetBindingsState, [mockClusterSetBinding])
       }}
     >
       <AcmToastContext.Provider value={toastContextValue}>
@@ -144,7 +145,7 @@ function TestCreatePolicyPage({
           </MemoryRouter>
         </LostChangesContext.Provider>
       </AcmToastContext.Provider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

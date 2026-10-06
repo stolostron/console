@@ -29,7 +29,7 @@ import { AcmToastContext } from '../../ui-components'
 import { IResource } from '../common/resources/IResource'
 import schema from './schema.json'
 import './CreateArgoResources.css'
-import { useRecoilValue, useSharedAtoms } from '../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { useValidation } from '../../hooks/useValidation'
 
 export interface ICreateArgoResourcesModalProps {
@@ -70,7 +70,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
 
   const { argoCDsState } = useSharedAtoms()
 
-  const argoCDs = useRecoilValue(argoCDsState)
+  const argoCDs = useSharedValue(argoCDsState)
 
   const toast = useContext(AcmToastContext)
 

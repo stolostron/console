@@ -2,14 +2,14 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import IdentitiesManagement from './IdentitiesManagement'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { User, Group } from '../../../resources/rbac'
 
-jest.mock('../../../shared-recoil', () => ({
-  useRecoilValue: jest.fn(),
+jest.mock('../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
 }))
 
@@ -19,7 +19,7 @@ jest.mock('../../../lib/acm-i18next', () => ({
   }),
 }))
 
-const mockUseRecoilValue = useRecoilValue as jest.MockedFunction<typeof useRecoilValue>
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const mockUser: User = {
@@ -47,7 +47,7 @@ const mockGroup: Group = {
 describe('IdentitiesManagement Router', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
-    mockUseRecoilValue.mockClear()
+    mockUseSharedValue.mockClear()
     mockUseSharedAtoms.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({
@@ -59,21 +59,21 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should render without errors', () => {
-    mockUseRecoilValue.mockReturnValue(false)
+    mockUseSharedValue.mockReturnValue(false)
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/multicloud/user-management/identities/users']}>
           <IdentitiesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     expect(document.body).toBeInTheDocument()
   })
 
   test('should redirect UserYaml route to UserDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
@@ -81,11 +81,11 @@ describe('IdentitiesManagement Router', () => {
       .mockReturnValueOnce(true) // UserPage: isDirectAuth
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/users/test-user-uid/yaml']}>
           <IdentitiesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitFor(() => {
@@ -95,7 +95,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect UserGroups route to UserDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
@@ -103,11 +103,11 @@ describe('IdentitiesManagement Router', () => {
       .mockReturnValueOnce(true) // UserPage: isDirectAuth
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/users/test-user-uid/groups']}>
           <IdentitiesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitFor(() => {
@@ -117,7 +117,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect GroupYaml route to GroupDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockGroup]) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
@@ -125,11 +125,11 @@ describe('IdentitiesManagement Router', () => {
       .mockReturnValueOnce(true) // GroupPage: isDirectAuth
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/groups/test-group-uid/yaml']}>
           <IdentitiesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitFor(() => {
@@ -139,7 +139,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect GroupUsers route to GroupDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseRecoilValue
+    mockUseSharedValue
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockGroup]) // useMergedGroups: groupsState
       .mockReturnValueOnce([]) // useMergedGroups: mraState
@@ -147,11 +147,11 @@ describe('IdentitiesManagement Router', () => {
       .mockReturnValueOnce(true) // GroupPage: isDirectAuth
 
     render(
-      <RecoilRoot>
+      <StateProvider>
         <MemoryRouter initialEntries={['/groups/test-group-uid/users']}>
           <IdentitiesManagement />
         </MemoryRouter>
-      </RecoilRoot>
+      </StateProvider>
     )
 
     await waitFor(() => {

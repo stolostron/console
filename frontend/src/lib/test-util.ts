@@ -153,19 +153,14 @@ export async function clickByText(text: string, index?: number) {
     // wait for rbac to enable the button associated with this text
     await waitFor(
       () =>
-        expect(
-          (screen.getAllByText(text)[index].closest('button') as HTMLInputElement)?.getAttribute('aria-disabled')
-        ).not.toEqual('true'),
+        expect(screen.getAllByText(text)[index].closest('button')?.getAttribute('aria-disabled')).not.toEqual('true'),
       waitForOptions
     )
     await userEvent.click(screen.getAllByText(text)[index])
   } else {
     // wait for rbac to enable the button associated with this text
     await waitFor(
-      () =>
-        expect(
-          (screen.getByText(text).closest('button') as HTMLInputElement)?.getAttribute('aria-disabled')
-        ).not.toEqual('true'),
+      () => expect(screen.getByText(text).closest('button')?.getAttribute('aria-disabled')).not.toEqual('true'),
       waitForOptions
     )
     await userEvent.click(screen.getByText(text))

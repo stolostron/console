@@ -7,7 +7,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Policy } from '../../../../resources'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmActionGroup, AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import { useAddRemediationPolicies } from '../../common/useCustom'
 import { getPolicyDetailSourceLabel, getPolicySource } from '../../common/util'
@@ -24,9 +24,9 @@ export function PolicyDetailsPage() {
   const { channelsState, helmReleaseState, subscriptionsState } = useSharedAtoms()
   const navigate = useNavigate()
   const policies = useAddRemediationPolicies()
-  const helmReleases = useRecoilValue(helmReleaseState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const channels = useRecoilValue(channelsState)
+  const helmReleases = useSharedValue(helmReleaseState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const channels = useSharedValue(channelsState)
   const [modal, setModal] = useState<ReactNode | undefined>()
 
   const params = useParams()

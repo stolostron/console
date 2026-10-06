@@ -5,7 +5,7 @@ React 18+ SPA with TypeScript in strict mode. Serves as both the standalone cons
 ## Key Technologies
 
 - **UI Framework**: PatternFly 6+ (Red Hat's design system)
-- **State Management**: Recoil atoms for global state
+- **State Management**: Jotai atoms for global state, with selectors represented by derived atoms
 - **Data Fetching**: React Query, Apollo/GraphQL for search
 - **Routing**: React Router with v5 compatibility layer
 - **Build**: Webpack 5 with module federation for dynamic plugins
@@ -51,7 +51,7 @@ Run from the `frontend/` directory, or use the `npm run *:frontend` variants fro
 These are enforced by `@stolostron/eslint-config` and will cause lint failures:
 
 - **i18n**: Import `useTranslation` and `Trans` from `../lib/acm-i18next` — never from `react-i18next` directly
-- **State**: Import `useRecoilValue` etc. from `../shared-recoil` and access atoms via `useSharedAtoms()` — never import from `recoil` directly or import atoms from `../atoms`
+- **State**: Import `useSharedValue`, `useSetSharedValue`, and related hooks from `../shared-atoms`; get atom and selector definitions through `useSharedAtoms()` and `useSharedSelectors()` — never import Jotai directly or import from `../atoms` / `../selectors`
 
 ## Import Organization
 
@@ -93,11 +93,12 @@ Follow this general grouping (flexibility allowed):
 - Use `AcmDataFormPage` for multi-mode forms (form/wizard/details)
 - Never use `dangerouslySetInnerHTML` or `innerHTML`
 
-## Recoil State Management
+## Shared State Management
 
 - Atoms are defined in `atoms.ts` using internal `AtomArray<T>()` and `AtomMap<T>()` helpers
+- Selectors are defined in `selectors.ts` as derived atoms; keep the selector terminology in exports and call sites
 - Access atoms through `useSharedAtoms()` — never import atoms directly
-- Use `useRecoilValueGetter()` for async operations
+- Use `useSharedValueGetter()` for non-reactive reads in callbacks
 - Throttle events using `THROTTLE_EVENTS_DELAY` (500ms)
 - Handle `WatchEvent` types: `ADDED`, `DELETED`, `MODIFIED`, `EOP`
 
@@ -127,7 +128,7 @@ Follow this general grouping (flexibility allowed):
   ```
 - Use `@testing-library/user-event` for user interactions — not `fireEvent`
 - Prefer query priority: `getByRole` > `getByLabelText` > `getByText` > `getByTestId`
-- Mock Recoil atoms via `useSharedAtoms()`, not direct imports
+- Use `StateProvider` from `lib/state-provider` to create an isolated store and seed test atoms through its `initializeStore` callback
 - Use `nock` for HTTP call mocking
 - Follow Arrange-Act-Assert pattern
 - Tests should meaningfully cover behavior, not just achieve coverage metrics

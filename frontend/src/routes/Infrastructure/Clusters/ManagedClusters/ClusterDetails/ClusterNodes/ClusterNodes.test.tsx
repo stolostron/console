@@ -14,7 +14,7 @@ var clusterNodesTestState: {
 
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
-import { RecoilRoot } from 'recoil'
+import { StateProvider } from '~/lib/state-provider'
 import { defaultPlugin, PluginContext } from '../../../../../../lib/PluginContext'
 import { ClusterDetailsContext } from '../ClusterDetails'
 import { mockCluster } from '../ClusterDetails.sharedmocks'
@@ -25,12 +25,12 @@ jest.mock('~/lib/useMetricsPoll', () => ({
   useMetricsPoll: () => clusterNodesTestState.metricsPoll,
 }))
 
-jest.mock('~/shared-recoil', () => ({
+jest.mock('~/shared-atoms', () => ({
   useSharedAtoms: () => ({
     clusterManagementAddonsState: 'clusterManagementAddonsState',
     useIsObservabilityInstalled: () => clusterNodesTestState.observabilityInstalled,
   }),
-  useRecoilValue: jest.fn(() => []),
+  useSharedValue: jest.fn(() => []),
 }))
 
 jest.mock('../../components/ScaleClusterAlert', () => ({
@@ -39,7 +39,7 @@ jest.mock('../../components/ScaleClusterAlert', () => ({
 
 function renderNodesPoolsTable(context: Partial<ClusterDetailsContext> = { cluster: mockCluster }) {
   return render(
-    <RecoilRoot>
+    <StateProvider>
       <PluginContext.Provider value={defaultPlugin}>
         <MemoryRouter>
           <Routes>
@@ -49,7 +49,7 @@ function renderNodesPoolsTable(context: Partial<ClusterDetailsContext> = { clust
           </Routes>
         </MemoryRouter>
       </PluginContext.Provider>
-    </RecoilRoot>
+    </StateProvider>
   )
 }
 

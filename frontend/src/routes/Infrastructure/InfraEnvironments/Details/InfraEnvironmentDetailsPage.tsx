@@ -18,7 +18,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_VERSION } from '../../../../lib/doc-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
 import {
   getOnCreateBMH,
@@ -44,10 +44,10 @@ const InfraEnvironmentDetailsPage: React.FC = () => {
   const { name = '', namespace = '' } = useParams<PathParam<NavigationPath.infraEnvironmentDetails>>()
 
   const { agentClusterInstallsState, agentsState, bareMetalHostsState, nmStateConfigsState } = useSharedAtoms()
-  const agentClusterInstalls = useRecoilValue(agentClusterInstallsState)
-  const agents = useRecoilValue(agentsState)
-  const bareMetalHosts = useRecoilValue(bareMetalHostsState)
-  const nmStateConfigs = useRecoilValue(nmStateConfigsState)
+  const agentClusterInstalls = useSharedValue(agentClusterInstallsState)
+  const agents = useSharedValue(agentsState)
+  const bareMetalHosts = useSharedValue(bareMetalHostsState)
+  const nmStateConfigs = useSharedValue(nmStateConfigsState)
   const infraEnv = useInfraEnv({ name, namespace })
 
   const infraNMStates = useMemo(() => getInfraEnvNMStates(nmStateConfigs, infraEnv), [nmStateConfigs, infraEnv])

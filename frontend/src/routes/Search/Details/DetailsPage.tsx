@@ -18,7 +18,7 @@ import { NavigationPath } from '../../../NavigationPath'
 import { IResource, IResourceDefinition } from '../../../resources'
 import { fleetResourceRequest } from '../../../resources/utils/fleet-resource-request'
 import { getBackendUrl, getRequest, getResource } from '../../../resources/utils/resource-request'
-import { useRecoilValue, useSharedAtoms } from '../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../ui-components'
 import {
   ClosedVMActionModalProps,
@@ -65,7 +65,7 @@ export default function DetailsPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const { useVirtualMachineActionsEnabled, isFineGrainedRbacEnabledState } = useSharedAtoms()
-  const isFineGrainedRbacEnabled = useRecoilValue(isFineGrainedRbacEnabledState)
+  const isFineGrainedRbacEnabled = useSharedValue(isFineGrainedRbacEnabledState)
   const vmActionsEnabled = useVirtualMachineActionsEnabled()
   const [resource, setResource] = useState<any>(undefined)
   const [containers, setContainers] = useState<string[]>()

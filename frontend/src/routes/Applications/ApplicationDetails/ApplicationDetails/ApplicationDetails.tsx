@@ -34,7 +34,7 @@ import {
   Subscription,
   SubscriptionDefinition,
 } from '../../../../resources'
-import { useRecoilValue, useSharedAtoms } from '../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import {
   AcmActionGroup,
   AcmButton,
@@ -73,9 +73,9 @@ export function ApplicationDetailsPageContent() {
   const { applicationData } = useApplicationDetailsContext()
   const { t } = useTranslation()
   const { channelsState, namespacesState, subscriptionsState } = useSharedAtoms()
-  const channels = useRecoilValue(channelsState)
-  const subscriptions = useRecoilValue(subscriptionsState)
-  const namespaces = useRecoilValue(namespacesState)
+  const channels = useSharedValue(channelsState)
+  const subscriptions = useSharedValue(subscriptionsState)
+  const namespaces = useSharedValue(namespacesState)
   const localCluster = useLocalHubName()
   const [modalProps, setModalProps] = useState<ISyncResourceModalProps | { open: false }>({
     open: false,

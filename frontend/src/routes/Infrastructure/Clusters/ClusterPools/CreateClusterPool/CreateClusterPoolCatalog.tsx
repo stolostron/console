@@ -8,7 +8,7 @@ import {
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo } from 'react'
 import { useLocation } from 'react-router'
-import { useRecoilValue, useSharedAtoms } from '../../../../../shared-recoil'
+import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import {
@@ -27,7 +27,7 @@ export function CreateClusterPoolCatalog() {
   const { search } = useLocation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
   const { secretsState } = useSharedAtoms()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const credentials = useMemo(
     () =>
       secrets.filter(

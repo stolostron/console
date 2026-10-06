@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { useMemo } from 'react'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 
 export const useCredentialsSecrets = () => {
   const { secretsState } = useSharedAtoms()
-  const secrets = useRecoilValue(secretsState)
+  const secrets = useSharedValue(secretsState)
   const credentialsSecrets = useMemo(
     () =>
       secrets.filter(

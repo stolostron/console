@@ -25,7 +25,7 @@ import { FormikProps } from 'formik'
 
 import { useTranslation } from '../../../lib/acm-i18next'
 import MainIcon from '../../../logos/OnPremiseBannerIcon.svg'
-import { useSharedAtoms, useRecoilValue, useSharedSelectors } from '../../../shared-recoil'
+import { useSharedAtoms, useSharedValue, useSharedSelectors } from '../../../shared-atoms'
 
 import './InfraEnvForm.css'
 import { CredentialsForm } from '../../Credentials/CredentialsForm'
@@ -75,11 +75,11 @@ const InfraEnvForm: React.FC<InfraEnvFormProps> = ({ control, handleChange }) =>
   const [isCredentialsModalOpen, setCredentialsModalOpen] = useState(false)
   const [credentialsUID, setCredentialsUID] = useState<string>()
   const { providerConnectionsValue } = useSharedSelectors()
-  const allProviderConnections = useRecoilValue(providerConnectionsValue)
+  const allProviderConnections = useSharedValue(providerConnectionsValue)
   const { projects } = useProjects()
   const { infraEnvironmentsState, agentServiceConfigsState } = useSharedAtoms()
-  const infraEnvironments = useRecoilValue(infraEnvironmentsState)
-  const agentServiceConfigs = useRecoilValue(agentServiceConfigsState)
+  const infraEnvironments = useSharedValue(infraEnvironmentsState)
+  const agentServiceConfigs = useSharedValue(agentServiceConfigsState)
   const osImages = (agentServiceConfigs?.[0] as AgentServiceConfigK8sResource)?.spec.osImages || []
 
   const formRef = useRef<FormikProps<any>>(null)

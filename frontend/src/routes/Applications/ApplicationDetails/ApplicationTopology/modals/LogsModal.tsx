@@ -11,7 +11,7 @@ import { LogsFooterButton, LogsHeader, LogsToolbar } from '~/routes/Search/Detai
 import type { PodInfo, TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { fetchRetry, getBackendUrl, isRequestAbortedError } from '~/resources/utils'
 import { fleetLogsRequest } from '~/resources/utils/fleet-logs-request'
-import { useRecoilValue, useSharedAtoms } from '~/shared-recoil'
+import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { AcmAlert, AcmButton, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-components'
 import { createResourceURL } from '../helpers/diagram-helpers'
 import type { ResourceAction } from '../types'
@@ -200,7 +200,7 @@ function TopologyLogsViewer({
   const [previousLogs, setPreviousLogs] = useState(false)
   const [containerHasPreviousLogs, setContainerHasPreviousLogs] = useState(false)
   const { managedClustersState } = useSharedAtoms()
-  const managedClusters = useRecoilValue(managedClustersState)
+  const managedClusters = useSharedValue(managedClustersState)
 
   useEffect(() => {
     if (pods.length > 0 && !selectedPodName) {
