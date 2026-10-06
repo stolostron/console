@@ -774,6 +774,23 @@ export default function ApplicationsOverview() {
         isDefault: true,
       },
       {
+        header: t('Sources'),
+        cell: (resource) => (
+          <ApplicationSourcesCell resource={resource} subscriptions={subscriptions} channels={channels} />
+        ),
+        tooltip: t('Git repository or project name for the application source.'),
+        sort: 'transformed.sourcesText',
+        search: 'transformed.sourcesText',
+        exportContent: (resource) => {
+          const sourceNames = getApplicationSourceNames(resource, subscriptions, channels)
+          return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
+        },
+        id: 'sources',
+        order: 5,
+        isDefault: false,
+        isFirstVisitChecked: false,
+      },
+      {
         header: t('table.labels'),
         cell: (resource) => <AcmLabels labels={getLabels(resource)} isCompact={true} />,
         exportContent: (resource) =>
@@ -781,7 +798,7 @@ export default function ApplicationsOverview() {
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
         id: 'labels',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -798,7 +815,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -815,7 +832,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -832,28 +849,11 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: true,
       },
       ...extensionColumns,
-      {
-        header: t('Sources'),
-        cell: (resource) => (
-          <ApplicationSourcesCell resource={resource} subscriptions={subscriptions} channels={channels} />
-        ),
-        tooltip: t('Git repository or project name for the application source.'),
-        sort: 'transformed.sourcesText',
-        search: 'transformed.sourcesText',
-        exportContent: (resource) => {
-          const sourceNames = getApplicationSourceNames(resource, subscriptions, channels)
-          return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
-        },
-        id: 'sources',
-        order: 9,
-        isDefault: false,
-        isFirstVisitChecked: false,
-      },
       {
         header: t('Created'),
         cell: (resource) => {
