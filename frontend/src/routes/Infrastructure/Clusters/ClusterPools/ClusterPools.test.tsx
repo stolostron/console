@@ -10,10 +10,12 @@ import {
   ClusterPool,
   ClusterPoolApiVersion,
   ClusterPoolKind,
+  SelfSubjectAccessReview,
 } from '../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import nock from 'nock'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
@@ -41,6 +43,25 @@ import {
 } from '../../../../lib/test-util'
 import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
+
+function nockCreateClusterPoolAccess(allowed: boolean) {
+  return nock(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', () => true)
+    .optionally()
+    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => {
+      const resourceAttributes = requestBody.spec?.resourceAttributes
+      const isCreateClusterPool =
+        resourceAttributes?.verb === 'create' && resourceAttributes?.resource === 'clusterpools'
+      return {
+        apiVersion: 'authorization.k8s.io/v1',
+        kind: 'SelfSubjectAccessReview',
+        metadata: {},
+        spec: requestBody.spec,
+        status: { allowed: isCreateClusterPool ? allowed : true },
+      }
+    })
+}
 
 const mockClusterImageSet: ClusterImageSet = {
   apiVersion: ClusterImageSetApiVersion,
@@ -606,5 +627,95 @@ describe('Destroy ClusterPool with claimed clusters', () => {
         name: /destroy/i,
       })
     ).toBeDisabled()
+  })
+})
+
+describe('ClusterPools page RBAC', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+
+  test('disables Create cluster pool in the table when create is not allowed', async () => {
+    nockCreateClusterPoolAccess(false)
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, [mockClusterPool])
+          store.set(clusterImageSetsState, [mockClusterImageSet])
+          store.set(clusterClaimsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPoolsPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText(mockClusterPool.metadata.name!)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Create cluster pool' })).toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('enables Create cluster pool in the table when create is allowed', async () => {
+    nockCreateClusterPoolAccess(true)
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, [mockClusterPool])
+          store.set(clusterImageSetsState, [mockClusterImageSet])
+          store.set(clusterClaimsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPoolsPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText(mockClusterPool.metadata.name!)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('disables Create cluster pool in the empty state when create is not allowed', async () => {
+    nockCreateClusterPoolAccess(false)
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, [])
+          store.set(clusterImageSetsState, [])
+          store.set(clusterClaimsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPoolsPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText("You don't have any cluster pools yet")
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Create cluster pool' })).toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('enables Create cluster pool in the empty state when create is allowed', async () => {
+    nockCreateClusterPoolAccess(true)
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, [])
+          store.set(clusterImageSetsState, [])
+          store.set(clusterClaimsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPoolsPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText("You don't have any cluster pools yet")
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
+    )
   })
 })

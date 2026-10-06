@@ -49,11 +49,20 @@ export default function PlacementsPage() {
   const { placementsState } = useSharedAtoms()
   const placements = useSharedValue(placementsState)
   const navigate = useNavigate()
+  const [canCreatePlacement, setCanCreatePlacement] = useState<boolean>(false)
+  useEffect(() => {
+    const canCreatePlacement = canUser('create', PlacementDefinition)
+    canCreatePlacement.promise
+      .then((result) => setCanCreatePlacement(result.status?.allowed ?? false))
+      .catch((err) => console.error(err))
+    return () => canCreatePlacement.abort()
+  }, [])
 
   return (
     <AcmPageContent id="placements">
       <PageSection hasBodyWrapper={false}>
         <PlacementsTable
+          canCreatePlacement={canCreatePlacement}
           placements={placements}
           emptyState={
             <AcmEmptyState
@@ -64,6 +73,8 @@ export default function PlacementsPage() {
                 <AcmButton
                   onClick={() => navigateToBackCancelLocation(navigate, NavigationPath.createPlacement)}
                   variant="primary"
+                  isDisabled={!canCreatePlacement}
+                  tooltip={t('rbac.unauthorized')}
                 >
                   {t('Create placement')}
                 </AcmButton>
@@ -161,7 +172,11 @@ export function getGitOpsClustersReferencingPlacement(
   )
 }
 
-export function PlacementsTable(props: { placements: Placement[]; emptyState: React.ReactNode }) {
+export function PlacementsTable(props: {
+  placements: Placement[]
+  emptyState: React.ReactNode
+  canCreatePlacement: boolean
+}) {
   const { t } = useTranslation()
   const filtersDisplayLimit = 3
   const { placementBindingsState, policiesState, gitOpsClustersState, policySetsState } = useSharedAtoms()
@@ -169,15 +184,6 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
   const policies = useSharedValue(policiesState)
   const gitOpsClusters = useSharedValue(gitOpsClustersState)
   const policySets = useSharedValue(policySetsState)
-  const [canCreatePlacement, setCanCreatePlacement] = useState<boolean>(false)
-
-  useEffect(() => {
-    const canCreatePlacement = canUser('create', PlacementDefinition)
-    canCreatePlacement.promise
-      .then((result) => setCanCreatePlacement(result.status?.allowed ?? false))
-      .catch((err) => console.error(err))
-    return () => canCreatePlacement.abort()
-  }, [])
 
   function placementKeyFn(placement: Placement) {
     return placement.metadata.uid!
@@ -442,8 +448,8 @@ export function PlacementsTable(props: { placements: Placement[]; emptyState: Re
             id: 'createPlacement',
             title: t('Create placement'),
             click: () => navigateToBackCancelLocation(navigate, NavigationPath.createPlacement),
-            isDisabled: !canCreatePlacement,
-            tooltip: !canCreatePlacement ? t('rbac.unauthorized') : '',
+            isDisabled: !props.canCreatePlacement,
+            tooltip: !props.canCreatePlacement ? t('rbac.unauthorized') : '',
             variant: ButtonVariant.primary,
           },
         ]}

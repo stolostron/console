@@ -26,12 +26,13 @@ import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
+import { canUser, rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
   ClusterClaim,
   ClusterClaimDefinition,
   ClusterPool,
+  ClusterPoolDefinition,
   getClusterImageSetVersion,
   isClusterPoolDeleting,
 } from '../../../../resources'
@@ -54,6 +55,14 @@ export default function ClusterPoolsPage() {
   const { clusterPoolsState } = useSharedAtoms()
   const clusterPools = useSharedValue(clusterPoolsState)
   const clusters = useAllClusters()
+  const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
+  useEffect(() => {
+    const canCreateManagedCluster = canUser('create', ClusterPoolDefinition)
+    canCreateManagedCluster.promise
+      .then((result) => setCanCreateClusterPool(result.status?.allowed!))
+      .catch((err) => console.error(err))
+    return () => canCreateManagedCluster.abort()
+  }, [])
 
   /* t('preview.clusterPools') */
   return (
@@ -111,6 +120,8 @@ export default function ClusterPoolsPage() {
                   id: 'createClusterPool',
                   title: t('managed.createClusterPool'),
                   click: () => navigateToBackCancelLocation(navigate, NavigationPath.createClusterPool),
+                  isDisabled: !canCreateClusterPool,
+                  tooltip: t('rbac.unauthorized'),
                   variant: ButtonVariant.primary,
                 },
               ]}
@@ -125,6 +136,8 @@ export default function ClusterPoolsPage() {
                       <AcmButton
                         role="link"
                         onClick={() => navigateToBackCancelLocation(navigate, NavigationPath.createClusterPool)}
+                        isDisabled={!canCreateClusterPool}
+                        tooltip={t('rbac.unauthorized')}
                       >
                         {t('managed.createClusterPool')}
                       </AcmButton>
