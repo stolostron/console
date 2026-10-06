@@ -53,8 +53,6 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   defaultResources?: unknown
   /** When set, overrides {@link readShowChangesPreference} for the initial Show changes toggle. */
   initialShowChanges?: boolean
-  /** When false, the diff view stays inline instead of switching to side-by-side. */
-  renderSideBySide?: boolean
 }
 
 export function SyncEditor(props: SyncEditorProps): JSX.Element {
@@ -78,7 +76,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     highlightEditorPath,
     defaultResources,
     initialShowChanges,
-    renderSideBySide,
   } = props
   const [editorHighlightPath, setEditorHighlightPath] = useState(() => highlightEditorPath ?? '')
   useEffect(() => {
@@ -942,7 +939,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           showChanges={showChanges}
           defaultResources={defaultResources}
           mock={mock}
-          renderSideBySide={renderSideBySide}
           onDiffEditorFocusChange={setDiffEditorHasFocus}
           onDiffEditorInstanceChange={onDiffEditorInstanceChange}
           onActiveInstancesChange={syncActiveInstances}
