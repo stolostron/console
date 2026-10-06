@@ -26,7 +26,7 @@ import { RbacButton, RbacDropdown } from '../../../../components/Rbac'
 import { TechPreviewAlert } from '../../../../components/TechPreviewAlert'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
-import { canUser, rbacCreate, rbacDelete, rbacPatch } from '../../../../lib/rbac-util'
+import { rbacCreate, rbacDelete, rbacPatch, useIsAnyNamespaceAuthorized } from '../../../../lib/rbac-util'
 import { navigateToBackCancelLocation, NavigationPath } from '../../../../NavigationPath'
 import {
   ClusterClaim,
@@ -55,14 +55,7 @@ export default function ClusterPoolsPage() {
   const { clusterPoolsState } = useSharedAtoms()
   const clusterPools = useSharedValue(clusterPoolsState)
   const clusters = useAllClusters()
-  const [canCreateClusterPool, setCanCreateClusterPool] = useState<boolean>(false)
-  useEffect(() => {
-    const canCreateManagedCluster = canUser('create', ClusterPoolDefinition)
-    canCreateManagedCluster.promise
-      .then((result) => setCanCreateClusterPool(result.status?.allowed!))
-      .catch((err) => console.error(err))
-    return () => canCreateManagedCluster.abort()
-  }, [])
+  const canCreateClusterPool = useIsAnyNamespaceAuthorized(rbacCreate(ClusterPoolDefinition))
 
   /* t('preview.clusterPools') */
   return (

@@ -4,11 +4,11 @@ import { render, screen, waitFor } from '@testing-library/react'
 import nock from 'nock'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { placementsState } from '../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
-import { waitForText } from '../../../../lib/test-util'
+import { namespacesState, placementsState } from '../../../../atoms'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
-import { SelfSubjectAccessReview } from '../../../../resources'
+import { Namespace, NamespaceApiVersion, NamespaceKind, SelfSubjectAccessReview } from '../../../../resources'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../resources/placement'
 import Clusters from '../Clusters'
 
@@ -48,28 +48,48 @@ const mockPlacement2: Placement = {
   },
 }
 
-function nockCreatePlacementAccess(allowed: boolean) {
+const mockNamespace: Namespace = {
+  apiVersion: NamespaceApiVersion,
+  kind: NamespaceKind,
+  metadata: { name: 'test-namespace-1' },
+}
+
+const createPlacementAccess = {
+  verb: 'create',
+  resource: 'placements',
+  group: 'cluster.open-cluster-management.io',
+  namespace: mockNamespace.metadata.name,
+}
+
+function nockNonAdminAccess() {
   return nock(process.env.JEST_DEFAULT_HOST as string)
     .persist()
-    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', () => true)
-    .optionally()
-    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => {
-      const resourceAttributes = requestBody.spec?.resourceAttributes
-      const isCreatePlacement = resourceAttributes?.verb === 'create' && resourceAttributes?.resource === 'placements'
-      return {
-        apiVersion: 'authorization.k8s.io/v1',
-        kind: 'SelfSubjectAccessReview',
-        metadata: {},
-        spec: requestBody.spec,
-        status: { allowed: isCreatePlacement ? allowed : true },
-      }
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: SelfSubjectAccessReview) => {
+      const resourceAttributes = body.spec?.resourceAttributes
+      return resourceAttributes?.verb === '*' && resourceAttributes?.resource === '*'
     })
+    .optionally()
+    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => ({
+      apiVersion: 'authorization.k8s.io/v1',
+      kind: 'SelfSubjectAccessReview',
+      metadata: {},
+      spec: requestBody.spec,
+      status: { allowed: false },
+    }))
+}
+
+function nockCreatePlacementAccess(allowed: boolean) {
+  nockNonAdminAccess()
+  const createNock = nockRBAC(createPlacementAccess, allowed)
+  nockIgnoreRBAC()
+  return [createNock]
 }
 
 const Component = ({ placements = [mockPlacement1, mockPlacement2] }: { placements?: Placement[] }) => (
   <StateProvider
     initializeStore={(store) => {
       store.set(placementsState, placements)
+      store.set(namespacesState, [mockNamespace])
     }}
   >
     <MemoryRouter initialEntries={[NavigationPath.placements]}>
@@ -113,36 +133,40 @@ describe('Placements page RBAC', () => {
   })
 
   test('disables Create placement in the table when create is not allowed', async () => {
-    nockCreatePlacementAccess(false)
+    const accessNocks = nockCreatePlacementAccess(false)
     render(<Component />)
     await waitForText(mockPlacement1.metadata.name!)
+    await waitForNocks(accessNocks)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Create placement' })).toHaveAttribute('aria-disabled', 'true')
     )
   })
 
   test('enables Create placement in the table when create is allowed', async () => {
-    nockCreatePlacementAccess(true)
+    const accessNocks = nockCreatePlacementAccess(true)
     render(<Component />)
     await waitForText(mockPlacement1.metadata.name!)
+    await waitForNocks(accessNocks)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Create placement' })).not.toHaveAttribute('aria-disabled', 'true')
     )
   })
 
   test('disables Create placement in the empty state when create is not allowed', async () => {
-    nockCreatePlacementAccess(false)
+    const accessNocks = nockCreatePlacementAccess(false)
     render(<Component placements={[]} />)
     await waitForText("You don't have any placements yet")
+    await waitForNocks(accessNocks)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Create placement' })).toHaveAttribute('aria-disabled', 'true')
     )
   })
 
   test('enables Create placement in the empty state when create is allowed', async () => {
-    nockCreatePlacementAccess(true)
+    const accessNocks = nockCreatePlacementAccess(true)
     render(<Component placements={[]} />)
     await waitForText("You don't have any placements yet")
+    await waitForNocks(accessNocks)
     await waitFor(() =>
       expect(screen.getByRole('button', { name: 'Create placement' })).not.toHaveAttribute('aria-disabled', 'true')
     )
