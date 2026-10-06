@@ -276,10 +276,10 @@ describe('Applications Page', () => {
       [
         'Name,Type,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
           `"application-0","Subscription","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None","test",-,"-","-","-",-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None","test",-,"-","-","-",-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","test",-,"-","-","-",-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","test",-,"-","-","-",-\n' +
+          '"applicationset-0","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
           '"authentication-operator","OpenShift","authentication-operator-ns","None",-,"app=authentication-operator","-","-","-",-\n' +
           '"authentication-operatorf","Flux","authentication-operator-ns","None",-,"kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
       ],

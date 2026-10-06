@@ -439,28 +439,6 @@ function createRepoFromArgoSource(source: any) {
 
 const MAX_SOURCE_NAME_LENGTH = 20
 
-/** Extract the git project / repo name (last path segment) from a repo URL or path. */
-export function getRepoProjectName(pathName: string | undefined): string {
-  if (!pathName) {
-    return ''
-  }
-
-  try {
-    const pathname = new URL(pathName).pathname.replace(/\.git$/i, '').replace(/\/$/, '')
-    const segments = pathname.split('/').filter(Boolean)
-    return segments.length > 0 ? segments[segments.length - 1] : ''
-  } catch {
-    // SSH-style: git@host:org/repo.git
-    const sshMatch = pathName.match(/:([^:/]+\/)?([^/:]+?)(?:\.git)?\/?$/)
-    if (sshMatch?.[2]) {
-      return sshMatch[2].replace(/\.git$/i, '')
-    }
-    const cleaned = pathName.replace(/\.git$/i, '').replace(/\/$/, '')
-    const parts = cleaned.split('/').filter(Boolean)
-    return parts.length > 0 ? parts[parts.length - 1] : ''
-  }
-}
-
 export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LENGTH): string {
   if (name.length > maxLength) {
     return `${name.slice(0, maxLength)}…`
@@ -468,7 +446,7 @@ export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LEN
   return name
 }
 
-/** Unique display names for application sources (repo project name, or helm chart as fallback). */
+/** Unique display names for application sources (Argo/Subscription path, or helm chart as fallback). */
 export function getApplicationSourceNames(
   resource: IResource,
   subscriptions: Subscription[],
@@ -479,8 +457,8 @@ export function getApplicationSourceNames(
   const seen = new Set<string>()
 
   for (const repo of repos) {
-    const projectName = getRepoProjectName(repo.pathName)
-    const displayName = projectName || (repo.chart ? String(repo.chart) : '')
+    const pathName = typeof repo.gitPath === 'string' ? repo.gitPath.trim() : ''
+    const displayName = pathName || (repo.chart ? String(repo.chart) : '')
     if (displayName && !seen.has(displayName)) {
       seen.add(displayName)
       names.push(displayName)
@@ -778,7 +756,7 @@ export default function ApplicationsOverview() {
         cell: (resource) => (
           <ApplicationSourcesCell resource={resource} subscriptions={subscriptions} channels={channels} />
         ),
-        tooltip: t('Git repository or project name for the application source.'),
+        tooltip: t('Source path or chart name from the application repository.'),
         sort: 'transformed.sourcesText',
         search: 'transformed.sourcesText',
         exportContent: (resource) => {

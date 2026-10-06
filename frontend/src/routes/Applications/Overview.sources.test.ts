@@ -8,30 +8,7 @@ import {
   ApplicationSetApiVersion,
   ApplicationSetKind,
 } from '../../resources'
-import { getApplicationSourceNames, getRepoProjectName, truncateSourceName } from './Overview'
-
-describe('getRepoProjectName', () => {
-  it('extracts the last path segment from an https git URL', () => {
-    expect(getRepoProjectName('https://github.com/example/helloworld.git')).toBe('helloworld')
-  })
-
-  it('extracts the last path segment without .git suffix', () => {
-    expect(getRepoProjectName('https://github.com/example/mortgage')).toBe('mortgage')
-  })
-
-  it('extracts the repo name from an SSH git URL', () => {
-    expect(getRepoProjectName('git@github.com:example/helloworld.git')).toBe('helloworld')
-  })
-
-  it('returns empty string for hostname-only helm repos', () => {
-    expect(getRepoProjectName('https://charts.example.com')).toBe('')
-  })
-
-  it('returns empty string for undefined or empty input', () => {
-    expect(getRepoProjectName(undefined)).toBe('')
-    expect(getRepoProjectName('')).toBe('')
-  })
-})
+import { getApplicationSourceNames, truncateSourceName } from './Overview'
 
 describe('truncateSourceName', () => {
   it('returns short names unchanged', () => {
@@ -53,7 +30,7 @@ describe('getApplicationSourceNames', () => {
   const mockSubscriptions: any[] = []
   const mockChannels: any[] = []
 
-  it('returns a single project name for a git Argo application', () => {
+  it('returns the Argo source path for a git application', () => {
     const gitApplication: ArgoApplication = {
       apiVersion: ArgoApplicationApiVersion,
       kind: ArgoApplicationKind,
@@ -62,8 +39,8 @@ describe('getApplicationSourceNames', () => {
         destination: { namespace: 'test', server: 'https://kubernetes.default.svc' },
         project: 'default',
         source: {
-          repoURL: 'https://github.com/example/helloworld.git',
-          path: 'manifests',
+          repoURL: 'https://github.com/example/repo.git',
+          path: 'helloworld',
           targetRevision: 'HEAD',
         },
         syncPolicy: {},
@@ -73,7 +50,7 @@ describe('getApplicationSourceNames', () => {
     expect(getApplicationSourceNames(gitApplication, mockSubscriptions, mockChannels)).toEqual(['helloworld'])
   })
 
-  it('falls back to chart name when the repo URL has no path segment', () => {
+  it('falls back to chart name when path is not set', () => {
     const helmApplication: ArgoApplication = {
       apiVersion: ArgoApplicationApiVersion,
       kind: ArgoApplicationKind,
@@ -93,7 +70,7 @@ describe('getApplicationSourceNames', () => {
     expect(getApplicationSourceNames(helmApplication, mockSubscriptions, mockChannels)).toEqual(['my-chart'])
   })
 
-  it('returns unique names for multi-source ApplicationSets', () => {
+  it('returns unique path names for multi-source ApplicationSets', () => {
     const multiSourceApplicationSet: ApplicationSet = {
       apiVersion: ApplicationSetApiVersion,
       kind: ApplicationSetKind,
@@ -106,13 +83,13 @@ describe('getApplicationSourceNames', () => {
             project: 'default',
             sources: [
               {
-                repoURL: 'https://github.com/example/helloworld.git',
-                path: 'manifests',
+                repoURL: 'https://github.com/example/repo.git',
+                path: 'helloworld',
                 targetRevision: 'HEAD',
               },
               {
-                repoURL: 'https://github.com/example/mortgage.git',
-                path: 'apps',
+                repoURL: 'https://github.com/example/repo.git',
+                path: 'mortgage',
                 targetRevision: 'main',
               },
               {
@@ -133,7 +110,7 @@ describe('getApplicationSourceNames', () => {
     ])
   })
 
-  it('returns an empty array when there are no sources', () => {
+  it('returns an empty array when there are no source paths', () => {
     const noSourceApplication: ArgoApplication = {
       apiVersion: ArgoApplicationApiVersion,
       kind: ArgoApplicationKind,
