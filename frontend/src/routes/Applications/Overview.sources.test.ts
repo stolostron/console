@@ -39,7 +39,7 @@ describe('truncateSourceName', () => {
   })
 
   it('truncates names longer than the max length', () => {
-    expect(truncateSourceName('this-is-a-very-long-repo-name')).toBe('this-is-a-very-long-r…')
+    expect(truncateSourceName('this-is-a-very-long-repo-name')).toBe('this-is-a-very-long-…')
     expect(truncateSourceName('this-is-a-very-long-repo-name').length).toBe(21)
   })
 

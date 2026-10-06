@@ -490,11 +490,7 @@ export function getApplicationSourceNames(
   return names
 }
 
-function ApplicationSourcesCell(props: {
-  resource: IResource
-  subscriptions: Subscription[]
-  channels: Channel[]
-}) {
+function ApplicationSourcesCell(props: { resource: IResource; subscriptions: Subscription[]; channels: Channel[] }) {
   const { t } = useTranslation()
   const sourceNames = getApplicationSourceNames(props.resource, props.subscriptions, props.channels)
 
