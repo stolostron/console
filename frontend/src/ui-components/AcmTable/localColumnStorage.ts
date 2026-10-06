@@ -69,6 +69,43 @@ export function dedupeColumnIdsPreserveOrder(ids: string[]): string[] {
 }
 
 /**
+ * Inserts newly shipped column ids into a saved column order using `defaultOrderIds` as the
+ * placement guide (after the nearest preceding id that already exists in the saved order).
+ * Falls back to inserting before the nearest following id, then appending.
+ */
+export function mergeNewColumnIdsIntoOrder(savedOrder: string[], defaultOrderIds: string[]): string[] {
+  const result = dedupeColumnIdsPreserveOrder(savedOrder.filter(Boolean))
+  const newIds = defaultOrderIds.filter((id) => id && !result.includes(id))
+
+  for (const newId of newIds) {
+    const defaultIndex = defaultOrderIds.indexOf(newId)
+    let insertAt = result.length
+
+    for (let i = defaultIndex - 1; i >= 0; i--) {
+      const predecessorIndex = result.indexOf(defaultOrderIds[i])
+      if (predecessorIndex !== -1) {
+        insertAt = predecessorIndex + 1
+        break
+      }
+    }
+
+    if (insertAt === result.length) {
+      for (let i = defaultIndex + 1; i < defaultOrderIds.length; i++) {
+        const successorIndex = result.indexOf(defaultOrderIds[i])
+        if (successorIndex !== -1) {
+          insertAt = successorIndex
+          break
+        }
+      }
+    }
+
+    result.splice(insertAt, 0, newId)
+  }
+
+  return result
+}
+
+/**
  * Builds the initial selected column id list from localStorage and current table column definitions.
  *
  * When the product adds new manageable columns after a user has already saved preferences, ids that

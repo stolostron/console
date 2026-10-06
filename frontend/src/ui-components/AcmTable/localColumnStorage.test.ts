@@ -1,6 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getColumnValues, mergePersistedSelectedColumnIds } from './localColumnStorage'
+import { getColumnValues, mergeNewColumnIdsIntoOrder, mergePersistedSelectedColumnIds } from './localColumnStorage'
+
+describe('mergeNewColumnIdsIntoOrder', () => {
+  test('inserts a new column after its default-order predecessor', () => {
+    expect(
+      mergeNewColumnIdsIntoOrder(
+        ['name', 'type', 'namespace', 'clusters', 'labels', 'created'],
+        ['name', 'type', 'namespace', 'clusters', 'sources', 'labels', 'created']
+      )
+    ).toEqual(['name', 'type', 'namespace', 'clusters', 'sources', 'labels', 'created'])
+  })
+
+  test('appends when no neighbors exist in the saved order', () => {
+    expect(mergeNewColumnIdsIntoOrder([], ['a', 'b'])).toEqual(['a', 'b'])
+  })
+
+  test('leaves an already-complete order unchanged', () => {
+    const order = ['a', 'b', 'c']
+    expect(mergeNewColumnIdsIntoOrder(order, order)).toEqual(order)
+  })
+})
 
 describe('mergePersistedSelectedColumnIds', () => {
   const requiredColIds = ['a']

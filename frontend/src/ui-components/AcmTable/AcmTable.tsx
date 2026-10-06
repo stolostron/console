@@ -79,6 +79,7 @@ import {
 import {
   dedupeColumnIdsPreserveOrder,
   getColumnValues,
+  mergeNewColumnIdsIntoOrder,
   mergePersistedSelectedColumnIds,
   setColumnValues,
 } from './localColumnStorage'
@@ -339,7 +340,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     : { localSavedCols: [], localSavedColOrder: [] }
   const [colOrderIds, setColOrderIds] = useState<string[]>(
     localSavedColOrder?.length > 0
-      ? [...localSavedColOrder, ...defaultOrderIds.filter((val: string) => !localSavedColOrder.includes(val))]
+      ? mergeNewColumnIdsIntoOrder(localSavedColOrder, defaultOrderIds)
       : defaultOrderIds
   )
   /** Initial selection merged from localStorage + column definition props */
@@ -356,7 +357,8 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   /**
    * Keeps order and selection in sync when `columns` gains new manageable ids after mount (e.g. feature
    * flags or async data). New ids are those present in `defaultOrderIds` but not yet in `colOrderIds` (local storage).
-   * They are appended to the order; optional columns in `defaultColIds` are added to the selection.
+   * They are inserted by default order (after the nearest preceding saved column); optional columns in
+   * `defaultColIds` are added to the selection.
    */
   useEffect(() => {
     if (!showColumnManagement) {
@@ -367,8 +369,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return
     }
     setColOrderIds((prevOrder) => {
-      const toAppend = newIds.filter((colId) => !prevOrder.includes(colId))
-      return toAppend.length === 0 ? prevOrder : [...prevOrder, ...toAppend]
+      const merged = mergeNewColumnIdsIntoOrder(prevOrder, defaultOrderIds)
+      return merged.length === prevOrder.length && merged.every((id, index) => id === prevOrder[index])
+        ? prevOrder
+        : merged
     })
     setSelectedColIds((prevSel) => {
       const toSelect = newIds.filter((colId) => defaultColIds.includes(colId) && !prevSel.includes(colId))
