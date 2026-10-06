@@ -13,7 +13,7 @@ build:
 
 .PHONY: check
 check:
-	npm run check
+	SWC_NATIVE_BINDING_CACHE=0 npm run check
 
 .PHONY: lint
 lint:
