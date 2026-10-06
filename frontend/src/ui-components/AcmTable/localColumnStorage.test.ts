@@ -3,16 +3,16 @@
 import { getColumnValues, mergeNewColumnIdsIntoOrder, mergePersistedSelectedColumnIds } from './localColumnStorage'
 
 describe('mergeNewColumnIdsIntoOrder', () => {
-  test('inserts a new column after its default-order predecessor', () => {
+  test('appends newly shipped columns without reordering saved ids', () => {
     expect(
       mergeNewColumnIdsIntoOrder(
         ['name', 'type', 'namespace', 'clusters', 'labels', 'created'],
         ['name', 'type', 'namespace', 'clusters', 'sources', 'labels', 'created']
       )
-    ).toEqual(['name', 'type', 'namespace', 'clusters', 'sources', 'labels', 'created'])
+    ).toEqual(['name', 'type', 'namespace', 'clusters', 'labels', 'created', 'sources'])
   })
 
-  test('appends when no neighbors exist in the saved order', () => {
+  test('appends all defaults when saved order is empty', () => {
     expect(mergeNewColumnIdsIntoOrder([], ['a', 'b'])).toEqual(['a', 'b'])
   })
 

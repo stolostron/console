@@ -91,9 +91,9 @@ function reorder<T>(list: IAcmTableColumn<T>[], startIndex: number, endIndex: nu
 }
 
 /**
- * Builds the list of columns shown in the manage-columns modal: follow `colOrderIds`, then insert
- * any manageable columns from `allCols` that were not listed (new columns, or ids missing from storage)
- * using each column’s `order` relative to neighbors. Action columns and columns without `id` are excluded.
+ * Builds the list of columns shown in the manage-columns modal: follow `colOrderIds`, then append
+ * any manageable columns from `allCols` that were not listed (new columns, or ids missing from storage).
+ * Action columns and columns without `id` are excluded.
  *
  * @param colOrderIds - Saved order from `AcmTable` / localStorage.
  * @param allCols - Current column definitions from the table (non-action, with ids).
