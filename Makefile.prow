@@ -13,7 +13,8 @@ build:
 
 .PHONY: check
 check:
-	npm run check
+# HOME is /tmp in Prow; use /var/tmp's trusted sticky root for SWC's temporary cache.
+	XDG_CACHE_HOME=/var/tmp SWC_NATIVE_BINDING_CACHE=0 npm run check
 
 .PHONY: lint
 lint:
