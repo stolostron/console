@@ -164,11 +164,7 @@ export function getGitOpsClustersReferencingPlacement(
   )
 }
 
-function PlacementsTable(props: {
-  placements: Placement[]
-  emptyState: React.ReactNode
-  canCreatePlacement: boolean
-}) {
+function PlacementsTable(props: { placements: Placement[]; emptyState: React.ReactNode; canCreatePlacement: boolean }) {
   const { t } = useTranslation()
   const filtersDisplayLimit = 3
   const { placementBindingsState, policiesState, gitOpsClustersState, policySetsState } = useSharedAtoms()
