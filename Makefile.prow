@@ -13,8 +13,8 @@ build:
 
 .PHONY: check
 check:
-# SWC 1.16.13 rejects Prow's shared /tmp/.cache root; use the private npm install tree.
-	SWC_NATIVE_BINDING_CACHE="$(CURDIR)/frontend/node_modules/.cache/swc-native" npm run check
+# SWC checks every cache-root ancestor; keep its temporary cache under the build user's home.
+	XDG_CACHE_HOME="$$HOME/.cache" SWC_NATIVE_BINDING_CACHE=0 npm run check
 
 .PHONY: lint
 lint:
