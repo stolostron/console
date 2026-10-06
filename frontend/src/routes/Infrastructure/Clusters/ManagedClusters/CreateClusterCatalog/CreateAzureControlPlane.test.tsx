@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { configureAxe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
@@ -52,7 +52,7 @@ describe('CreateAzureControlPlane', () => {
     const { getByTestId } = render(<Component />)
     await waitForNocks([hypershiftStatusNock])
 
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+    await waitFor(() => expect(isCardEnabled(getByTestId('hosted'))).toBe(true))
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {

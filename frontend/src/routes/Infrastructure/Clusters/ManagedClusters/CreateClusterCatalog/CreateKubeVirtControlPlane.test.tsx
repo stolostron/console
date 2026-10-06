@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { managedClusterAddonsState, multiClusterEnginesState } from '../../../../../atoms'
@@ -43,7 +43,17 @@ describe('CreateKubeVirtControlPlane', () => {
     const { getByTestId } = render(<Component />)
     await waitForNocks([hypershiftStatusNock])
 
-    expect(isCardEnabled(getByTestId('hosted'))).toBe(true)
+    await waitFor(() => expect(isCardEnabled(getByTestId('hosted'))).toBe(true))
+  })
+
+  test('does not show the disabled warning while hypershift status is loading', async () => {
+    const hypershiftStatusNock = nockHypershiftStatus(true)
+
+    const { queryByText } = render(<Component />)
+    expect(queryByText(/Hosted control plane operator must be enabled/)).not.toBeInTheDocument()
+
+    await waitForNocks([hypershiftStatusNock])
+    expect(queryByText(/Hosted control plane operator must be enabled/)).not.toBeInTheDocument()
   })
 
   test('Hosted should be disabled when hypershift is disabled', async () => {
