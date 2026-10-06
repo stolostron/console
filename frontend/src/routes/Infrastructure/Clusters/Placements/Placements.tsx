@@ -172,7 +172,7 @@ export function getGitOpsClustersReferencingPlacement(
   )
 }
 
-export function PlacementsTable(props: {
+function PlacementsTable(props: {
   placements: Placement[]
   emptyState: React.ReactNode
   canCreatePlacement: boolean
