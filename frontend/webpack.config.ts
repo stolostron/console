@@ -109,7 +109,9 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         new ForkTsCheckerWebpackPlugin({
           async: true,
           typescript: {
-            configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
+            // Always use the app tsconfig (`module: esnext`). tsconfig.dev.json is for Jest
+            // (`module: commonjs`) and rejects `import.meta` in worker factories.
+            configFile: 'tsconfig.json',
             memoryLimit: 8192,
           },
         }),

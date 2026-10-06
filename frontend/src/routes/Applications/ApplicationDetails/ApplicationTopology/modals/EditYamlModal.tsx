@@ -368,8 +368,7 @@ function EditYamlModalContent({
                   defaultResources={defaultItem}
                   filters={['*.metadata.managedFields']}
                   highlightEditorPath={highlightEditorPath}
-                  initialShowChanges={true}
-                  renderSideBySide={false}
+                  initialShowChanges={false}
                   onEditorChange={(changes, resetDefaultSnapshot): void => {
                     update(changes, resetDefaultSnapshot)
                   }}
