@@ -437,6 +437,96 @@ function createRepoFromArgoSource(source: any) {
   }
 }
 
+const MAX_SOURCE_NAME_LENGTH = 20
+
+/** Extract the git project / repo name (last path segment) from a repo URL or path. */
+export function getRepoProjectName(pathName: string | undefined): string {
+  if (!pathName) {
+    return ''
+  }
+
+  try {
+    const pathname = new URL(pathName).pathname.replace(/\.git$/i, '').replace(/\/$/, '')
+    const segments = pathname.split('/').filter(Boolean)
+    return segments.length > 0 ? segments[segments.length - 1] : ''
+  } catch {
+    // SSH-style: git@host:org/repo.git
+    const sshMatch = pathName.match(/:([^:/]+\/)?([^/:]+?)(?:\.git)?\/?$/)
+    if (sshMatch?.[2]) {
+      return sshMatch[2].replace(/\.git$/i, '')
+    }
+    const cleaned = pathName.replace(/\.git$/i, '').replace(/\/$/, '')
+    const parts = cleaned.split('/').filter(Boolean)
+    return parts.length > 0 ? parts[parts.length - 1] : ''
+  }
+}
+
+export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LENGTH): string {
+  if (name.length > maxLength) {
+    return `${name.slice(0, maxLength)}…`
+  }
+  return name
+}
+
+/** Unique display names for application sources (repo project name, or helm chart as fallback). */
+export function getApplicationSourceNames(
+  resource: IResource,
+  subscriptions: Subscription[],
+  channels: Channel[]
+): string[] {
+  const repos = getApplicationRepos(resource, subscriptions, channels) ?? []
+  const names: string[] = []
+  const seen = new Set<string>()
+
+  for (const repo of repos) {
+    const projectName = getRepoProjectName(repo.pathName)
+    const displayName = projectName || (repo.chart ? String(repo.chart) : '')
+    if (displayName && !seen.has(displayName)) {
+      seen.add(displayName)
+      names.push(displayName)
+    }
+  }
+
+  return names
+}
+
+function ApplicationSourcesCell(props: {
+  resource: IResource
+  subscriptions: Subscription[]
+  channels: Channel[]
+}) {
+  const { t } = useTranslation()
+  const sourceNames = getApplicationSourceNames(props.resource, props.subscriptions, props.channels)
+
+  if (sourceNames.length === 0) {
+    return <span>-</span>
+  }
+
+  const [first, ...rest] = sourceNames
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <span title={first}>{truncateSourceName(first)}</span>
+      {rest.length > 0 && (
+        <Popover
+          bodyContent={
+            <Stack hasGutter>
+              {rest.map((name) => (
+                <StackItem key={name}>{name}</StackItem>
+              ))}
+            </Stack>
+          }
+          position={PopoverPosition.right}
+        >
+          <Label style={{ width: 'fit-content', cursor: 'pointer' }} variant="overflow">
+            {t('{{count}} more', { count: rest.length })}
+          </Label>
+        </Popover>
+      )}
+    </span>
+  )
+}
+
 export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
@@ -478,6 +568,8 @@ export default function ApplicationsOverview() {
         }
         resourceMap[repo.type] = repo.type
       })
+
+      const sourcesText = getApplicationSourceNames(tableItem, subscriptions, channels).join(', ')
 
       const transformedNamespace = getAppNamespace(tableItem)
 
@@ -522,6 +614,7 @@ export default function ApplicationsOverview() {
           clusterCount: clusterTransformData,
           clusterList: clusterList,
           resourceText: resourceText,
+          sourcesText: sourcesText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
           healthScore: healthScore,
@@ -749,6 +842,23 @@ export default function ApplicationsOverview() {
       },
       ...extensionColumns,
       {
+        header: t('Sources'),
+        cell: (resource) => (
+          <ApplicationSourcesCell resource={resource} subscriptions={subscriptions} channels={channels} />
+        ),
+        tooltip: t('Git repository or project name for the application source.'),
+        sort: 'transformed.sourcesText',
+        search: 'transformed.sourcesText',
+        exportContent: (resource) => {
+          const sourceNames = getApplicationSourceNames(resource, subscriptions, channels)
+          return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
+        },
+        id: 'sources',
+        order: 9,
+        isDefault: false,
+        isFirstVisitChecked: false,
+      },
+      {
         header: t('Created'),
         cell: (resource) => {
           return (
@@ -764,12 +874,12 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 9,
+        order: 10,
         isDefault: false,
         isFirstVisitChecked: false,
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, localCluster]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster, subscriptions, channels]
   )
   const filters = useMemo(
     () => [
