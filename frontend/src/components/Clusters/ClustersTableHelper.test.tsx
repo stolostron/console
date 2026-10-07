@@ -13,6 +13,7 @@ var gpuColumnTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { t } from '~/lib/test-helpers'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
@@ -20,6 +21,7 @@ import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
 import {
   getClusterDistributionString,
+  getClusterRoleLabel,
   getControlPlaneString,
   useAdvancedFilters,
   useClusterAddonColumn,
@@ -301,6 +303,59 @@ describe('ClustersTableHelper', () => {
     })
   })
 
+  describe('getClusterRoleLabel', () => {
+    it('should return the Hub badge for the local hub cluster', () => {
+      const hubCluster = { ...mockCluster, name: 'local-cluster' }
+      const result = getClusterRoleLabel(hubCluster, 'local-cluster', t)
+      expect(result).toEqual({ text: t('table.clusterRole.hub'), color: 'yellow' })
+    })
+
+    it('should return the Regional hub badge when isRegionalHubCluster is true', () => {
+      const regionalHubCluster = { ...mockCluster, name: 'other-cluster', isRegionalHubCluster: true }
+      const result = getClusterRoleLabel(regionalHubCluster, 'local-cluster', t)
+      expect(result).toEqual({ text: t('table.clusterRole.regionalHub'), color: 'green' })
+    })
+
+    it('should return the Hypershift badge when isHypershift is true', () => {
+      const hypershiftCluster = { ...mockCluster, name: 'other-cluster', isHypershift: true }
+      const result = getClusterRoleLabel(hypershiftCluster, 'local-cluster', t)
+      expect(result).toEqual({ text: t('table.clusterRole.hypershift'), color: 'blue' })
+    })
+
+    it('should return undefined when the cluster has no role', () => {
+      const plainCluster = { ...mockCluster, name: 'other-cluster' }
+      const result = getClusterRoleLabel(plainCluster, 'local-cluster', t)
+      expect(result).toBeUndefined()
+    })
+
+    it('should prioritize Hub over Regional hub and Hypershift', () => {
+      const hubCluster = {
+        ...mockCluster,
+        name: 'local-cluster',
+        isRegionalHubCluster: true,
+        isHypershift: true,
+      }
+      const result = getClusterRoleLabel(hubCluster, 'local-cluster', t)
+      expect(result).toEqual({ text: t('table.clusterRole.hub'), color: 'yellow' })
+    })
+
+    it('should prioritize Regional hub over Hypershift', () => {
+      const regionalHubCluster = {
+        ...mockCluster,
+        name: 'other-cluster',
+        isRegionalHubCluster: true,
+        isHypershift: true,
+      }
+      const result = getClusterRoleLabel(regionalHubCluster, 'local-cluster', t)
+      expect(result).toEqual({ text: t('table.clusterRole.regionalHub'), color: 'green' })
+    })
+
+    it('should not return a Hub badge when localHubName is undefined', () => {
+      const result = getClusterRoleLabel({ ...mockCluster, name: 'local-cluster' }, undefined, t)
+      expect(result).toBeUndefined()
+    })
+  })
+
   describe('Column Hooks', () => {
     // Test component to render column hooks
     const TestColumnComponent = ({ column, cluster }: { column: any; cluster: Cluster }) => {
@@ -332,6 +387,48 @@ describe('ClustersTableHelper', () => {
 
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+    })
+
+    it('should render the Hub role badge in the name column for the local hub cluster', () => {
+      const hubCluster = { ...mockCluster, name: 'local-cluster' }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={hubCluster} />)
+
+      expect(screen.getByText('table.clusterRole.hub')).toBeInTheDocument()
+    })
+
+    it('should render the Regional hub role badge in the name column', () => {
+      const regionalHubCluster = { ...mockCluster, name: 'other-cluster', isRegionalHubCluster: true }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={regionalHubCluster} />)
+
+      expect(screen.getByText('table.clusterRole.regionalHub')).toBeInTheDocument()
+    })
+
+    it('should render the Hypershift role badge in the name column', () => {
+      const hypershiftCluster = { ...mockCluster, name: 'other-cluster', isHypershift: true }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={hypershiftCluster} />)
+
+      expect(screen.getByText('table.clusterRole.hypershift')).toBeInTheDocument()
+    })
+
+    it('should not render any role badge for a cluster without a role', () => {
+      const plainCluster = { ...mockCluster, name: 'other-cluster' }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      renderWithProviders(<TestColumnComponent column={column} cluster={plainCluster} />)
+
+      expect(screen.queryByText('table.clusterRole.hub')).not.toBeInTheDocument()
+      expect(screen.queryByText('table.clusterRole.regionalHub')).not.toBeInTheDocument()
+      expect(screen.queryByText('table.clusterRole.hypershift')).not.toBeInTheDocument()
+    })
+
+    it('should have no accessibility violations when rendering a role badge', async () => {
+      const regionalHubCluster = { ...mockCluster, name: 'other-cluster', isRegionalHubCluster: true }
+      const column = useClusterNameColumn(true, 'local-cluster')
+      const { container } = renderWithProviders(<TestColumnComponent column={column} cluster={regionalHubCluster} />)
+
+      expect(await axe(container)).toHaveNoViolations()
     })
 
     it('should render console URL launch icon when consoleURL is set', () => {
