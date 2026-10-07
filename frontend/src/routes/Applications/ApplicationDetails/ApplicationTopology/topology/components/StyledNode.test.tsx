@@ -47,8 +47,12 @@ jest.mock('../contexts/TopologyRefreshContext', () => ({
 }))
 
 import * as React from 'react'
-import { fireEvent, render, screen } from '@testing-library/react'
-import StyledNode, { clearStickyDangerPulseNodeIds, resolveShouldPulse } from './StyledNode'
+import { act, fireEvent, render, screen } from '@testing-library/react'
+import StyledNode, {
+  ACTION_DECORATOR_HOVER_DELAY_OUT_MS,
+  clearStickyDangerPulseNodeIds,
+  resolveShouldPulse,
+} from './StyledNode'
 import { Node } from '@patternfly/react-topology'
 import CustomEllipse from './CustomEllipse'
 
@@ -119,6 +123,64 @@ describe('StyledNode tests', () => {
       fireEvent.focus(editAction)
       fireEvent.keyDown(editAction, { key: ' ' })
       expect(mockOnEditYaml).toHaveBeenCalledWith(expect.objectContaining({ type: 'pod', name: 'test-pod' }))
+    })
+  })
+
+  describe('node action hover delay', () => {
+    beforeEach(() => {
+      jest.useFakeTimers()
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    test('keeps action controls visible briefly after pointer leaves the decorator', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      const actionGroup = logsAction.closest('.pf-topology-node-action-decorators')
+
+      fireEvent.mouseEnter(logsAction)
+      expect(actionGroup).not.toHaveClass('pf-topology-node-action-decorators--hidden')
+
+      fireEvent.mouseLeave(logsAction)
+      expect(actionGroup).not.toHaveClass('pf-topology-node-action-decorators--hidden')
+
+      act(() => {
+        jest.advanceTimersByTime(ACTION_DECORATOR_HOVER_DELAY_OUT_MS - 1)
+      })
+      expect(actionGroup).not.toHaveClass('pf-topology-node-action-decorators--hidden')
+
+      act(() => {
+        jest.advanceTimersByTime(1)
+      })
+      expect(actionGroup).toHaveClass('pf-topology-node-action-decorators--hidden')
+    })
+
+    test('cancels hide delay when pointer re-enters a decorator', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      const editAction = screen.getByRole('button', { name: 'Edit YAML' })
+      const actionGroup = logsAction.closest('.pf-topology-node-action-decorators')
+
+      fireEvent.mouseEnter(logsAction)
+      fireEvent.mouseLeave(logsAction)
+
+      act(() => {
+        jest.advanceTimersByTime(ACTION_DECORATOR_HOVER_DELAY_OUT_MS - 50)
+      })
+      fireEvent.mouseEnter(editAction)
+
+      act(() => {
+        jest.advanceTimersByTime(ACTION_DECORATOR_HOVER_DELAY_OUT_MS)
+      })
+      expect(actionGroup).not.toHaveClass('pf-topology-node-action-decorators--hidden')
     })
   })
 
