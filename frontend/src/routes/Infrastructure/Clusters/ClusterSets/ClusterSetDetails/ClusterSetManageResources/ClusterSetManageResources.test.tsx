@@ -13,10 +13,12 @@ import {
   ManagedClusterSet,
   ManagedClusterSetApiVersion,
   ManagedClusterSetKind,
+  SelfSubjectAccessReview,
   managedClusterSetLabel,
 } from '../../../../../../resources'
 import { testMapClusters } from '../../../../../../resources/utils'
 import { render } from '@testing-library/react'
+import nock from 'nock'
 import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -27,7 +29,7 @@ import {
   managedClusterSetsState,
   managedClustersState,
 } from '../../../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../../lib/nock-util'
 import { mockGlobalClusterSet, mockManagedClusterSet } from '../../../../../../lib/test-metadata'
 import {
   clickByLabel,
@@ -222,6 +224,36 @@ const mockClusterPool: ClusterPool = {
   },
 }
 
+function nockNonAdminAccess() {
+  return nock(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: SelfSubjectAccessReview) => {
+      const resourceAttributes = body.spec?.resourceAttributes
+      return resourceAttributes?.verb === '*' && resourceAttributes?.resource === '*'
+    })
+    .optionally()
+    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => ({
+      apiVersion: 'authorization.k8s.io/v1',
+      kind: 'SelfSubjectAccessReview',
+      metadata: {},
+      spec: requestBody.spec,
+      status: { allowed: false },
+    }))
+}
+
+function nockJoinClusterSet(clusterSetName: string, allowed: boolean) {
+  return nockRBAC(
+    {
+      name: clusterSetName,
+      resource: 'managedclustersets',
+      subresource: 'join',
+      verb: 'create',
+      group: 'cluster.open-cluster-management.io',
+    },
+    allowed
+  )
+}
+
 function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
   const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
     op,
@@ -349,6 +381,22 @@ describe('ClusterSetManageClusters', () => {
         `[data-ouia-component-id=${mockManagedClusterGlobal.metadata.name!}] td[data-label="Current cluster set"]`
       )!.innerHTML
     ).toEqual(mockGlobalClusterSet.metadata.name!)
+  })
+
+  test('does not display global-labeled clusters when user cannot join global', async () => {
+    nock.cleanAll()
+    nockIgnoreApiPaths()
+    nockNonAdminAccess()
+    nockJoinClusterSet(mockManagedClusterSet.metadata.name!, true)
+    nockJoinClusterSet(mockManagedClusterSetTransfer.metadata.name!, true)
+    nockJoinClusterSet(mockGlobalClusterSet.metadata.name!, false)
+
+    render(<Component />)
+    await waitForNotText('Loading')
+    await waitForText(mockManagedClusterAdd.metadata.name!)
+    await waitForText(mockManagedClusterRemove.metadata.name!)
+    await waitForText(mockManagedClusterTransfer.metadata.name!)
+    await waitForNotText(mockManagedClusterGlobal.metadata.name!)
   })
 
   test('can transfer a cluster labeled with the global cluster set', async () => {

@@ -5,22 +5,27 @@ import { useEffect, useState } from 'react'
 import { canUser, checkAdminAccess } from '../../../../../lib/rbac-util'
 import { useSharedAtoms, useSharedValue } from '../../../../../shared-atoms'
 
-// returns a list of cluster sets that the user is authorized to attach managed clusters to
+// returns a list of cluster sets that the user is authorized to attach managed clusters to.
+// canJoinGlobalClusterSet is kept separately because global is excluded from destination choices
+// but is still required by the admission webhook when moving a cluster that is labeled global.
 export function useCanJoinClusterSets() {
   const { managedClusterSetsState } = useSharedAtoms()
   const managedClusterSets = useSharedValue(managedClusterSetsState)
   const [canJoinClusterSets, setCanJoinClusterSets] = useState<ManagedClusterSet[] | undefined>()
+  const [canJoinGlobalClusterSet, setCanJoinGlobalClusterSet] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     /* istanbul ignore else */
     if (canJoinClusterSets === undefined) {
       if (managedClusterSets.length === 0) {
+        setCanJoinGlobalClusterSet(false)
         return setCanJoinClusterSets([])
       }
       const adminAccessCheck = checkAdminAccess()
       adminAccessCheck.then((adminAccess) => {
         if (adminAccess.status!.allowed) {
+          setCanJoinGlobalClusterSet(managedClusterSets.some(isGlobalClusterSet))
           return setCanJoinClusterSets(
             managedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
           )
@@ -40,6 +45,7 @@ export function useCanJoinClusterSets() {
             const authorizedClusterSets = managedClusterSets.filter((mcs) =>
               authorizedClusterSetNames.includes(mcs.metadata.name!)
             )
+            setCanJoinGlobalClusterSet(authorizedClusterSets.some(isGlobalClusterSet))
             return setCanJoinClusterSets(
               authorizedClusterSets.filter((managedClusterSet) => !isGlobalClusterSet(managedClusterSet))
             )
@@ -51,7 +57,7 @@ export function useCanJoinClusterSets() {
     }
   }, [canJoinClusterSets, managedClusterSets])
 
-  return { canJoinClusterSets, isLoading }
+  return { canJoinClusterSets, canJoinGlobalClusterSet, isLoading }
 }
 
 // checks if a user must configure a cluster set for cluster/clusterpool creation
