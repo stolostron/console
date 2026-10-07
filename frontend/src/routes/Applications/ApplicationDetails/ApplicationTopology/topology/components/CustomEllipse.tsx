@@ -5,17 +5,9 @@ import * as React from 'react'
 import { useAnchor, ShapeProps, EllipseAnchor } from '@patternfly/react-topology'
 import CustomEllipseAnchor from './CustomEllipseAnchor'
 
-const PULSE_DURATION_MS = 2500
-const PULSE_DURATION = `${PULSE_DURATION_MS / 1000}s`
+const PULSE_DURATION = '2.5s'
 const PULSE_KEY_TIMES = '0;0.3;1'
 const PULSE_KEY_SPLINES = '0.0 0.0 0.2 1; 0.0 0.0 0.2 1'
-
-/**
- * Negative SMIL begin offset so remounted pulse animations continue from the current wall-clock
- * phase instead of restarting at t=0 (which flashes on topology refresh).
- */
-export const getPulseAnimationBegin = (now: number = Date.now()): string =>
-  `-${(now % PULSE_DURATION_MS) / 1000}s`
 
 type CustomEllipseProps = ShapeProps & {
   isMulti?: boolean
@@ -33,54 +25,54 @@ const CustomEllipse: React.FunctionComponent<CustomEllipseProps> = ({
 }) => {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore: Unreachable code error
-  useAnchor(shouldPulse || !isMulti ? EllipseAnchor : CustomEllipseAnchor)
+  useAnchor(isMulti ? CustomEllipseAnchor : EllipseAnchor)
 
   const rx = Math.max(0, width / 2 - 1)
   const ry = Math.max(0, height / 2 - 1)
   const cx = width / 2
   const cy = height / 2
 
-  if (shouldPulse) {
-    const pulseStartRadius = rx
-    const pulseExpand = Math.round(Math.max(8, Math.round(pulseStartRadius * 0.5)) * 0.75)
-    const pulseMidRadius = pulseStartRadius + Math.round(pulseExpand * 0.85)
-    const pulseMaxRadius = pulseStartRadius + pulseExpand
-    const pulseBegin = getPulseAnimationBegin()
+  const pulseStartRadius = rx
+  const pulseExpand = Math.round(Math.max(8, Math.round(pulseStartRadius * 0.5)) * 0.75)
+  const pulseMidRadius = pulseStartRadius + Math.round(pulseExpand * 0.85)
+  const pulseMaxRadius = pulseStartRadius + pulseExpand
+
+  // Overlay pulse on the existing shape so toggling shouldPulse does not redraw the node body.
+  const pulseCircle = shouldPulse ? (
+    <circle cx={cx} cy={cy} r={pulseStartRadius} fill="red" opacity={0.8}>
+      <animate
+        attributeName="r"
+        values={`${pulseStartRadius};${pulseMidRadius};${pulseMaxRadius}`}
+        dur={PULSE_DURATION}
+        repeatCount="indefinite"
+        calcMode="spline"
+        keyTimes={PULSE_KEY_TIMES}
+        keySplines={PULSE_KEY_SPLINES}
+      />
+      <animate
+        attributeName="opacity"
+        values="0.8;0.15;0"
+        dur={PULSE_DURATION}
+        repeatCount="indefinite"
+        calcMode="spline"
+        keyTimes={PULSE_KEY_TIMES}
+        keySplines={PULSE_KEY_SPLINES}
+      />
+    </circle>
+  ) : null
+
+  if (!isMulti) {
     return (
       <g>
-        <circle cx={cx} cy={cy} r={pulseStartRadius} fill="red" opacity={0.8}>
-          <animate
-            attributeName="r"
-            values={`${pulseStartRadius};${pulseMidRadius};${pulseMaxRadius}`}
-            dur={PULSE_DURATION}
-            begin={pulseBegin}
-            repeatCount="indefinite"
-            calcMode="spline"
-            keyTimes={PULSE_KEY_TIMES}
-            keySplines={PULSE_KEY_SPLINES}
-          />
-          <animate
-            attributeName="opacity"
-            values="0.8;0.15;0"
-            dur={PULSE_DURATION}
-            begin={pulseBegin}
-            repeatCount="indefinite"
-            calcMode="spline"
-            keyTimes={PULSE_KEY_TIMES}
-            keySplines={PULSE_KEY_SPLINES}
-          />
-        </circle>
+        {pulseCircle}
         <ellipse className={className} ref={dndDropRef} cx={cx} cy={cy} rx={rx} ry={ry} filter={filter} />
       </g>
     )
   }
 
-  if (!isMulti) {
-    return <ellipse className={className} ref={dndDropRef} cx={cx} cy={cy} rx={rx} ry={ry} filter={filter} />
-  }
-
   return (
     <g>
+      {pulseCircle}
       <ellipse className={className} ref={dndDropRef} cx={width / 2 + 14} cy={cy} rx={rx} ry={ry} filter={filter} />
       <ellipse className={className} ref={dndDropRef} cx={width / 2 + 7} cy={cy} rx={rx} ry={ry} filter={filter} />
       <ellipse className={className} ref={dndDropRef} cx={cx} cy={cy} rx={rx} ry={ry} filter={filter} />

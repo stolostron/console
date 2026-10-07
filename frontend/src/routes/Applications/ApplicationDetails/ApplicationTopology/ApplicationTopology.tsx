@@ -79,10 +79,13 @@ export function ApplicationTopologyPageContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [processingSave, setProcessingSave] = useState<ProcessingSaveState>({ isProcessingSave: false })
   const hasShownAnalyzingAlertRef = useRef(false)
+  /** Node ids that last rendered with a red pulse — keep red across refresh until analysis settles. */
+  const previousRedPulseIdsRef = useRef<Set<string>>(new Set())
   const applicationKey = application?.metadata?.uid ?? application?.metadata?.name ?? ''
 
   useEffect(() => {
     hasShownAnalyzingAlertRef.current = false
+    previousRedPulseIdsRef.current = new Set()
   }, [applicationKey])
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -181,6 +184,19 @@ export function ApplicationTopologyPageContent() {
       return
     }
 
+    // Keep prior red pulses through the pre-analysis paint so error nodes do not briefly lose their pulse.
+    diagramElements.nodes.forEach((node) => {
+      if (previousRedPulseIdsRef.current.has(node.id) && node.specs?.pulse !== 'red') {
+        node.specs.pulse = 'red'
+      }
+    })
+
+    const commitRedPulseIds = () => {
+      previousRedPulseIdsRef.current = new Set(
+        diagramElements.nodes.filter((node) => node.specs?.pulse === 'red').map((node) => node.id)
+      )
+    }
+
     setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
 
     if (alertsPromise) {
@@ -197,11 +213,16 @@ export function ApplicationTopologyPageContent() {
           if (isCancelled) {
             return
           }
+          commitRedPulseIds()
           setAlertsState(alerts)
+          // Re-publish nodes after analysis mutates pulses/progressing flags.
+          setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
         })
         .catch(() => {
           if (!isCancelled) {
+            commitRedPulseIds()
             setAlertsState([])
+            setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
           }
         })
         .finally(() => {
@@ -214,6 +235,7 @@ export function ApplicationTopologyPageContent() {
           }
         })
     } else {
+      commitRedPulseIds()
       setIsAnalyzing(false)
       setAlertsState([])
     }
