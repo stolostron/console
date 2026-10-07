@@ -96,6 +96,8 @@ export function ClusterSetManageResourcesContent() {
       // check deployment for a clusterpool reference, as we cannot change the set of clusters from pools
       !deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef &&
       (resource.clusterSet === undefined ||
+        // lobal is not a joinable exclusive set; allow recovering clusters labeled global into a regular set
+        resource.clusterSet === 'global' ||
         canJoinClusterSetList?.includes(resource.clusterSet) ||
         // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
         // since we query the rbac list against the actual available ManagedClusterSets
