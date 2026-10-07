@@ -14,7 +14,8 @@ build:
 
 .PHONY: check
 check:
-	npx concurrently --kill-others-on-fail npm:copyright:check npm:check:frontend npm:check:backend -c green,blue,magenta
+# HOME is /tmp in Prow; use /var/tmp's trusted sticky root for SWC's temporary cache.
+	XDG_CACHE_HOME=/var/tmp SWC_NATIVE_BINDING_CACHE=0 npx concurrently --kill-others-on-fail npm:copyright:check npm:check:frontend npm:check:backend -c green,blue,magenta
 
 .PHONY: lint
 lint:

@@ -13,11 +13,11 @@ import GetHostedCard from './common/GetHostedCard'
 export function CreateKubeVirtControlPlane() {
   const [t] = useTranslation()
   const { nextStep, back, cancel } = useBackCancelNavigation()
-  const [isHypershiftEnabled] = useIsHypershiftEnabled()
+  const [isHypershiftEnabled, loaded] = useIsHypershiftEnabled()
 
   const cards = useMemo(
-    () => [GetHostedCard(nextStep(getTypedCreateClusterPath(Provider.kubevirt)), t, isHypershiftEnabled)],
-    [nextStep, t, isHypershiftEnabled]
+    () => [GetHostedCard(nextStep(getTypedCreateClusterPath(Provider.kubevirt)), t, isHypershiftEnabled, loaded)],
+    [nextStep, t, isHypershiftEnabled, loaded]
   )
 
   return (

@@ -10,14 +10,19 @@ import {
   ClusterPool,
   ClusterPoolApiVersion,
   ClusterPoolKind,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
+  SelfSubjectAccessReview,
 } from '../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import nock from 'nock'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { clusterClaimsState, clusterImageSetsState, clusterPoolsState } from '../../../../atoms'
+import { clusterClaimsState, clusterImageSetsState, clusterPoolsState, namespacesState } from '../../../../atoms'
 import {
   nockCreate,
   nockDelete,
@@ -25,6 +30,7 @@ import {
   nockIgnoreApiPaths,
   nockIgnoreRBAC,
   nockPatch,
+  nockRBAC,
 } from '../../../../lib/nock-util'
 import {
   clickBulkAction,
@@ -41,6 +47,43 @@ import {
 } from '../../../../lib/test-util'
 import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
+
+const mockNamespace: Namespace = {
+  apiVersion: NamespaceApiVersion,
+  kind: NamespaceKind,
+  metadata: { name: 'test-namespace-1' },
+}
+
+const createClusterPoolAccess = {
+  verb: 'create',
+  resource: 'clusterpools',
+  group: 'hive.openshift.io',
+  namespace: mockNamespace.metadata.name,
+}
+
+function nockNonAdminAccess() {
+  return nock(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: SelfSubjectAccessReview) => {
+      const resourceAttributes = body.spec?.resourceAttributes
+      return resourceAttributes?.verb === '*' && resourceAttributes?.resource === '*'
+    })
+    .optionally()
+    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => ({
+      apiVersion: 'authorization.k8s.io/v1',
+      kind: 'SelfSubjectAccessReview',
+      metadata: {},
+      spec: requestBody.spec,
+      status: { allowed: false },
+    }))
+}
+
+function nockCreateClusterPoolAccess(allowed: boolean) {
+  nockNonAdminAccess()
+  const createNock = nockRBAC(createClusterPoolAccess, allowed)
+  nockIgnoreRBAC()
+  return [createNock]
+}
 
 const mockClusterImageSet: ClusterImageSet = {
   apiVersion: ClusterImageSetApiVersion,
@@ -606,5 +649,68 @@ describe('Destroy ClusterPool with claimed clusters', () => {
         name: /destroy/i,
       })
     ).toBeDisabled()
+  })
+})
+
+describe('ClusterPools page RBAC', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+  })
+
+  function renderClusterPoolsPage(clusterPools: ClusterPool[]) {
+    return render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(clusterPoolsState, clusterPools)
+          store.set(clusterImageSetsState, clusterPools.length ? [mockClusterImageSet] : [])
+          store.set(clusterClaimsState, [])
+          store.set(namespacesState, [mockNamespace])
+        }}
+      >
+        <MemoryRouter>
+          <ClusterPoolsPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+  }
+
+  test('disables Create cluster pool in the table when create is not allowed', async () => {
+    const accessNocks = nockCreateClusterPoolAccess(false)
+    renderClusterPoolsPage([mockClusterPool])
+    await waitForText(mockClusterPool.metadata.name!)
+    await waitForNocks(accessNocks)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Create cluster pool' })).toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('enables Create cluster pool in the table when create is allowed', async () => {
+    const accessNocks = nockCreateClusterPoolAccess(true)
+    renderClusterPoolsPage([mockClusterPool])
+    await waitForText(mockClusterPool.metadata.name!)
+    await waitForNocks(accessNocks)
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('disables Create cluster pool in the empty state when create is not allowed', async () => {
+    const accessNocks = nockCreateClusterPoolAccess(false)
+    renderClusterPoolsPage([])
+    await waitForText("You don't have any cluster pools yet")
+    await waitForNocks(accessNocks)
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Create cluster pool' })).toHaveAttribute('aria-disabled', 'true')
+    )
+  })
+
+  test('enables Create cluster pool in the empty state when create is allowed', async () => {
+    const accessNocks = nockCreateClusterPoolAccess(true)
+    renderClusterPoolsPage([])
+    await waitForText("You don't have any cluster pools yet")
+    await waitForNocks(accessNocks)
+    await waitFor(() =>
+      expect(screen.getByRole('link', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
+    )
   })
 })

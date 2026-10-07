@@ -10,4 +10,18 @@ describe('GetHostedCard', () => {
     const hostedCard = GetHostedCard(() => {}, t, true)
     expect(hostedCard).toMatchSnapshot()
   })
+
+  test('does not show an alert before the Hypershift status is loaded', () => {
+    const hostedCard = GetHostedCard(() => {}, t, false, false)
+
+    expect(hostedCard.alertTitle).toBeUndefined()
+    expect(hostedCard.alertContent).toBeUndefined()
+  })
+
+  test('shows an alert when Hypershift is disabled after the status is loaded', () => {
+    const hostedCard = GetHostedCard(() => {}, t, false, true)
+
+    expect(hostedCard.alertTitle).toBe('Hosted control plane operator must be enabled in order to continue')
+    expect(hostedCard.alertContent).toBeDefined()
+  })
 })

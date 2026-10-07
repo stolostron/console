@@ -1,14 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import {
-  forwardRef,
-  useCallback,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-  type RefObject,
-} from 'react'
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, type RefObject } from 'react'
 import useResizeObserver from '@react-hook/resize-observer'
 import { editor as editorTypes } from 'monaco-editor'
 import { DiffEditor, Monaco } from '@monaco-editor/react'
@@ -43,8 +34,6 @@ export interface SyncEditorDiffProps {
   onDiffEditorInstanceChange?: () => void
   /** Invoked when diff editor/monaco refs are set or cleared so the parent can update active editor instances. */
   onActiveInstancesChange?: () => void
-  /** When false, keeps the diff view inline instead of side-by-side. When undefined, uses responsive layout. */
-  renderSideBySide?: boolean
 }
 
 const TOOLBAR_IDS_SKIP_DIFF_BLUR = [
@@ -55,11 +44,10 @@ const TOOLBAR_IDS_SKIP_DIFF_BLUR = [
   'diff-next-button',
 ] as const
 
-const SIDE_BY_SIDE_BREAKPOINT_PX = 800
-
 const DIFF_EDITOR_OPTIONS: editorTypes.IDiffEditorConstructionOptions = {
   originalEditable: false,
   automaticLayout: false,
+  renderSideBySide: false,
   scrollBeyondLastLine: true,
   minimap: { enabled: false },
   quickSuggestions: false,
@@ -76,7 +64,6 @@ export const SyncEditorDiff = forwardRef<SyncEditorDiffHandle, SyncEditorDiffPro
     onChange,
     onDiffEditorInstanceChange,
     onActiveInstancesChange,
-    renderSideBySide: renderSideBySideProp,
   },
   ref
 ) {
@@ -95,33 +82,15 @@ export const SyncEditorDiff = forwardRef<SyncEditorDiffHandle, SyncEditorDiffPro
   onActiveInstancesChangeRef.current = onActiveInstancesChange
 
   const showDiffView = showChanges && defaultResources !== undefined && !mock
-  const [renderSideBySide, setRenderSideBySide] = useState(renderSideBySideProp ?? false)
-
-  const diffEditorOptions = useMemo(
-    () => ({
-      ...DIFF_EDITOR_OPTIONS,
-      renderSideBySide,
-    }),
-    [renderSideBySide]
-  )
 
   const applyDiffLayoutFromContainer = useCallback(() => {
     if (!diffContainerRef.current) return
     const { width, height } = diffContainerRef.current.getBoundingClientRect()
     if (width <= 0 || height <= 0) return
-
-    const sideBySide = renderSideBySideProp ?? width > SIDE_BY_SIDE_BREAKPOINT_PX
-    setRenderSideBySide((prev) => {
-      if (prev !== sideBySide) {
-        diffEditorRef.current?.updateOptions({ renderSideBySide: sideBySide })
-      }
-      return sideBySide
-    })
-
     if (diffEditorRef.current) {
       diffEditorRef.current.layout({ width, height })
     }
-  }, [renderSideBySideProp])
+  }, [])
 
   useImperativeHandle(
     ref,
@@ -269,7 +238,7 @@ export const SyncEditorDiff = forwardRef<SyncEditorDiffHandle, SyncEditorDiffPro
         width="100%"
         language="yaml"
         theme={getTheme()}
-        options={diffEditorOptions}
+        options={DIFF_EDITOR_OPTIONS}
         beforeMount={handleBeforeMount}
         onMount={handleDiffMount}
       />
