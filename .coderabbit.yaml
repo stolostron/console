@@ -157,8 +157,6 @@ reviews:
     - '!**/certs/**' # Exclude SSL certificates
     - '!**/*.snap' # Exclude Jest snapshot files
     - '!frontend/public/locales/**' # Exclude i18n translation files
-    - '!backend/src/**' # Exclude old nodejs files
-    - '!sonar-project.properties'
 
   # ============================================================================
   # TOOL INTEGRATIONS
