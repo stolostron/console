@@ -138,7 +138,7 @@ export class FifoSet<T> {
 const bigStrings: FifoSet<string> = new FifoSet(200)
 
 export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
-  const res = compressResource(resource as UncompressedResourceType, dictionary)
+  const res = compressResource(resource, dictionary)
   let buffer
   try {
     buffer = await promisify(deflateRaw)(JSON.stringify(res))
@@ -243,11 +243,18 @@ export async function inflateResource(buffer: Buffer, dictionary: Dictionary): P
 }
 
 export async function inflateEvent(event: ServerSideEvent): Promise<ServerSideEvent> {
-  const { id, data } = event
-  const { type, object } = data as WatchEvent
+  const { id, name, namespace, data } = event
+  if (!data || typeof data !== 'object') return event
+  const watchEvent = data as WatchEvent & { meta?: unknown }
+  const { type, object } = watchEvent
   return !object
     ? event
-    : { id, data: { type, object: Buffer.isBuffer(object) ? await inflateResource(object, getEventDict()) : object } }
+    : {
+        id,
+        name,
+        namespace,
+        data: { type, object: Buffer.isBuffer(object) ? await inflateResource(object, getEventDict()) : object },
+      }
 }
 
 export async function inflateApps(apps: ICompressedResource[]): Promise<ITransformedResource[]> {
