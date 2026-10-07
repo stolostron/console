@@ -84,7 +84,7 @@ export function ClusterSetManageResourcesContent() {
   const clusterCurators = useSharedValue(clusterCuratorsState)
   const hostedClusters = useSharedValue(hostedClustersState)
   const localHubName = useLocalHubName()
-  const { canJoinClusterSets, isLoading } = useCanJoinClusterSets()
+  const { canJoinClusterSets, canJoinGlobalClusterSet, isLoading } = useCanJoinClusterSets()
   const canJoinClusterSetList = canJoinClusterSets?.map((clusterSet) => clusterSet.metadata.name)
   const [selectedResources, setSelectedResources] = useState<Cluster[]>(
     [...clusters].filter((resource) => resource.clusterSet === clusterSet?.metadata.name)
@@ -96,6 +96,8 @@ export function ClusterSetManageResourcesContent() {
       // check deployment for a clusterpool reference, as we cannot change the set of clusters from pools
       !deploymentDictionary.get(resource.name)?.spec?.clusterPoolRef &&
       (resource.clusterSet === undefined ||
+        // global is not a destination choice, but moving a cluster labeled global still requires join on global
+        (resource.clusterSet === 'global' && canJoinGlobalClusterSet) ||
         canJoinClusterSetList?.includes(resource.clusterSet) ||
         // hack because controller does not remove clusterset labels when a ManagedClusterSet is deleted
         // since we query the rbac list against the actual available ManagedClusterSets

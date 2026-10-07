@@ -13,10 +13,12 @@ import {
   ManagedClusterSet,
   ManagedClusterSetApiVersion,
   ManagedClusterSetKind,
+  SelfSubjectAccessReview,
   managedClusterSetLabel,
 } from '../../../../../../resources'
 import { testMapClusters } from '../../../../../../resources/utils'
 import { render } from '@testing-library/react'
+import nock from 'nock'
 import { MemoryRouter, Outlet, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -27,8 +29,8 @@ import {
   managedClusterSetsState,
   managedClustersState,
 } from '../../../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../../../../lib/nock-util'
-import { mockManagedClusterSet } from '../../../../../../lib/test-metadata'
+import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch, nockRBAC } from '../../../../../../lib/nock-util'
+import { mockGlobalClusterSet, mockManagedClusterSet } from '../../../../../../lib/test-metadata'
 import {
   clickByLabel,
   clickByText,
@@ -134,6 +136,28 @@ const mockManagedClusterTransfer: ManagedCluster = {
   spec: { hubAcceptsClient: true },
 }
 
+// Hub / local-cluster labeled with the global set — must remain assignable (ACM-46180)
+const mockManagedClusterGlobal: ManagedCluster = {
+  apiVersion: ManagedClusterApiVersion,
+  kind: ManagedClusterKind,
+  metadata: {
+    name: 'local-cluster',
+    uid: 'local-cluster',
+    labels: {
+      [managedClusterSetLabel]: mockGlobalClusterSet.metadata.name!,
+      'local-cluster': 'true',
+    },
+  },
+  spec: { hubAcceptsClient: true },
+  status: {
+    allocatable: { cpu: '', memory: '' },
+    capacity: { cpu: '', memory: '' },
+    clusterClaims: [{ name: 'platform.open-cluster-management.io', value: 'AWS' }],
+    conditions: [],
+    version: { kubernetes: '' },
+  },
+}
+
 const mockManagedClusterClaimed: ManagedCluster = {
   apiVersion: ManagedClusterApiVersion,
   kind: ManagedClusterKind,
@@ -200,6 +224,36 @@ const mockClusterPool: ClusterPool = {
   },
 }
 
+function nockNonAdminAccess() {
+  return nock(process.env.JEST_DEFAULT_HOST as string)
+    .persist()
+    .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: SelfSubjectAccessReview) => {
+      const resourceAttributes = body.spec?.resourceAttributes
+      return resourceAttributes?.verb === '*' && resourceAttributes?.resource === '*'
+    })
+    .optionally()
+    .reply(201, (_uri, requestBody: SelfSubjectAccessReview) => ({
+      apiVersion: 'authorization.k8s.io/v1',
+      kind: 'SelfSubjectAccessReview',
+      metadata: {},
+      spec: requestBody.spec,
+      status: { allowed: false },
+    }))
+}
+
+function nockJoinClusterSet(clusterSetName: string, allowed: boolean) {
+  return nockRBAC(
+    {
+      name: clusterSetName,
+      resource: 'managedclustersets',
+      subresource: 'join',
+      verb: 'create',
+      group: 'cluster.open-cluster-management.io',
+    },
+    allowed
+  )
+}
+
 function nockPatchManagedCluster(clusterName: string, op: 'replace' | 'add' | 'remove', value?: string) {
   const patch: { op: 'replace' | 'add' | 'remove'; path: string; value?: string } = {
     op,
@@ -259,9 +313,10 @@ const Component = () => {
           mockManagedClusterRemove,
           mockManagedClusterUnchanged,
           mockManagedClusterTransfer,
+          mockManagedClusterGlobal,
           mockManagedClusterClaimed,
         ])
-        store.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer])
+        store.set(managedClusterSetsState, [mockManagedClusterSet, mockManagedClusterSetTransfer, mockGlobalClusterSet])
         store.set(clusterDeploymentsState, [mockClusterDeploymentAdd, mockClusterDeploymentRemove])
         store.set(managedClusterInfosState, [])
         store.set(certificateSigningRequestsState, [])
@@ -299,6 +354,7 @@ describe('ClusterSetManageClusters', () => {
     await waitForText(mockManagedClusterRemove.metadata.name!)
     await waitForText(mockManagedClusterUnchanged.metadata.name!)
     await waitForText(mockManagedClusterTransfer.metadata.name!)
+    await waitForText(mockManagedClusterGlobal.metadata.name!)
 
     await waitForNotText(mockManagedClusterClaimed.metadata.name!)
     await waitForText(mockManagedClusterAdd.metadata.name!)
@@ -310,8 +366,64 @@ describe('ClusterSetManageClusters', () => {
     await waitForText(mockManagedClusterRemove.metadata.name!)
     await waitForText(mockManagedClusterUnchanged.metadata.name!)
     await waitForText(mockManagedClusterTransfer.metadata.name!)
+    await waitForText(mockManagedClusterGlobal.metadata.name!)
 
     await waitForNotText(mockClusterPool.metadata.name!)
+  })
+
+  test('displays clusters labeled with the global cluster set for reassignment', async () => {
+    const { container } = render(<Component />)
+    await waitForNotText('Loading')
+    await waitForText(mockManagedClusterGlobal.metadata.name!)
+
+    expect(
+      container.querySelector(
+        `[data-ouia-component-id=${mockManagedClusterGlobal.metadata.name!}] td[data-label="Current cluster set"]`
+      )!.innerHTML
+    ).toEqual(mockGlobalClusterSet.metadata.name!)
+  })
+
+  test('does not display global-labeled clusters when user cannot join global', async () => {
+    nock.cleanAll()
+    nockIgnoreApiPaths()
+    nockNonAdminAccess()
+    nockJoinClusterSet(mockManagedClusterSet.metadata.name!, true)
+    nockJoinClusterSet(mockManagedClusterSetTransfer.metadata.name!, true)
+    nockJoinClusterSet(mockGlobalClusterSet.metadata.name!, false)
+
+    render(<Component />)
+    await waitForNotText('Loading')
+    await waitForText(mockManagedClusterAdd.metadata.name!)
+    await waitForText(mockManagedClusterRemove.metadata.name!)
+    await waitForText(mockManagedClusterTransfer.metadata.name!)
+    await waitForNotText(mockManagedClusterGlobal.metadata.name!)
+  })
+
+  test('can transfer a cluster labeled with the global cluster set', async () => {
+    render(<Component />)
+    await waitForNotText('Loading')
+    await waitForText(mockManagedClusterGlobal.metadata.name!)
+    await waitForText('2 selected')
+
+    // local-cluster is sorted after the a–d managed clusters
+    await clickByLabel('Select row 4')
+    await clickByText('Review')
+
+    await waitForText('Confirm changes')
+    await waitForText('Transferred')
+
+    const patchNocks = [
+      nockPatchManagedCluster(mockManagedClusterGlobal.metadata.name!, 'replace', mockManagedClusterSet.metadata.name!),
+      nockPatchClusterDeployment(
+        mockManagedClusterGlobal.metadata.name!,
+        'replace',
+        mockManagedClusterSet.metadata.name!
+      ),
+    ]
+    await clickByText('Save')
+
+    await waitForNocks(patchNocks)
+    await waitForTestId('redirected')
   })
 
   test('can update cluster assignments', async () => {
@@ -321,6 +433,7 @@ describe('ClusterSetManageClusters', () => {
     await waitForText(mockManagedClusterRemove.metadata.name!)
     await waitForText(mockManagedClusterUnchanged.metadata.name!)
     await waitForText(mockManagedClusterTransfer.metadata.name!)
+    await waitForText(mockManagedClusterGlobal.metadata.name!)
 
     await waitForText('2 selected')
 
