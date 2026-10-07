@@ -13,6 +13,7 @@ var gpuColumnTestState: {
 }
 
 import { render, screen, within } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { t } from '~/lib/test-helpers'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
@@ -20,6 +21,7 @@ import { Cluster, ClusterStatus } from '../../resources/utils'
 import { Provider } from '../../ui-components'
 import {
   getClusterDistributionString,
+  getClusterRoleLabel,
   getControlPlaneString,
   useAdvancedFilters,
   useClusterAddonColumn,
@@ -273,6 +275,69 @@ describe('ClustersTableHelper', () => {
     })
   })
 
+  describe('getClusterRoleLabel', () => {
+    it('returns the Hub label before other cluster roles', () => {
+      expect(
+        getClusterRoleLabel(
+          {
+            name: 'local-cluster',
+            isRegionalHubCluster: true,
+            isHypershift: true,
+          },
+          'local-cluster'
+        )
+      ).toEqual({
+        translationKey: 'table.clusterRole.hub',
+        color: 'yellow',
+      })
+    })
+
+    it('returns the Regional hub label before Hypershift', () => {
+      expect(
+        getClusterRoleLabel(
+          {
+            name: 'regional-hub',
+            isRegionalHubCluster: true,
+            isHypershift: true,
+          },
+          'local-cluster'
+        )
+      ).toEqual({
+        translationKey: 'table.clusterRole.regionalHub',
+        color: 'green',
+      })
+    })
+
+    it('returns the Hypershift label when no higher-priority role matches', () => {
+      expect(
+        getClusterRoleLabel(
+          {
+            name: 'hosted-cluster',
+            isRegionalHubCluster: false,
+            isHypershift: true,
+          },
+          'local-cluster'
+        )
+      ).toEqual({
+        translationKey: 'table.clusterRole.hypershift',
+        color: 'blue',
+      })
+    })
+
+    it('returns no label when no cluster role matches', () => {
+      expect(
+        getClusterRoleLabel(
+          {
+            name: 'managed-cluster',
+            isRegionalHubCluster: false,
+            isHypershift: false,
+          },
+          'local-cluster'
+        )
+      ).toBeUndefined()
+    })
+  })
+
   describe('getClusterDistributionString', () => {
     it('should return cluster distribution displayVersion', () => {
       const result = getClusterDistributionString(mockCluster, [], [], [])
@@ -332,6 +397,15 @@ describe('ClustersTableHelper', () => {
 
       expect(screen.queryByRole('link')).not.toBeInTheDocument()
       expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+    })
+
+    it('should render the translated cluster role label with no accessibility violations', async () => {
+      const column = useClusterNameColumn(true, 'test-cluster')
+      const { container } = renderWithProviders(<TestColumnComponent column={column} cluster={mockCluster} />)
+
+      const labelText = screen.getByText('table.clusterRole.hub')
+      expect(labelText.closest('.pf-v6-c-label')).toBeInTheDocument()
+      expect(await axe(container)).toHaveNoViolations()
     })
 
     it('should render console URL launch icon when consoleURL is set', () => {
