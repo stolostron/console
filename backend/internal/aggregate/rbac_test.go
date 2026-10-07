@@ -5,6 +5,7 @@ package aggregate
 import (
 	"context"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -113,10 +114,13 @@ func TestSSARRemoteManagedClusterView(t *testing.T) {
 
 func TestClientForSurvivesCleanupDuringCreate(t *testing.T) {
 	started := make(chan struct{})
+	var startedOnce sync.Once
 	release := make(chan struct{})
 	client := fake.NewSimpleClientset()
+	var creates atomic.Int32
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
-		close(started)
+		creates.Add(1)
+		startedOnce.Do(func() { close(started) })
 		<-release
 		return client, nil
 	})
@@ -137,7 +141,7 @@ func TestClientForSurvivesCleanupDuringCreate(t *testing.T) {
 	case <-time.After(2 * time.Second):
 		t.Fatal("newClient not started")
 	}
-	// Evict the in-flight token state (empty entries) while creators wait.
+	// Cleanup must not yank the in-flight single-flight wait (empty entries).
 	a.cleanup(time.Now())
 	close(release)
 	wg.Wait()
@@ -146,5 +150,8 @@ func TestClientForSurvivesCleanupDuringCreate(t *testing.T) {
 		if err != nil {
 			t.Fatalf("clientFor after cleanup: %v", err)
 		}
+	}
+	if n := creates.Load(); n != 1 {
+		t.Fatalf("newClient calls=%d want 1", n)
 	}
 }

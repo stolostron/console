@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"sort"
 	"sync"
 	"time"
@@ -153,51 +152,52 @@ func (a *SSARAccess) canAccessRemote(ctx context.Context, token string, clusters
 }
 
 func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
-	a.mu.Lock()
-	st := a.byToken[th]
-	if st == nil {
-		st = &tokenState{entries: map[ssarKey]cacheEntry{}}
-		a.byToken[th] = st
-	}
-	if st.client != nil || st.clientErr != nil {
-		c, err := st.client, st.clientErr
+	for {
+		a.mu.Lock()
+		st := a.byToken[th]
+		if st == nil {
+			st = &tokenState{entries: map[ssarKey]cacheEntry{}}
+			a.byToken[th] = st
+		}
+		if st.client != nil || st.clientErr != nil {
+			c, err := st.client, st.clientErr
+			a.mu.Unlock()
+			return c, err
+		}
+		if st.clientWait != nil {
+			wait := st.clientWait
+			a.mu.Unlock()
+			<-wait
+			// Retry: creator may have finished, or the token may have been
+			// evicted while we waited (LRU / empty-entry cleanup).
+			continue
+		}
+		wait := make(chan struct{})
+		st.clientWait = wait
 		a.mu.Unlock()
-		return c, err
-	}
-	if st.clientWait != nil {
-		wait := st.clientWait
-		a.mu.Unlock()
-		<-wait
+
+		client, err := a.newClient(token)
+
 		a.mu.Lock()
 		st = a.byToken[th]
 		if st == nil {
-			a.mu.Unlock()
-			return nil, errors.New("token state evicted during client creation")
+			st = &tokenState{entries: map[ssarKey]cacheEntry{}}
+			a.byToken[th] = st
 		}
-		c, err := st.client, st.clientErr
+		// Only the owner of this wait publishes; a concurrent creator after
+		// eviction would own a different wait channel.
+		if st.clientWait == wait {
+			st.client = client
+			st.clientErr = err
+			st.clientWait = nil
+		} else if st.client == nil && st.clientErr == nil {
+			st.client = client
+			st.clientErr = err
+		}
 		a.mu.Unlock()
-		return c, err
+		close(wait)
+		return client, err
 	}
-	wait := make(chan struct{})
-	st.clientWait = wait
-	a.mu.Unlock()
-
-	client, err := a.newClient(token)
-
-	a.mu.Lock()
-	st = a.byToken[th]
-	if st == nil {
-		st = &tokenState{entries: map[ssarKey]cacheEntry{}}
-		a.byToken[th] = st
-	}
-	st.client = client
-	st.clientErr = err
-	if st.clientWait == wait {
-		st.clientWait = nil
-	}
-	a.mu.Unlock()
-	close(wait)
-	return client, err
 }
 
 func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any, verb, name, namespace string) (bool, error) {
@@ -276,7 +276,8 @@ func (a *SSARAccess) cleanup(now time.Time) {
 				delete(st.entries, k)
 			}
 		}
-		if len(st.entries) == 0 {
+		// Keep in-flight client creation so waiters stay single-flight.
+		if len(st.entries) == 0 && st.clientWait == nil {
 			delete(a.byToken, th)
 		}
 	}
@@ -292,8 +293,11 @@ func (a *SSARAccess) cleanup(now time.Time) {
 		all = append(all, pair{h, st.last})
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	extra := len(all) - accessCacheMaxTokens
-	for i := 0; i < extra; i++ {
+	for i := 0; i < len(all) && len(a.byToken) > accessCacheMaxTokens; i++ {
+		st := a.byToken[all[i].hash]
+		if st != nil && st.clientWait != nil {
+			continue
+		}
 		delete(a.byToken, all[i].hash)
 	}
 }
