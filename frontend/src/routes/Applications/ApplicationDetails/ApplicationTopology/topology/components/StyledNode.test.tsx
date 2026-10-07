@@ -48,7 +48,7 @@ jest.mock('../contexts/TopologyRefreshContext', () => ({
 
 import * as React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
-import StyledNode from './StyledNode'
+import StyledNode, { clearStickyDangerPulseNodeIds, resolveShouldPulse } from './StyledNode'
 import { Node } from '@patternfly/react-topology'
 import CustomEllipse from './CustomEllipse'
 
@@ -58,11 +58,13 @@ const createMockElement = (
     scale?: number
     width?: number
     height?: number
+    id?: string
   } = {}
 ): Node => {
-  const { data = {}, scale = 1, width = 100, height = 80 } = overrides
+  const { data = {}, scale = 1, width = 100, height = 80, id = 'node-1' } = overrides
 
   return {
+    getId: jest.fn(() => id),
     getData: jest.fn(() => data),
     getGraph: jest.fn(() => ({
       getScale: jest.fn(() => scale),
@@ -74,6 +76,7 @@ const createMockElement = (
 describe('StyledNode tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    clearStickyDangerPulseNodeIds()
     mockUseHover.mockReturnValue([false])
   })
 
@@ -490,6 +493,23 @@ describe('StyledNode tests', () => {
       render(<CustomShape element={element} width={100} height={80} />)
 
       expect(CustomEllipse).toHaveBeenCalledWith(expect.objectContaining({ shouldPulse: false }), expect.anything())
+    })
+
+    test('keeps shouldPulse true across a transient missing status after danger (ACM-47694)', () => {
+      const element = createMockElement({
+        id: 'danger-node',
+        data: { status: 'danger' },
+      })
+      render(<StyledNode element={element} />)
+      const calledProps = mockDefaultNode.mock.calls[0][0]
+      const CustomShape = calledProps.getCustomShape()
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      ;(element.getData as jest.Mock).mockReturnValue({})
+      render(<CustomShape element={element} width={100} height={80} />)
+
+      expect(CustomEllipse).toHaveBeenLastCalledWith(expect.objectContaining({ shouldPulse: true }), expect.anything())
+      expect(resolveShouldPulse('danger-node', undefined)).toBe(true)
     })
   })
 
