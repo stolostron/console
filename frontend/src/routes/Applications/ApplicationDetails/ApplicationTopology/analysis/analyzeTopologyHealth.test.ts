@@ -246,9 +246,9 @@ describe('createSuggestsHealth', () => {
 describe('hasOnlyProgressingSyncAlerts', () => {
   it('returns true only when every alert key is Progressing', () => {
     expect(hasOnlyProgressingSyncAlerts([])).toBe(false)
-    expect(hasOnlyProgressingSyncAlerts([{ kind: 'Application', healthSyncKey: 'Progressing', clusterName: 'c1' }])).toBe(
-      true
-    )
+    expect(
+      hasOnlyProgressingSyncAlerts([{ kind: 'Application', healthSyncKey: 'Progressing', clusterName: 'c1' }])
+    ).toBe(true)
     expect(
       hasOnlyProgressingSyncAlerts([
         { kind: 'Application', healthSyncKey: 'Progressing', clusterName: 'c1' },
