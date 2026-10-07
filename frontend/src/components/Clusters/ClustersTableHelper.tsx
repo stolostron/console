@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
-import { Alert, Content, ContentVariants, Label, Tooltip } from '@patternfly/react-core'
+import { Alert, Content, ContentVariants, Label, LabelColor, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, nowrap } from '@patternfly/react-table'
 import keyBy from 'lodash/keyBy'
@@ -82,48 +82,87 @@ const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'R
     [{ op: 'replace', path: '/spec/powerState', value: powerState }]
   )
 
+type ClusterRoleLabel = {
+  translationKey: 'table.clusterRole.hub' | 'table.clusterRole.regionalHub' | 'table.clusterRole.hypershift'
+  color: LabelColor
+}
+
+export function getClusterRoleLabel(
+  cluster: Pick<Cluster, 'name' | 'isRegionalHubCluster' | 'isHypershift'>,
+  localHubName?: string
+): ClusterRoleLabel | undefined {
+  if (cluster.name === localHubName) {
+    return { translationKey: 'table.clusterRole.hub', color: LabelColor.yellow }
+  }
+
+  if (cluster.isRegionalHubCluster) {
+    return { translationKey: 'table.clusterRole.regionalHub', color: LabelColor.green }
+  }
+
+  if (cluster.isHypershift) {
+    return { translationKey: 'table.clusterRole.hypershift', color: LabelColor.blue }
+  }
+
+  return undefined
+}
+
 export function useClusterNameColumn(
   areLinksDisplayed: boolean = true,
   localHubName?: string
 ): IAcmTableColumn<Cluster> {
   const { t } = useTranslation()
+  const clusterRoleTranslations = {
+    'table.clusterRole.hub': t('table.clusterRole.hub'),
+    'table.clusterRole.hypershift': t('table.clusterRole.hypershift'),
+    'table.clusterRole.regionalHub': t('table.clusterRole.regionalHub'),
+  }
   return {
     header: t('table.name'),
     tooltip: t('table.name.helperText.noBold'),
     sort: 'displayName',
     search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-    cell: (cluster, search) => (
-      <>
-        <span style={{ whiteSpace: 'nowrap' }}>
-          {areLinksDisplayed ? (
-            <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
-              <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
-            </AcmVisitedLink>
-          ) : (
-            <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
+    cell: (cluster, search) => {
+      const clusterRoleLabel = localHubName ? getClusterRoleLabel(cluster, localHubName) : undefined
+
+      return (
+        <>
+          <span style={{ whiteSpace: 'nowrap' }}>
+            {areLinksDisplayed ? (
+              <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
+                <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
+              </AcmVisitedLink>
+            ) : (
+              <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
+            )}
+            {clusterRoleLabel && (
+              <>
+                {' '}
+                <Label color={clusterRoleLabel.color}>{clusterRoleTranslations[clusterRoleLabel.translationKey]}</Label>
+              </>
+            )}
+            {cluster.consoleURL && cluster.name !== localHubName && (
+              <Tooltip content={t('cluster.openConsole')}>
+                <a
+                  href={cluster.consoleURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('cluster.openConsole')}
+                  style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLinkAltIcon />
+                </a>
+              </Tooltip>
+            )}
+          </span>
+          {cluster.hive.clusterClaimName && (
+            <Content>
+              <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+            </Content>
           )}
-          {cluster.consoleURL && cluster.name !== localHubName && (
-            <Tooltip content={t('cluster.openConsole')}>
-              <a
-                href={cluster.consoleURL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t('cluster.openConsole')}
-                style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLinkAltIcon />
-              </a>
-            </Tooltip>
-          )}
-        </span>
-        {cluster.hive.clusterClaimName && (
-          <Content>
-            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
-          </Content>
-        )}
-      </>
-    ),
+        </>
+      )
+    },
     exportContent: (cluster) => cluster.displayName,
     id: 'name',
     order: 1,
