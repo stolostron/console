@@ -82,6 +82,23 @@ const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'R
     [{ op: 'replace', path: '/spec/powerState', value: powerState }]
   )
 
+export function getClusterRoleLabel(
+  cluster: Cluster,
+  localHubName: string | undefined,
+  t: TFunction<string, undefined>
+): { text: string; color: 'yellow' | 'green' | 'blue' } | undefined {
+  if (localHubName && cluster.name === localHubName) {
+    return { text: t('table.clusterRole.hub'), color: 'yellow' }
+  }
+  if (cluster.isRegionalHubCluster) {
+    return { text: t('table.clusterRole.regionalHub'), color: 'green' }
+  }
+  if (cluster.isHypershift) {
+    return { text: t('table.clusterRole.hypershift'), color: 'blue' }
+  }
+  return undefined
+}
+
 export function useClusterNameColumn(
   areLinksDisplayed: boolean = true,
   localHubName?: string
@@ -92,38 +109,46 @@ export function useClusterNameColumn(
     tooltip: t('table.name.helperText.noBold'),
     sort: 'displayName',
     search: (cluster) => [cluster.displayName as string, cluster.hive.clusterClaimName as string],
-    cell: (cluster, search) => (
-      <>
-        <span style={{ whiteSpace: 'nowrap' }}>
-          {areLinksDisplayed ? (
-            <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
-              <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
-            </AcmVisitedLink>
-          ) : (
-            <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
+    cell: (cluster, search) => {
+      const roleLabel = getClusterRoleLabel(cluster, localHubName, t)
+      return (
+        <>
+          <span style={{ whiteSpace: 'nowrap' }}>
+            {areLinksDisplayed ? (
+              <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
+                <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
+              </AcmVisitedLink>
+            ) : (
+              <HighlightSearchText text={cluster.displayName} searchText={search} useFuzzyHighlighting />
+            )}
+            {cluster.consoleURL && cluster.name !== localHubName && (
+              <Tooltip content={t('cluster.openConsole')}>
+                <a
+                  href={cluster.consoleURL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('cluster.openConsole')}
+                  style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <ExternalLinkAltIcon />
+                </a>
+              </Tooltip>
+            )}
+            {roleLabel && (
+              <Label style={{ marginLeft: '5px' }} color={roleLabel.color}>
+                {roleLabel.text}
+              </Label>
+            )}
+          </span>
+          {cluster.hive.clusterClaimName && (
+            <Content>
+              <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
+            </Content>
           )}
-          {cluster.consoleURL && cluster.name !== localHubName && (
-            <Tooltip content={t('cluster.openConsole')}>
-              <a
-                href={cluster.consoleURL}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={t('cluster.openConsole')}
-                style={{ marginLeft: '0.25rem', display: 'inline-flex', verticalAlign: 'middle' }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ExternalLinkAltIcon />
-              </a>
-            </Tooltip>
-          )}
-        </span>
-        {cluster.hive.clusterClaimName && (
-          <Content>
-            <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
-          </Content>
-        )}
-      </>
-    ),
+        </>
+      )
+    },
     exportContent: (cluster) => cluster.displayName,
     id: 'name',
     order: 1,
