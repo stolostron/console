@@ -56,10 +56,30 @@ type StyledNodeProps = {
   WithDragNodeProps &
   WithSelectionProps
 
+/** Keep danger pulse across transient status gaps when topology data is rebuilt. */
+const stickyDangerPulseNodeIds = new Set<string>()
+
+export const resolveShouldPulse = (nodeId: string, status: string | undefined): boolean => {
+  if (status === 'danger') {
+    stickyDangerPulseNodeIds.add(nodeId)
+    return true
+  }
+  if (status !== undefined && status !== '') {
+    stickyDangerPulseNodeIds.delete(nodeId)
+    return false
+  }
+  return stickyDangerPulseNodeIds.has(nodeId)
+}
+
+/** Test helper — clears sticky pulse ids between tests. */
+export const clearStickyDangerPulseNodeIds = (): void => {
+  stickyDangerPulseNodeIds.clear()
+}
+
 const CustomShape: React.FunctionComponent<ShapeProps> = (props) => {
   const data = props.element.getData() as { specs?: { resourceCount?: number }; status?: string }
   const isMulti = (data?.specs?.resourceCount ?? 0) > 1
-  const shouldPulse = data?.status === 'danger'
+  const shouldPulse = resolveShouldPulse(props.element.getId(), data?.status)
   return <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
 }
 
