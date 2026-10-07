@@ -15,8 +15,8 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
-	"github.com/stolostron/console/backend/internal/outbound"
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/outbound"
 )
 
 var requestHeaders = []string{

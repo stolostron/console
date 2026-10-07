@@ -43,6 +43,8 @@ Standalone login (`GET /login`, `/login/callback`, `/logout`) is served by the G
 
 The Go listener runs a client-go informer cache (`backend/internal/informers`) from `DefaultWatchSpecs()` in `backend/internal/informers/specs.go`. `GET /events` is served by Go (`backend/internal/events/hub`) with per-user SelfSubjectAccessReview filtering (60s cache). `POST /aggregate/{applications,statuses,appSetData}` is served by Go (`backend/internal/aggregate`) from that cache plus an in-cluster Search GraphQL client (service-account token). `POST /proxy/search` and the Search graphql-ws relay are served by Go (`backend/internal/searchproxy`) with the user token. ROSA wizard, `POST /ansibletower`, `POST /placement-debug`, and `POST /upgrade-risks-prediction` are served by Go (`backend/internal/rosa`, `ansibletower`, `placementdebug`, `upgraderisks`). The Go store holds `unstructured.Unstructured` (managedFields stripped except Policy). Development builds expose `GET /debug/informer-snapshot`. `GET /events/rbac` remains a separate ClusterRole informer.
 
+TLS on the public Go listener (`backend/internal/tlsconfig`) follows the hub `APIServer` `tlsSecurityProfile` (Old / Intermediate / Modern / Custom) and reloads `certs/tls.crt` + `tls.key` without restarting the process. Existing connections keep their handshake; new connections use the updated config.
+
 DELETED resource events are sent to every SSE client without an access check. That is a known quirk to fix later.
 
 Static plugin assets (`plugin-manifest.json`, `plugin-entry.js`, hashed JS/CSS, locales) are served by the Go listener with cache headers, CSP, and brotli/gzip content negotiation.

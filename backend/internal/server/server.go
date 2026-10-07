@@ -15,12 +15,15 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"k8s.io/client-go/dynamic"
+
 	"github.com/stolostron/console/backend/internal/config"
 	"github.com/stolostron/console/backend/internal/cors"
 	"github.com/stolostron/console/backend/internal/health"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/static"
+	"github.com/stolostron/console/backend/internal/tlsconfig"
 )
 
 const multicloudPrefix = "/multicloud"
@@ -465,35 +468,50 @@ func (s *statusRecorder) Unwrap() http.ResponseWriter { return s.ResponseWriter 
 
 // ListenAndServe binds the listener first, then runs optional onListening hooks
 // (informer start) so the public port is up before hub list/watch begins.
-func ListenAndServe(ctx context.Context, cfg *config.Config, handler http.Handler, onListening ...func()) error {
+// dyn (may be nil) watches OpenShift APIServer tlsSecurityProfile for hot-reload.
+func ListenAndServe(ctx context.Context, cfg *config.Config, handler http.Handler, dyn dynamic.Interface, onListening ...func()) error {
 	addr := net.JoinHostPort("", cfg.Port)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
+	}
+	reloader := tlsconfig.NewReloader()
+	certFile := filepath.Join(cfg.CertsDir, "tls.crt")
+	keyFile := filepath.Join(cfg.CertsDir, "tls.key")
+	_, certErr := os.Stat(certFile)
+	_, keyErr := os.Stat(keyFile)
+	if (certErr == nil) != (keyErr == nil) {
+		_ = ln.Close()
+		return errors.New("tls.crt and tls.key must both be present in " + cfg.CertsDir)
+	}
+	secure := certErr == nil && keyErr == nil
+	if secure {
+		if loadErr := reloader.LoadCertificate(certFile, keyFile); loadErr != nil {
+			_ = ln.Close()
+			return loadErr
+		}
 	}
 	srv := &http.Server{
 		Addr:              addr,
 		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
+	if secure {
+		srv.TLSConfig = reloader.TLSConfig()
+	}
 	if len(onListening) > 0 && onListening[0] != nil {
 		onListening[0]()
+	}
+	if secure {
+		go tlsconfig.WatchCerts(ctx, reloader, cfg.CertsDir, certFile, keyFile, 0)
+		go tlsconfig.WatchAPIServer(ctx, dyn, reloader)
 	}
 
 	errCh := make(chan error, 1)
 	go func() {
-		certFile := filepath.Join(cfg.CertsDir, "tls.crt")
-		keyFile := filepath.Join(cfg.CertsDir, "tls.key")
-		_, certErr := os.Stat(certFile)
-		_, keyErr := os.Stat(keyFile)
-		if (certErr == nil) != (keyErr == nil) {
-			errCh <- errors.New("tls.crt and tls.key must both be present in " + cfg.CertsDir)
-			_ = ln.Close()
-			return
-		}
-		if certErr == nil {
+		if secure {
 			applog.Logger().Info("server start", "secure", true, "addr", addr)
-			errCh <- srv.ServeTLS(ln, certFile, keyFile)
+			errCh <- srv.ServeTLS(ln, "", "")
 			return
 		}
 		applog.Logger().Info("server start", "secure", false, "addr", addr)
