@@ -34,7 +34,7 @@ jest.mock('@patternfly/react-topology/dist/esm/css/topology-components', () => (
 
 import { render } from '@testing-library/react'
 import { EllipseAnchor } from '@patternfly/react-topology'
-import CustomEllipse from './CustomEllipse'
+import CustomEllipse, { getPulseAnimationBegin } from './CustomEllipse'
 import CustomEllipseAnchor from './CustomEllipseAnchor'
 
 const mockElement = { getId: () => 'mock-element' } as never
@@ -42,6 +42,10 @@ const mockElement = { getId: () => 'mock-element' } as never
 describe('CustomEllipse tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+  })
+
+  afterEach(() => {
+    jest.restoreAllMocks()
   })
 
   test('calls useAnchor with EllipseAnchor when isMulti is false', () => {
@@ -189,6 +193,18 @@ describe('CustomEllipse tests', () => {
     expect(container.querySelectorAll('animate')).toHaveLength(2)
   })
 
+  test('phase-locks pulse animation begin to wall clock so remounts do not flash (ACM-47694)', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1_000_000 + 1250)
+    expect(getPulseAnimationBegin(1_000_000 + 1250)).toBe('-1.25s')
+
+    const { container } = render(<CustomEllipse element={mockElement} width={100} height={80} shouldPulse />)
+    const animates = container.querySelectorAll('animate')
+    expect(animates).toHaveLength(2)
+    animates.forEach((animate) => {
+      expect(animate).toHaveAttribute('begin', '-1.25s')
+    })
+  })
+
   test('renders pulsating circle centered on the ellipse', () => {
     const width = 100
     const height = 80
@@ -212,11 +228,13 @@ describe('CustomEllipse tests', () => {
     expect(radiusAnimate).toHaveAttribute('keyTimes', '0;0.3;1')
     expect(radiusAnimate).toHaveAttribute('keySplines', '0.0 0.0 0.2 1; 0.0 0.0 0.2 1')
     expect(radiusAnimate).toHaveAttribute('dur', '2.5s')
+    expect(radiusAnimate).toHaveAttribute('begin')
     expect(radiusAnimate).toHaveAttribute('repeatCount', 'indefinite')
     expect(opacityAnimate).toHaveAttribute('values', '0.8;0.15;0')
     expect(opacityAnimate).toHaveAttribute('calcMode', 'spline')
     expect(opacityAnimate).toHaveAttribute('keyTimes', '0;0.3;1')
     expect(opacityAnimate).toHaveAttribute('keySplines', '0.0 0.0 0.2 1; 0.0 0.0 0.2 1')
+    expect(opacityAnimate).toHaveAttribute('begin')
     expect(opacityAnimate).toHaveAttribute('dur', '2.5s')
     expect(opacityAnimate).toHaveAttribute('repeatCount', 'indefinite')
   })
