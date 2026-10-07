@@ -92,7 +92,7 @@ func TestListenAndServeOnListeningAfterBind(t *testing.T) {
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- server.ListenAndServe(ctx, cfg, newHandler(t), func() {
+		errCh <- server.ListenAndServe(ctx, cfg, newHandler(t), nil, func() {
 			close(hookStarted)
 			// Mimic async informer start: hook returns immediately while sync work continues.
 			go func() { <-releaseSync }()
@@ -148,7 +148,7 @@ func TestListenAndServeRejectsPartialTLS(t *testing.T) {
 			cfg := &config.Config{Port: port, CertsDir: dir}
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
-			err := server.ListenAndServe(ctx, cfg, newHandler(t))
+			err := server.ListenAndServe(ctx, cfg, newHandler(t), nil)
 			if err == nil {
 				t.Fatal("expected error for partial TLS material")
 			}

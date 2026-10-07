@@ -253,7 +253,7 @@ func run() error {
 		slog.String("CONFIG_DIR", cfg.ConfigDir),
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
-	return server.ListenAndServe(ctx, cfg, handler, func() {
+	return server.ListenAndServe(ctx, cfg, handler, dyn, func() {
 		go func() {
 			if err := rbacevents.StartInformer(ctx, kube, store); err != nil {
 				applog.Logger().Error("rbac informer", "error", err)
