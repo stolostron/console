@@ -79,13 +79,13 @@ export function ApplicationTopologyPageContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [processingSave, setProcessingSave] = useState<ProcessingSaveState>({ isProcessingSave: false })
   const hasShownAnalyzingAlertRef = useRef(false)
-  /** Node ids that last rendered with a red pulse — keep red across refresh until analysis settles. */
-  const previousRedPulseIdsRef = useRef<Set<string>>(new Set())
+  /** True after the first diagram has been published — used to defer refresh paints until analysis settles. */
+  const hasDisplayedNodesRef = useRef(false)
   const applicationKey = application?.metadata?.uid ?? application?.metadata?.name ?? ''
 
   useEffect(() => {
     hasShownAnalyzingAlertRef.current = false
-    previousRedPulseIdsRef.current = new Set()
+    hasDisplayedNodesRef.current = false
   }, [applicationKey])
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -167,6 +167,7 @@ export function ApplicationTopologyPageContent() {
       setElements({ nodes: [], links: [] })
       setAlertsState([])
       setIsAnalyzing(false)
+      hasDisplayedNodesRef.current = false
       return
     }
 
@@ -184,20 +185,16 @@ export function ApplicationTopologyPageContent() {
       return
     }
 
-    // Keep prior red pulses through the pre-analysis paint so error nodes do not briefly lose their pulse.
-    diagramElements.nodes.forEach((node) => {
-      if (previousRedPulseIdsRef.current.has(node.id) && node.specs?.pulse !== 'red') {
-        node.specs.pulse = 'red'
-      }
-    })
-
-    const commitRedPulseIds = () => {
-      previousRedPulseIdsRef.current = new Set(
-        diagramElements.nodes.filter((node) => node.specs?.pulse === 'red').map((node) => node.id)
-      )
+    const publishElements = () => {
+      setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+      hasDisplayedNodesRef.current = diagramElements.nodes.length > 0
     }
 
-    setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+    // On refresh, keep the current diagram until analysis finishes so error pulses are not
+    // dropped by an intermediate pre-analysis paint. First load still publishes immediately.
+    if (!alertsPromise || !hasDisplayedNodesRef.current) {
+      publishElements()
+    }
 
     if (alertsPromise) {
       if (!hasShownAnalyzingAlertRef.current) {
@@ -213,16 +210,13 @@ export function ApplicationTopologyPageContent() {
           if (isCancelled) {
             return
           }
-          commitRedPulseIds()
           setAlertsState(alerts)
-          // Re-publish nodes after analysis mutates pulses/progressing flags.
-          setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+          publishElements()
         })
         .catch(() => {
           if (!isCancelled) {
-            commitRedPulseIds()
             setAlertsState([])
-            setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+            publishElements()
           }
         })
         .finally(() => {
@@ -235,7 +229,6 @@ export function ApplicationTopologyPageContent() {
           }
         })
     } else {
-      commitRedPulseIds()
       setIsAnalyzing(false)
       setAlertsState([])
     }
