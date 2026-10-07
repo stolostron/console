@@ -169,13 +169,21 @@ export const isWithinAppsSyncGracePeriod = (appsFirstSeenAt: number | undefined,
   appsFirstSeenAt !== undefined && now - appsFirstSeenAt <= APP_SET_APPS_SYNC_GRACE_PERIOD_MS
 
 /**
+ * True when every sync alert is Progressing-only. Progressing is expected during rollout and
+ * should keep the Progressing overlay rather than surface a sync-error alert.
+ */
+export const hasOnlyProgressingSyncAlerts = (syncAlerts: SyncAlertEntry[]): boolean =>
+  syncAlerts.length > 0 && syncAlerts.every((entry) => entry.healthSyncKey === 'Progressing')
+
+/**
  * Creates consolidated health/sync alerts for unhealthy ApplicationSet resources.
  *
- * The Topology Alerts Progressing overlay (`specs.isCreatingProgressing`) shows until:
- * 1. `specs.appSetApps` has at least one entry, and
- * 2. there is no bad-sync alert, or the bad-sync alert has existed for no more than 1 minute
- *    since the apps first appeared.
- * Bad-sync alerts are suppressed for as long as the Progressing overlay is shown for them.
+ * The Topology Alerts Progressing overlay (`specs.isCreatingProgressing`) shows while:
+ * 1. `specs.appSetApps` is still empty, or
+ * 2. every sync issue is Progressing-only (expected during rollout), or
+ * 3. within `APP_SET_APPS_SYNC_GRACE_PERIOD_MS` of apps first appearing, there is a bad-sync
+ *    issue and/or resources have not yet deployed to all ApplicationSet clusters.
+ * Bad-sync alerts are suppressed for as long as the Progressing overlay is shown.
  */
 export const createSuggestsHealth = (
   appSet: TopologyNode,
@@ -184,15 +192,18 @@ export const createSuggestsHealth = (
   alerts: TopologyAlert[],
   t: TFunction
 ): void => {
-  const { syncAlerts, appsetClusters, isAppSetPullModel } = health
+  const { syncAlerts, appsetClusters, isAppSetPullModel, unhealthyClusterSet } = health
   const appSetApps = (appSet.specs.appSetApps as unknown[] | undefined) ?? []
   const hasApps = appSetApps.length !== 0
   const appsFirstSeenAt = appSet.specs.appSetAppsFirstSeenAt as number | undefined
   const hasBadSync = syncAlerts.length > 0
-  const withinSyncGracePeriod = hasBadSync && isWithinAppsSyncGracePeriod(appsFirstSeenAt)
-  // Progressing overlay: apps haven't appeared yet, or bad sync is still within its grace window
-  const suppressBadSync = !hasApps || withinSyncGracePeriod
-  appSet.specs.isCreatingProgressing = suppressBadSync
+  const hasIncompleteDeployments = unhealthyClusterSet.size > 0
+  const withinAppsGracePeriod = isWithinAppsSyncGracePeriod(appsFirstSeenAt)
+  const onlyProgressingSync = hasOnlyProgressingSyncAlerts(syncAlerts)
+  // Progressing overlay: no apps yet, Progressing-only sync, or incomplete/bad sync in grace window
+  const isCreatingProgressing =
+    !hasApps || onlyProgressingSync || (withinAppsGracePeriod && (hasBadSync || hasIncompleteDeployments))
+  appSet.specs.isCreatingProgressing = isCreatingProgressing
 
   if (!health.shouldContinue) {
     return
@@ -202,7 +213,7 @@ export const createSuggestsHealth = (
   // create alert for unhealthy/unsynced deployments
   /////////////////////////////////////////////
   if (syncAlerts.length > 0) {
-    if (suppressBadSync) {
+    if (isCreatingProgressing) {
       return
     }
 
@@ -216,7 +227,7 @@ export const createSuggestsHealth = (
       alerts,
       t
     )
-  } else {
+  } else if (!isCreatingProgressing) {
     appSet.specs.pulse = 'green'
   }
 }
