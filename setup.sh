@@ -150,7 +150,7 @@ spec:
     - from:
       - namespaceSelector:
           matchLabels:
-            kubernetes.io/metadata.name: openshift-ingress
+            policy-group.network.openshift.io/ingress: ''
       ports:
       - port: 4010
         protocol: TCP
