@@ -9,20 +9,22 @@ install:
 
 .PHONY: build
 build:
-	npm run build
+	npm run build:frontend
+	npm run build:backend
 
 .PHONY: check
 check:
 # HOME is /tmp in Prow; use /var/tmp's trusted sticky root for SWC's temporary cache.
-	XDG_CACHE_HOME=/var/tmp SWC_NATIVE_BINDING_CACHE=0 npm run check
+	XDG_CACHE_HOME=/var/tmp SWC_NATIVE_BINDING_CACHE=0 npx concurrently --kill-others-on-fail npm:copyright:check npm:check:frontend npm:check:backend -c green,blue,magenta
 
 .PHONY: lint
 lint:
-	npm run lint
+	npx concurrently --kill-others-on-fail npm:lint:frontend npm:lint:backend -c green,blue
 
 .PHONY: unit-tests
 unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npm run test -- --maxWorkers=2
+	npm run test:frontend -- --maxWorkers=2
+	npm run test:backend
