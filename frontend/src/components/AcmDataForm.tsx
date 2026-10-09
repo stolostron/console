@@ -106,6 +106,7 @@ export interface AcmDataFormProps {
   mode?: 'form' | 'wizard' | 'details'
   isHorizontal?: boolean
   edit?: () => void
+  editLabel?: string
   globalWizardAlert?: ReactNode
   hideYaml?: boolean
   isModalWizard?: boolean
@@ -285,7 +286,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <ActionList>
                   {mode === 'details' && props.edit !== undefined && (
                     <ActionListItem>
-                      <Button onClick={props.edit}>{t('Edit')}</Button>
+                      <Button onClick={props.edit}>{props.editLabel ?? t('Edit')}</Button>
                     </ActionListItem>
                   )}
                 </ActionList>
@@ -814,6 +815,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
 
 function AcmInputDescription(props: { input: Input }): JSX.Element {
   const [showSecrets, setShowSecrets] = useState(false)
+  const { t } = useTranslation()
   const { input } = props
   if (input.isHidden) return <Fragment />
   if (!inputHasValue(input)) return <Fragment />
@@ -831,15 +833,13 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                   : input.value?.split('\n').map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
               </SplitItem>
               {input.isSecret && (
-                <Stack>
-                  <Button
-                    icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                    variant="plain"
-                    style={{ marginTop: '-8px' }}
-                    onClick={() => setShowSecrets(!showSecrets)}
-                  />
-                  <StackItem isFilled />
-                </Stack>
+                <Button
+                  icon={showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
+                  variant="link"
+                  onClick={() => setShowSecrets(!showSecrets)}
+                >
+                  {showSecrets ? t('credentials.hide') : t('credentials.show')}
+                </Button>
               )}
             </Split>
           </DescriptionListDescription>
@@ -1004,7 +1004,12 @@ export function AcmDataFormInputs(props: {
 
 export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
   const { input, validated, isReadOnly } = props
-  const [showSecrets, setShowSecrets] = useState(input.type === 'TextArea' && input.value === '')
+  const [showSecrets, setShowSecrets] = useState(input.value === '')
+  const isLockedSecret = (input.type === 'Text' || input.type === 'TextArea') && input.isSecret === true && !showSecrets
+  const clearValue = (onChange: (value: string) => void) => () => {
+    onChange('')
+    setShowSecrets(true)
+  }
 
   switch (input.type) {
     case 'Text': {
@@ -1019,15 +1024,16 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               validated={validated}
               spellCheck="false"
               type={!isSecret || showSecrets ? 'text' : 'password'}
+              isDisabled={input.isDisabled === true || isLockedSecret}
               readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           </InputGroupItem>
           {value === '' ? (
-            <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
+            <PasteInputButton setValue={onChange} setShowSecrets={setShowSecrets} />
           ) : (
             <Fragment>
               {isSecret && <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />}
-              {!isReadOnly && !input.isDisabled && <ClearInputButton onClick={() => input.onChange('')} />}
+              {!isReadOnly && !input.isDisabled && <ClearInputButton onClick={clearValue(onChange)} />}
             </Fragment>
           )}
         </InputGroup>
@@ -1050,18 +1056,17 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
       )
     }
     case 'TextArea': {
-      const hideSecretInput = input.value !== '' && input.isSecret === true && !showSecrets
       const { onChange, ...inputProps } = input
       return (
         <InputGroup>
-          {hideSecretInput ? (
+          {isLockedSecret ? (
             <TextInput
               {...inputProps}
               onChange={(_event, value) => onChange(value)}
-              value={'**************'}
+              value={maskForValue(input.value)}
               validated={validated}
               type={'password'}
-              readOnlyVariant={isReadOnly ? 'default' : undefined}
+              isDisabled
             />
           ) : (
             <TextArea
@@ -1076,11 +1081,11 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
           )}
 
           {input.value === '' ? (
-            <PasteInputButton setValue={input.onChange} setShowSecrets={setShowSecrets} />
+            <PasteInputButton setValue={onChange} setShowSecrets={setShowSecrets} />
           ) : (
             <Fragment>
               {input.isSecret && <ShowSecretsButton showSecrets={showSecrets} setShowSecrets={setShowSecrets} />}
-              {!isReadOnly && !input.isDisabled && <ClearInputButton onClick={() => input.onChange('')} />}
+              {!isReadOnly && !input.isDisabled && <ClearInputButton onClick={clearValue(onChange)} />}
             </Fragment>
           )}
         </InputGroup>
@@ -1529,14 +1534,26 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
 
 function ClearInputButton(props: { onClick: () => void }) {
   const { onClick } = props
-  return <Button icon={<TimesCircleIcon />} variant="control" onClick={onClick}></Button>
+  const { t } = useTranslation()
+  return <Button aria-label={t('Clear')} icon={<TimesCircleIcon />} variant="control" onClick={onClick}></Button>
+}
+
+const maxMaskLength = 40
+
+function maskForValue(value: string) {
+  return '•'.repeat(Math.min(value.length, maxMaskLength))
 }
 
 function ShowSecretsButton(props: { showSecrets: boolean; setShowSecrets: (value: boolean) => void }) {
   const { showSecrets, setShowSecrets } = props
+  const { t } = useTranslation()
   return (
-    <Button variant="control" onClick={() => setShowSecrets(!showSecrets)}>
-      {showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
+    <Button
+      aria-label={showSecrets ? t('credentials.hide') : t('credentials.show')}
+      variant="control"
+      onClick={() => setShowSecrets(!showSecrets)}
+    >
+      {showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
     </Button>
   )
 }

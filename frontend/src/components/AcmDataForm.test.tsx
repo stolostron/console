@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import i18next from 'i18next'
+import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
-import { AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
-import { clickElement } from '~/lib/test-util'
+import { AcmDataFormInput, AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
 
@@ -61,6 +62,92 @@ describe('ACMDataForm', () => {
   describe('requiredValidationMessage', () => {
     test('requiredValidationMessage should render the expected string', () => {
       expect(requiredValidationMessage(t)).toEqual('You must fill out all required fields before you can proceed.')
+    })
+  })
+
+  describe('masked secret inputs', () => {
+    function SecretInput(props: { type: 'Text' | 'TextArea'; initialValue: string }) {
+      const [value, setValue] = useState(props.initialValue)
+      return (
+        <AcmDataFormInput
+          isReadOnly={false}
+          input={{
+            id: 'secret',
+            type: props.type,
+            label: 'Secret',
+            placeholder: 'Enter token',
+            value,
+            onChange: setValue,
+            isSecret: true,
+          }}
+        />
+      )
+    }
+
+    test('opens an empty secret revealed so it can be filled in', async () => {
+      render(<SecretInput type="Text" initialValue="" />)
+
+      const input = screen.getByPlaceholderText('Enter token')
+      expect(input).toHaveAttribute('type', 'text')
+      expect(input).toBeEnabled()
+
+      await typeElement(input, 'token')
+
+      expect(input).toHaveValue('token')
+      expect(input).toBeEnabled()
+    })
+
+    test('opens an existing secret masked and read-only until it is revealed', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      const input = screen.getByDisplayValue('ansibleToken')
+      expect(input).toHaveAttribute('type', 'password')
+      expect(input).toBeDisabled()
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+
+      expect(input).toHaveAttribute('type', 'text')
+      expect(input).toBeEnabled()
+    })
+
+    test('locks a revealed secret again when it is hidden', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+      await clickElement(screen.getByRole('button', { name: 'Hide credentials' }))
+
+      expect(screen.getByDisplayValue('ansibleToken')).toBeDisabled()
+    })
+
+    test('reopens the field when an existing secret is cleared', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      await clickElement(screen.getByRole('button', { name: 'Clear' }))
+
+      const input = screen.getByPlaceholderText('Enter token')
+      expect(input).toBeEnabled()
+      await typeElement(input, 'newToken')
+      expect(input).toHaveValue('newToken')
+    })
+
+    test('masks a multiline secret with a length-proportional mask and expands it on reveal', async () => {
+      render(<SecretInput type="TextArea" initialValue="secret value" />)
+
+      const masked = screen.getByDisplayValue('••••••••••••')
+      expect(masked).toBeDisabled()
+      expect(masked.tagName).toBe('INPUT')
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+
+      const revealed = screen.getByDisplayValue('secret value')
+      expect(revealed.tagName).toBe('TEXTAREA')
+      expect(revealed).toBeEnabled()
+    })
+
+    test('has no accessibility violations while masked', async () => {
+      const { container } = render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      expect(await axe(container)).toHaveNoViolations()
     })
   })
 
