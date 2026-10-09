@@ -2,8 +2,8 @@
 import { lstat, readdir, readFile, writeFile } from 'fs/promises'
 import { join } from 'path'
 
-const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist', 'lib']
-const extensions = ['.ts', '.tsx', '.js']
+const ignoreDirectories = ['.git', 'node_modules', 'coverage', 'build', 'dist', 'lib', 'bin']
+const extensions = ['.ts', '.tsx', '.js', '.go']
 
 export type CopyrightAction = (path: string) => Promise<boolean>
 
@@ -24,7 +24,7 @@ export function executeCopyrightAction(action: CopyrightAction) {
     async function copyrightDirectory(directory: string, action: CopyrightAction) {
         const names = await readdir(directory)
         for (const name of names) {
-            if (ignoreDirectories.find((ignore) => name.includes(ignore))) continue
+            if (ignoreDirectories.includes(name)) continue
             const path = join(directory, name)
             await copyrightPath(path, action)
         }

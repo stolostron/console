@@ -186,3 +186,5 @@ echo OBSERVABILITY_ROUTE=$OBSERVABILITY_ROUTE >> ./backend/.env
 
 PROMETHEUS_ROUTE=https://$(oc get route prometheus-k8s -n openshift-monitoring -o="jsonpath={.status.ingress[0].host}")
 echo PROMETHEUS_ROUTE=$PROMETHEUS_ROUTE >> ./backend/.env
+
+"$(dirname "$0")/scripts/generate-backend-certs.sh" --if-missing
