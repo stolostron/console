@@ -4,7 +4,7 @@ import i18next from 'i18next'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
-import { AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
+import { AcmDataFormInput, AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
 import { clickElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
@@ -61,6 +61,27 @@ describe('ACMDataForm', () => {
   describe('requiredValidationMessage', () => {
     test('requiredValidationMessage should render the expected string', () => {
       expect(requiredValidationMessage(t)).toEqual('You must fill out all required fields before you can proceed.')
+    })
+  })
+
+  describe('masked secret inputs', () => {
+    test('renders a masked textarea secret with the default read-only variant', () => {
+      render(
+        <AcmDataFormInput
+          isReadOnly={false}
+          input={{
+            id: 'secret',
+            type: 'TextArea',
+            label: 'Secret',
+            value: 'secret value',
+            onChange: jest.fn(),
+            isSecret: true,
+          }}
+        />
+      )
+
+      const input = screen.getByDisplayValue('**************')
+      expect(input).toBeDisabled()
     })
   })
 
