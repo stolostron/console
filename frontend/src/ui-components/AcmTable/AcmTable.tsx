@@ -79,6 +79,7 @@ import {
 import {
   dedupeColumnIdsPreserveOrder,
   getColumnValues,
+  mergeNewColumnIdsIntoOrder,
   mergePersistedSelectedColumnIds,
   setColumnValues,
 } from './localColumnStorage'
@@ -339,7 +340,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     : { localSavedCols: [], localSavedColOrder: [] }
   const [colOrderIds, setColOrderIds] = useState<string[]>(
     localSavedColOrder?.length > 0
-      ? [...localSavedColOrder, ...defaultOrderIds.filter((val: string) => !localSavedColOrder.includes(val))]
+      ? mergeNewColumnIdsIntoOrder(localSavedColOrder, defaultOrderIds)
       : defaultOrderIds
   )
   /** Initial selection merged from localStorage + column definition props */
@@ -367,8 +368,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       return
     }
     setColOrderIds((prevOrder) => {
-      const toAppend = newIds.filter((colId) => !prevOrder.includes(colId))
-      return toAppend.length === 0 ? prevOrder : [...prevOrder, ...toAppend]
+      const merged = mergeNewColumnIdsIntoOrder(prevOrder, defaultOrderIds)
+      return merged.length === prevOrder.length && merged.every((id, index) => id === prevOrder[index])
+        ? prevOrder
+        : merged
     })
     setSelectedColIds((prevSel) => {
       const toSelect = newIds.filter((colId) => defaultColIds.includes(colId) && !prevSel.includes(colId))
