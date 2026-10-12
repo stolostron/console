@@ -6,6 +6,7 @@ import { analyzeTopologyAppSet } from './analyzeTopologyAppSet'
 import type { TopologyAlert } from './utils'
 import {
   APPSET_NAME,
+  CLUSTER_NAME,
   NAMESPACE,
   createAppSetNode,
   createCondition,
@@ -87,6 +88,52 @@ describe('analyzeTopologyAppSet', () => {
       'Make sure the placement referenced in the ApplicationSet generator exists'
     )
     expect(appSet.specs.pulse).toBe('red')
+  })
+
+  it('clears the Progressing overlay when the ApplicationSet reports a generator error (ACM-47884)', async () => {
+    const alerts: TopologyAlert[] = []
+    const appSet = createAppSetNode({
+      specs: {
+        // Child application is still Progressing/Synced, which would otherwise keep
+        // isCreatingProgressing latched true indefinitely (ACM-47694 behavior).
+        appSetApps: [
+          {
+            metadata: { name: `${APPSET_NAME}-${CLUSTER_NAME}`, namespace: NAMESPACE },
+            kind: 'Application',
+            status: {
+              health: { status: 'Progressing' },
+              sync: { status: 'Synced' },
+            },
+          },
+        ],
+        raw: {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'ApplicationSet',
+          metadata: { name: APPSET_NAME, namespace: NAMESPACE },
+          spec: {
+            generators: [],
+            template: { spec: { destination: { namespace: 'default' } } },
+          },
+          status: {
+            conditions: [
+              createCondition({
+                type: 'ErrorOccurred',
+                reason: 'ApplicationGenerationFromParamsError',
+                message: 'no clusterDecisionResources found',
+                status: 'True',
+              }),
+            ],
+          },
+        },
+      },
+    })
+    const placement = createPlacementNode()
+
+    await analyzeTopologyAppSet(appSet, [appSet, placement], alerts, t)
+
+    expect(alerts.length).toBeGreaterThan(0)
+    expect(appSet.specs.pulse).toBe('red')
+    expect(appSet.specs.isCreatingProgressing).toBe(false)
   })
 
   it('creates a missing placement alert when no placement node and referenced placement is absent', async () => {
