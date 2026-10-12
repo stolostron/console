@@ -124,6 +124,11 @@ export const analyzeTopologyAppSet = async (
       })
 
       appSet.specs.pulse = 'red'
+      // A real ApplicationSet-level error (e.g. a generator error) takes priority over the
+      // Progressing overlay set by createSuggestsHealth, which only accounts for child
+      // application sync status. Without this, the overlay can hide this alert indefinitely
+      // (ACM-47884).
+      appSet.specs.isCreatingProgressing = false
     }
   }
 
