@@ -32,6 +32,10 @@ const (
 	retryJitter = 10 * time.Second
 )
 
+// errWatchClosed is returned when the API server closes a watch (normal timeout).
+// Callers should relist immediately without the error backoff.
+var errWatchClosed = errors.New("TLS profile watch closed")
+
 func retryDelay() time.Duration {
 	return retryBase + time.Duration(rand.IntN(int(retryJitter/time.Second)))*time.Second
 }
@@ -120,7 +124,7 @@ func watchUntil(ctx context.Context, src listerWatcher, r *Reloader, resourceVer
 			return ctx.Err()
 		case ev, ok := <-w.ResultChan():
 			if !ok {
-				return errors.New("TLS profile watch closed")
+				return errWatchClosed
 			}
 			switch ev.Type {
 			case k8swatch.Added, k8swatch.Modified:
@@ -172,6 +176,9 @@ func isImmediateRetry(err error) bool {
 	if err == nil {
 		return false
 	}
+	if errors.Is(err, errWatchClosed) {
+		return true
+	}
 	msg := err.Error()
 	return strings.Contains(msg, "too old resource version") ||
 		apierrors.IsResourceExpired(err) ||
@@ -183,8 +190,12 @@ func profileFromUnstructured(obj *unstructured.Unstructured) (SecurityProfile, b
 		return SecurityProfile{}, false
 	}
 	raw, found, err := unstructured.NestedMap(obj.Object, "spec", "tlsSecurityProfile")
-	if err != nil || !found {
+	if err != nil {
 		return SecurityProfile{}, false
+	}
+	if !found {
+		// OpenShift defaults to Intermediate when the field is absent.
+		return SecurityProfile{}, true
 	}
 	p := SecurityProfile{}
 	if t, _, _ := unstructured.NestedString(raw, "type"); t != "" {

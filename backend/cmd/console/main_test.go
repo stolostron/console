@@ -6,9 +6,13 @@ import (
 	"errors"
 	"path/filepath"
 	"testing"
+
+	"github.com/stolostron/console/backend/internal/auth"
 )
 
 func TestRunMissingServiceAccountToken(t *testing.T) {
+	restore := auth.SetServiceAccountDir(t.TempDir())
+	defer restore()
 	t.Setenv("ENV_FILE", filepath.Join(t.TempDir(), "missing.env"))
 	t.Setenv("TOKEN", "")
 	err := run()

@@ -82,8 +82,15 @@ func TestProfileFromUnstructured(t *testing.T) {
 	if len(p.Custom.Ciphers) != 1 || p.Custom.Groups[0] != "X25519" {
 		t.Fatalf("custom slices %+v", p.Custom)
 	}
-	if _, ok := profileFromUnstructured(&unstructured.Unstructured{Object: map[string]any{"spec": map[string]any{}}}); ok {
-		t.Fatal("missing profile should be false")
+	p, ok = profileFromUnstructured(&unstructured.Unstructured{Object: map[string]any{"spec": map[string]any{}}})
+	if !ok {
+		t.Fatal("missing profile should default to Intermediate (ok=true)")
+	}
+	if p.Type != "" {
+		t.Fatalf("missing profile Type=%q want empty", p.Type)
+	}
+	if _, ok := profileFromUnstructured(nil); ok {
+		t.Fatal("nil object should be false")
 	}
 }
 
@@ -189,6 +196,9 @@ func TestRetryDelayInRange(t *testing.T) {
 func TestIsImmediateRetry(t *testing.T) {
 	if !isImmediateRetry(errors.New("too old resource version: 1")) {
 		t.Fatal("expected immediate retry")
+	}
+	if !isImmediateRetry(errWatchClosed) {
+		t.Fatal("watch closed should immediate retry")
 	}
 	if isImmediateRetry(errors.New("connection refused")) {
 		t.Fatal("generic error is not immediate")
