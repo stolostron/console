@@ -55,6 +55,36 @@ func TestStatusEntryJSONArray(t *testing.T) {
 	}
 }
 
+func TestZeroAvailabilityIsDanger(t *testing.T) {
+	appKey := "deployment/ns/myapp"
+	cluster := "c"
+	related := []mapKind{{
+		Kind: "ReplicaSet",
+		Items: []map[string]any{{
+			"cluster":   cluster,
+			"namespace": "ns",
+			"label":     "app=myapp",
+			"available": 0,
+			"desired":   2,
+			"_uid":      "rs1",
+		}},
+	}}
+	statuses := map[string]StatusMap{
+		appKey: {cluster: emptyClusterStatuses()},
+	}
+	ids := map[string]*statusIDs{
+		statusIDKey(appKey, cluster): {appName: "ns/myapp"},
+	}
+	computeDeployedPodStatuses(related, statuses, ids, true)
+	got := statuses[appKey][cluster].Deployed
+	if got.Counts[scoreDanger] != 1 {
+		t.Fatalf("danger=%d progress=%d counts=%v", got.Counts[scoreDanger], got.Counts[scoreProgress], got.Counts)
+	}
+	if got.Counts[scoreProgress] != 0 {
+		t.Fatalf("expected no progress, got %d", got.Counts[scoreProgress])
+	}
+}
+
 func TestIncStatusCountsDeployed(t *testing.T) {
 	counts := map[string]map[string]int{"podStatuses": {}}
 	appset := App{Transform: Transform{
