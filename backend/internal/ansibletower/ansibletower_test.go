@@ -120,6 +120,40 @@ func TestSkipsHopByHopHeaders(t *testing.T) {
 	}
 }
 
+func TestRefusesRedirects(t *testing.T) {
+	followed := false
+	target := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		followed = true
+	}))
+	defer target.Close()
+	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target.URL+"/elsewhere", http.StatusFound)
+	}))
+	defer tower.Close()
+	kube := fake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "tower-cred", Namespace: "app-team"},
+		Data:       map[string][]byte{"host": []byte(tower.URL), "token": []byte("12345")},
+	})
+	h := New(Options{
+		Authn:       authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) { return kube, nil },
+	})
+	rec := post(h, map[string]string{
+		"secretNamespace": "app-team",
+		"secretName":      "tower-cred",
+		"ansiblePath":     Paths[0],
+	})
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+	if followed {
+		t.Fatal("followed redirect")
+	}
+	if rec.Header().Get("Location") != "" {
+		t.Fatalf("location %q", rec.Header().Get("Location"))
+	}
+}
+
 func TestRejectsAbsoluteURL(t *testing.T) {
 	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Error("should not reach tower")

@@ -75,6 +75,9 @@ func New(opts Options) *Handler {
 		h.Tower = &http.Client{
 			Timeout:   30 * time.Second,
 			Transport: outbound.Transport(&tls.Config{InsecureSkipVerify: true}, true), //nolint:gosec // Node rejectUnauthorized: false
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return errRedirect
+			},
 		}
 	}
 	return h
@@ -185,7 +188,10 @@ func (h *Handler) credential(ctx context.Context, userToken, ns, name string) (s
 	return string(secret.Data["host"]), string(secret.Data["token"]), nil
 }
 
-var errNoKube = errors.New("ansibletower kube client missing")
+var (
+	errNoKube   = errors.New("ansibletower kube client missing")
+	errRedirect = errors.New("ansibletower redirects are not followed")
+)
 
 func allowedPath(path string) bool {
 	for _, p := range Paths {
