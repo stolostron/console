@@ -18,11 +18,8 @@ import { AcmKubernetesLabelsInput, AcmSelect } from '../../../../../../../ui-com
 import { useTranslation } from '../../../../../../../lib/acm-i18next'
 import {
   ACMClusterDeploymentDetailsStep,
-  ACMFeatureSupportLevelProvider,
-  ACM_ENABLED_FEATURES,
   ClusterDetailsValues,
   ClusterImageSetK8sResource,
-  FeatureGateContextProvider,
   LoadingState,
   labelsToArray,
 } from '@openshift-assisted/ui-lib/cim'
@@ -167,10 +164,6 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [control.disabled, formRef.current])
 
   useEffect(() => {
-    if (formRef?.current && control.active && control.active !== formRef?.current?.values) {
-      formRef?.current?.setValues(control.active, true)
-    }
-
     control.reverse = (
       control: {
         active: FormControl['active']
@@ -291,19 +284,15 @@ const DetailsForm: React.FC<DetailsFormProps> = ({ control, handleChange, contro
   }, [controlProps?.metadata.uid, controlProps?.stringData?.pullSecret, controlProps?.stringData?.baseDomain])
 
   return clusterImages ? (
-    <FeatureGateContextProvider features={ACM_ENABLED_FEATURES}>
-      <ACMFeatureSupportLevelProvider clusterImages={clusterImages as ClusterImageSetK8sResource[]}>
-        <ACMClusterDeploymentDetailsStep
-          formRef={formRef}
-          onValuesChanged={onValuesChanged}
-          clusterImages={clusterImages as ClusterImageSetK8sResource[]}
-          usedClusterNames={usedClusterNames}
-          extensionAfter={extensionAfter}
-          isNutanix={control.additionalProps?.isNutanix}
-          osImages={agentServiceConfig?.spec.osImages}
-        />
-      </ACMFeatureSupportLevelProvider>
-    </FeatureGateContextProvider>
+    <ACMClusterDeploymentDetailsStep
+      formRef={formRef}
+      onValuesChanged={onValuesChanged}
+      clusterImages={clusterImages as ClusterImageSetK8sResource[]}
+      usedClusterNames={usedClusterNames}
+      extensionAfter={extensionAfter}
+      isNutanix={control.additionalProps?.isNutanix}
+      osImages={agentServiceConfig?.spec.osImages}
+    />
   ) : (
     <LoadingState />
   )
