@@ -8,6 +8,7 @@ jest.mock('@react-hook/resize-observer', () => ({
   }),
 }))
 
+import useResizeObserver from '@react-hook/resize-observer'
 import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
 import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
 import * as MonacoEditorReact from '@monaco-editor/react'
@@ -503,10 +504,9 @@ describe('SyncEditor component', () => {
       resizeCallback = null
       lastEditorLayout.current = null
       mockResizeCallback.current = null
-      const useResizeObserver = jest.mocked(require('@react-hook/resize-observer').default)
-      useResizeObserver.mockImplementation((_ref: any, cb: any) => {
+      jest.mocked(useResizeObserver).mockImplementation(((_ref: any, cb: any) => {
         resizeCallback = cb
-      })
+      }) as any)
     })
 
     afterEach(() => {

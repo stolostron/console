@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2023 Red Hat, Inc.
 import { render, screen, waitFor } from '@testing-library/react'
-import React, { useState, createContext } from 'react'
+import { useState } from 'react'
 import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { LogViewerSearch, searchForKeyword } from './LogsViewerSearch'

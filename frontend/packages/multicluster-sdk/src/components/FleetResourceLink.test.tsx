@@ -6,7 +6,12 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
   return {
     __esModule: true,
     ResourceLink: ({ name, groupVersionKind, children }: any) =>
-      React.createElement('div', { id: 'resource-link-mock' }, `ResourceLink: ${name} (${groupVersionKind?.kind}) `, children),
+      React.createElement(
+        'div',
+        { id: 'resource-link-mock' },
+        `ResourceLink: ${name} (${groupVersionKind?.kind}) `,
+        children
+      ),
     ResourceIcon: ({ groupVersionKind }: any) =>
       React.createElement('span', { id: 'resource-icon' }, `${groupVersionKind?.kind} icon`),
     useK8sWatchResource: jest.fn(),
@@ -584,7 +589,7 @@ describe('FleetResourceLink', () => {
             {...defaultProps}
             groupVersionKind={{
               group: 'apps',
-              version: undefined,
+              version: '',
               kind: 'Deployment',
             }}
             cluster="managed-cluster"

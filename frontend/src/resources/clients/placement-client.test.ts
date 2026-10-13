@@ -36,7 +36,10 @@ import {
 } from './placement-client.fixtures'
 import * as placementDecisionClient from './placement-decision-client'
 
-jest.mock('./placement-decision-client', () => ({ __esModule: true, ...jest.requireActual('./placement-decision-client') }))
+jest.mock('./placement-decision-client', () => ({
+  __esModule: true,
+  ...jest.requireActual('./placement-decision-client'),
+}))
 
 jest.mock('../../shared-atoms', () => ({
   useSharedValue: jest.fn(),

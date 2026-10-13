@@ -247,10 +247,10 @@ export async function deleteResources(
 }
 
 export async function updateAppResources(resources: IResource[]): Promise<void> {
-  const { getSubscriptionsFromAnnotation } = require('../../routes/Applications/helpers/resource-helper') as {
+  const { getSubscriptionsFromAnnotation } = (await import('../../routes/Applications/helpers/resource-helper')) as {
     getSubscriptionsFromAnnotation: (resource: IResource) => string[]
   }
-  const { isLocalSubscription } = require('../../routes/Applications/helpers/subscriptions') as {
+  const { isLocalSubscription } = (await import('../../routes/Applications/helpers/subscriptions')) as {
     isLocalSubscription: (subscription: string, subscriptions: string[]) => boolean
   }
   const subscriptionResources = resources.filter((resource) => resource.kind === SubscriptionKind)

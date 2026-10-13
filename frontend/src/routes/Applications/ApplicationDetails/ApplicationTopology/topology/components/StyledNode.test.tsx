@@ -5,6 +5,7 @@ const mockOnEditYaml = jest.fn()
 const mockDefaultNode = jest.fn()
 
 jest.mock('@patternfly/react-topology', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react')
   return {
     Decorator: jest.fn(({ x, y, radius, icon }: { x: number; y: number; radius: number; icon: React.ReactNode }) =>
@@ -83,12 +84,12 @@ describe('StyledNode tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     clearStickyDangerPulseNodeIds()
-    mockUseHover.mockReturnValue([false])
+    mockUseHover.mockReturnValue([false, jest.fn()])
   })
 
   describe('node action keyboard accessibility', () => {
     test('keeps action controls mounted when not hovered', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
       render(<StyledNode element={element} />)
 
@@ -102,7 +103,7 @@ describe('StyledNode tests', () => {
     })
 
     test('reveals action controls on focus and activates with Enter', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
       render(<StyledNode element={element} />)
 
@@ -117,7 +118,7 @@ describe('StyledNode tests', () => {
     })
 
     test('activates edit action with Space', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
       render(<StyledNode element={element} />)
 
@@ -138,7 +139,7 @@ describe('StyledNode tests', () => {
     })
 
     test('keeps action controls visible briefly after pointer leaves the decorator', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
       render(<StyledNode element={element} />)
 
@@ -163,7 +164,7 @@ describe('StyledNode tests', () => {
     })
 
     test('cancels hide delay when pointer re-enters a decorator', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ data: { type: 'pod', name: 'test-pod' } })
       render(<StyledNode element={element} />)
 
@@ -255,7 +256,7 @@ describe('StyledNode tests', () => {
     })
 
     test('does not show node icon at low detail level without hover', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ scale: 0.2, data: { shape: 'circle' } })
       const { container } = render(<StyledNode element={element} />)
 
@@ -264,7 +265,7 @@ describe('StyledNode tests', () => {
     })
 
     test('shows node icon at low detail level when hovering', () => {
-      mockUseHover.mockReturnValue([true])
+      mockUseHover.mockReturnValue([true, jest.fn()])
       const element = createMockElement({ scale: 0.2, data: { shape: 'circle' } })
       const { container } = render(<StyledNode element={element} />)
 
@@ -275,7 +276,7 @@ describe('StyledNode tests', () => {
 
   describe('hover behavior', () => {
     test('shows label when hovering even at low detail level', () => {
-      mockUseHover.mockReturnValue([true])
+      mockUseHover.mockReturnValue([true, jest.fn()])
       const element = createMockElement({ scale: 0.2 })
       render(<StyledNode element={element} />)
 
@@ -287,7 +288,7 @@ describe('StyledNode tests', () => {
     })
 
     test('scales node when hovering at low detail level', () => {
-      mockUseHover.mockReturnValue([true])
+      mockUseHover.mockReturnValue([true, jest.fn()])
       const element = createMockElement({ scale: 0.2 })
       render(<StyledNode element={element} />)
 
@@ -299,7 +300,7 @@ describe('StyledNode tests', () => {
     })
 
     test('does not scale node when not at low detail level', () => {
-      mockUseHover.mockReturnValue([true])
+      mockUseHover.mockReturnValue([true, jest.fn()])
       const element = createMockElement({ scale: 0.6 })
       render(<StyledNode element={element} />)
 
@@ -629,7 +630,7 @@ describe('StyledNode tests', () => {
 
   describe('showStatusBackground', () => {
     test('shows status background at low detail level when not hovering', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ scale: 0.2 })
       render(<StyledNode element={element} />)
 
@@ -641,7 +642,7 @@ describe('StyledNode tests', () => {
     })
 
     test('does not show status background when hovering at low detail level', () => {
-      mockUseHover.mockReturnValue([true])
+      mockUseHover.mockReturnValue([true, jest.fn()])
       const element = createMockElement({ scale: 0.2 })
       render(<StyledNode element={element} />)
 
@@ -653,7 +654,7 @@ describe('StyledNode tests', () => {
     })
 
     test('does not show status background at high detail level', () => {
-      mockUseHover.mockReturnValue([false])
+      mockUseHover.mockReturnValue([false, jest.fn()])
       const element = createMockElement({ scale: 1 })
       render(<StyledNode element={element} />)
 

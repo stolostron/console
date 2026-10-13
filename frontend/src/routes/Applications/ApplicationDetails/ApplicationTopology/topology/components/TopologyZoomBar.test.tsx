@@ -3,6 +3,7 @@
 let capturedOptions: Record<string, unknown> = {}
 
 jest.mock('@patternfly/react-topology', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react')
   const mockScaleBy = jest.fn()
   const mockFit = jest.fn()
@@ -31,6 +32,7 @@ import { render } from '@testing-library/react'
 import TopologyZoomBar from './TopologyZoomBar'
 import { createTopologyControlButtons, TopologyControlBar } from '@patternfly/react-topology'
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { __mockGraph } = require('@patternfly/react-topology') as { __mockGraph: Record<string, jest.Mock> }
 const { scaleBy: mockScaleBy, fit: mockFit, reset: mockReset, layout: mockLayout } = __mockGraph
 

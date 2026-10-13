@@ -6,6 +6,7 @@ import { MemoryRouter } from 'react-router'
 import { clickElement } from '~/lib/test-util'
 
 jest.mock('./KyvernoTable', () => {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const React = require('react')
   const mockMessages = jest.fn(() => React.createElement(React.Fragment, null, 'Mocked Messages'))
   const actual = jest.requireActual('./KyvernoTable')

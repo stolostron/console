@@ -15,7 +15,6 @@ jest.mock('react-router', () => ({
 }))
 const navigate = jest.fn()
 
-
 const allClusters = [
   {
     name: 'local-cluster',
