@@ -40,7 +40,7 @@ const swcTransform: Config.InitialOptions['transform'] = {
 }
 
 const tsJestTransform: Config.InitialOptions['transform'] = {
-  '^.+\\.[jt]sx?$': 'ts-jest',
+  '^.+\\.[jt]sx?$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.dev.json' }],
   '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
   '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
   '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
