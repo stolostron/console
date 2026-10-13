@@ -296,8 +296,11 @@ func TestLogout_RevokesAndClearsCookies(t *testing.T) {
 			t.Fatalf("missing delete cookie %s in %v", name, cookies)
 		}
 	}
-	if !strings.Contains(joined, "Domain=.localhost:4000") {
+	if !strings.Contains(joined, "Domain=.localhost") {
 		t.Fatalf("oauth_proxy domain %v", cookies)
+	}
+	if strings.Contains(joined, "Domain=.localhost:4000") {
+		t.Fatalf("cookie domain must not include port %v", cookies)
 	}
 	if !strings.Contains(joined, "max-age=0") {
 		t.Fatalf("expected max-age=0 %v", cookies)

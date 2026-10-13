@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -43,9 +44,9 @@ type Options struct {
 	Client        *http.Client
 	RESTConfig    *rest.Config
 	// UserDynamic is used with RESTConfig for per-user hub API calls (tests).
-	UserDynamic   func(bearer string) (dynamic.Interface, error)
-	Discover      func(ctx context.Context) (Info, error)
-	Revoke        func(ctx context.Context, bearer, tokenName string) error
+	UserDynamic func(bearer string) (dynamic.Interface, error)
+	Discover    func(ctx context.Context) (Info, error)
+	Revoke      func(ctx context.Context, bearer, tokenName string) error
 }
 
 // Handler serves GET /configure, /login, /login/callback, and /logout.
@@ -330,6 +331,9 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 func clearSessionCookies(w http.ResponseWriter, host string) {
 	deleteCookie(w, connectSIDCookie, "")
 	deleteCookie(w, auth.AccessTokenCookie, "")
+	if h, _, err := net.SplitHostPort(host); err == nil {
+		host = h
+	}
 	deleteCookie(w, oauthProxyCookie, "."+host)
 }
 
