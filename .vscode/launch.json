@@ -37,22 +37,15 @@
       "program": "${workspaceFolder}/frontend/node_modules/.bin/jest"
     },
     {
-      "type": "node",
-      "name": "vscode-jest-tests.v2.backend",
+      "name": "Go backend",
+      "type": "go",
       "request": "launch",
-      "args": [
-        "--runInBand",
-        "--watchAll=false",
-        "--coverage=false",
-        "--testNamePattern",
-        "${jest.testNamePattern}",
-        "--runTestsByPath",
-        "${jest.testFile}"
-      ],
+      "mode": "auto",
+      "program": "${workspaceFolder}/backend/cmd/console",
       "cwd": "${workspaceFolder}/backend",
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "program": "${workspaceFolder}/backend/node_modules/.bin/jest"
+      "env": {
+        "PORT": "4000"
+      }
     }
   ]
 }

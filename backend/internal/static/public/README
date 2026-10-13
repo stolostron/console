@@ -1,0 +1,3 @@
+Plugin and SPA files are copied here at image build
+(`frontend/plugins/{acm|mce}/dist` → `public/plugin`).
+Local development serves plugins from webpack; set PUBLIC_FOLDER to override.
