@@ -73,8 +73,10 @@ jest.mock('@openshift-console/dynamic-plugin-sdk', () => ({
 const mockUseIsFleetAvailable = jest.fn()
 const mockUseHubClusterName = jest.fn()
 
-jest.mock('../api', () => ({
+jest.mock('../api/useIsFleetAvailable', () => ({
   useIsFleetAvailable: () => mockUseIsFleetAvailable(),
+}))
+jest.mock('../api/useHubClusterName', () => ({
   useHubClusterName: () => mockUseHubClusterName(),
 }))
 

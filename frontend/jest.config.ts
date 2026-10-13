@@ -3,7 +3,6 @@
 import type { Config } from '@jest/types'
 
 const config: Config.InitialOptions = {
-  preset: 'ts-jest/presets/js-with-ts',
   testEnvironment: 'jsdom',
   automock: false,
   clearMocks: true,
@@ -29,9 +28,25 @@ const config: Config.InitialOptions = {
   moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx', 'css'],
   transform: {
     '^.+\\.[jt]sx?$': [
-      'ts-jest',
+      '@swc/jest',
       {
-        tsconfig: '<rootDir>/tsconfig.dev.json',
+        jsc: {
+          parser: {
+            syntax: 'typescript',
+            tsx: true,
+            decorators: true,
+          },
+          transform: {
+            react: {
+              runtime: 'automatic',
+              development: true,
+            },
+          },
+          target: 'es2022',
+        },
+        module: {
+          type: 'commonjs',
+        },
       },
     ],
     '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
@@ -46,6 +61,7 @@ const config: Config.InitialOptions = {
   testPathIgnorePatterns: ['^.+\\.(fixtures?)\\.tsx?$'],
   modulePathIgnorePatterns: ['<rootDir>/plugins'],
   ci: true,
+  coverageProvider: 'v8',
   collectCoverage: true,
   coveragePathIgnorePatterns: [
     '<rootDir>/src/routes/Governance/discovered/discoveredPoliciesWorker.factory.ts',

@@ -1,6 +1,39 @@
 /* eslint-disable jest/no-conditional-expect */
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
+jest.mock('../../resources/utils/resource-request', () => {
+  const ResourceErrorCode = {
+    BadRequest: 400,
+    Unauthorized: 401,
+    Forbidden: 403,
+    NotFound: 404,
+    Timeout: 408,
+    Conflict: 409,
+    UnprocessableEntity: 422,
+    TooManyRequests: 429,
+    InternalServerError: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    NetworkError: 700,
+    RequestAborted: 800,
+    ConnectionReset: 900,
+    Unknown: 999,
+  }
+  class ResourceError extends Error {
+    code: number
+    reason?: string
+    constructor(code: number, message?: string, reason?: string) {
+      super(message || String(code))
+      Object.setPrototypeOf(this, ResourceError.prototype)
+      this.name = 'ResourceError'
+      this.code = code
+      this.reason = reason
+    }
+  }
+  return { __esModule: true, getResource: jest.fn(), ResourceError, ResourceErrorCode }
+})
 import * as req from '../../resources/utils/resource-request'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignment, MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
@@ -45,7 +78,7 @@ import {
   namespaceFilteringTestCases,
 } from './multicluster-role-assignment-client.fixtures'
 
-const mockGetResource = jest.spyOn(req, 'getResource')
+const mockGetResource = jest.mocked(req.getResource)
 
 jest.mock('../utils', () => ({
   createResource: jest.fn(),

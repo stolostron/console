@@ -26,13 +26,16 @@ jest.mock('~/resources/utils/fleet-logs-request', () => ({
   fleetLogsRequest: (...args: unknown[]) => mockFleetLogsRequest(...args),
 }))
 
-jest.mock('../helpers/diagram-helpers', () => {
-  const actual = jest.requireActual('../helpers/diagram-helpers') as typeof import('../helpers/diagram-helpers')
-  return {
-    ...actual,
-    createResourceURL: () => mockCreateResourceURL(),
-  }
-})
+jest.mock('../helpers/diagram-helpers', () => ({
+  createResourceURL: () => mockCreateResourceURL(),
+  getFilteredNode: (node: unknown, item: { name: string; namespace: string; cluster: string }) => ({
+    ...(node as Record<string, unknown>),
+    name: item.name,
+    namespace: item.namespace,
+    cluster: item.cluster,
+    specs: { ...(node as any)?.specs, podModel: (node as any)?.specs?.podModel },
+  }),
+}))
 
 jest.mock('@patternfly/react-log-viewer', () => ({
   LogViewer: ({

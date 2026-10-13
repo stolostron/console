@@ -10,11 +10,40 @@ jest.mock('../../resources/placement-debug', () => ({
 }))
 
 jest.mock('../../resources/utils/resource-request', () => {
-  const actual = jest.requireActual('../../resources/utils/resource-request')
+  const ResourceErrorCode = {
+    BadRequest: 400,
+    Unauthorized: 401,
+    Forbidden: 403,
+    NotFound: 404,
+    Timeout: 408,
+    Conflict: 409,
+    UnprocessableEntity: 422,
+    TooManyRequests: 429,
+    InternalServerError: 500,
+    NotImplemented: 501,
+    BadGateway: 502,
+    ServiceUnavailable: 503,
+    GatewayTimeout: 504,
+    NetworkError: 700,
+    RequestAborted: 800,
+    ConnectionReset: 900,
+    Unknown: 999,
+  }
+  class ResourceError extends Error {
+    code: number
+    reason?: string
+    constructor(code: number, message?: string, reason?: string) {
+      super(message || String(code))
+      Object.setPrototypeOf(this, ResourceError.prototype)
+      this.name = 'ResourceError'
+      this.code = code
+      this.reason = reason
+    }
+  }
   return {
-    isRequestAbortedError: jest.fn((err) => err?.name === 'AbortError'),
-    ResourceError: actual.ResourceError,
-    ResourceErrorCode: actual.ResourceErrorCode,
+    isRequestAbortedError: jest.fn((err: { name?: string }) => err?.name === 'AbortError'),
+    ResourceError,
+    ResourceErrorCode,
   }
 })
 

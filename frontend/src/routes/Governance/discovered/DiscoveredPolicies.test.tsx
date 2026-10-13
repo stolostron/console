@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 jest.mock('./discoveredPoliciesWorker.factory')
+jest.mock('./useFetchPolicies', () => ({ __esModule: true, ...jest.requireActual('./useFetchPolicies') }))
 
 import * as useFetchPolicies from './useFetchPolicies'
 import DiscoveredPolicies from './DiscoveredPolicies'

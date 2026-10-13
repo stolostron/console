@@ -1,15 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import * as sourceUtilsAPI from './source-utils'
+import { getDecorationRows as getDecorationRowsFn } from './source-utils'
 import { cleanResults } from '../../../lib/test-shots'
 
 describe('source-utils tests', () => {
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
-
   test('getDecorationRows', async () => {
-    const getDecorationRowsFn = jest.spyOn(sourceUtilsAPI, 'getDecorationRows')
     expect(cleanResults(getDecorationRowsFn(...getDecorationRows.args))).toEqual(getDecorationRows.ret)
   })
 })

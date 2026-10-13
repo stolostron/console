@@ -15,7 +15,7 @@ import {
   getIsHostedCluster,
   getProvider,
 } from './get-cluster'
-import { HostedClusterApiVersion, HostedClusterKind } from '../'
+import { HostedClusterApiVersion, HostedClusterKind } from '../hosted-cluster'
 import { ManagedCluster, ManagedClusterApiVersion, ManagedClusterKind } from '../managed-cluster'
 import { ManagedClusterInfo, ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../managed-cluster-info'
 

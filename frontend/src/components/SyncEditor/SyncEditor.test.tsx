@@ -1,5 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+const mockResizeCallback = { current: null as ((...args: unknown[]) => void) | null }
+jest.mock('@react-hook/resize-observer', () => ({
+  __esModule: true,
+  default: jest.fn((_ref: unknown, cb: (...args: unknown[]) => void) => {
+    mockResizeCallback.current = cb
+  }),
+}))
+
 import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
 import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
 import * as MonacoEditorReact from '@monaco-editor/react'
@@ -494,9 +502,9 @@ describe('SyncEditor component', () => {
       Object.defineProperty(HTMLElement.prototype, 'clientHeight', { configurable: true, value: 600 })
       resizeCallback = null
       lastEditorLayout.current = null
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('@react-hook/resize-observer')
-      jest.spyOn(mod, 'default').mockImplementation((_ref: any, cb: any) => {
+      mockResizeCallback.current = null
+      const useResizeObserver = jest.mocked(require('@react-hook/resize-observer').default)
+      useResizeObserver.mockImplementation((_ref: any, cb: any) => {
         resizeCallback = cb
       })
     })

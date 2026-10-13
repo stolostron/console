@@ -1,9 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-const mockUseAnchor = jest.fn()
-
 jest.mock('@patternfly/react-topology', () => ({
-  useAnchor: mockUseAnchor,
+  useAnchor: jest.fn(),
   EllipseAnchor: class MockEllipseAnchor {},
   AbstractAnchor: class MockAbstractAnchor {
     owner: unknown
@@ -33,9 +31,11 @@ jest.mock('@patternfly/react-topology/dist/esm/css/topology-components', () => (
 }))
 
 import { render } from '@testing-library/react'
-import { EllipseAnchor } from '@patternfly/react-topology'
+import { EllipseAnchor, useAnchor } from '@patternfly/react-topology'
 import CustomEllipse from './CustomEllipse'
 import CustomEllipseAnchor from './CustomEllipseAnchor'
+
+const mockUseAnchor = jest.mocked(useAnchor)
 
 const mockElement = { getId: () => 'mock-element' } as never
 

@@ -1,39 +1,38 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-const mockScaleBy = jest.fn()
-const mockFit = jest.fn()
-const mockReset = jest.fn()
-const mockLayout = jest.fn()
-
 let capturedOptions: Record<string, unknown> = {}
 
-// Mock @patternfly/react-topology
-jest.mock('@patternfly/react-topology', () => ({
-  useVisualizationController: jest.fn().mockReturnValue({
-    getGraph: jest.fn().mockReturnValue({
-      scaleBy: mockScaleBy,
-      fit: mockFit,
-      reset: mockReset,
-      layout: mockLayout,
+jest.mock('@patternfly/react-topology', () => {
+  const React = require('react')
+  const mockScaleBy = jest.fn()
+  const mockFit = jest.fn()
+  const mockReset = jest.fn()
+  const mockLayout = jest.fn()
+  return {
+    __mockGraph: { scaleBy: mockScaleBy, fit: mockFit, reset: mockReset, layout: mockLayout },
+    useVisualizationController: jest.fn().mockReturnValue({
+      getGraph: jest.fn().mockReturnValue({ scaleBy: mockScaleBy, fit: mockFit, reset: mockReset, layout: mockLayout }),
     }),
-  }),
-  createTopologyControlButtons: jest.fn((options) => {
-    // Capture the options so we can test the callbacks
-    capturedOptions = options
-    return ['mock-button']
-  }),
-  defaultControlButtonsOptions: {},
-  TopologyControlBar: jest.fn((props: Record<string, unknown>) => {
-    return <div data-testid="topology-control-bar" className={props.className as string} />
-  }),
-  action: (fn: () => void) => fn,
-}))
+    createTopologyControlButtons: jest.fn((options: Record<string, unknown>) => {
+      capturedOptions = options
+      return ['mock-button']
+    }),
+    defaultControlButtonsOptions: {},
+    TopologyControlBar: jest.fn((props: Record<string, unknown>) => {
+      return React.createElement('div', { 'data-testid': 'topology-control-bar', className: props.className })
+    }),
+    action: (fn: () => void) => fn,
+  }
+})
 
 jest.mock('../css/topology-zoombar.css', () => ({}))
 
 import { render } from '@testing-library/react'
 import TopologyZoomBar from './TopologyZoomBar'
 import { createTopologyControlButtons, TopologyControlBar } from '@patternfly/react-topology'
+
+const { __mockGraph } = require('@patternfly/react-topology') as { __mockGraph: Record<string, jest.Mock> }
+const { scaleBy: mockScaleBy, fit: mockFit, reset: mockReset, layout: mockLayout } = __mockGraph
 
 describe('TopologyZoomBar tests', () => {
   beforeEach(() => {

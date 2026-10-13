@@ -14,6 +14,10 @@ import { Policy } from '../../../../../resources'
 import { PolicyDetailsHistory } from './PolicyDetailsHistory'
 import { mockPendingPolicy } from '../../../governance.sharedMocks'
 import { NavigationPath } from '../../../../../NavigationPath'
+jest.mock('./PolicyTemplateDetailsPage', () => ({
+  __esModule: true,
+  ...jest.requireActual('./PolicyTemplateDetailsPage'),
+}))
 import * as PolicyTemplateDetailsPage from './PolicyTemplateDetailsPage'
 
 const rootPolicy: Policy = {

@@ -12,6 +12,7 @@ jest.mock('@patternfly/react-topology', () => ({
 
 jest.mock('./nodeStatusIcons.css', () => ({}))
 
+jest.mock('./nodeStyle', () => ({ __esModule: true, ...jest.requireActual('./nodeStyle') }))
 import * as nodeStyleAPI from './nodeStyle'
 
 describe('nodeStyle tests', () => {

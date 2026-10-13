@@ -1,45 +1,39 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-require-imports */
 
-// mock the SDK before any imports using jest.doMock
-jest.doMock('@openshift-console/dynamic-plugin-sdk', () => ({
-  ResourceLink: ({ name, groupVersionKind, children }: any) => (
-    <div data-testid="resource-link-mock">
-      ResourceLink: {name} ({groupVersionKind?.kind}) {children}
-    </div>
-  ),
-  ResourceIcon: ({ groupVersionKind }: any) => <span data-testid="resource-icon">{groupVersionKind?.kind} icon</span>,
-  useK8sWatchResource: jest.fn(),
-  useResolvedExtensions: jest.fn(),
-}))
+jest.mock('@openshift-console/dynamic-plugin-sdk', () => {
+  const React = require('react')
+  return {
+    __esModule: true,
+    ResourceLink: ({ name, groupVersionKind, children }: any) =>
+      React.createElement('div', { id: 'resource-link-mock' }, `ResourceLink: ${name} (${groupVersionKind?.kind}) `, children),
+    ResourceIcon: ({ groupVersionKind }: any) =>
+      React.createElement('span', { id: 'resource-icon' }, `${groupVersionKind?.kind} icon`),
+    useK8sWatchResource: jest.fn(),
+    useResolvedExtensions: jest.fn(),
+  }
+})
 
 // mock PatternFly components
 jest.mock('@patternfly/react-core', () => ({
-  Skeleton: ({ width }: any) => <div data-testid="skeleton">Skeleton: {width}</div>,
+  Skeleton: ({ width }: any) => <div id="skeleton">Skeleton: {width}</div>,
 }))
-
-// reset modules to ensure fresh imports
-jest.resetModules()
 
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import '@testing-library/jest-dom'
 
-// mock functions
 const mockUseHubClusterName = jest.fn()
 
 // mock react-router
 jest.mock('react-router', () => ({
   ...jest.requireActual('react-router'),
   Link: ({ children, to, ...props }: any) => (
-    <a href={to} data-testid="fleet-link" {...props}>
+    <a href={to} id="fleet-link" {...props}>
       {children}
     </a>
   ),
 }))
-
-// connect the mocks to the dynamic plugin SDK
-require('@openshift-console/dynamic-plugin-sdk')
 
 // mock custom hooks
 jest.mock('../api/useHubClusterName', () => ({
@@ -64,10 +58,13 @@ jest.mock('../internal/search/searchPaths', () => ({
   },
 }))
 
-// import the FleetResourceLink component using require() only for this one import
-const { FleetResourceLink } = require('./FleetResourceLink')
-const { useK8sWatchResource, useResolvedExtensions } = require('@openshift-console/dynamic-plugin-sdk')
-const { useIsFleetAvailable } = require('../api/useIsFleetAvailable')
+import { FleetResourceLink } from './FleetResourceLink'
+import { useK8sWatchResource, useResolvedExtensions } from '@openshift-console/dynamic-plugin-sdk'
+import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
+
+const mockUseK8sWatchResource = jest.mocked(useK8sWatchResource)
+const mockUseResolvedExtensions = jest.mocked(useResolvedExtensions)
+const mockUseIsFleetAvailable = jest.mocked(useIsFleetAvailable)
 
 describe('FleetResourceLink', () => {
   const defaultProps = {
@@ -86,22 +83,22 @@ describe('FleetResourceLink', () => {
     mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
     // mock useK8sWatchResource for useFleetClusterNames
-    useK8sWatchResource.mockReturnValue([
+    mockUseK8sWatchResource.mockReturnValue([
       [{ metadata: { name: 'cluster1' } }, { metadata: { name: 'cluster2' } }], // clusters
       true, // loaded
       null, // error
     ])
 
     // mock useIsFleetAvailable to return true by default
-    useIsFleetAvailable.mockReturnValue(true)
+    mockUseIsFleetAvailable.mockReturnValue(true)
 
     // mock the useResolvedExtensions hook
-    useResolvedExtensions.mockReturnValue([[], true, []])
+    mockUseResolvedExtensions.mockReturnValue([[], true, []])
   })
 
   describe('Fleet not available', () => {
     it('should fallback to ResourceLink when fleet is not available', () => {
-      useIsFleetAvailable.mockReturnValue(false) // fleet not available
+      mockUseIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -113,7 +110,7 @@ describe('FleetResourceLink', () => {
     })
 
     it('should fallback to ResourceLink when fleet is not available (alternative test)', () => {
-      useIsFleetAvailable.mockReturnValue(false) // fleet not available
+      mockUseIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -128,7 +125,7 @@ describe('FleetResourceLink', () => {
 
   describe('Fleet not available scenarios', () => {
     it('should fallback to ResourceLink when fleet not available and hideIcon is false', () => {
-      useIsFleetAvailable.mockReturnValue(false) // fleet not available
+      mockUseIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -141,7 +138,7 @@ describe('FleetResourceLink', () => {
     })
 
     it('should fallback to ResourceLink when fleet not available and hideIcon is true', () => {
-      useIsFleetAvailable.mockReturnValue(false) // fleet not available
+      mockUseIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
@@ -154,12 +151,12 @@ describe('FleetResourceLink', () => {
     })
 
     it('should fallback to ResourceLink when fleet not available with children', () => {
-      useIsFleetAvailable.mockReturnValue(false) // fleet not available
+      mockUseIsFleetAvailable.mockReturnValue(false) // fleet not available
 
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="test-cluster">
-            <span data-testid="test-children">Test Children</span>
+            <span id="test-children">Test Children</span>
           </FleetResourceLink>
         </MemoryRouter>
       )
@@ -187,7 +184,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -228,7 +225,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -269,7 +266,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -297,7 +294,7 @@ describe('FleetResourceLink', () => {
     it('should handle extensions that are not yet resolved', () => {
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([[], false, []])
+      mockUseResolvedExtensions.mockReturnValue([[], false, []])
 
       render(
         <MemoryRouter>
@@ -328,7 +325,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -483,7 +480,7 @@ describe('FleetResourceLink', () => {
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="managed-cluster">
-            <span data-testid="test-children">Additional Content</span>
+            <span id="test-children">Additional Content</span>
           </FleetResourceLink>
         </MemoryRouter>
       )
@@ -618,7 +615,7 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -661,7 +658,7 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -700,7 +697,7 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -809,7 +806,7 @@ describe('FleetResourceLink', () => {
         },
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -863,7 +860,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -903,7 +900,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -934,7 +931,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -987,7 +984,7 @@ describe('FleetResourceLink', () => {
       render(
         <MemoryRouter>
           <FleetResourceLink {...defaultProps} cluster="managed-cluster">
-            <span data-testid="loading-children">Loading Children</span>
+            <span id="loading-children">Loading Children</span>
           </FleetResourceLink>
         </MemoryRouter>
       )
@@ -1015,7 +1012,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>
@@ -1055,7 +1052,7 @@ describe('FleetResourceLink', () => {
       ]
       mockUseHubClusterName.mockReturnValue(['local-cluster', true, null])
 
-      useResolvedExtensions.mockReturnValue([mockExtensions, true, []])
+      mockUseResolvedExtensions.mockReturnValue([mockExtensions, true, []])
 
       render(
         <MemoryRouter>

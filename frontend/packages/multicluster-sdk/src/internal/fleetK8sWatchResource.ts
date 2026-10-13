@@ -16,7 +16,8 @@ import { consoleFetchJSON, type K8sModel, type K8sResourceCommon } from '@opensh
 import { selectorToString } from './requirements'
 import { buildResourceURL, fleetWatch } from './apiRequests'
 import { NO_FLEET_AVAILABLE_ERROR } from './constants'
-import { useHubClusterName, useIsFleetAvailable } from '../api'
+import { useHubClusterName } from '../api/useHubClusterName'
+import { useIsFleetAvailable } from '../api/useIsFleetAvailable'
 import { useCallback } from 'react'
 
 export const getRequestPathFromResource = (resource: FleetWatchK8sResource, model: K8sModel, basePath: string) => {

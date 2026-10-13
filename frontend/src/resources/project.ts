@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { Namespace, NamespaceApiVersion, NamespaceKind } from '.'
+import { Namespace, NamespaceApiVersion, NamespaceKind } from './namespace'
 import { Metadata } from './metadata'
 import { IResource, IResourceDefinition } from './resource'
 import { createResource, replaceResource } from './utils/resource-request'

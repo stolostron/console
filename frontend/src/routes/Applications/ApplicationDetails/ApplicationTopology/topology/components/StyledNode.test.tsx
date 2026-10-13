@@ -1,41 +1,41 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-const mockUseHover = jest.fn()
-const mockDefaultNode = jest.fn()
 const mockOnViewLogs = jest.fn()
 const mockOnEditYaml = jest.fn()
+const mockDefaultNode = jest.fn()
 
-jest.mock('@patternfly/react-topology', () => ({
-  Decorator: jest.fn(({ x, y, radius, icon }) => (
-    <g data-testid="decorator" data-x={x} data-y={y} data-radius={radius}>
-      {icon}
-    </g>
-  )),
-  DefaultNode: (props: Record<string, unknown>) => {
-    mockDefaultNode(props)
-    return (
-      <g data-testid="default-node">
-        {props.children as React.ReactNode}
-        {props.attachments as React.ReactNode}
-      </g>
-    )
-  },
-  TopologyQuadrant: {
-    upperLeft: 'upperLeft',
-    upperRight: 'upperRight',
-    lowerLeft: 'lowerLeft',
-    lowerRight: 'lowerRight',
-  },
-  ScaleDetailsLevel: {
-    high: 'high',
-    medium: 'medium',
-    low: 'low',
-  },
-  getDefaultShapeDecoratorCenter: jest.fn(() => ({ x: 10, y: 10 })),
-  observer: jest.fn((component) => component),
-  useHover: mockUseHover,
-  useCombineRefs: jest.fn((...refs: unknown[]) => refs[0]),
-}))
+jest.mock('@patternfly/react-topology', () => {
+  const React = require('react')
+  return {
+    Decorator: jest.fn(({ x, y, radius, icon }: { x: number; y: number; radius: number; icon: React.ReactNode }) =>
+      React.createElement('g', { 'data-testid': 'decorator', 'data-x': x, 'data-y': y, 'data-radius': radius }, icon)
+    ),
+    DefaultNode: (props: Record<string, unknown>) => {
+      mockDefaultNode(props)
+      return React.createElement(
+        'g',
+        { 'data-testid': 'default-node' },
+        props.children as React.ReactNode,
+        props.attachments as React.ReactNode
+      )
+    },
+    TopologyQuadrant: {
+      upperLeft: 'upperLeft',
+      upperRight: 'upperRight',
+      lowerLeft: 'lowerLeft',
+      lowerRight: 'lowerRight',
+    },
+    ScaleDetailsLevel: {
+      high: 'high',
+      medium: 'medium',
+      low: 'low',
+    },
+    getDefaultShapeDecoratorCenter: jest.fn(() => ({ x: 10, y: 10 })),
+    observer: jest.fn((component: unknown) => component),
+    useHover: jest.fn(),
+    useCombineRefs: jest.fn((...refs: unknown[]) => refs[0]),
+  }
+})
 
 jest.mock('./CustomEllipse', () => jest.fn(() => null))
 
@@ -53,8 +53,10 @@ import StyledNode, {
   clearStickyDangerPulseNodeIds,
   resolveShouldPulse,
 } from './StyledNode'
-import { Node } from '@patternfly/react-topology'
+import { Node, useHover } from '@patternfly/react-topology'
 import CustomEllipse from './CustomEllipse'
+
+const mockUseHover = jest.mocked(useHover)
 
 const createMockElement = (
   overrides: {

@@ -1,4 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+jest.mock('./transform-resources-to-controls', () => ({
+  __esModule: true,
+  ...jest.requireActual('./transform-resources-to-controls'),
+}))
 import * as transformResourcesToControlsAPI from './transform-resources-to-controls'
 import { cleanResults } from '../../../../lib/test-shots'
 

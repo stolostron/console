@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Subject } from './kubernetes-client'
 import { Metadata } from './metadata'
-import { UserKind } from './rbac'
 import { IResource, IResourceDefinition } from './resource'
 
 export const MulticlusterRoleAssignmentApiVersion = 'rbac.open-cluster-management.io/v1beta1'
@@ -71,7 +70,7 @@ export const emptyMulticlusterRoleAssignment: MulticlusterRoleAssignment = {
   metadata: {},
   spec: {
     subject: {
-      kind: UserKind,
+      kind: 'User',
       name: '',
     },
     roleAssignments: [],

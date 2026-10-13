@@ -3,14 +3,30 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { KyvernoRelatedResources } from './KyvernoRelatedResources'
 import { MemoryRouter } from 'react-router'
-import * as KyvernoTable from './KyvernoTable'
 import { clickElement } from '~/lib/test-util'
 
+jest.mock('./KyvernoTable', () => {
+  const React = require('react')
+  const mockMessages = jest.fn(() => React.createElement(React.Fragment, null, 'Mocked Messages'))
+  const actual = jest.requireActual('./KyvernoTable')
+  return {
+    __esModule: true,
+    ...actual,
+    KyvernoMessages: mockMessages,
+    relatedResourceKyvernoColumns: (...args: Parameters<typeof actual.relatedResourceKyvernoColumns>) => {
+      const cols = actual.relatedResourceKyvernoColumns(...args)
+      const messagesCol = cols.find((c: { sort: string }) => c.sort === 'Messages')
+      if (messagesCol) {
+        const originalCell = messagesCol.cell
+        messagesCol.cell = (item: { policyReport?: unknown }) =>
+          item.policyReport ? mockMessages() : originalCell(item)
+      }
+      return cols
+    },
+  }
+})
+
 describe('Kyverno Related Resources table Test', () => {
-  beforeEach(() => {
-    const mockMessageComponent = jest.spyOn(KyvernoTable, 'KyvernoMessages')
-    mockMessageComponent.mockImplementation(() => <>Mocked Messages</>)
-  })
   test('Should render verify-image', async () => {
     const template = {
       apiVersion: 'kyverno.io/v1',

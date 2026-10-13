@@ -30,7 +30,9 @@ import { AddonStatus, mapAddons } from './get-addons'
 import { AgentClusterInstallKind } from '../agent-cluster-install'
 import semver from 'semver'
 import type { TFunction } from 'i18next'
-import { ClusterManagementAddOn, DiscoveredCluster, ManagedClusterAddOn } from '../'
+import { ClusterManagementAddOn } from '../cluster-management-add-on'
+import { DiscoveredCluster } from '../discovered-cluster'
+import { ManagedClusterAddOn } from '../managed-cluster-add-on'
 import { HypershiftCloudPlatformType } from './constants'
 import {
   checkCuratorLatestOperation,

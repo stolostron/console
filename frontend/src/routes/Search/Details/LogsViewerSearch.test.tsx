@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2023 Red Hat, Inc.
 import { render, screen, waitFor } from '@testing-library/react'
-import React, { useState } from 'react'
+import React, { useState, createContext } from 'react'
 import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import { LogViewerSearch, searchForKeyword } from './LogsViewerSearch'
 import { typeElement, clickElement } from '~/lib/test-util'
+import { LogViewerContext, LogViewerToolbarContext } from '@patternfly/react-log-viewer'
 
 describe('LogsViewerSearch', () => {
   beforeEach(async () => {
@@ -29,12 +30,7 @@ describe('LogsViewerSearch', () => {
         }[]
       >([])
       const [currentSearchedItemCount, setCurrentSearchedItemCount] = useState<number>()
-      jest.mock('react', () => ({
-        useContext: jest.fn(),
-      }))
-      const useContextMock = jest.spyOn(React, 'useContext')
-      useContextMock.mockReturnValue({
-        parsedData: ['firstLine', 'secondLine', 'thirdLine'],
+      const toolbarContextValue = {
         searchedWordIndexes,
         rowInFocus,
         searchedInput,
@@ -45,10 +41,17 @@ describe('LogsViewerSearch', () => {
         setSearchedInput,
         setSearchedWordIndexes,
         setCurrentSearchedItemCount,
-      })
+      }
+      const viewerContextValue = {
+        parsedData: ['firstLine', 'secondLine', 'thirdLine'],
+      }
       return (
         <StateProvider>
-          <LogViewerSearch placeholder={'Search'} minSearchChars={1} />
+          <LogViewerContext.Provider value={viewerContextValue as any}>
+            <LogViewerToolbarContext.Provider value={toolbarContextValue as any}>
+              <LogViewerSearch placeholder={'Search'} minSearchChars={1} />
+            </LogViewerToolbarContext.Provider>
+          </LogViewerContext.Provider>
         </StateProvider>
       )
     }

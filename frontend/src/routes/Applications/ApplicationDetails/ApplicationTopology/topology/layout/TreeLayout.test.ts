@@ -9,6 +9,7 @@ jest.mock('@patternfly/react-topology', () => ({
   NodeModel: class MockNodeModel {},
 }))
 
+jest.mock('./TreeLayout', () => ({ __esModule: true, ...jest.requireActual('./TreeLayout') }))
 import * as treeLayoutAPI from './TreeLayout'
 
 describe('TreeLayout tests', () => {

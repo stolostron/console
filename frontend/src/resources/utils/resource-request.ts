@@ -3,10 +3,10 @@
 import * as jsonpatch from 'fast-json-patch'
 import { noop, pick } from 'lodash'
 import { getCookie } from './utils'
-import { ApplicationKind, NamespaceKind, SubscriptionApiVersion, SubscriptionKind } from '../'
+import { ApplicationKind } from '../application'
+import { NamespaceKind } from '../namespace'
+import { SubscriptionApiVersion, SubscriptionKind } from '../subscription'
 import { tokenExpired } from '../../logout'
-import { getSubscriptionsFromAnnotation } from '../../routes/Applications/helpers/resource-helper'
-import { isLocalSubscription } from '../../routes/Applications/helpers/subscriptions'
 import { AnsibleTowerJobTemplate, AnsibleTowerJobTemplateList } from '../ansible-job'
 import { getResourceApiPath, getResourceName, getResourceNameApiPath, IResource, ResourceList } from '../resource'
 import { Status, StatusKind } from '../status'
@@ -247,6 +247,12 @@ export async function deleteResources(
 }
 
 export async function updateAppResources(resources: IResource[]): Promise<void> {
+  const { getSubscriptionsFromAnnotation } = require('../../routes/Applications/helpers/resource-helper') as {
+    getSubscriptionsFromAnnotation: (resource: IResource) => string[]
+  }
+  const { isLocalSubscription } = require('../../routes/Applications/helpers/subscriptions') as {
+    isLocalSubscription: (subscription: string, subscriptions: string[]) => boolean
+  }
   const subscriptionResources = resources.filter((resource) => resource.kind === SubscriptionKind)
   let subscriptions: string[] = []
   for (const resource of resources) {

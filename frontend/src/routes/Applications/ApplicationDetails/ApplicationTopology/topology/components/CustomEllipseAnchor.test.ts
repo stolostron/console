@@ -1,7 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-const mockGetEllipseAnchorPoint = jest.fn()
-
 jest.mock('@patternfly/react-topology', () => ({
   AbstractAnchor: class MockAbstractAnchor {
     owner: unknown
@@ -11,7 +9,7 @@ jest.mock('@patternfly/react-topology', () => ({
       this.offset = offset
     }
   },
-  getEllipseAnchorPoint: mockGetEllipseAnchorPoint,
+  getEllipseAnchorPoint: jest.fn(),
   Point: class MockPoint {
     x: number
     y: number
@@ -23,7 +21,9 @@ jest.mock('@patternfly/react-topology', () => ({
 }))
 
 import CustomEllipseAnchor from './CustomEllipseAnchor'
-import { Node, NodeModel, Point } from '@patternfly/react-topology'
+import { Node, NodeModel, Point, getEllipseAnchorPoint } from '@patternfly/react-topology'
+
+const mockGetEllipseAnchorPoint = jest.mocked(getEllipseAnchorPoint)
 
 const createMockOwner = (isEmpty: boolean) =>
   ({

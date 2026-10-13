@@ -15,15 +15,6 @@ jest.mock('react-router', () => ({
 }))
 const navigate = jest.fn()
 
-jest.mock('../../../resources', () => ({
-  ...jest.requireActual('../../../resources'),
-  fetchRetry: jest.fn(() => {
-    return Promise.resolve()
-  }),
-}))
-jest.mock('./utils', () => ({
-  ...jest.requireActual('./utils'),
-}))
 
 const allClusters = [
   {

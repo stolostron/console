@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 jest.mock('../discoveredPoliciesWorker.factory')
+jest.mock('../useFetchPolicies', () => ({ __esModule: true, ...jest.requireActual('../useFetchPolicies') }))
 
 import { ApolloError } from '@apollo/client'
 import { render, screen } from '@testing-library/react'

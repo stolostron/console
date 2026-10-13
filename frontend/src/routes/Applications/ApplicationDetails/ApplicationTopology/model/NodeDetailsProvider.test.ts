@@ -22,9 +22,25 @@ jest.mock('./NodeDetailsProviderStatuses', () => ({
 }))
 
 jest.mock('../helpers/diagram-helpers', () => {
-  const actual = jest.requireActual('../helpers/diagram-helpers') as typeof import('../helpers/diagram-helpers')
+  const { getNestedProperty } = jest.requireActual('../utils') as { getNestedProperty: (obj: unknown, path: string | number | (string | number)[]) => unknown }
   return {
-    ...actual,
+    addDetails: (details: unknown[], dets: { labelValue: string; value: unknown; indent?: boolean; status?: string }[]) => {
+      dets.forEach(({ labelValue, value, indent, status }) => {
+        if (value !== undefined) details.push({ type: 'label', labelValue, value, indent, status })
+      })
+    },
+    addPropertyToList: <T,>(list: T[] | undefined, data: T | undefined) => {
+      if (list && data !== undefined) list.push(data)
+      return list
+    },
+    getNodePropery: (node: unknown, propPath: string | number | (string | number)[], key: string, defaultValue?: string, status?: unknown) => {
+      const dataObj = getNestedProperty(node, propPath)
+      const data = dataObj === undefined || dataObj === null ? defaultValue
+        : typeof dataObj === 'string' ? dataObj
+        : JSON.stringify(dataObj).replace(/[{}": /]/g, (c: string) => (c === ':' ? '=' : c === '/' ? ',' : ''))
+      if (data !== undefined) return { labelValue: key, value: data, status: status && !dataObj ? status : undefined }
+      return undefined
+    },
     addNodeOCPRouteLocationForCluster: jest.fn(),
     addIngressNodeInfo: jest.fn(),
   }
