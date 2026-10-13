@@ -44,6 +44,9 @@ func (h *Handler) paginate(w http.ResponseWriter, r *http.Request, token string)
 	items := h.Engine.applications()
 	itemCount := len(items)
 	page, perPage := req.Page, req.PerPage
+	if page < 1 {
+		page = 1
+	}
 	if perPage == -1 {
 		page = 1
 		perPage = itemCount

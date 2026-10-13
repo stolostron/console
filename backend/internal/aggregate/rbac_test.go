@@ -24,6 +24,27 @@ func TestAllowAllWindow(t *testing.T) {
 	}
 }
 
+func TestSSARAuthorizedStopBeforeStart(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	items := []App{{
+		Object: map[string]any{
+			"kind":       "Application",
+			"apiVersion": "app.k8s.io/v1beta1",
+			"metadata":   map[string]any{"name": "a", "namespace": "ns"},
+		},
+	}}
+	got := a.Authorized(context.Background(), "tok", items, 5, 1)
+	if got != nil {
+		t.Fatalf("%+v", got)
+	}
+}
+
 func TestSSARListClusterThenNamespaced(t *testing.T) {
 	var verbs []string
 	var namespaces []string
