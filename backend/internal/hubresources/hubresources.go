@@ -5,6 +5,7 @@ package hubresources
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -96,4 +97,31 @@ func MCHNamespace(ctx context.Context, client dynamic.Interface) (string, error)
 		return "", nil
 	}
 	return list.Items[0].GetNamespace(), nil
+}
+
+// CachedMCHNamespace lists MulticlusterHub until a non-empty namespace is found,
+// then reuses it. Errors and empty lists are not stored, so a later call can retry.
+// The list runs without the cache lock held.
+func CachedMCHNamespace(client dynamic.Interface) func(context.Context) string {
+	var mu sync.Mutex
+	var cached string
+	return func(ctx context.Context) string {
+		mu.Lock()
+		ns := cached
+		mu.Unlock()
+		if ns != "" {
+			return ns
+		}
+		found, err := MCHNamespace(ctx, client)
+		if err != nil || found == "" {
+			return ""
+		}
+		mu.Lock()
+		if cached == "" {
+			cached = found
+		}
+		ns = cached
+		mu.Unlock()
+		return ns
+	}
 }

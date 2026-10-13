@@ -131,13 +131,7 @@ func run() error {
 		SearchAPIURL: os.Getenv("SEARCH_API_URL"),
 		Federated:    func() bool { return os.Getenv("globalSearchFeatureFlag") == "enabled" },
 		Namespace:    serviceAccountNamespace(),
-		MCHNamespace: func(reqCtx context.Context) string {
-			ns, nsErr := hubresources.MCHNamespace(reqCtx, dyn)
-			if nsErr != nil {
-				return ""
-			}
-			return ns
-		},
+		MCHNamespace: hubresources.CachedMCHNamespace(dyn),
 	}
 	opts = append(opts, server.WithEvents(eventsHandler))
 	ca := sa.ServiceCACert
