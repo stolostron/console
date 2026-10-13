@@ -84,10 +84,11 @@ func TestProxiesAllowlistedPath(t *testing.T) {
 
 func TestSkipsHopByHopHeaders(t *testing.T) {
 	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Connection", "keep-alive")
-		w.Header().Set("Keep-Alive", "timeout=5")
-		w.Header().Set("X-Job-Id", "7")
 		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("Etag", `"abc"`)
+		w.Header().Set("Set-Cookie", "session=secret")
+		w.Header().Set("X-Job-Id", "7")
 		_, _ = w.Write([]byte(`{"count":0}`))
 	}))
 	defer tower.Close()
@@ -108,11 +109,14 @@ func TestSkipsHopByHopHeaders(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
 	}
-	if rec.Header().Get("Connection") == "keep-alive" || rec.Header().Get("Keep-Alive") != "" {
-		t.Fatalf("hop-by-hop headers forwarded: %v", rec.Header())
+	if rec.Header().Get("Content-Type") != "application/json" {
+		t.Fatalf("content-type %q", rec.Header().Get("Content-Type"))
 	}
-	if rec.Header().Get("X-Job-Id") != "7" {
+	if rec.Header().Get("Cache-Control") != "no-store" || rec.Header().Get("Etag") != `"abc"` {
 		t.Fatalf("missing allowlisted header %v", rec.Header())
+	}
+	if rec.Header().Get("Set-Cookie") != "" || rec.Header().Get("X-Job-Id") != "" {
+		t.Fatalf("unexpected header forwarded %v", rec.Header())
 	}
 }
 
