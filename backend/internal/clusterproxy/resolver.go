@@ -92,16 +92,25 @@ func (r *Resolver) namespace(ctx context.Context) string {
 		return DefaultNamespace
 	}
 	r.mu.Lock()
-	defer r.mu.Unlock()
 	if r.haveCache {
-		return r.cachedNS
+		ns := r.cachedNS
+		r.mu.Unlock()
+		return ns
 	}
+	r.mu.Unlock()
+
 	ns, ok := r.fetchNamespace(ctx)
 	if !ok {
 		return DefaultNamespace
 	}
-	r.cachedNS = ns
-	r.haveCache = true
+
+	r.mu.Lock()
+	if !r.haveCache {
+		r.cachedNS = ns
+		r.haveCache = true
+	}
+	ns = r.cachedNS
+	r.mu.Unlock()
 	return ns
 }
 
