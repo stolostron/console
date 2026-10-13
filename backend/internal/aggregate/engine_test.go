@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -21,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/fake"
+	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
@@ -279,5 +281,136 @@ func TestRebuildLocalMemoizesListKind(t *testing.T) {
 	e.mu.Unlock()
 	if got := cl.count("cluster.open-cluster-management.io/v1|ManagedCluster"); got != 1 {
 		t.Fatalf("ManagedCluster lists %d want 1", got)
+	}
+}
+
+func TestSearchLoopSkipsSearchWhenMCHMissing(t *testing.T) {
+	var hits, lists atomic.Int32
+	client := mchFake()
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists.Add(1)
+		return false, nil, nil
+	})
+	ts := countingSearch(t, &hits, true, nil)
+	defer ts.Close()
+	e := NewEngine(MapLister{}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	waitAtomic(t, &lists, 2)
+	cancel()
+	<-done
+	if hits.Load() != 0 {
+		t.Fatalf("search hits %d want 0", hits.Load())
+	}
+}
+
+func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	ts := countingSearch(t, &hits, false, first)
+	defer ts.Close()
+	e := NewEngine(MapLister{}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
+	e.retryWait = 30 * time.Second
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for ping")
+	}
+	cancel()
+	<-done
+	if hits.Load() != 1 {
+		t.Fatalf("search hits %d want 1", hits.Load())
+	}
+}
+
+func TestSearchLoopPingsWhenMCHPresent(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	ts := countingSearch(t, &hits, true, first)
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for ping")
+	}
+	cancel()
+	<-done
+	if hits.Load() < 1 {
+		t.Fatal("expected search ping")
+	}
+}
+
+func mchListKinds() map[schema.GroupVersionResource]string {
+	return map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+	}
+}
+
+func mchObject() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.open-cluster-management.io",
+		Version: "v1",
+		Kind:    "MultiClusterHub",
+	})
+	obj.SetName("hub")
+	obj.SetNamespace("open-cluster-management")
+	return obj
+}
+
+func mchFake(objs ...runtime.Object) *fake.FakeDynamicClient {
+	return fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), objs...)
+}
+
+func countingSearch(t *testing.T, hits *atomic.Int32, pingOK bool, first chan struct{}) *httptest.Server {
+	t.Helper()
+	var once sync.Once
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		if first != nil {
+			once.Do(func() { close(first) })
+		}
+		if !pingOK {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"data":{"searchResult":[]}}`))
+	}))
+}
+
+func startSearchLoop(t *testing.T, e *Engine) (context.CancelFunc, <-chan struct{}) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		e.searchLoop(ctx)
+	}()
+	t.Cleanup(func() {
+		cancel()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("searchLoop did not exit")
+		}
+	})
+	return cancel, done
+}
+
+func waitAtomic(t *testing.T, v *atomic.Int32, n int32) {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	for v.Load() < n {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for %d, got %d", n, v.Load())
+		}
+		time.Sleep(time.Millisecond)
 	}
 }

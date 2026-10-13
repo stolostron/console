@@ -4,12 +4,14 @@ package hubresources_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/fake"
+	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/hubresources"
 )
@@ -84,6 +86,42 @@ func TestMCHFineGrainedRBAC_Enabled(t *testing.T) {
 	}
 	if !ok {
 		t.Fatal("expected enabled")
+	}
+}
+
+func mchListKinds() map[schema.GroupVersionResource]string {
+	return map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+	}
+}
+
+func TestMCHPresent(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), mchObject(false))
+	if !hubresources.MCHPresent(context.Background(), client) {
+		t.Fatal("expected MultiClusterHub present")
+	}
+}
+
+func TestMCHPresent_EmptyList(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	if hubresources.MCHPresent(context.Background(), client) {
+		t.Fatal("expected MultiClusterHub absent")
+	}
+}
+
+func TestMCHPresent_NilClient(t *testing.T) {
+	if hubresources.MCHPresent(context.Background(), nil) {
+		t.Fatal("expected MultiClusterHub absent")
+	}
+}
+
+func TestMCHPresent_ListError(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("multiclusterhubs.operator.open-cluster-management.io is forbidden")
+	})
+	if hubresources.MCHPresent(context.Background(), client) {
+		t.Fatal("expected MultiClusterHub absent")
 	}
 }
 
