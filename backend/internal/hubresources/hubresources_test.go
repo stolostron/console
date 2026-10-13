@@ -4,12 +4,16 @@ package hubresources_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/fake"
+	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/hubresources"
 )
@@ -84,6 +88,92 @@ func TestMCHFineGrainedRBAC_Enabled(t *testing.T) {
 	}
 	if !ok {
 		t.Fatal("expected enabled")
+	}
+}
+
+func mchListKinds() map[schema.GroupVersionResource]string {
+	return map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+	}
+}
+
+func TestMCHPresent(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), mchObject(false))
+	ok, err := hubresources.MCHPresent(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !ok {
+		t.Fatal("expected MultiClusterHub present")
+	}
+}
+
+func TestMCHPresent_EmptyList(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	ok, err := hubresources.MCHPresent(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected MultiClusterHub absent")
+	}
+}
+
+func TestMCHPresent_NilClient(t *testing.T) {
+	ok, err := hubresources.MCHPresent(context.Background(), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected MultiClusterHub absent")
+	}
+}
+
+func TestMCHPresent_MissingCRD(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, apierrors.NewNotFound(schema.GroupResource{
+			Group: "operator.open-cluster-management.io", Resource: "multiclusterhubs",
+		}, "")
+	})
+	ok, err := hubresources.MCHPresent(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected MultiClusterHub absent for missing CRD")
+	}
+}
+
+func TestMCHPresent_NoMatchError(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, &meta.NoResourceMatchError{
+			PartialResource: schema.GroupVersionResource{
+				Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs",
+			},
+		}
+	})
+	ok, err := hubresources.MCHPresent(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("expected MultiClusterHub absent for no-match error")
+	}
+}
+
+func TestMCHPresent_ListError(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("multiclusterhubs.operator.open-cluster-management.io is forbidden")
+	})
+	ok, err := hubresources.MCHPresent(context.Background(), client)
+	if err == nil {
+		t.Fatal("expected list error")
+	}
+	if ok {
+		t.Fatal("expected MultiClusterHub not confirmed present on list error")
 	}
 }
 

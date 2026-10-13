@@ -6,10 +6,14 @@ import (
 	"context"
 	"fmt"
 
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
+
+	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 var (
@@ -81,6 +85,24 @@ func MCHFineGrainedRBAC(ctx context.Context, client dynamic.Interface) (bool, er
 		return enabled, nil
 	}
 	return false, nil
+}
+
+// MCHPresent reports whether at least one MultiClusterHub exists.
+// A missing CRD, empty list, or nil client is treated as not present (MCE-standalone hubs).
+// Other list errors are returned so callers can distinguish transient failures.
+func MCHPresent(ctx context.Context, client dynamic.Interface) (bool, error) {
+	if client == nil {
+		return false, nil
+	}
+	list, err := client.Resource(mchGVR).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if meta.IsNoMatchError(err) || apierrors.IsNotFound(err) {
+			applog.Logger().Debug("MultiClusterHub not found", "error", err)
+			return false, nil
+		}
+		return false, err
+	}
+	return len(list.Items) > 0, nil
 }
 
 // MCHNamespace returns metadata.namespace of the first MulticlusterHub.
