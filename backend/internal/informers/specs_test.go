@@ -124,14 +124,15 @@ func TestClusterScopedKindsMatchNode(t *testing.T) {
 			n++
 		}
 	}
-	if n != 15 {
-		t.Fatalf("cluster-scoped specs=%d want 15", n)
+	if n != 16 {
+		t.Fatalf("cluster-scoped specs=%d want 16", n)
 	}
 	for _, kind := range []string{
 		"ManagedCluster", "Namespace", "StorageClass", "User", "Group",
 		"ClusterManagementAddOn", "AgentServiceConfig", "Authentication",
 		"Infrastructure", "CertificateSigningRequest", "ManagedClusterSet",
 		"ClusterExtension", "ClusterImageSet", "MultiClusterEngine", "ClusterVersion",
+		"ClusterRole",
 	} {
 		if !IsClusterScopedKind(kind) {
 			t.Fatalf("%s should be cluster-scoped", kind)
@@ -139,8 +140,5 @@ func TestClusterScopedKindsMatchNode(t *testing.T) {
 	}
 	if IsClusterScopedKind("Secret") || IsClusterScopedKind("Placement") || IsClusterScopedKind("ManagedClusterInfo") {
 		t.Fatal("namespaced kinds must not be cluster-scoped")
-	}
-	if IsClusterScopedKind("ClusterRole") {
-		t.Fatal("ClusterRole is served by /events/rbac, not DefaultWatchSpecs")
 	}
 }
