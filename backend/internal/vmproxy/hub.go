@@ -4,6 +4,7 @@ package vmproxy
 
 import (
 	"context"
+	"errors"
 
 	authzv1 "k8s.io/api/authorization/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -76,12 +77,19 @@ func (h *Handler) vmActorToken(ctx context.Context, namespace string) (string, b
 		applog.Logger().Error("error getting vm-actor secret", "namespace", namespace, "error", err)
 		return "", false
 	}
-	return string(secret.Data["token"]), true
+	token := string(secret.Data["token"])
+	if token == "" {
+		return "", false
+	}
+	return token, true
 }
 
 func (h *Handler) userKube(token string) (kubernetes.Interface, error) {
 	if h.opts.UserKube != nil {
 		return h.opts.UserKube(token)
+	}
+	if h.opts.RESTConfig == nil {
+		return nil, errors.New("vmproxy rest config is required")
 	}
 	return kubernetes.NewForConfig(auth.UserRESTConfig(h.opts.RESTConfig, token))
 }
