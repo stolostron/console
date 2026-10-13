@@ -2,6 +2,50 @@
 
 import type { Config } from '@jest/types'
 
+let useSwc = false
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  require('@swc/core')
+  useSwc = true
+} catch {
+  // SWC native binding unavailable — fall back to ts-jest
+}
+
+const swcTransform: Config.InitialOptions['transform'] = {
+  '^.+\\.[jt]sx?$': [
+    '@swc/jest',
+    {
+      jsc: {
+        parser: {
+          syntax: 'typescript',
+          tsx: true,
+          decorators: true,
+        },
+        transform: {
+          react: {
+            runtime: 'automatic',
+            development: true,
+          },
+        },
+        target: 'es2022',
+      },
+      module: {
+        type: 'commonjs',
+      },
+    },
+  ],
+  '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
+  '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
+  '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
+}
+
+const tsJestTransform: Config.InitialOptions['transform'] = {
+  '^.+\\.[jt]sx?$': 'ts-jest',
+  '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
+  '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
+  '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
+}
+
 const config: Config.InitialOptions = {
   testEnvironment: 'jsdom',
   automock: false,
@@ -26,35 +70,7 @@ const config: Config.InitialOptions = {
   slowTestThreshold: 30,
   watchPathIgnorePatterns: ['<rootDir>/../node_modules', '<rootDir>/../.eslintcache', '<rootDir>/../coverage'],
   moduleFileExtensions: ['js', 'json', 'jsx', 'node', 'ts', 'tsx', 'css'],
-  transform: {
-    '^.+\\.[jt]sx?$': [
-      '@swc/jest',
-      {
-        jsc: {
-          parser: {
-            syntax: 'typescript',
-            tsx: true,
-            decorators: true,
-          },
-          transform: {
-            react: {
-              runtime: 'automatic',
-              development: true,
-            },
-          },
-          target: 'es2022',
-        },
-        module: {
-          type: 'commonjs',
-        },
-      },
-    ],
-    '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',
-    // '^.+\\.hbs$': 'jest-raw-loader',
-    '^.+\\.hbs$': '<rootDir>/jest-raw-loader.js',
-    // '\\.(css|less)$': 'jest-raw-loader',
-    '\\.(css|less|scss)$': '<rootDir>/jest-raw-loader.js',
-  },
+  transform: useSwc ? swcTransform : tsJestTransform,
   transformIgnorePatterns: [
     'node_modules/(?!d3*|internmap|robust-predicates|react-monaco-editor|@openshift-assisted|lodash-es|@patternfly/react-tokens|@patternfly/react-icons|@patternfly/react-user-feedback|@patternfly/react-icons|@patternfly-labs/react-form-wizard|@juggle/resize-observer|@react-hook/*|uuid|@openshift-console/dynamic-plugin-sdk*|screenfull|cidr-tools|cidr-regex|is-cidr|ip-bigint|sanitize-html|htmlparser2|dom-serializer|domhandler|domutils|domelementtype|entities)',
   ],

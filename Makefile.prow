@@ -4,7 +4,7 @@
 
 .PHONY: install
 install:
-	CYPRESS_INSTALL_BINARY=0 npm ci
+	npm ci --omit=optional
 	npm run postinstall
 
 .PHONY: build
