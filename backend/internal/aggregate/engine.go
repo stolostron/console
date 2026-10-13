@@ -156,7 +156,9 @@ func (e *Engine) searchLoop(ctx context.Context) {
 		if ctx.Err() != nil {
 			return
 		}
-		present, err := hubresources.MCHPresent(ctx, e.Dynamic)
+		mchCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+		present, err := hubresources.MCHPresent(mchCtx, e.Dynamic)
+		cancel()
 		if err != nil {
 			applog.Logger().Error("MultiClusterHub list failed", "error", err)
 		} else if !present {
