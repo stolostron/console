@@ -175,22 +175,19 @@ func (e *Engine) searchLoop(ctx context.Context) {
 		}
 
 		if e.Search != nil {
-			for {
-				ok, err := e.Search.Ping(ctx)
-				if err != nil || !ok {
-					if !searchAPIMissing {
-						applog.Logger().Error("search API missing")
-						searchAPIMissing = true
-					}
-					e.mu.Lock()
-					e.rebuildLocalLocked()
-					e.mu.Unlock()
-					if !e.wait(ctx, e.retryWaitOrDefault()) {
-						return
-					}
-					continue
+			ok, err := e.Search.Ping(ctx)
+			if err != nil || !ok {
+				if !searchAPIMissing {
+					applog.Logger().Error("search API missing")
+					searchAPIMissing = true
 				}
-				break
+				e.mu.Lock()
+				e.rebuildLocalLocked()
+				e.mu.Unlock()
+				if !e.wait(ctx, e.retryWaitOrDefault()) {
+					return
+				}
+				continue
 			}
 			if searchAPIMissing {
 				applog.Logger().Info("search API found")

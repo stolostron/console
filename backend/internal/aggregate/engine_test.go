@@ -350,6 +350,29 @@ func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
 	}
 }
 
+func TestSearchLoopRechecksMCHBetweenFailedPings(t *testing.T) {
+	var hits, lists atomic.Int32
+	client := mchFake(mchObject())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists.Add(1)
+		return false, nil, nil
+	})
+	ts := countingSearch(t, &hits, false, nil)
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	waitAtomic(t, &hits, 2)
+	waitAtomic(t, &lists, 2)
+	cancel()
+	<-done
+}
+
 func TestSearchLoopPingsWhenMCHPresent(t *testing.T) {
 	var hits atomic.Int32
 	first := make(chan struct{})
