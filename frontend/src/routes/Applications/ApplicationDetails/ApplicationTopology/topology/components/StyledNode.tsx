@@ -30,6 +30,9 @@ import {
 const DEFAULT_DECORATOR_RADIUS = 12
 const ACTION_DECORATOR_RADIUS = DEFAULT_DECORATOR_RADIUS + 2
 const ACTION_ICON_SIZE = 16
+/** Grace period after pointer leaves the node or action decorator before hiding actions. */
+export const ACTION_DECORATOR_HOVER_DELAY_OUT_MS = 400
+const ACTION_DECORATOR_HOVER_DELAY_IN_MS = 200
 
 const stopDecoratorPointerEvent = (event: React.MouseEvent | React.PointerEvent): void => {
   event.stopPropagation()
@@ -53,10 +56,30 @@ type StyledNodeProps = {
   WithDragNodeProps &
   WithSelectionProps
 
+/** Keep danger pulse across transient status gaps when topology data is rebuilt. */
+const stickyDangerPulseNodeIds = new Set<string>()
+
+export const resolveShouldPulse = (nodeId: string, status: string | undefined): boolean => {
+  if (status === 'danger') {
+    stickyDangerPulseNodeIds.add(nodeId)
+    return true
+  }
+  if (status !== undefined && status !== '') {
+    stickyDangerPulseNodeIds.delete(nodeId)
+    return false
+  }
+  return stickyDangerPulseNodeIds.has(nodeId)
+}
+
+/** Test helper — clears sticky pulse ids between tests. */
+export const clearStickyDangerPulseNodeIds = (): void => {
+  stickyDangerPulseNodeIds.clear()
+}
+
 const CustomShape: React.FunctionComponent<ShapeProps> = (props) => {
   const data = props.element.getData() as { specs?: { resourceCount?: number }; status?: string }
   const isMulti = (data?.specs?.resourceCount ?? 0) > 1
-  const shouldPulse = data?.status === 'danger'
+  const shouldPulse = resolveShouldPulse(props.element.getId(), data?.status)
   return <CustomEllipse {...props} isMulti={isMulti} shouldPulse={shouldPulse} />
 }
 
@@ -75,9 +98,43 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   const { t } = useTranslation()
   const { refreshResources, onViewLogs, onEditYaml, onEditApplications } = useTopologyRefresh()
   const data = element.getData()
-  const [hover, hoverRef] = useHover<SVGEllipseElement>()
-  const [decoratorHover, setDecoratorHover] = React.useState(false)
+  const [hover, hoverRef] = useHover<SVGEllipseElement>(
+    ACTION_DECORATOR_HOVER_DELAY_IN_MS,
+    ACTION_DECORATOR_HOVER_DELAY_OUT_MS
+  )
+  const [decoratorHover, setDecoratorHoverState] = React.useState(false)
   const [decoratorFocused, setDecoratorFocused] = React.useState(false)
+  const decoratorHoverTimeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const clearDecoratorHoverTimeout = React.useCallback(() => {
+    if (decoratorHoverTimeoutRef.current !== null) {
+      clearTimeout(decoratorHoverTimeoutRef.current)
+      decoratorHoverTimeoutRef.current = null
+    }
+  }, [])
+
+  React.useEffect(() => () => clearDecoratorHoverTimeout(), [clearDecoratorHoverTimeout])
+
+  const setDecoratorHover = React.useCallback(
+    (hovered: boolean) => {
+      clearDecoratorHoverTimeout()
+      if (hovered) {
+        setDecoratorHoverState(true)
+        return
+      }
+      decoratorHoverTimeoutRef.current = setTimeout(() => {
+        setDecoratorHoverState(false)
+        decoratorHoverTimeoutRef.current = null
+      }, ACTION_DECORATOR_HOVER_DELAY_OUT_MS)
+    },
+    [clearDecoratorHoverTimeout]
+  )
+
+  const dismissDecoratorHover = React.useCallback(() => {
+    clearDecoratorHoverTimeout()
+    setDecoratorHoverState(false)
+  }, [clearDecoratorHoverTimeout])
+
   const isNodeHovered = hover || decoratorHover
   const showNodeActions = isNodeHovered || decoratorFocused
   const combinedNodeRef = useCombineRefs<SVGEllipseElement>(
@@ -133,6 +190,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
           onEditYaml,
           onEditApplications,
           setDecoratorHover,
+          dismissDecoratorHover,
           setDecoratorFocused,
         })
       }
@@ -165,6 +223,7 @@ const renderDecorators = (
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
+    dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
   }
 ): React.ReactNode => {
@@ -252,6 +311,7 @@ const renderNodeActionDecorators = (
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
+    dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
   }
 ): React.ReactNode => {
@@ -259,6 +319,7 @@ const renderNodeActionDecorators = (
     return null
   }
   const setDecoratorHover = nodeActions?.setDecoratorHover
+  const dismissDecoratorHover = nodeActions?.dismissDecoratorHover
   const setDecoratorFocused = nodeActions?.setDecoratorFocused
   const decorators: React.ReactNode[] = []
   if (showLogs && nodeActions?.onViewLogs) {
@@ -311,7 +372,7 @@ const renderNodeActionDecorators = (
         const related = event.relatedTarget as Element | null
         if (!related || !event.currentTarget.contains(related)) {
           setDecoratorFocused?.(false)
-          setDecoratorHover?.(false)
+          dismissDecoratorHover?.()
         }
       }}
     >

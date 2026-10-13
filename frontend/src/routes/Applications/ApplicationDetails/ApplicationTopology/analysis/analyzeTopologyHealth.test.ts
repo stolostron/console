@@ -4,6 +4,7 @@ import {
   analyzeTopologyHealth,
   APP_SET_APPS_SYNC_GRACE_PERIOD_MS,
   createSuggestsHealth,
+  hasOnlyProgressingSyncAlerts,
   isWithinAppsSyncGracePeriod,
 } from './analyzeTopologyHealth'
 import type { TopologyAlert } from './utils'
@@ -176,5 +177,83 @@ describe('createSuggestsHealth', () => {
     // still a "bad sync" entry, so it is suppressed the same as OutOfSync during the grace window.
     expect(alerts).toEqual([])
     expect(appSet.specs.isCreatingProgressing).toBe(true)
+  })
+
+  it('keeps Progressing while resources are still missing on ApplicationSet clusters within grace (ACM-47694)', () => {
+    const alerts: TopologyAlert[] = []
+    const secondCluster = 'remote-cluster'
+    const appSet = createAppSetNode({
+      specs: {
+        appSetApps: syncedAppSetApps('Healthy', 'Synced'),
+        appSetAppsFirstSeenAt: Date.now() - 30 * 1000,
+        appSetClusters: [{ name: CLUSTER_NAME }, { name: secondCluster }],
+        clusterNames: [CLUSTER_NAME, secondCluster],
+      },
+    })
+    // Synced/healthy on one cluster only — resourceCount lags behind ApplicationSet cluster count
+    const deployment = createDeploymentNode(
+      [
+        {
+          kind: 'Deployment',
+          name: 'nginx',
+          cluster: CLUSTER_NAME,
+          status: 'Synced',
+          health: { status: 'Healthy' },
+        },
+      ],
+      1
+    )
+    const health = analyzeTopologyHealth(appSet, [deployment])
+
+    createSuggestsHealth(appSet, [deployment], health, alerts, t)
+
+    expect(health.unhealthyClusterSet.has(secondCluster)).toBe(true)
+    expect(alerts).toEqual([])
+    expect(appSet.specs.isCreatingProgressing).toBe(true)
+    expect(appSet.specs.pulse).not.toBe('green')
+  })
+
+  it('keeps Progressing for Progressing-only sync after the apps grace period (ACM-47694)', () => {
+    const alerts: TopologyAlert[] = []
+    const appSet = createAppSetNode({
+      specs: {
+        appSetApps: syncedAppSetApps('Progressing', 'Synced'),
+        appSetAppsFirstSeenAt: Date.now() - (APP_SET_APPS_SYNC_GRACE_PERIOD_MS + 1000),
+      },
+    })
+    const deployment = createDeploymentNode(
+      [
+        {
+          kind: 'Deployment',
+          name: 'nginx',
+          cluster: CLUSTER_NAME,
+          status: 'Synced',
+          health: { status: 'Progressing' },
+        },
+      ],
+      1
+    )
+    const health = analyzeTopologyHealth(appSet, [deployment])
+
+    createSuggestsHealth(appSet, [deployment], health, alerts, t)
+
+    expect(hasOnlyProgressingSyncAlerts(health.syncAlerts)).toBe(true)
+    expect(alerts).toEqual([])
+    expect(appSet.specs.isCreatingProgressing).toBe(true)
+  })
+})
+
+describe('hasOnlyProgressingSyncAlerts', () => {
+  it('returns true only when every alert key is Progressing', () => {
+    expect(hasOnlyProgressingSyncAlerts([])).toBe(false)
+    expect(
+      hasOnlyProgressingSyncAlerts([{ kind: 'Application', healthSyncKey: 'Progressing', clusterName: 'c1' }])
+    ).toBe(true)
+    expect(
+      hasOnlyProgressingSyncAlerts([
+        { kind: 'Application', healthSyncKey: 'Progressing', clusterName: 'c1' },
+        { kind: 'Deployment', healthSyncKey: 'OutOfSync', clusterName: 'c1' },
+      ])
+    ).toBe(false)
   })
 })

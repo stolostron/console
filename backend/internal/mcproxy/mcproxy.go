@@ -15,8 +15,8 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
-	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/outbound"
+	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/server"
 )
 

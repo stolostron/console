@@ -43,9 +43,9 @@ type Options struct {
 	Client        *http.Client
 	RESTConfig    *rest.Config
 	// UserDynamic is used with RESTConfig for per-user hub API calls (tests).
-	UserDynamic func(bearer string) (dynamic.Interface, error)
-	Discover    func(ctx context.Context) (Info, error)
-	Revoke      func(ctx context.Context, bearer, tokenName string) error
+	UserDynamic   func(bearer string) (dynamic.Interface, error)
+	Discover      func(ctx context.Context) (Info, error)
+	Revoke        func(ctx context.Context, bearer, tokenName string) error
 }
 
 // Handler serves GET /configure, /login, /login/callback, and /logout.
