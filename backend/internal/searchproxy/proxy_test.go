@@ -35,12 +35,12 @@ func TestUnauthorizedEmptyBody(t *testing.T) {
 	}
 }
 
-func TestGetWithoutUpgradeNotFound(t *testing.T) {
+func TestGetWithoutUpgradeMethodNotAllowed(t *testing.T) {
 	h := New(Options{Authn: authOK, Endpoint: func(context.Context) string { return "http://example.invalid" }})
 	req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
-	if rec.Code != http.StatusNotFound {
+	if rec.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status %d", rec.Code)
 	}
 	if rec.Body.Len() != 0 {
