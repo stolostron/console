@@ -300,7 +300,7 @@ func TestFineGrainedUsesUserToken(t *testing.T) {
 	}
 }
 
-func TestUnknownAction404(t *testing.T) {
+func TestUnknownAction400(t *testing.T) {
 	var called bool
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
 		called = true
@@ -311,7 +311,7 @@ func TestUnknownAction404(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusNotFound {
+	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
 	if called {
