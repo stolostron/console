@@ -353,12 +353,20 @@ func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
 
 func TestSearchLoopRechecksMCHBetweenFailedPings(t *testing.T) {
 	var hits, lists atomic.Int32
+	var mu sync.Mutex
+	listsAtHit := make([]int32, 0, 2)
 	client := mchFake(mchObject())
 	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
 		lists.Add(1)
 		return false, nil, nil
 	})
-	ts := countingSearch(t, &hits, false, nil)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		mu.Lock()
+		listsAtHit = append(listsAtHit, lists.Load())
+		mu.Unlock()
+		hits.Add(1)
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
 	defer ts.Close()
 	e := NewEngine(MapLister{
 		"app.k8s.io/v1beta1|Application":                       {},
@@ -372,6 +380,14 @@ func TestSearchLoopRechecksMCHBetweenFailedPings(t *testing.T) {
 	waitAtomic(t, &lists, 2)
 	cancel()
 	<-done
+	mu.Lock()
+	defer mu.Unlock()
+	if len(listsAtHit) < 2 {
+		t.Fatalf("recorded pings %d want at least 2", len(listsAtHit))
+	}
+	if listsAtHit[1] < 2 {
+		t.Fatalf("second ping observed %d hub lists, want at least 2", listsAtHit[1])
+	}
 }
 
 func TestSearchLoopPingsWhenMCHPresent(t *testing.T) {
