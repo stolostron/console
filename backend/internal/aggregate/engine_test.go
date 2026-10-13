@@ -5,6 +5,7 @@ package aggregate
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -392,6 +393,32 @@ func TestSearchLoopPingsWhenMCHPresent(t *testing.T) {
 	<-done
 	if hits.Load() < 1 {
 		t.Fatal("expected search ping")
+	}
+}
+
+func TestSearchLoopContinuesSearchOnMCHListError(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	client := mchFake(mchObject())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("temporary apiserver timeout")
+	})
+	ts := countingSearch(t, &hits, true, first)
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for search; MCH list error should not skip aggregation")
+	}
+	cancel()
+	<-done
+	if hits.Load() < 1 {
+		t.Fatal("expected search ping despite MCH list error")
 	}
 }
 

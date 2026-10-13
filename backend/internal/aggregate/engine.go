@@ -156,7 +156,10 @@ func (e *Engine) searchLoop(ctx context.Context) {
 		if ctx.Err() != nil {
 			return
 		}
-		if !hubresources.MCHPresent(ctx, e.Dynamic) {
+		present, err := hubresources.MCHPresent(ctx, e.Dynamic)
+		if err != nil {
+			applog.Logger().Error("MultiClusterHub list failed", "error", err)
+		} else if !present {
 			if !multiClusterHubMissing {
 				applog.Logger().Info("MultiClusterHub not found; waiting before search aggregation")
 				multiClusterHubMissing = true
@@ -168,8 +171,7 @@ func (e *Engine) searchLoop(ctx context.Context) {
 				return
 			}
 			continue
-		}
-		if multiClusterHubMissing {
+		} else if multiClusterHubMissing {
 			applog.Logger().Info("MultiClusterHub found")
 			multiClusterHubMissing = false
 		}
