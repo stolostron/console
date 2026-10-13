@@ -111,6 +111,62 @@ func TestSSARNamespacedListThenGet(t *testing.T) {
 	}
 }
 
+func TestSSARCacheSeparatesSameKindDifferentGroups(t *testing.T) {
+	var mu sync.Mutex
+	var groups []string
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		create := action.(ktesting.CreateAction)
+		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+		attr := review.Spec.ResourceAttributes
+		mu.Lock()
+		groups = append(groups, attr.Group)
+		mu.Unlock()
+		allowed := attr.Group == "apps.open-cluster-management.io" && attr.Verb == "list" && attr.Namespace == ""
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	subscription := func(apiVersion, group, resource string) Event {
+		return Event{
+			Type: TypeModified,
+			GVR:  schema.GroupVersionResource{Group: group, Version: "v1", Resource: resource},
+			Object: map[string]any{
+				"kind":       "Subscription",
+				"apiVersion": apiVersion,
+				"metadata":   map[string]any{"name": "app", "namespace": "ns"},
+			},
+		}
+	}
+	ok, err := a.Allow(context.Background(), "tok", subscription(
+		"apps.open-cluster-management.io/v1", "apps.open-cluster-management.io", "subscriptions",
+	))
+	if err != nil || !ok {
+		t.Fatalf("acm allowed=%v err=%v", ok, err)
+	}
+	ok, err = a.Allow(context.Background(), "tok", subscription(
+		"operators.coreos.com/v1alpha1", "operators.coreos.com", "subscriptions",
+	))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok {
+		t.Fatal("OLM Subscription reused the ACM list decision")
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	sawOLM := false
+	for _, group := range groups {
+		if group == "operators.coreos.com" {
+			sawOLM = true
+		}
+	}
+	if !sawOLM {
+		t.Fatalf("groups %v", groups)
+	}
+}
+
 func TestSSARCacheTTL(t *testing.T) {
 	var n int
 	client := fake.NewSimpleClientset()

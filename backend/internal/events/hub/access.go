@@ -43,7 +43,7 @@ func (AllowAllAccess) Allow(context.Context, string, Event) (bool, error) {
 func (AllowAllAccess) Prefetch(context.Context, string, []Event) {}
 
 type ssarKey struct {
-	kind, namespace, name string
+	group, resource, kind, namespace, name string
 }
 
 type cacheEntry struct {
@@ -164,13 +164,14 @@ func (a *SSARAccess) Prefetch(ctx context.Context, token string, events []Event)
 		if kind == "" || resource == "" {
 			continue
 		}
-		key := ssarKey{kind: kind}
+		group := apiGroup(apiVersion)
+		key := ssarKey{group: group, resource: resource, kind: kind}
 		if _, ok := jobs[key]; ok {
 			continue
 		}
 		jobs[key] = prefetchJob{
 			key:      key,
-			group:    apiGroup(apiVersion),
+			group:    group,
 			resource: resource,
 			verb:     "list",
 		}
@@ -203,8 +204,9 @@ func (a *SSARAccess) canSee(ctx context.Context, token string, ev Event) (bool, 
 		return false, nil
 	}
 	group := apiGroup(apiVersion)
+	base := ssarKey{group: group, resource: resource, kind: kind}
 
-	allowed, err := a.ssar(ctx, token, ssarKey{kind: kind}, group, resource, "list", "", "")
+	allowed, err := a.ssar(ctx, token, base, group, resource, "list", "", "")
 	if err != nil {
 		return false, err
 	}
@@ -212,16 +214,21 @@ func (a *SSARAccess) canSee(ctx context.Context, token string, ev Event) (bool, 
 		return true, nil
 	}
 	if namespace == "" {
-		return a.ssar(ctx, token, ssarKey{kind: kind, name: name}, group, resource, "get", name, ssarNamespace(kind, name, namespace))
+		key := base
+		key.name = name
+		return a.ssar(ctx, token, key, group, resource, "get", name, ssarNamespace(kind, name, namespace))
 	}
-	allowed, err = a.ssar(ctx, token, ssarKey{kind: kind, namespace: namespace}, group, resource, "list", "", namespace)
+	namespaced := base
+	namespaced.namespace = namespace
+	allowed, err = a.ssar(ctx, token, namespaced, group, resource, "list", "", namespace)
 	if err != nil {
 		return false, err
 	}
 	if allowed {
 		return true, nil
 	}
-	return a.ssar(ctx, token, ssarKey{kind: kind, namespace: namespace, name: name}, group, resource, "get", name, ssarNamespace(kind, name, namespace))
+	namespaced.name = name
+	return a.ssar(ctx, token, namespaced, group, resource, "get", name, ssarNamespace(kind, name, namespace))
 }
 
 func ssarNamespace(kind, name, namespace string) string {
