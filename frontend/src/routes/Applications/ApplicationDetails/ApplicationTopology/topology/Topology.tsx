@@ -18,6 +18,7 @@ import getLayoutModel from './layout/layoutModel'
 import '@patternfly/patternfly/patternfly.css'
 import '@patternfly/patternfly/patternfly-addons.css'
 import componentFactory from './components/componentFactory'
+import { getNodeStyle } from './components/nodeStyle'
 import { NodeIcons } from './components/nodeIcons'
 import { NodeStatusIcons } from './components/nodeStatusIcons'
 import DetailsView from '../components/DetailsView'
@@ -305,24 +306,54 @@ export const Topology = ({
     controller.registerComponentFactory(componentFactory)
   }
 
-  const nodesKey = JSON.stringify(
+  // Structure-only key: pulse/status changes must not rebuild the model (that remounts shapes and
+  // briefly drops the error pulse before it is re-applied).
+  const structureKey = JSON.stringify(
     elements.nodes
       .map((node: any) => ({
         id: node.id,
         name: node.name,
-        pulse: node.specs?.pulse,
       }))
       .sort((a: any, b: any) => a.id.localeCompare(b.id))
   )
+  const statusKey = JSON.stringify(
+    elements.nodes
+      .map((node: any) => ({
+        id: node.id,
+        pulse: node.specs?.pulse,
+        resourceCount: node.specs?.resourceCount,
+      }))
+      .sort((a: any, b: any) => a.id.localeCompare(b.id))
+  )
+
   useEffect(() => {
     if (elements.nodes.length > 0) {
-      // this creates the StyledNodes and StyledEdges from the props.elements
-      // when called a second time, Nodes and Edges are added removed
+      // Creates StyledNodes/StyledEdges; merge keeps existing element instances across refreshes.
       controller.fromModel(getLayoutModel(elements))
       controller.getGraph()?.layout()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [controller, nodesKey])
+  }, [controller, structureKey])
+
+  useEffect(() => {
+    if (elements.nodes.length === 0 || !controller.hasGraph()) {
+      return
+    }
+    // Sync pulse/status onto existing nodes without fromModel/layout so the error pulse stays mounted.
+    elements.nodes.forEach((node: any) => {
+      const element = controller.getNodeById(node.id)
+      if (!element) {
+        return
+      }
+      const previousData = (element.getData() ?? {}) as { dx?: number; dy?: number }
+      const nextStyle = getNodeStyle(node, { dx: previousData.dx ?? 0, dy: previousData.dy ?? 0 })
+      element.setData({ ...previousData, ...nextStyle })
+      if (nextStyle.status !== undefined) {
+        element.setNodeStatus(nextStyle.status)
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [controller, statusKey])
 
   return (
     <TopologyRefreshContext.Provider value={topologyRefreshValue}>

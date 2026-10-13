@@ -79,10 +79,13 @@ export function ApplicationTopologyPageContent() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [processingSave, setProcessingSave] = useState<ProcessingSaveState>({ isProcessingSave: false })
   const hasShownAnalyzingAlertRef = useRef(false)
+  /** True after the first diagram has been published — used to defer refresh paints until analysis settles. */
+  const hasDisplayedNodesRef = useRef(false)
   const applicationKey = application?.metadata?.uid ?? application?.metadata?.name ?? ''
 
   useEffect(() => {
     hasShownAnalyzingAlertRef.current = false
+    hasDisplayedNodesRef.current = false
   }, [applicationKey])
 
   const [argoAppDetailsContainerData, setArgoAppDetailsContainerData] = useState<ArgoAppDetailsContainerData>({
@@ -164,6 +167,7 @@ export function ApplicationTopologyPageContent() {
       setElements({ nodes: [], links: [] })
       setAlertsState([])
       setIsAnalyzing(false)
+      hasDisplayedNodesRef.current = false
       return
     }
 
@@ -181,7 +185,16 @@ export function ApplicationTopologyPageContent() {
       return
     }
 
-    setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+    const publishElements = () => {
+      setElements({ nodes: diagramElements.nodes, links: diagramElements.links })
+      hasDisplayedNodesRef.current = diagramElements.nodes.length > 0
+    }
+
+    // On refresh, keep the current diagram until analysis finishes so error pulses are not
+    // dropped by an intermediate pre-analysis paint. First load still publishes immediately.
+    if (!alertsPromise || !hasDisplayedNodesRef.current) {
+      publishElements()
+    }
 
     if (alertsPromise) {
       if (!hasShownAnalyzingAlertRef.current) {
@@ -198,10 +211,12 @@ export function ApplicationTopologyPageContent() {
             return
           }
           setAlertsState(alerts)
+          publishElements()
         })
         .catch(() => {
           if (!isCancelled) {
             setAlertsState([])
+            publishElements()
           }
         })
         .finally(() => {

@@ -57,8 +57,8 @@ describe('CustomEllipse tests', () => {
   test('renders a single ellipse when isMulti is false', () => {
     const { container } = render(<CustomEllipse element={mockElement} width={100} height={80} />)
 
-    expect(container.querySelector('g')).not.toBeInTheDocument()
     expect(container.querySelectorAll('ellipse')).toHaveLength(1)
+    expect(container.querySelectorAll('circle')).toHaveLength(0)
   })
 
   test('renders three ellipses in a group when isMulti is true', () => {
@@ -176,15 +176,15 @@ describe('CustomEllipse tests', () => {
     expect(mockRef).toHaveBeenCalledTimes(1)
   })
 
-  test('calls useAnchor with EllipseAnchor when shouldPulse is true', () => {
+  test('keeps CustomEllipseAnchor for multi nodes when shouldPulse is true (ACM-47694)', () => {
     render(<CustomEllipse element={mockElement} width={100} height={80} isMulti shouldPulse />)
-    expect(mockUseAnchor).toHaveBeenCalledWith(EllipseAnchor)
+    expect(mockUseAnchor).toHaveBeenCalledWith(CustomEllipseAnchor)
   })
 
-  test('renders a single ellipse with pulsating circle when shouldPulse is true', () => {
+  test('overlays pulsating circle on multi ellipses without replacing the node body (ACM-47694)', () => {
     const { container } = render(<CustomEllipse element={mockElement} width={100} height={80} isMulti shouldPulse />)
 
-    expect(container.querySelectorAll('ellipse')).toHaveLength(1)
+    expect(container.querySelectorAll('ellipse')).toHaveLength(3)
     expect(container.querySelectorAll('circle')).toHaveLength(1)
     expect(container.querySelectorAll('animate')).toHaveLength(2)
   })
