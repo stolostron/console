@@ -161,10 +161,11 @@ func (e *Engine) applicationClusters(obj map[string]any, typ string, subscriptio
 	case kindArgo:
 		return []string{e.argoCluster(obj, clusters)}
 	case kindAppSet:
+		key := appSetMapKey(metaNamespace(obj), metaName(obj))
 		if isArgoPullModel(obj) {
-			return argoPullModelClusters(e.pulledAppSetMap[metaName(obj)])
+			return argoPullModelClusters(e.pulledAppSetMap[key])
 		}
-		return e.argoPushModelClusters(e.appSetAppsMap[metaName(obj)], local, clusters)
+		return e.argoPushModelClusters(e.appSetAppsMap[key], local, clusters)
 	case kindSubscriptionApp:
 		return subscriptionClusters(obj, subscriptions, placementDecisions)
 	}

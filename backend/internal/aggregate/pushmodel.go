@@ -13,8 +13,8 @@ func (e *Engine) addPushModelPodQueryInputs(q *searchapi.Query) (map[string]push
 	e.mu.RLock()
 	appSetApps := e.appSetAppsMap
 	e.mu.RUnlock()
-	for appSetName, apps := range appSetApps {
-		e.collectPushModelWorkloads(apps, appSetName, allClusters, hub, resourceMap, deploymentNames, clusterFilters)
+	for key, apps := range appSetApps {
+		e.collectPushModelWorkloads(apps, appSetNameFromMapKey(key), allClusters, hub, resourceMap, deploymentNames, clusterFilters)
 	}
 	if len(deploymentNames) == 0 {
 		return resourceMap, nil
