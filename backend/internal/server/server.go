@@ -188,10 +188,7 @@ func StripMulticloud(path string) string {
 	if path == multicloudPrefix {
 		return "/"
 	}
-	if strings.HasPrefix(path, multicloudPrefix+"/") || path == multicloudPrefix {
-		return path[len(multicloudPrefix):]
-	}
-	if strings.HasPrefix(path, multicloudPrefix) {
+	if strings.HasPrefix(path, multicloudPrefix+"/") {
 		return path[len(multicloudPrefix):]
 	}
 	return path
