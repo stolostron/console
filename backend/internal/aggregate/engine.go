@@ -238,14 +238,12 @@ func (e *Engine) aggregateRemote(ctx context.Context, pass int) error {
 	e.mu.Lock()
 	e.addArgoQueryInputs(&q)
 	e.addOCPQueryInputs(&q)
-	e.mu.Unlock()
 	if querySystem {
-		e.mu.Lock()
 		e.addSystemQueryInputs(&q)
-		e.mu.Unlock()
 	}
 	pushIndex := len(q.Variables.Input)
 	pushMap, err := e.addPushModelPodQueryInputs(&q)
+	e.mu.Unlock()
 	if err != nil {
 		applog.Logger().Error("addPushModelPodQueryInputs exception", "error", err)
 	}

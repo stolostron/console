@@ -194,7 +194,9 @@ func TestPushModelQueryFromAppSet(t *testing.T) {
 		}},
 	}
 	q := searchapi.NewQuery()
+	e.mu.Lock()
 	push, err := e.addPushModelPodQueryInputs(&q)
+	e.mu.Unlock()
 	if err != nil {
 		t.Fatal(err)
 	}

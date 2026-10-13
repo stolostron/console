@@ -4,16 +4,16 @@ package aggregate
 
 import "github.com/stolostron/console/backend/internal/searchapi"
 
+// addPushModelPodQueryInputs requires e.mu to be held. It reads appSetAppsMap
+// and writes e.listCache through listKind, which rebuildLocalLocked also fills
+// under that lock.
 func (e *Engine) addPushModelPodQueryInputs(q *searchapi.Query) (map[string]pushEntry, error) {
 	resourceMap := map[string]pushEntry{}
 	hub := e.hubClusterName()
 	allClusters := e.clusters()
 	deploymentNames := map[string]struct{}{}
 	clusterFilters := map[string]struct{}{}
-	e.mu.RLock()
-	appSetApps := e.appSetAppsMap
-	e.mu.RUnlock()
-	for key, apps := range appSetApps {
+	for key, apps := range e.appSetAppsMap {
 		e.collectPushModelWorkloads(apps, appSetNameFromMapKey(key), allClusters, hub, resourceMap, deploymentNames, clusterFilters)
 	}
 	if len(deploymentNames) == 0 {
