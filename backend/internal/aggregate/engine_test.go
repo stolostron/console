@@ -293,10 +293,23 @@ func TestSearchLoopSkipsSearchWhenMCHMissing(t *testing.T) {
 	})
 	ts := countingSearch(t, &hits, true, nil)
 	defer ts.Close()
-	e := NewEngine(MapLister{}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
 	e.retryWait = time.Millisecond
 	cancel, done := startSearchLoop(t, e)
 	waitAtomic(t, &lists, 2)
+	deadline := time.Now().Add(2 * time.Second)
+	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+		if time.Now().After(deadline) {
+			t.Fatal("expected local rebuild while MultiClusterHub is missing")
+		}
+		time.Sleep(time.Millisecond)
+	}
 	cancel()
 	<-done
 	if hits.Load() != 0 {
@@ -309,13 +322,26 @@ func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
 	first := make(chan struct{})
 	ts := countingSearch(t, &hits, false, first)
 	defer ts.Close()
-	e := NewEngine(MapLister{}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
 	e.retryWait = 30 * time.Second
 	cancel, done := startSearchLoop(t, e)
 	select {
 	case <-first:
 	case <-time.After(2 * time.Second):
 		t.Fatal("timed out waiting for ping")
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+		if time.Now().After(deadline) {
+			t.Fatal("expected local rebuild while search API is missing")
+		}
+		time.Sleep(time.Millisecond)
 	}
 	cancel()
 	<-done

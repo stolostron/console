@@ -161,6 +161,9 @@ func (e *Engine) searchLoop(ctx context.Context) {
 				applog.Logger().Info("MultiClusterHub not found; waiting before search aggregation")
 				multiClusterHubMissing = true
 			}
+			e.mu.Lock()
+			e.rebuildLocalLocked()
+			e.mu.Unlock()
 			if !e.wait(ctx, e.retryWaitOrDefault()) {
 				return
 			}
@@ -179,6 +182,9 @@ func (e *Engine) searchLoop(ctx context.Context) {
 						applog.Logger().Error("search API missing")
 						searchAPIMissing = true
 					}
+					e.mu.Lock()
+					e.rebuildLocalLocked()
+					e.mu.Unlock()
 					if !e.wait(ctx, e.retryWaitOrDefault()) {
 						return
 					}
