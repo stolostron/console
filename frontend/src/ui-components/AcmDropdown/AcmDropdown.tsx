@@ -354,7 +354,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           appendTo={document.body}
           distance={0}
           enableFlip={true}
-          minWidth="fit-content"
+          preventOverflow={true}
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
         />
