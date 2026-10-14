@@ -200,19 +200,18 @@ func computeDeployedPodStatuses(related []mapKind, appStatusesMap map[string]Sta
 							break
 						}
 						available := searchFloat(item, "available")
-						if available == 0 {
-							available = searchFloat(item, "current")
-						}
 						desired := searchFloat(item, "desired")
 						if available == desired {
 							continue
 						}
-						if available < desired || desired <= 0 {
-							appStatuses.Deployed.Counts[scoreProgress]++
+						if available == 0 {
+							appStatuses.Deployed.Counts[scoreDanger]++
 							extractMessages(&appStatuses.Deployed, item, "")
 							missingCount--
-						} else if item["desired"] == nil || available == 0 {
-							appStatuses.Deployed.Counts[scoreDanger]++
+							continue
+						}
+						if available < desired || desired <= 0 {
+							appStatuses.Deployed.Counts[scoreProgress]++
 							extractMessages(&appStatuses.Deployed, item, "")
 							missingCount--
 						}

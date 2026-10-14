@@ -116,3 +116,21 @@ func TestVMActorToken_NotFound(t *testing.T) {
 		t.Fatalf("token=%q ok=%v", token, ok)
 	}
 }
+
+func TestVMActorToken_EmptyToken(t *testing.T) {
+	secret := &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "vm-actor", Namespace: "cluster-ns"},
+		Data:       map[string][]byte{},
+	}
+	h := &Handler{saKube: kubefake.NewSimpleClientset(secret)}
+	if token, ok := h.vmActorToken(context.Background(), "cluster-ns"); ok || token != "" {
+		t.Fatalf("token=%q ok=%v", token, ok)
+	}
+}
+
+func TestUserKubeNilRESTConfig(t *testing.T) {
+	h := &Handler{}
+	if _, err := h.userKube("tok"); err == nil {
+		t.Fatal("expected error")
+	}
+}

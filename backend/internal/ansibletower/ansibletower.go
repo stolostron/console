@@ -75,6 +75,9 @@ func New(opts Options) *Handler {
 		h.Tower = &http.Client{
 			Timeout:   30 * time.Second,
 			Transport: outbound.Transport(&tls.Config{InsecureSkipVerify: true}, true), //nolint:gosec // Node rejectUnauthorized: false
+			CheckRedirect: func(*http.Request, []*http.Request) error {
+				return errRedirect
+			},
 		}
 	}
 	return h
@@ -159,7 +162,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
 	for k, vs := range resp.Header {
-		if skipHopByHopHeader(k) {
+		if !allowedResponseHeader(k) {
 			continue
 		}
 		for _, v := range vs {
@@ -185,7 +188,10 @@ func (h *Handler) credential(ctx context.Context, userToken, ns, name string) (s
 	return string(secret.Data["host"]), string(secret.Data["token"]), nil
 }
 
-var errNoKube = errors.New("ansibletower kube client missing")
+var (
+	errNoKube   = errors.New("ansibletower kube client missing")
+	errRedirect = errors.New("ansibletower redirects are not followed")
+)
 
 func allowedPath(path string) bool {
 	for _, p := range Paths {
@@ -196,10 +202,9 @@ func allowedPath(path string) bool {
 	return false
 }
 
-func skipHopByHopHeader(name string) bool {
+func allowedResponseHeader(name string) bool {
 	switch http.CanonicalHeaderKey(name) {
-	case "Connection", "Keep-Alive", "Proxy-Authenticate", "Proxy-Authorization",
-		"Te", "Trailers", "Transfer-Encoding", "Upgrade", "Content-Length":
+	case "Content-Type", "Cache-Control", "Etag":
 		return true
 	default:
 		return false

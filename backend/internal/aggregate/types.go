@@ -228,6 +228,20 @@ func metaNamespace(obj map[string]any) string {
 	return strVal(metaMap(obj)["namespace"])
 }
 
+// appSetMapKey qualifies an ApplicationSet so two sets with the same name in
+// different namespaces do not share child Applications.
+func appSetMapKey(namespace, name string) string {
+	return namespace + "/" + name
+}
+
+// appSetNameFromMapKey returns the ApplicationSet name from an appSetMapKey.
+func appSetNameFromMapKey(key string) string {
+	if i := strings.LastIndex(key, "/"); i >= 0 {
+		return key[i+1:]
+	}
+	return key
+}
+
 func metaUID(obj map[string]any) string {
 	return strVal(metaMap(obj)["uid"])
 }

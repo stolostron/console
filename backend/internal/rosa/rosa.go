@@ -34,7 +34,10 @@ var Routes = []string{
 	"/machine-types",
 }
 
-var clusterNameRE = regexp.MustCompile(`^[a-z]([a-z0-9-]*[a-z0-9])?$`)
+var (
+	clusterNameRE  = regexp.MustCompile(`^[a-z]([a-z0-9-]*[a-z0-9])?$`)
+	awsAccountIDRE = regexp.MustCompile(`^[0-9]{12}$`)
+)
 
 // Options configure the ROSA wizard proxy.
 type Options struct {
@@ -189,6 +192,10 @@ func parsePayload(body []byte) (payload, error) {
 	return p, err
 }
 
+func validAWSAccountID(id string) bool {
+	return id == "" || awsAccountIDRE.MatchString(id)
+}
+
 func (h *Handler) ssoToken(ctx context.Context, p payload) (string, error) {
 	return auth.OCMServiceToken(ctx, h.client(), p.ServiceAccountID, p.ServiceAccountSecret)
 }
@@ -315,6 +322,10 @@ func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	if !validAWSAccountID(p.AWSAccountID) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	tok, err := h.ssoToken(r.Context(), p)
 	if err != nil {
 		applog.Logger().Error("rosa oidc-configs sso", "error", err)
@@ -420,6 +431,10 @@ func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byt
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	if !validAWSAccountID(p.AWSAccountID) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	tok, err := h.ssoToken(r.Context(), p)
 	if err != nil {
 		applog.Logger().Error("rosa sts-role-arns sso", "error", err)
@@ -442,6 +457,10 @@ func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte
 	if err != nil {
 		applog.Logger().Error("rosa sts-ocm-role", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if !validAWSAccountID(p.AWSAccountID) {
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	tok, err := h.ssoToken(r.Context(), p)

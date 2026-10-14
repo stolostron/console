@@ -115,6 +115,8 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path str
 	if len(raw) > 0 {
 		if unmarshalErr := json.Unmarshal(raw, &body); unmarshalErr != nil {
 			applog.Logger().Error("vm proxy", "error", unmarshalErr)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 	parts := strings.Split(path, "/")
@@ -130,7 +132,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path str
 	}
 	addonPath := kubeVirtAPI(path, body.VMName, body.VMNamespace, action)
 	if addonPath == "" {
-		w.WriteHeader(http.StatusNotFound)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	url := base + "/" + body.ManagedCluster + addonPath
@@ -206,7 +208,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	if err != nil {
 		applog.Logger().Error("Error getting VM resource (fine grained RBAC)", "error", err)
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(nil)
+		_, _ = w.Write([]byte("null"))
 		return
 	}
 	defer resp.Body.Close()
@@ -214,7 +216,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	if err != nil {
 		applog.Logger().Error("Error getting VM resource (fine grained RBAC)", "error", err)
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(nil)
+		_, _ = w.Write([]byte("null"))
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

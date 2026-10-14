@@ -41,6 +41,7 @@ func TestStripMulticloud(t *testing.T) {
 		"/multicloud/":              "/",
 		"/multicloud/livenessProbe": "/livenessProbe",
 		"/multicloud/api/v1/pods":   "/api/v1/pods",
+		"/multicloudfoo":            "/multicloudfoo",
 		"/livenessProbe":            "/livenessProbe",
 		"/":                         "/",
 	}

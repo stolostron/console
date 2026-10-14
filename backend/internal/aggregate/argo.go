@@ -109,7 +109,8 @@ func filterArgoApps(items []map[string]any, clusters []Cluster, ocpFilter map[st
 			out = append(out, app)
 			continue
 		}
-		apps := appSetApps[appSetName]
+		key := appSetMapKey(metaNamespace(app), appSetName)
+		apps := appSetApps[key]
 		replaced := false
 		for i, it := range apps {
 			if metaUID(it) == metaUID(app) {
@@ -121,7 +122,7 @@ func filterArgoApps(items []map[string]any, clusters []Cluster, ocpFilter map[st
 		if !replaced {
 			apps = append(apps, app)
 		}
-		appSetApps[appSetName] = apps
+		appSetApps[key] = apps
 	}
 	return out
 }
@@ -164,7 +165,7 @@ func (e *Engine) remoteArgoApps(remote []map[string]any) []map[string]any {
 		if hosting != "" {
 			parts := splitSlash(hosting)
 			if len(parts) >= 3 && parts[0] == "ApplicationSet" {
-				appSetName := parts[2]
+				appSetName := appSetMapKey(parts[1], parts[2])
 				pulled := e.tempPulled[appSetName]
 				replaced := false
 				for i, it := range pulled {

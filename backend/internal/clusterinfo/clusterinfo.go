@@ -83,6 +83,7 @@ type hubFlags struct {
 	isHubSelfManaged         bool
 	isObservabilityInstalled bool
 	authentication           map[string]interface{}
+	ok                       bool
 }
 
 // Handler serves hub, cluster-version, hypershift-status, MCH/MCE components, operatorCheck, and apiPaths.
@@ -160,6 +161,9 @@ func (h *Handler) hubFlags(ctx context.Context) hubFlags {
 	h.hubFlagsMu.RUnlock()
 
 	flags := h.loadHubFlags(ctx)
+	if !flags.ok {
+		return flags
+	}
 	h.hubFlagsMu.Lock()
 	h.hubFlagsValue = flags
 	h.hubFlagsUntil = now.Add(hubFlagsCacheTTL)
@@ -211,35 +215,56 @@ func (h *Handler) hubFlagsFromCache(ctx context.Context) (hubFlags, bool) {
 		}
 	}
 
+	isGlobalHub, globalOK := h.isGlobalHubCached(ctx)
 	return hubFlags{
-		isGlobalHub:              h.isGlobalHubCached(ctx),
+		isGlobalHub:              isGlobalHub,
 		localHubName:             localHubName,
 		isHubSelfManaged:         isHubSelfManaged,
 		isObservabilityInstalled: isObservabilityInstalled,
 		authentication:           authentication,
+		ok:                       globalOK,
 	}, true
 }
 
 func (h *Handler) hubFlagsLive(ctx context.Context) hubFlags {
 	var (
 		isGlobalHub              bool
-		localHubName             = "local-cluster"
-		isHubSelfManaged         bool
+		globalOK                 bool
 		isObservabilityInstalled bool
-		authentication           = buildAuthentication(nil)
 	)
 
-	var wg sync.WaitGroup
+	type mcResult struct {
+		name        string
+		selfManaged bool
+		ok          bool
+	}
+	type authResult struct {
+		authentication map[string]interface{}
+		ok             bool
+	}
+
+	var (
+		wg       sync.WaitGroup
+		mcOut    mcResult
+		authOut  authResult
+		globalMu sync.Mutex
+	)
 	wg.Add(3)
 	go func() {
-		isGlobalHub = h.isGlobalHubCached(ctx)
-		wg.Done()
+		defer wg.Done()
+		okValue, ok := h.isGlobalHubCached(ctx)
+		globalMu.Lock()
+		isGlobalHub, globalOK = okValue, ok
+		globalMu.Unlock()
 	}()
 	go func() {
+		defer wg.Done()
+		out := mcResult{name: "local-cluster", ok: true}
 		mcList, err := h.dynamic.Resource(managedClusterGVR).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			applog.Logger().Error("list managedclusters failed", "error", err)
-			wg.Done()
+			out.ok = false
+			mcOut = out
 			return
 		}
 		for _, item := range mcList.Items {
@@ -247,28 +272,33 @@ func (h *Handler) hubFlagsLive(ctx context.Context) hubFlags {
 			if labels["local-cluster"] == "true" {
 				name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
 				if name != "" {
-					localHubName = name
+					out.name = name
 				}
-				isHubSelfManaged = true
+				out.selfManaged = true
 				break
 			}
 		}
-		wg.Done()
+		mcOut = out
 	}()
 	go func() {
+		defer wg.Done()
+		out := authResult{authentication: buildAuthentication(nil), ok: true}
 		authObj, err := h.dynamic.Resource(authenticationGVR).Get(ctx, "cluster", metav1.GetOptions{})
 		if err == nil {
-			authentication = buildAuthentication(authObj.Object)
+			out.authentication = buildAuthentication(authObj.Object)
 		} else if !apierrors.IsNotFound(err) {
 			applog.Logger().Error("get authentication cluster failed", "error", err)
+			out.ok = false
 		}
-		wg.Done()
+		authOut = out
 	}()
 	wg.Wait()
 
-	addonList, err := h.dynamic.Resource(managedClusterAddOnGVR).Namespace(localHubName).List(ctx, metav1.ListOptions{})
+	addonOK := true
+	addonList, err := h.dynamic.Resource(managedClusterAddOnGVR).Namespace(mcOut.name).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		applog.Logger().Error("list managedclusteraddons failed", "error", err)
+		addonOK = false
 	} else {
 		for _, item := range addonList.Items {
 			name, _, _ := unstructured.NestedString(item.Object, "metadata", "name")
@@ -281,20 +311,24 @@ func (h *Handler) hubFlagsLive(ctx context.Context) hubFlags {
 
 	return hubFlags{
 		isGlobalHub:              isGlobalHub,
-		localHubName:             localHubName,
-		isHubSelfManaged:         isHubSelfManaged,
+		localHubName:             mcOut.name,
+		isHubSelfManaged:         mcOut.selfManaged,
 		isObservabilityInstalled: isObservabilityInstalled,
-		authentication:           authentication,
+		authentication:           authOut.authentication,
+		ok:                       globalOK && mcOut.ok && authOut.ok && addonOK,
 	}
 }
 
-func (h *Handler) isGlobalHubCached(ctx context.Context) bool {
+// isGlobalHubCached returns whether the MulticlusterGlobalHub CRD exists and
+// whether that result may be cached. NotFound is a successful negative; other
+// errors return false,false so a later request can retry.
+func (h *Handler) isGlobalHubCached(ctx context.Context) (bool, bool) {
 	now := time.Now()
 	h.globalHubMu.Lock()
 	if now.Before(h.globalHubUntil) {
 		value := h.globalHubValue
 		h.globalHubMu.Unlock()
-		return value
+		return value, true
 	}
 	h.globalHubMu.Unlock()
 
@@ -306,15 +340,18 @@ func (h *Handler) isGlobalHubCached(ctx context.Context) bool {
 		if kind == "CustomResourceDefinition" {
 			isGlobalHub = true
 		}
-	} else if !apierrors.IsNotFound(err) {
+	} else if apierrors.IsNotFound(err) {
+		isGlobalHub = false
+	} else {
 		applog.Logger().Error("get global hub CRD failed", "error", err)
+		return false, false
 	}
 
 	h.globalHubMu.Lock()
 	h.globalHubValue = isGlobalHub
 	h.globalHubUntil = now.Add(globalHubCRDCacheTTL)
 	h.globalHubMu.Unlock()
-	return isGlobalHub
+	return isGlobalHub, true
 }
 
 func buildAuthentication(obj map[string]interface{}) map[string]interface{} {

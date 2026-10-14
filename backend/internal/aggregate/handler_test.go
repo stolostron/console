@@ -93,6 +93,22 @@ func TestNotFoundEmptyBody(t *testing.T) {
 	}
 }
 
+func TestApplicationsPageLessThanOne(t *testing.T) {
+	h := testHandler(t, nil)
+	resp := postAggregate(t, h, "/aggregate/applications", RequestListView{Page: 0, PerPage: 10})
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+	var out ResultListView
+	if err := json.NewDecoder(resp.Body).Decode(&out); err != nil {
+		t.Fatal(err)
+	}
+	if out.Page != 1 {
+		t.Fatalf("page %d", out.Page)
+	}
+}
+
 func TestApplicationsInvalidJSON500(t *testing.T) {
 	h := testHandler(t, nil)
 	resp := postAggregate(t, h, "/aggregate/applications", "{")

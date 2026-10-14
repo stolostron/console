@@ -87,7 +87,14 @@ func hashToken(token string) string {
 }
 
 func (a *SSARAccess) Authorized(ctx context.Context, token string, items []App, start, stop int) []App {
-	authorized := make([]App, 0, stop-start)
+	capHint := stop - start
+	if capHint < 0 {
+		capHint = 0
+	}
+	if capHint > len(items) {
+		capHint = len(items)
+	}
+	authorized := make([]App, 0, capHint)
 	inx := 0
 	chunkSize := 50
 	if stop > 100 {

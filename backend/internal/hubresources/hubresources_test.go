@@ -4,11 +4,13 @@ package hubresources_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -91,9 +93,15 @@ func TestMCHFineGrainedRBAC_Enabled(t *testing.T) {
 	}
 }
 
+var mchGVR = schema.GroupVersionResource{
+	Group:    "operator.open-cluster-management.io",
+	Version:  "v1",
+	Resource: "multiclusterhubs",
+}
+
 func mchListKinds() map[schema.GroupVersionResource]string {
 	return map[schema.GroupVersionResource]string{
-		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+		mchGVR: "MultiClusterHubList",
 	}
 }
 
@@ -187,5 +195,80 @@ func TestMCHFineGrainedRBAC_Disabled(t *testing.T) {
 	}
 	if ok {
 		t.Fatal("expected disabled")
+	}
+}
+
+func namedMCH(namespace string) *unstructured.Unstructured {
+	obj := mchObject(false)
+	obj.SetNamespace(namespace)
+	return obj
+}
+
+func TestCachedMCHNamespaceReusesSuccess(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), namedMCH("open-cluster-management"))
+	var lists int
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists++
+		return false, nil, nil
+	})
+	lookup := hubresources.CachedMCHNamespace(client)
+	ctx := context.Background()
+	if got := lookup(ctx); got != "open-cluster-management" {
+		t.Fatalf("namespace %q", got)
+	}
+	if got := lookup(ctx); got != "open-cluster-management" {
+		t.Fatalf("reuse %q", got)
+	}
+	if lists != 1 {
+		t.Fatalf("lists %d", lists)
+	}
+}
+
+func TestCachedMCHNamespaceDoesNotCacheFailure(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), namedMCH("open-cluster-management"))
+	fail := true
+	var lists int
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists++
+		if fail {
+			fail = false
+			return true, nil, errors.New("temporary")
+		}
+		return false, nil, nil
+	})
+	lookup := hubresources.CachedMCHNamespace(client)
+	ctx := context.Background()
+	if got := lookup(ctx); got != "" {
+		t.Fatalf("error cached as %q", got)
+	}
+	if got := lookup(ctx); got != "open-cluster-management" {
+		t.Fatalf("retry %q", got)
+	}
+	if got := lookup(ctx); got != "open-cluster-management" {
+		t.Fatalf("reuse %q", got)
+	}
+	if lists != 2 {
+		t.Fatalf("lists %d", lists)
+	}
+
+	empty := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds())
+	lists = 0
+	empty.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists++
+		return false, nil, nil
+	})
+	lookup = hubresources.CachedMCHNamespace(empty)
+	if got := lookup(ctx); got != "" {
+		t.Fatalf("empty cached as %q", got)
+	}
+	obj := namedMCH("hub-ns")
+	if _, err := empty.Resource(mchGVR).Namespace("hub-ns").Create(ctx, obj, metav1.CreateOptions{}); err != nil {
+		t.Fatal(err)
+	}
+	if got := lookup(ctx); got != "hub-ns" {
+		t.Fatalf("after create %q", got)
+	}
+	if lists != 2 {
+		t.Fatalf("empty lists %d", lists)
 	}
 }

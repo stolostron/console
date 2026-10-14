@@ -4,6 +4,8 @@ package rbac
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"sort"
 	"sync"
 	"time"
@@ -81,8 +83,13 @@ func (a *SSARAccess) CanSee(ctx context.Context, userToken string, role *rbacv1.
 	return a.ssar(ctx, userToken, "get", role.Name)
 }
 
+func hashToken(token string) string {
+	sum := sha256.Sum256([]byte(token))
+	return hex.EncodeToString(sum[:])
+}
+
 func (a *SSARAccess) ssar(ctx context.Context, userToken, verb, name string) (bool, error) {
-	key := cacheKey{token: userToken, verb: verb, name: name}
+	key := cacheKey{token: hashToken(userToken), verb: verb, name: name}
 	now := time.Now()
 	a.mu.Lock()
 	if e, ok := a.cache[key]; ok && e.expiry.After(now) {
