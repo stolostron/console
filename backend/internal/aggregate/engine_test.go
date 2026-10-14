@@ -5,11 +5,13 @@ package aggregate
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -21,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/fake"
+	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
@@ -281,5 +284,227 @@ func TestRebuildLocalMemoizesListKind(t *testing.T) {
 	e.mu.Unlock()
 	if got := cl.count("cluster.open-cluster-management.io/v1|ManagedCluster"); got != 1 {
 		t.Fatalf("ManagedCluster lists %d want 1", got)
+	}
+}
+
+func TestSearchLoopSkipsSearchWhenMCHMissing(t *testing.T) {
+	var hits, lists atomic.Int32
+	client := mchFake()
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists.Add(1)
+		return false, nil, nil
+	})
+	ts := countingSearch(t, &hits, true, nil)
+	defer ts.Close()
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	waitAtomic(t, &lists, 2)
+	deadline := time.Now().Add(2 * time.Second)
+	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+		if time.Now().After(deadline) {
+			t.Fatal("expected local rebuild while MultiClusterHub is missing")
+		}
+		time.Sleep(time.Millisecond)
+	}
+	cancel()
+	<-done
+	if hits.Load() != 0 {
+		t.Fatalf("search hits %d want 0", hits.Load())
+	}
+}
+
+func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	ts := countingSearch(t, &hits, false, first)
+	defer ts.Close()
+	cl := &countingLister{inner: MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}}
+	e := NewEngine(cl, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
+	e.retryWait = 30 * time.Second
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for ping")
+	}
+	deadline := time.Now().Add(2 * time.Second)
+	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+		if time.Now().After(deadline) {
+			t.Fatal("expected local rebuild while search API is missing")
+		}
+		time.Sleep(time.Millisecond)
+	}
+	cancel()
+	<-done
+	if hits.Load() != 1 {
+		t.Fatalf("search hits %d want 1", hits.Load())
+	}
+}
+
+func TestSearchLoopRechecksMCHBetweenFailedPings(t *testing.T) {
+	var hits, lists atomic.Int32
+	var mu sync.Mutex
+	listsAtHit := make([]int32, 0, 2)
+	client := mchFake(mchObject())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		lists.Add(1)
+		return false, nil, nil
+	})
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		mu.Lock()
+		listsAtHit = append(listsAtHit, lists.Load())
+		mu.Unlock()
+		hits.Add(1)
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"app.k8s.io/v1beta1|Application":                       {},
+		"argoproj.io/v1alpha1|Application":                     {},
+		"argoproj.io/v1alpha1|ApplicationSet":                  {},
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	waitAtomic(t, &hits, 2)
+	waitAtomic(t, &lists, 2)
+	cancel()
+	<-done
+	mu.Lock()
+	defer mu.Unlock()
+	if len(listsAtHit) < 2 {
+		t.Fatalf("recorded pings %d want at least 2", len(listsAtHit))
+	}
+	if listsAtHit[1] < 2 {
+		t.Fatalf("second ping observed %d hub lists, want at least 2", listsAtHit[1])
+	}
+}
+
+func TestSearchLoopPingsWhenMCHPresent(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	ts := countingSearch(t, &hits, true, first)
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, mchFake(mchObject()))
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for ping")
+	}
+	cancel()
+	<-done
+	if hits.Load() < 1 {
+		t.Fatal("expected search ping")
+	}
+}
+
+func TestSearchLoopContinuesSearchOnMCHListError(t *testing.T) {
+	var hits atomic.Int32
+	first := make(chan struct{})
+	client := mchFake(mchObject())
+	client.PrependReactor("list", "multiclusterhubs", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("temporary apiserver timeout")
+	})
+	ts := countingSearch(t, &hits, true, first)
+	defer ts.Close()
+	e := NewEngine(MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+	}, &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL, Token: "sa"}, client)
+	e.retryWait = time.Millisecond
+	cancel, done := startSearchLoop(t, e)
+	select {
+	case <-first:
+	case <-time.After(2 * time.Second):
+		t.Fatal("timed out waiting for search; MCH list error should not skip aggregation")
+	}
+	cancel()
+	<-done
+	if hits.Load() < 1 {
+		t.Fatal("expected search ping despite MCH list error")
+	}
+}
+
+func mchListKinds() map[schema.GroupVersionResource]string {
+	return map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+	}
+}
+
+func mchObject() *unstructured.Unstructured {
+	obj := &unstructured.Unstructured{}
+	obj.SetGroupVersionKind(schema.GroupVersionKind{
+		Group:   "operator.open-cluster-management.io",
+		Version: "v1",
+		Kind:    "MultiClusterHub",
+	})
+	obj.SetName("hub")
+	obj.SetNamespace("open-cluster-management")
+	return obj
+}
+
+func mchFake(objs ...runtime.Object) *fake.FakeDynamicClient {
+	return fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), mchListKinds(), objs...)
+}
+
+func countingSearch(t *testing.T, hits *atomic.Int32, pingOK bool, first chan struct{}) *httptest.Server {
+	t.Helper()
+	var once sync.Once
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		hits.Add(1)
+		if first != nil {
+			once.Do(func() { close(first) })
+		}
+		if !pingOK {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"data":{"searchResult":[]}}`))
+	}))
+}
+
+func startSearchLoop(t *testing.T, e *Engine) (context.CancelFunc, <-chan struct{}) {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		e.searchLoop(ctx)
+	}()
+	t.Cleanup(func() {
+		cancel()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("searchLoop did not exit")
+		}
+	})
+	return cancel, done
+}
+
+func waitAtomic(t *testing.T, v *atomic.Int32, n int32) {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	for v.Load() < n {
+		if time.Now().After(deadline) {
+			t.Fatalf("timed out waiting for %d, got %d", n, v.Load())
+		}
+		time.Sleep(time.Millisecond)
 	}
 }

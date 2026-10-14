@@ -29,7 +29,7 @@ Public listener for the ACM/MCE console. It owns TLS, health probes, config, aut
 | `internal/clusterinfo` | `/hub`, `/cluster-version`, `/hypershift-status`, MCH/MCE components, `/operatorCheck`, `/apiPaths` |
 | `internal/cors` | Development CORS middleware (OPTIONS preflight for standalone dev) |
 | `internal/events/rbac` | `GET /events/rbac` SSE: ClusterRole informer (`vm-clusterroles` label) + per-user SSAR |
-| `internal/events/hub` | `GET /events` SSE: informer fan-out, snapshot packets, per-user SSAR (60s TTL). DELETED is not RBAC-filtered |
+| `internal/events/hub` | `GET /events` SSE: informer fan-out, snapshot packets, per-user RBAC (cluster `list` SSAR → SelfSubjectRulesReview → SSAR fallback; 60s TTL). DELETED is not RBAC-filtered |
 | `internal/aggregate` | `POST /aggregate/{applications,statuses,appSetData}`: informer cache + Search SA GraphQL, Fuse.js-compatible filter, windowed SSAR |
 | `internal/searchapi` | Search GraphQL client used by the aggregator (`/searchapi/graphql` or `/federated`) |
 | `internal/searchproxy` | `POST /proxy/search` and graphql-ws relay to search-api with the **user** token (`connection_init` Authorization injection) |
@@ -98,7 +98,7 @@ The Go process starts hub list/watch **after** the public listener is bound. Sta
 
 Long-tail HTTP is always registered. Auth is GET `/api` (401 empty body). ROSA wizard POSTs exchange OCM client credentials at SSO then call `api.openshift.com`. `POST /ansibletower` reads the credential Secret with the **user** token, allow-lists AAP pathnames, and GETs the tower with `InsecureSkipVerify`. `POST /placement-debug` reverse-proxies to `PLACEMENT_DEBUG_URL` (or the in-cluster placement service) with the OCM CA ConfigMap `open-cluster-management-hub/ca-bundle-configmap`; missing CA → 503. `POST /upgrade-risks-prediction` lists `openshift-config` secrets with the **SA**, extracts `pull-secret` `cloud.openshift.com` auth, and POSTs Insights in chunks of 100 (`UPGRADE_RISKS_PREDICTION_URL` or console.redhat.com).
 
-`GET /events` framing: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). **DELETED events are broadcast without per-user SSAR** — a known gap; do not “fix” it in this stream without a follow-up.
+`GET /events` framing: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). Per-user RBAC: cluster-scoped `list` SSAR, then one SelfSubjectRulesReview per token+namespace (`deny-all` / `allow-all` / `allow-names`; empty OpenShift rules are deny-all). Cluster-scoped kinds that are not deny-all are confirmed with SSAR `get` so a RoleBinding in `default` cannot impersonate cluster access. Incomplete reviews fall back to namespaced `list` then `get`. **DELETED events are broadcast without per-user SSAR** — a known gap; do not “fix” it in this stream without a follow-up.
 
 ## Shared artifacts
 
