@@ -4,6 +4,7 @@ package searchproxy
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"io"
 	"net"
@@ -416,26 +417,94 @@ func TestWebSocketNonProductionAllowsForeignOrigin(t *testing.T) {
 	}
 }
 
+func TestRequestScheme(t *testing.T) {
+	tests := []struct {
+		name string
+		tls  bool
+		fwd  string
+		want string
+	}{
+		{name: "plain http", want: "http"},
+		{name: "tls", tls: true, want: "https"},
+		{name: "tls ignores forwarded proto", tls: true, fwd: "http", want: "https"},
+		{name: "forwarded https", fwd: "https", want: "https"},
+		{name: "forwarded first of list", fwd: "https, http", want: "https"},
+		{name: "forwarded trim and lower", fwd: " HTTPS ", want: "https"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+			if tt.tls {
+				req.TLS = &tls.ConnectionState{}
+			}
+			if tt.fwd != "" {
+				req.Header.Set("X-Forwarded-Proto", tt.fwd)
+			}
+			if got := requestScheme(req); got != tt.want {
+				t.Fatalf("got %q want %q", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestCheckConsoleOrigin(t *testing.T) {
-	req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
-	req.Host = "console.example:4000"
-	if !checkConsoleOrigin(req) {
-		t.Fatal("empty origin")
+	tests := []struct {
+		name   string
+		host   string
+		origin string
+		tls    bool
+		fwd    string
+		want   bool
+	}{
+		{name: "empty origin", host: "console.example:4000", want: true},
+		{name: "http same host", host: "console.example:4000", origin: "http://console.example:4000", want: true},
+		{name: "http host case fold", host: "console.example:4000", origin: "http://CONSOLE.EXAMPLE:4000", want: true},
+		{name: "foreign host", host: "console.example:4000", origin: "http://evil.example", want: false},
+		{name: "invalid origin", host: "console.example:4000", origin: "://bad", want: false},
+		{name: "tls https same host", host: "console.example:4000", origin: "https://console.example:4000", tls: true, want: true},
+		{name: "tls rejects http same host", host: "console.example:4000", origin: "http://console.example:4000", tls: true, want: false},
+		{name: "forwarded https same host", host: "console.example:4000", origin: "https://console.example:4000", fwd: "https", want: true},
+		{name: "forwarded https rejects http", host: "console.example:4000", origin: "http://console.example:4000", fwd: "https", want: false},
+		{name: "http rejects https same host", host: "console.example:4000", origin: "https://console.example:4000", want: false},
 	}
-	req.Header.Set("Origin", "https://console.example:4000")
-	if !checkConsoleOrigin(req) {
-		t.Fatal("same host")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+			req.Host = tt.host
+			if tt.tls {
+				req.TLS = &tls.ConnectionState{}
+			}
+			if tt.fwd != "" {
+				req.Header.Set("X-Forwarded-Proto", tt.fwd)
+			}
+			if tt.origin != "" {
+				req.Header.Set("Origin", tt.origin)
+			}
+			if got := checkConsoleOrigin(req); got != tt.want {
+				t.Fatalf("got %v want %v", got, tt.want)
+			}
+		})
 	}
-	req.Header.Set("Origin", "https://CONSOLE.EXAMPLE:4000")
-	if !checkConsoleOrigin(req) {
-		t.Fatal("case fold")
+}
+
+func TestWebSocketProductionRejectsHTTPOriginOnTLS(t *testing.T) {
+	dialed := false
+	h := New(Options{
+		Authn:      authOK,
+		Production: true,
+		Endpoint: func(context.Context) string {
+			dialed = true
+			return "http://127.0.0.1:1/searchapi/graphql"
+		},
+	})
+	req := wsUpgradeRequest("http://console.example:4000")
+	req.TLS = &tls.ConnectionState{}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status %d", rec.Code)
 	}
-	req.Header.Set("Origin", "https://evil.example")
-	if checkConsoleOrigin(req) {
-		t.Fatal("foreign host")
-	}
-	req.Header.Set("Origin", "://bad")
-	if checkConsoleOrigin(req) {
-		t.Fatal("invalid origin")
+	if dialed {
+		t.Fatal("upstream dialed after scheme reject")
 	}
 }

@@ -101,7 +101,7 @@ func (h *Handler) originChecker() func(*http.Request) bool {
 }
 
 // checkConsoleOrigin allows empty Origin (non-browser / OCP plugin proxy) and
-// same-host Origin as the request Host (standalone console).
+// same-host Origin whose scheme matches the request (standalone console).
 func checkConsoleOrigin(r *http.Request) bool {
 	origin := r.Header.Get("Origin")
 	if origin == "" {
@@ -111,7 +111,25 @@ func checkConsoleOrigin(r *http.Request) bool {
 	if err != nil || u.Host == "" {
 		return false
 	}
-	return strings.EqualFold(u.Host, r.Host)
+	if !strings.EqualFold(u.Host, r.Host) {
+		return false
+	}
+	return strings.EqualFold(u.Scheme, requestScheme(r))
+}
+
+// requestScheme is https when the peer connection is TLS, otherwise the first
+// X-Forwarded-Proto value (TLS terminated by a trusted proxy), else http.
+func requestScheme(r *http.Request) string {
+	if r.TLS != nil {
+		return "https"
+	}
+	if proto := r.Header.Get("X-Forwarded-Proto"); proto != "" {
+		if i := strings.IndexByte(proto, ','); i >= 0 {
+			proto = proto[:i]
+		}
+		return strings.ToLower(strings.TrimSpace(proto))
+	}
+	return "http"
 }
 
 func subprotocolsForUpstream(r *http.Request) []string {
