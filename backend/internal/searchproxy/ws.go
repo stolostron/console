@@ -7,6 +7,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -16,6 +17,12 @@ import (
 )
 
 func (h *Handler) serveWebSocket(w http.ResponseWriter, r *http.Request, token string) {
+	checkOrigin := h.originChecker()
+	if !checkOrigin(r) {
+		failBeforeUpgrade(w, http.StatusForbidden)
+		return
+	}
+
 	endpoint := ""
 	if h.Endpoint != nil {
 		endpoint = h.Endpoint(r.Context())
@@ -46,7 +53,7 @@ func (h *Handler) serveWebSocket(w http.ResponseWriter, r *http.Request, token s
 	}
 
 	upgrader := websocket.Upgrader{
-		CheckOrigin:       func(*http.Request) bool { return true },
+		CheckOrigin:       checkOrigin,
 		EnableCompression: false,
 		Subprotocols:      subprotocolsForUpstream(r),
 	}
@@ -81,6 +88,30 @@ func (h *Handler) websocketDialer(r *http.Request) *websocket.Dialer {
 func failBeforeUpgrade(w http.ResponseWriter, status int) {
 	w.Header().Set("Connection", "close")
 	w.WriteHeader(status)
+}
+
+func (h *Handler) originChecker() func(*http.Request) bool {
+	if h.CheckOrigin != nil {
+		return h.CheckOrigin
+	}
+	if !h.Production {
+		return func(*http.Request) bool { return true }
+	}
+	return checkConsoleOrigin
+}
+
+// checkConsoleOrigin allows empty Origin (non-browser / OCP plugin proxy) and
+// same-host Origin as the request Host (standalone console).
+func checkConsoleOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	u, err := url.Parse(origin)
+	if err != nil || u.Host == "" {
+		return false
+	}
+	return strings.EqualFold(u.Host, r.Host)
 }
 
 func subprotocolsForUpstream(r *http.Request) []string {

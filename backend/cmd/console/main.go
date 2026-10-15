@@ -217,6 +217,7 @@ func run() error {
 			RESTConfig: restCfg,
 			TLSConfig:  serviceTLS,
 			Endpoint:   searchDiscovery.Endpoint,
+			Production: cfg.Production,
 		})),
 		server.WithRosa(rosa.New(rosa.Options{
 			RESTConfig: restCfg,

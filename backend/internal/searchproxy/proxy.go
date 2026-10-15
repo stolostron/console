@@ -39,6 +39,10 @@ type Options struct {
 	Authn       func(w http.ResponseWriter, r *http.Request) (string, bool)
 	DialTimeout time.Duration
 	Dialer      *websocket.Dialer
+	// Production enables same-origin WebSocket checks (empty Origin still allowed).
+	Production bool
+	// CheckOrigin overrides Production and the default allow-all non-production checker.
+	CheckOrigin func(*http.Request) bool
 }
 
 // Handler proxies POST /proxy/search and graphql-ws upgrades to search-api.
@@ -48,6 +52,8 @@ type Handler struct {
 	Authn       func(w http.ResponseWriter, r *http.Request) (string, bool)
 	DialTimeout time.Duration
 	Dialer      *websocket.Dialer
+	Production  bool
+	CheckOrigin func(*http.Request) bool
 	proxy       *httputil.ReverseProxy
 }
 
@@ -59,6 +65,8 @@ func New(opts Options) *Handler {
 		Authn:       opts.Authn,
 		DialTimeout: opts.DialTimeout,
 		Dialer:      opts.Dialer,
+		Production:  opts.Production,
+		CheckOrigin: opts.CheckOrigin,
 	}
 	if h.DialTimeout <= 0 {
 		h.DialTimeout = defaultDialTimeout
