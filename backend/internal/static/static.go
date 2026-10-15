@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stolostron/console/backend/internal/acceptenc"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -154,7 +155,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Add("Vary", "Accept-Encoding")
 	w.WriteHeader(http.StatusOK)
 	if _, copyErr := io.Copy(w, f); copyErr != nil {
 		applog.Logger().Error("static copy", "error", copyErr)
@@ -207,7 +208,7 @@ func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept
 	w.Header().Set("Content-Encoding", token)
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Add("Vary", "Accept-Encoding")
 	w.WriteHeader(http.StatusOK)
 	if _, copyErr := io.Copy(w, f); copyErr != nil {
 		applog.Logger().Error("static copy", "error", copyErr)
@@ -216,16 +217,18 @@ func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept
 }
 
 func acceptsEncoding(header, token string) bool {
+	token = strings.ToLower(token)
+	found := false
+	q := 0
 	for _, part := range strings.Split(header, ",") {
-		enc := strings.TrimSpace(part)
-		if i := strings.Index(enc, ";"); i >= 0 {
-			enc = strings.TrimSpace(enc[:i])
+		name, weight, ok := acceptenc.Parse(part)
+		if !ok || name != token || found {
+			continue
 		}
-		if enc == token {
-			return true
-		}
+		found = true
+		q = weight
 	}
-	return false
+	return found && q > 0
 }
 
 func statFile(fsys fs.FS, name string) (fs.FileInfo, error) {

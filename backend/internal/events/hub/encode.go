@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/stolostron/console/backend/internal/acceptenc"
 )
 
 type streamEncoder struct {
@@ -23,13 +25,51 @@ func negotiateEncoding(accept string, disabled bool) string {
 	if disabled {
 		return "identity"
 	}
-	if strings.Contains(accept, "gzip") {
+	gzipQ, gzipSet := 0, false
+	deflateQ, deflateSet := 0, false
+	star := -1
+	for _, part := range strings.Split(accept, ",") {
+		name, q, ok := acceptenc.Parse(part)
+		if !ok {
+			continue
+		}
+		switch name {
+		case "gzip":
+			if !gzipSet {
+				gzipQ, gzipSet = q, true
+			}
+		case "deflate":
+			if !deflateSet {
+				deflateQ, deflateSet = q, true
+			}
+		case "*":
+			if star < 0 {
+				star = q
+			}
+		}
+	}
+	gq, gzipOK := codingQ(gzipSet, gzipQ, star)
+	dq, deflateOK := codingQ(deflateSet, deflateQ, star)
+	switch {
+	case gzipOK && (!deflateOK || gq >= dq):
 		return "gzip"
-	}
-	if strings.Contains(accept, "deflate") {
+	case deflateOK:
 		return "deflate"
+	default:
+		return "identity"
 	}
-	return "identity"
+}
+
+// codingQ resolves one offered coding. An explicit q=0 stays unacceptable, and
+// "*" fills in only a coding that was not listed.
+func codingQ(set bool, q, star int) (int, bool) {
+	if set {
+		return q, q > 0
+	}
+	if star > 0 {
+		return star, true
+	}
+	return 0, false
 }
 
 func streamCompressionDisabled() bool {
