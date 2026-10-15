@@ -194,6 +194,55 @@ func TestWatchCertsReloads(t *testing.T) {
 	}
 }
 
+func TestWatchCertsReloadsFilesMissedBeforeWatch(t *testing.T) {
+	dir := t.TempDir()
+	certA, keyA := writeRSACert(t, dir, "before-a")
+	r := NewReloader()
+	if err := r.LoadCertificate(certA, keyA); err != nil {
+		t.Fatal(err)
+	}
+	certB, keyB := writeRSACert(t, dir, "before-b")
+	servingCert := filepath.Join(dir, "tls.crt")
+	servingKey := filepath.Join(dir, "tls.key")
+	certPEM, err := os.ReadFile(certB)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if writeErr := os.WriteFile(servingCert, certPEM, 0o600); writeErr != nil {
+		t.Fatal(writeErr)
+	}
+	keyPEM, err := os.ReadFile(keyB)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if writeErr := os.WriteFile(servingKey, keyPEM, 0o600); writeErr != nil {
+		t.Fatal(writeErr)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go WatchCerts(ctx, r, dir, servingCert, servingKey, time.Hour)
+
+	deadline := time.Now().Add(3 * time.Second)
+	for {
+		cert, getErr := r.GetCertificate(nil)
+		if getErr != nil {
+			t.Fatal(getErr)
+		}
+		leaf, parseErr := x509.ParseCertificate(cert.Certificate[0])
+		if parseErr != nil {
+			t.Fatal(parseErr)
+		}
+		if leaf.Subject.CommonName == "before-b" {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("certificate stayed %q", leaf.Subject.CommonName)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+}
+
 func TestRejectTLS12AgainstModern(t *testing.T) {
 	dir := t.TempDir()
 	cert, key := writeRSACert(t, dir, "modern")

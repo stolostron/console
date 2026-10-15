@@ -3,6 +3,7 @@
 package tlsconfig
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"errors"
@@ -165,8 +166,16 @@ func WatchCerts(ctx context.Context, r *Reloader, dir, certFile, keyFile string,
 	}
 	pending := false
 	reload := func() {
+		var prevDER []byte
+		if prev, err := r.GetCertificate(nil); err == nil && len(prev.Certificate) > 0 {
+			prevDER = prev.Certificate[0]
+		}
 		if err := r.LoadCertificate(certFile, keyFile); err != nil {
 			applog.Logger().Error("TLS certificate reload failed; keeping previous", "error", err)
+			return
+		}
+		next, err := r.GetCertificate(nil)
+		if err != nil || len(next.Certificate) == 0 || bytes.Equal(prevDER, next.Certificate[0]) {
 			return
 		}
 		applog.Logger().Info("TLS certificate reloaded",
@@ -174,6 +183,8 @@ func WatchCerts(ctx context.Context, r *Reloader, dir, certFile, keyFile string,
 			"key", filepath.Base(keyFile),
 		)
 	}
+	// Pick up a rotation that landed after the startup load and before watcher.Add.
+	reload()
 
 	for {
 		select {
