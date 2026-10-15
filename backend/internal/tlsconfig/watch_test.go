@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -180,7 +181,7 @@ func TestWatchErrorEventRetries(t *testing.T) {
 		t.Fatal("watch not started")
 	}
 	waitMin(t, r, tls.VersionTLS12)
-	fw.Error(&metav1.Status{Message: "too old resource version"})
+	fw.Error(expiredWatchStatus())
 	<-ctx.Done()
 }
 
@@ -200,9 +201,94 @@ func TestIsImmediateRetry(t *testing.T) {
 	if !isImmediateRetry(errWatchClosed) {
 		t.Fatal("watch closed should immediate retry")
 	}
+	if !isImmediateRetry(errors.New("The resourceVersion for the provided watch is too old.")) {
+		t.Fatal("expected immediate retry for etcd compaction message")
+	}
+	if !isImmediateRetry(apierrors.NewResourceExpired("The resourceVersion for the provided watch is too old.")) {
+		t.Fatal("expected immediate retry for Expired status")
+	}
 	if isImmediateRetry(errors.New("connection refused")) {
 		t.Fatal("generic error is not immediate")
 	}
+}
+
+func expiredWatchStatus() *metav1.Status {
+	return &apierrors.NewResourceExpired("The resourceVersion for the provided watch is too old.").ErrStatus
+}
+
+func TestWatchErrorEventPreservesExpiredStatus(t *testing.T) {
+	err := watchErrorEvent(k8swatch.Event{Type: k8swatch.Error, Object: expiredWatchStatus()})
+	if !apierrors.IsResourceExpired(err) {
+		t.Fatalf("err=%v", err)
+	}
+	messageOnly := watchErrorEvent(k8swatch.Event{Type: k8swatch.Error, Object: &metav1.Status{
+		Message: "The resourceVersion for the provided watch is too old.",
+	}})
+	if !isImmediateRetry(messageOnly) {
+		t.Fatalf("message-only compaction err=%v", messageOnly)
+	}
+	unstructuredStatus := &unstructured.Unstructured{Object: map[string]any{
+		"kind":       "Status",
+		"apiVersion": "v1",
+		"status":     "Failure",
+		"message":    "The resourceVersion for the provided watch is too old.",
+		"reason":     "Expired",
+		"code":       int64(410),
+	}}
+	err = watchErrorEvent(k8swatch.Event{Type: k8swatch.Error, Object: unstructuredStatus})
+	if !apierrors.IsResourceExpired(err) {
+		t.Fatalf("unstructured err=%v", err)
+	}
+}
+
+func TestWatchExpiredRelistsWithoutBackoff(t *testing.T) {
+	old := afterError
+	var backedOff atomic.Bool
+	afterError = func() time.Duration {
+		backedOff.Store(true)
+		return time.Hour
+	}
+	defer func() { afterError = old }()
+
+	list := &unstructured.UnstructuredList{}
+	list.SetResourceVersion("1")
+	list.Items = []unstructured.Unstructured{*apiServerObj("Intermediate", "1", nil)}
+	secondList := make(chan struct{})
+	stub := &relistLW{list: list, second: secondList}
+	r := NewReloader()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go runWatch(ctx, stub, r)
+
+	select {
+	case <-secondList:
+	case <-time.After(2 * time.Second):
+		t.Fatal("expired watch did not relist")
+	}
+	if backedOff.Load() {
+		t.Fatal("expired watch used the error backoff")
+	}
+}
+
+type relistLW struct {
+	list   *unstructured.UnstructuredList
+	lists  atomic.Int32
+	second chan struct{}
+}
+
+func (s *relistLW) List(context.Context) (*unstructured.UnstructuredList, error) {
+	if s.lists.Add(1) == 2 {
+		close(s.second)
+	}
+	return s.list, nil
+}
+
+func (s *relistLW) Watch(context.Context, string) (k8swatch.Interface, error) {
+	fw := k8swatch.NewFake()
+	if s.lists.Load() == 1 {
+		go fw.Error(expiredWatchStatus())
+	}
+	return fw, nil
 }
 
 func TestWatchAPIServerNilClient(t *testing.T) {

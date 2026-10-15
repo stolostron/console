@@ -144,8 +144,10 @@ func watchUntil(ctx context.Context, src listerWatcher, r *Reloader, resourceVer
 }
 
 func watchErrorEvent(ev k8swatch.Event) error {
-	if st, ok := ev.Object.(*metav1.Status); ok && st.Message != "" {
-		return errors.New(st.Message)
+	if ev.Object != nil {
+		if err := apierrors.FromObject(ev.Object); !apierrors.IsUnexpectedObjectError(err) {
+			return err
+		}
 	}
 	if err, ok := ev.Object.(error); ok {
 		return err
@@ -181,6 +183,7 @@ func isImmediateRetry(err error) bool {
 	}
 	msg := err.Error()
 	return strings.Contains(msg, "too old resource version") ||
+		strings.Contains(msg, "resourceVersion for the provided watch is too old") ||
 		apierrors.IsResourceExpired(err) ||
 		apierrors.IsGone(err)
 }
