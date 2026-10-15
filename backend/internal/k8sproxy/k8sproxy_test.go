@@ -9,6 +9,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
@@ -27,10 +29,17 @@ func newTestHandler(t *testing.T, upstream http.Handler) (*httptest.Server, http
 	return up, k8sproxy.New(clusterURL, tlsCfg)
 }
 
+func drainResponse(t *testing.T, resp *http.Response) {
+	t.Helper()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestUnauthorizedWithoutToken(t *testing.T) {
-	var called bool
+	var called atomic.Bool
 	_, h := newTestHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		called = true
+		called.Store(true)
 	}))
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -40,22 +49,28 @@ func TestUnauthorizedWithoutToken(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
-	body, _ := io.ReadAll(resp.Body)
 	if len(body) != 0 {
 		t.Fatalf("expected empty body, got %q", body)
 	}
-	if called {
+	if called.Load() {
 		t.Fatal("upstream should not be called")
 	}
 }
 
 func TestForwardsBearerToken(t *testing.T) {
 	var capturedAuth string
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -67,7 +82,10 @@ func TestForwardsBearerToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedAuth != "Bearer user-token" {
 		t.Fatalf("Authorization %q", capturedAuth)
 	}
@@ -75,8 +93,11 @@ func TestForwardsBearerToken(t *testing.T) {
 
 func TestCookieTokenWinsOverBearer(t *testing.T) {
 	var capturedAuth string
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -89,7 +110,10 @@ func TestCookieTokenWinsOverBearer(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedAuth != "Bearer cookie-token" {
 		t.Fatalf("Authorization %q", capturedAuth)
 	}
@@ -97,9 +121,12 @@ func TestCookieTokenWinsOverBearer(t *testing.T) {
 
 func TestStripsMulticloudPrefix(t *testing.T) {
 	var capturedPath, capturedQuery string
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
 		capturedQuery = r.URL.RawQuery
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -111,7 +138,10 @@ func TestStripsMulticloudPrefix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/api/v1/namespaces" {
 		t.Fatalf("path %q", capturedPath)
 	}
@@ -122,8 +152,11 @@ func TestStripsMulticloudPrefix(t *testing.T) {
 
 func TestRequestHeaderAllowlist(t *testing.T) {
 	var captured http.Header
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		captured = r.Header.Clone()
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -140,7 +173,10 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 
 	if captured.Get("Authorization") != "Bearer token" {
 		t.Fatalf("Authorization %q", captured.Get("Authorization"))
@@ -174,6 +210,7 @@ func TestResponseHeaderAllowlist(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.Header.Get("Content-Type") != "application/json" {
 		t.Fatal("missing Content-Type")
 	}
@@ -201,7 +238,8 @@ func TestPassesThroughStatusCodes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			resp.Body.Close()
+			defer resp.Body.Close()
+			drainResponse(t, resp)
 			if resp.StatusCode != want {
 				t.Fatalf("status %d want %d", resp.StatusCode, want)
 			}
@@ -211,9 +249,12 @@ func TestPassesThroughStatusCodes(t *testing.T) {
 
 func TestStreamsRequestBody(t *testing.T) {
 	var capturedBody string
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
+		capturedMu.Lock()
 		capturedBody = string(b)
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusCreated)
 	}))
 	ts := httptest.NewServer(h)
@@ -227,10 +268,13 @@ func TestStreamsRequestBody(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusCreated {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedBody != body {
 		t.Fatalf("body %q", capturedBody)
 	}
@@ -252,6 +296,7 @@ func TestBadGatewayWhenUpstreamUnreachable(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusBadGateway {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -259,8 +304,11 @@ func TestBadGatewayWhenUpstreamUnreachable(t *testing.T) {
 
 func TestVersionPath(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -272,7 +320,10 @@ func TestVersionPath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/version/" {
 		t.Fatalf("path %q", capturedPath)
 	}
