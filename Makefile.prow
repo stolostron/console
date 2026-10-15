@@ -26,6 +26,7 @@ unit-tests:
 	if [ ! -d "test-output" ]; then \
 		mkdir test-output; \
 	fi
-	npx concurrently --kill-others-on-fail -c green,blue \
-		"npm run test:frontend -- --maxWorkers=2" \
-		"npm run test:backend"
+# Backend first (fast fail) with GOCACHE under /var/tmp: Prow HOME=/tmp, and
+# parallel frontend+Go previously flaked with missing /go/pkg/cache entries.
+	GOCACHE=$$(mktemp -d -p /var/tmp go-cache.XXXXXX) npm run test:backend
+	npm run test:frontend -- --maxWorkers=2
