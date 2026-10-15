@@ -253,6 +253,54 @@ func TestUncompressedWhenNoAcceptEncoding(t *testing.T) {
 	}
 }
 
+// TestServeHTTPPreservesExistingVary covers Handler.ServeHTTP (uncompressed and
+// compressed) adding Accept-Encoding to Vary instead of overwriting a value
+// already set by earlier middleware such as CORS.
+func TestServeHTTPPreservesExistingVary(t *testing.T) {
+	h := static.New(static.Options{FS: os.DirFS(writeTree(t))})
+	cases := []struct {
+		name       string
+		accept     string
+		wantEncode string
+	}{
+		{name: "uncompressed", accept: "", wantEncode: ""},
+		{name: "gzip", accept: "gzip", wantEncode: "gzip"},
+		{name: "brotli", accept: "br", wantEncode: "br"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/assets/app.abc123.js", nil)
+			if tc.accept != "" {
+				req.Header.Set("Accept-Encoding", tc.accept)
+			}
+			rec := httptest.NewRecorder()
+			rec.Header().Add("Vary", "Origin")
+			h.ServeHTTP(rec, req)
+			resp := rec.Result()
+			defer resp.Body.Close()
+			if resp.StatusCode != http.StatusOK {
+				t.Fatalf("status %d", resp.StatusCode)
+			}
+			if resp.Header.Get("Content-Encoding") != tc.wantEncode {
+				t.Fatalf("encoding %q want %q", resp.Header.Get("Content-Encoding"), tc.wantEncode)
+			}
+			vary := resp.Header.Values("Vary")
+			if !headerValuesContain(vary, "Origin") || !headerValuesContain(vary, "Accept-Encoding") {
+				t.Fatalf("vary %q", vary)
+			}
+		})
+	}
+}
+
+func headerValuesContain(values []string, want string) bool {
+	for _, v := range values {
+		if v == want {
+			return true
+		}
+	}
+	return false
+}
+
 func TestIfModifiedSince(t *testing.T) {
 	h := static.New(static.Options{FS: os.DirFS(writeTree(t))})
 	first := get(t, h, "/logo.png", nil)

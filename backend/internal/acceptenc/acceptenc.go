@@ -59,7 +59,8 @@ func parseQMilli(raw string) (int, bool) {
 	if raw == "1" {
 		return 1000, true
 	}
-	if len(raw) < 3 || len(raw) > 5 || raw[1] != '.' {
+	// RFC 9110 allows "0." / "1." with zero fractional digits (len 2).
+	if len(raw) < 2 || len(raw) > 5 || raw[1] != '.' {
 		return 0, false
 	}
 	frac := raw[2:]

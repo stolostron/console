@@ -16,10 +16,11 @@ func Middleware(production bool) func(http.Handler) http.Handler {
 	}
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			h := w.Header()
+			// Origin can change whether CORS headers are present, so always vary.
+			h.Add("Vary", "Origin")
 			if origin := r.Header.Get("Origin"); allowedDevOrigin(origin) {
-				h := w.Header()
 				h.Set("Access-Control-Allow-Origin", origin)
-				h.Set("Vary", "Origin, Access-Control-Allow-Origin")
 				h.Set("Access-Control-Allow-Credentials", "true")
 				if r.Method == http.MethodOptions {
 					if v := r.Header.Get("Access-Control-Request-Method"); v != "" {

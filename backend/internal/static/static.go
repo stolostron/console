@@ -155,7 +155,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	defer f.Close()
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Add("Vary", "Accept-Encoding")
 	w.WriteHeader(http.StatusOK)
 	if _, copyErr := io.Copy(w, f); copyErr != nil {
 		applog.Logger().Error("static copy", "error", copyErr)
@@ -208,7 +208,7 @@ func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept
 	w.Header().Set("Content-Encoding", token)
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Content-Length", strconv.FormatInt(info.Size(), 10))
-	w.Header().Set("Vary", "Accept-Encoding")
+	w.Header().Add("Vary", "Accept-Encoding")
 	w.WriteHeader(http.StatusOK)
 	if _, copyErr := io.Copy(w, f); copyErr != nil {
 		applog.Logger().Error("static copy", "error", copyErr)
