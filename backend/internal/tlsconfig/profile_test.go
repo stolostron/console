@@ -159,6 +159,29 @@ func TestFIPSCustomDropsX25519(t *testing.T) {
 	if !slices.Equal(s.Curves, []tls.CurveID{tls.CurveP521}) {
 		t.Fatalf("Curves %v want P521 only", s.Curves)
 	}
+	if s.noUsableCurves {
+		t.Fatal("a surviving group should still be offered")
+	}
+}
+
+func TestFIPSCustomExplicitGroupsFilteredToNone(t *testing.T) {
+	t.Parallel()
+	s := fromProfile(SecurityProfile{
+		Type: "Custom",
+		Custom: &CustomSpec{
+			MinTLSVersion: "VersionTLS12",
+			Groups:        []string{"X25519", "X25519MLKEM768"},
+		},
+	}, true)
+	if len(s.Curves) != 0 {
+		t.Fatalf("Curves %v want none", s.Curves)
+	}
+	if !s.noUsableCurves {
+		t.Fatal("expected noUsableCurves")
+	}
+	if !slices.Equal(s.rejectedGroups, []string{"X25519", "X25519MLKEM768"}) {
+		t.Fatalf("rejectedGroups %v", s.rejectedGroups)
+	}
 }
 
 func TestSettingsEqual(t *testing.T) {

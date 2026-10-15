@@ -334,3 +334,20 @@ func TestGetCertificateWithoutCert(t *testing.T) {
 		t.Fatal("expected errNoCertificate")
 	}
 }
+
+func TestGetConfigForClientRejectsFilteredGroups(t *testing.T) {
+	r := NewReloader()
+	if !r.Apply(fromProfile(SecurityProfile{
+		Type: "Custom",
+		Custom: &CustomSpec{
+			MinTLSVersion: "VersionTLS12",
+			Groups:        []string{"X25519", "X25519MLKEM768"},
+		},
+	}, true)) {
+		t.Fatal("expected profile change")
+	}
+	_, err := r.GetConfigForClient(nil)
+	if !errors.Is(err, errNoAllowedGroups) {
+		t.Fatalf("GetConfigForClient err=%v", err)
+	}
+}

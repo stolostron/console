@@ -27,6 +27,11 @@ type Settings struct {
 	MaxVersion   uint16
 	CipherSuites []uint16
 	Curves       []tls.CurveID
+	// noUsableCurves is set when an explicit group list filters to nothing.
+	// crypto/tls treats an empty CurvePreferences as its defaults, which would
+	// allow groups the profile did not configure.
+	noUsableCurves bool
+	rejectedGroups []string
 }
 
 type builtinSpec struct {
@@ -131,14 +136,20 @@ func fromProfile(p SecurityProfile, fips bool) Settings {
 	if p.Type == "Custom" && min == tls.VersionTLS13 {
 		ciphers = builtin["Modern"].ciphers
 	}
+	explicitGroups := len(spec.groups) > 0
 	groups := spec.groups
-	if len(groups) == 0 {
+	if !explicitGroups {
 		groups = builtin["Intermediate"].groups
 	}
+	curves := filterCurves(groups, fips)
 	s := Settings{
 		MinVersion:   min,
 		CipherSuites: mapCiphers(ciphers),
-		Curves:       filterCurves(groups, fips),
+		Curves:       curves,
+	}
+	if explicitGroups && len(curves) == 0 {
+		s.noUsableCurves = true
+		s.rejectedGroups = slices.Clone(spec.groups)
 	}
 	if min == tls.VersionTLS13 {
 		s.MaxVersion = tls.VersionTLS13
@@ -169,12 +180,15 @@ func (s Settings) clone() Settings {
 	out := s
 	out.CipherSuites = slices.Clone(s.CipherSuites)
 	out.Curves = slices.Clone(s.Curves)
+	out.rejectedGroups = slices.Clone(s.rejectedGroups)
 	return out
 }
 
 func settingsEqual(a, b Settings) bool {
 	return a.MinVersion == b.MinVersion &&
 		a.MaxVersion == b.MaxVersion &&
+		a.noUsableCurves == b.noUsableCurves &&
 		slices.Equal(a.CipherSuites, b.CipherSuites) &&
-		slices.Equal(a.Curves, b.Curves)
+		slices.Equal(a.Curves, b.Curves) &&
+		slices.Equal(a.rejectedGroups, b.rejectedGroups)
 }

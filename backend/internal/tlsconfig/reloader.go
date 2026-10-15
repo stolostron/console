@@ -22,7 +22,10 @@ const (
 	defaultDebounce = time.Second
 )
 
-var errNoCertificate = errors.New("tls certificate not loaded")
+var (
+	errNoCertificate   = errors.New("tls certificate not loaded")
+	errNoAllowedGroups = errors.New("tls security profile has no usable groups")
+)
 
 // Reloader holds the live TLS settings and certificate. Handshakes read via
 // GetConfigForClient / GetCertificate so profile and cert changes do not restart
@@ -58,6 +61,9 @@ func (r *Reloader) GetConfigForClient(*tls.ClientHelloInfo) (*tls.Config, error)
 		certs = []tls.Certificate{*r.cert}
 	}
 	r.mu.RUnlock()
+	if s.noUsableCurves {
+		return nil, errNoAllowedGroups
+	}
 	cfg := &tls.Config{
 		MinVersion:       s.MinVersion,
 		MaxVersion:       s.MaxVersion,
@@ -100,6 +106,9 @@ func (r *Reloader) Apply(s Settings) bool {
 			"curves", len(s.Curves),
 		)
 		return false
+	}
+	if s.noUsableCurves {
+		applog.Logger().Error("TLS security profile has no usable groups", "groups", s.rejectedGroups)
 	}
 	r.settings = s.clone()
 	applog.Logger().Info("TLS security profile changed",
