@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/stolostron/console/backend/internal/acceptenc"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -216,16 +217,18 @@ func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept
 }
 
 func acceptsEncoding(header, token string) bool {
+	token = strings.ToLower(token)
+	found := false
+	q := 0
 	for _, part := range strings.Split(header, ",") {
-		enc := strings.TrimSpace(part)
-		if i := strings.Index(enc, ";"); i >= 0 {
-			enc = strings.TrimSpace(enc[:i])
+		name, weight, ok := acceptenc.Parse(part)
+		if !ok || name != token || found {
+			continue
 		}
-		if enc == token {
-			return true
-		}
+		found = true
+		q = weight
 	}
-	return false
+	return found && q > 0
 }
 
 func statFile(fsys fs.FS, name string) (fs.FileInfo, error) {

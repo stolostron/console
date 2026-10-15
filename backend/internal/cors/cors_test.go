@@ -100,3 +100,99 @@ func TestMiddleware_DevelopmentNonOptionsAddsHeaders(t *testing.T) {
 		t.Fatal("missing allow-credentials")
 	}
 }
+
+func TestMiddleware_DevelopmentAllowlist(t *testing.T) {
+	var called bool
+	h := cors.Middleware(false)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	ts := httptest.NewServer(h)
+	t.Cleanup(ts.Close)
+
+	allowed := []string{
+		"http://localhost:3000",
+		"https://localhost:3000",
+		"http://localhost:3001",
+		"https://localhost:3001",
+		"http://localhost:3002",
+		"https://localhost:3002",
+	}
+	for _, origin := range allowed {
+		called = false
+		req, _ := http.NewRequest(http.MethodGet, ts.URL, nil)
+		req.Header.Set("Origin", origin)
+		resp, err := ts.Client().Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if !called {
+			t.Fatalf("%s did not reach handler", origin)
+		}
+		if resp.Header.Get("Access-Control-Allow-Origin") != origin {
+			t.Fatalf("%s allow-origin %q", origin, resp.Header.Get("Access-Control-Allow-Origin"))
+		}
+		if resp.Header.Get("Access-Control-Allow-Credentials") != "true" {
+			t.Fatalf("%s missing allow-credentials", origin)
+		}
+	}
+}
+
+func TestMiddleware_DevelopmentRejectsUnlistedOrigin(t *testing.T) {
+	var called bool
+	h := cors.Middleware(false)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		called = true
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	ts := httptest.NewServer(h)
+	t.Cleanup(ts.Close)
+
+	denied := []string{
+		"https://evil.example",
+		"https://localhost:4000",
+		"http://127.0.0.1:3000",
+	}
+	for _, origin := range denied {
+		called = false
+		req, _ := http.NewRequest(http.MethodOptions, ts.URL, nil)
+		req.Header.Set("Origin", origin)
+		req.Header.Set("Access-Control-Request-Method", "GET")
+		req.Header.Set("Access-Control-Request-Headers", "authorization")
+		resp, err := ts.Client().Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if called {
+			t.Fatalf("%s OPTIONS reached handler", origin)
+		}
+		if resp.StatusCode != http.StatusOK {
+			t.Fatalf("%s status %d", origin, resp.StatusCode)
+		}
+		if resp.Header.Get("Access-Control-Allow-Origin") != "" {
+			t.Fatalf("%s allow-origin %q", origin, resp.Header.Get("Access-Control-Allow-Origin"))
+		}
+		if resp.Header.Get("Access-Control-Allow-Credentials") != "" {
+			t.Fatalf("%s allow-credentials %q", origin, resp.Header.Get("Access-Control-Allow-Credentials"))
+		}
+		if resp.Header.Get("Access-Control-Allow-Methods") != "" || resp.Header.Get("Access-Control-Allow-Headers") != "" {
+			t.Fatalf("%s echoed preflight headers", origin)
+		}
+
+		called = false
+		req, _ = http.NewRequest(http.MethodGet, ts.URL, nil)
+		req.Header.Set("Origin", origin)
+		resp, err = ts.Client().Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp.Body.Close()
+		if !called {
+			t.Fatalf("%s GET did not reach handler", origin)
+		}
+		if resp.Header.Get("Access-Control-Allow-Origin") != "" || resp.Header.Get("Access-Control-Allow-Credentials") != "" {
+			t.Fatalf("%s GET set CORS headers", origin)
+		}
+	}
+}

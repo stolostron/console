@@ -198,6 +198,24 @@ func TestBrotliNegotiation(t *testing.T) {
 	}
 }
 
+func TestGzipWhenBrotliQZero(t *testing.T) {
+	h := static.New(static.Options{FS: os.DirFS(writeTree(t))})
+	resp := get(t, h, "/assets/app.abc123.js", http.Header{"Accept-Encoding": []string{"br;q=0, gzip"}})
+	defer resp.Body.Close()
+	if resp.Header.Get("Content-Encoding") != "gzip" {
+		t.Fatalf("encoding %q", resp.Header.Get("Content-Encoding"))
+	}
+	zr, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer zr.Close()
+	body, _ := io.ReadAll(zr)
+	if string(body) != "window.app=1" {
+		t.Fatalf("body %q", body)
+	}
+}
+
 func TestGzipFallbackWhenNoBrotliAccepted(t *testing.T) {
 	h := static.New(static.Options{FS: os.DirFS(writeTree(t))})
 	resp := get(t, h, "/assets/app.abc123.js", http.Header{"Accept-Encoding": []string{"gzip"}})
