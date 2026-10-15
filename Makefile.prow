@@ -27,4 +27,6 @@ unit-tests:
 		mkdir test-output; \
 	fi
 	npm run test:frontend -- --maxWorkers=2
-	npm run test:backend
+# HOME is /tmp in Prow; default GOCACHE under /tmp can be evicted/exhausted after
+# the long frontend suite, causing flaky "could not import … /go/pkg/cache/…" failures.
+	GOCACHE=$$(mktemp -d -p /var/tmp go-cache.XXXXXX) npm run test:backend
