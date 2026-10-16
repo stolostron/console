@@ -258,39 +258,19 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any,
 // StartCleanup expires SSAR cache entries.
 // The returned channel is closed when the cleanup goroutine exits.
 func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
-	if a == nil {
-		done := make(chan struct{})
-		close(done)
-		return done
-	}
-	return ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
+	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	for th, st := range a.byToken {
-		for k, e := range st.entries {
-			if !e.expiry.After(now) {
-				delete(st.entries, k)
-			}
-		}
-		// Keep in-flight client creation so waiters stay single-flight.
-		if len(st.entries) == 0 && st.clientWait == nil {
-			delete(a.byToken, th)
-		}
-	}
-	if len(a.byToken) <= accessCacheMaxTokens {
-		return
-	}
-	items := make([]ssarcache.Timed[string], 0, len(a.byToken))
-	for h, st := range a.byToken {
-		items = append(items, ssarcache.Timed[string]{Key: h, Time: st.last})
-	}
-	ssarcache.EvictOldest(len(a.byToken), accessCacheMaxTokens, items, func(h string) {
-		delete(a.byToken, h)
-	}, func(h string) bool {
-		st := a.byToken[h]
-		return st != nil && st.clientWait != nil
-	})
+	ssarcache.Sweep(a.byToken, accessCacheMaxTokens,
+		func(st *tokenState) time.Time { return st.last },
+		func(st *tokenState) bool {
+			ssarcache.ExpireIf(st.entries, func(e cacheEntry) bool { return !e.expiry.After(now) })
+			// Keep in-flight client creation so waiters stay single-flight.
+			return len(st.entries) == 0 && st.clientWait == nil
+		},
+		func(st *tokenState) bool { return st.clientWait != nil },
+	)
 }

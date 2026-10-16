@@ -61,6 +61,53 @@ func TestStart(t *testing.T) {
 	}
 }
 
+func TestStartIfDisabled(t *testing.T) {
+	t.Parallel()
+	called := false
+	done := StartIf(context.Background(), time.Second, func(time.Time) { called = true }, false)
+	select {
+	case <-done:
+	default:
+		t.Fatal("expected closed done channel")
+	}
+	if called {
+		t.Fatal("cleanup must not run when disabled")
+	}
+}
+
+func TestExpireIfAndSweep(t *testing.T) {
+	t.Parallel()
+	type entry struct{ expiry time.Time }
+	type state struct {
+		last    time.Time
+		entries map[string]entry
+		keep    bool
+	}
+	now := time.Unix(10, 0)
+	byToken := map[string]*state{
+		"old": {last: time.Unix(1, 0), entries: map[string]entry{"a": {expiry: now.Add(-time.Second)}}},
+		"new": {last: time.Unix(5, 0), entries: map[string]entry{"b": {expiry: now.Add(time.Second)}}},
+		"fly": {last: time.Unix(2, 0), keep: true, entries: map[string]entry{}},
+	}
+	Sweep(byToken, 2,
+		func(st *state) time.Time { return st.last },
+		func(st *state) bool {
+			ExpireIf(st.entries, func(e entry) bool { return !e.expiry.After(now) })
+			return len(st.entries) == 0 && !st.keep
+		},
+		func(st *state) bool { return st.keep },
+	)
+	if _, ok := byToken["old"]; ok {
+		t.Fatal("expired empty token should be removed")
+	}
+	if _, ok := byToken["fly"]; !ok {
+		t.Fatal("in-flight token should be kept")
+	}
+	if _, ok := byToken["new"]; !ok {
+		t.Fatal("fresh token should remain under the cap with the kept token")
+	}
+}
+
 func TestStartNilCleanup(t *testing.T) {
 	t.Parallel()
 	done := Start(context.Background(), time.Second, nil)

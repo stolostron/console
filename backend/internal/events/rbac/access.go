@@ -126,22 +126,13 @@ func (a *SSARAccess) ssar(ctx context.Context, userToken, verb, name string) (bo
 // StartCleanup expires SSAR cache entries periodically.
 // The returned channel is closed when the cleanup goroutine exits.
 func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
-	if a == nil {
-		done := make(chan struct{})
-		close(done)
-		return done
-	}
-	return ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
+	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	for k, e := range a.cache {
-		if !e.expiry.After(now) {
-			delete(a.cache, k)
-		}
-	}
+	ssarcache.ExpireIf(a.cache, func(e cacheEntry) bool { return !e.expiry.After(now) })
 	if len(a.cache) <= accessCacheMaxSize {
 		return
 	}
