@@ -18,7 +18,7 @@ import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { compareStrings } from './AcmTable'
 import { IAcmTableColumn } from './AcmTableTypes'
-import { setColumnValues } from './localColumnStorage'
+import { mergeNewColumnIdsIntoOrder, setColumnValues } from './localColumnStorage'
 
 interface AcmManageColumnProps<T> {
   allCols: IAcmTableColumn<T>[]
@@ -101,27 +101,21 @@ function reorder<T>(list: IAcmTableColumn<T>[], startIndex: number, endIndex: nu
  */
 export function sortColumnsForManageModal<T>(colOrderIds: string[], allCols: IAcmTableColumn<T>[]) {
   const manageable = allCols.filter((col) => col.id && !col.isActionCol)
-  const sortedColumns: IAcmTableColumn<T>[] = []
-  const seen = new Set<string>()
-  colOrderIds.forEach((id) => {
-    if (!id || seen.has(id)) {
-      return
-    }
-    const find = manageable.find((col) => col.id === id)
-    if (find) {
-      sortedColumns.push(find)
-      seen.add(id)
-    }
-  })
-  const remaining = manageable
-    .filter((col) => !seen.has(col.id as string))
+  const defaultOrderIds = [...manageable]
     .sort((a, b) => {
       if (a.order == null && b.order == null) return 0
       if (a.order == null) return 1
       if (b.order == null) return -1
-      return a.order - b.order
+      return (a.order as number) - (b.order as number)
     })
-  return [...sortedColumns, ...remaining]
+    .map((col) => col.id as string)
+
+  const knownSavedIds = colOrderIds.filter((id) => id && manageable.some((col) => col.id === id))
+  const orderedIds = mergeNewColumnIdsIntoOrder(knownSavedIds, defaultOrderIds)
+
+  return orderedIds
+    .map((id) => manageable.find((col) => col.id === id))
+    .filter((col): col is IAcmTableColumn<T> => col !== undefined)
 }
 
 interface ManageColumnModalProps<T> {

@@ -437,6 +437,70 @@ function createRepoFromArgoSource(source: any) {
   }
 }
 
+const MAX_SOURCE_NAME_LENGTH = 20
+
+export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LENGTH): string {
+  if (name.length > maxLength) {
+    return `${name.slice(0, maxLength)}…`
+  }
+  return name
+}
+
+/** Unique display names for application sources (Argo/Subscription path, or helm chart as fallback). */
+export function getApplicationSourceNames(
+  resource: IResource,
+  subscriptions: Subscription[],
+  channels: Channel[]
+): string[] {
+  const repos = getApplicationRepos(resource, subscriptions, channels) ?? []
+  const names: string[] = []
+  const seen = new Set<string>()
+
+  for (const repo of repos) {
+    const pathName = typeof repo.gitPath === 'string' ? repo.gitPath.trim() : ''
+    const displayName = pathName || (repo.chart ? String(repo.chart) : '')
+    if (displayName && !seen.has(displayName)) {
+      seen.add(displayName)
+      names.push(displayName)
+    }
+  }
+
+  return names
+}
+
+function ApplicationSourcesCell(props: { resource: IResource; subscriptions: Subscription[]; channels: Channel[] }) {
+  const { t } = useTranslation()
+  const sourceNames = getApplicationSourceNames(props.resource, props.subscriptions, props.channels)
+
+  if (sourceNames.length === 0) {
+    return <span>-</span>
+  }
+
+  const [first, ...rest] = sourceNames
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <span title={first}>{truncateSourceName(first)}</span>
+      {rest.length > 0 && (
+        <Popover
+          bodyContent={
+            <Stack hasGutter>
+              {rest.map((name) => (
+                <StackItem key={name}>{name}</StackItem>
+              ))}
+            </Stack>
+          }
+          position={PopoverPosition.right}
+        >
+          <Label style={{ width: 'fit-content', cursor: 'pointer' }} variant="overflow">
+            {t('{{count}} more', { count: rest.length })}
+          </Label>
+        </Popover>
+      )}
+    </span>
+  )
+}
+
 export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
@@ -478,6 +542,8 @@ export default function ApplicationsOverview() {
         }
         resourceMap[repo.type] = repo.type
       })
+
+      const sourcesText = getApplicationSourceNames(tableItem, subscriptions, channels).join(', ')
 
       const transformedNamespace = getAppNamespace(tableItem)
 
@@ -522,6 +588,7 @@ export default function ApplicationsOverview() {
           clusterCount: clusterTransformData,
           clusterList: clusterList,
           resourceText: resourceText,
+          sourcesText: sourcesText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
           healthScore: healthScore,
@@ -685,6 +752,23 @@ export default function ApplicationsOverview() {
         isDefault: true,
       },
       {
+        header: t('Sources'),
+        cell: (resource) => (
+          <ApplicationSourcesCell resource={resource} subscriptions={subscriptions} channels={channels} />
+        ),
+        tooltip: t('Source path or chart name from the application repository.'),
+        sort: 'transformed.sourcesText',
+        search: 'transformed.sourcesText',
+        exportContent: (resource) => {
+          const sourceNames = getApplicationSourceNames(resource, subscriptions, channels)
+          return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
+        },
+        id: 'sources',
+        order: 5,
+        isDefault: false,
+        isFirstVisitChecked: false,
+      },
+      {
         header: t('table.labels'),
         cell: (resource) => <AcmLabels labels={getLabels(resource)} isCompact={true} />,
         exportContent: (resource) =>
@@ -692,7 +776,7 @@ export default function ApplicationsOverview() {
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
         id: 'labels',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -709,7 +793,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -726,7 +810,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -743,7 +827,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -764,12 +848,12 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 9,
+        order: 10,
         isDefault: false,
         isFirstVisitChecked: false,
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, localCluster]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster, subscriptions, channels]
   )
   const filters = useMemo(
     () => [
