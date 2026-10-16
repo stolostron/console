@@ -342,8 +342,13 @@ func TestStartCleanupExitsOnCancel(t *testing.T) {
 		return fake.NewSimpleClientset(), nil
 	})
 	ctx, cancel := context.WithCancel(context.Background())
-	a.StartCleanup(ctx)
+	done := a.StartCleanup(ctx)
 	cancel()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("cleanup did not terminate after cancel")
+	}
 }
 
 func TestSSARAuthorizedLargeChunk(t *testing.T) {

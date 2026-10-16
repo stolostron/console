@@ -42,7 +42,7 @@ func TestStart(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	calls := make(chan struct{}, 2)
-	Start(ctx, 20*time.Millisecond, func(time.Time) {
+	done := Start(ctx, 20*time.Millisecond, func(time.Time) {
 		select {
 		case calls <- struct{}{}:
 		default:
@@ -54,9 +54,19 @@ func TestStart(t *testing.T) {
 		t.Fatal("cleanup never ran")
 	}
 	cancel()
+	select {
+	case <-done:
+	case <-time.After(time.Second):
+		t.Fatal("cleanup did not terminate after cancel")
+	}
 }
 
 func TestStartNilCleanup(t *testing.T) {
 	t.Parallel()
-	Start(context.Background(), time.Second, nil)
+	done := Start(context.Background(), time.Second, nil)
+	select {
+	case <-done:
+	default:
+		t.Fatal("expected closed done channel for nil cleanup")
+	}
 }

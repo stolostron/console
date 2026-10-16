@@ -407,11 +407,15 @@ func (st *tokenState) empty() bool {
 		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0
 }
 
-func (a *SSARAccess) StartCleanup(ctx context.Context) {
+// StartCleanup expires SSAR cache entries periodically.
+// The returned channel is closed when the cleanup goroutine exits.
+func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
 	if a == nil {
-		return
+		done := make(chan struct{})
+		close(done)
+		return done
 	}
-	ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
+	return ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {

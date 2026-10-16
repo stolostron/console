@@ -9,11 +9,15 @@ import (
 )
 
 // Start runs cleanup on a ticker until ctx is canceled.
-func Start(ctx context.Context, every time.Duration, cleanup func(time.Time)) {
+// The returned channel is closed when the cleanup goroutine exits.
+func Start(ctx context.Context, every time.Duration, cleanup func(time.Time)) <-chan struct{} {
+	done := make(chan struct{})
 	if cleanup == nil {
-		return
+		close(done)
+		return done
 	}
 	go func() {
+		defer close(done)
 		tick := time.NewTicker(every)
 		defer tick.Stop()
 		for {
@@ -25,6 +29,7 @@ func Start(ctx context.Context, every time.Duration, cleanup func(time.Time)) {
 			}
 		}
 	}()
+	return done
 }
 
 // Timed is a cache key with the time used for oldest-first eviction.
