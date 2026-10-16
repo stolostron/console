@@ -12,6 +12,7 @@ import (
 
 	authzv1 "k8s.io/api/authorization/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -28,12 +29,19 @@ const (
 // AccessChecker decides whether a user token may see a ClusterRole.
 type AccessChecker interface {
 	CanSee(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error)
+	// CanSeeDeleted applies CanSee, then the last namespaced allow for this role when the
+	// object is already gone (completed deny or NotFound).
+	CanSeeDeleted(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error)
 }
 
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
 func (AllowAllAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
+	return true, nil
+}
+
+func (AllowAllAccess) CanSeeDeleted(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
 	return true, nil
 }
 
@@ -54,6 +62,8 @@ type SSARAccess struct {
 
 	mu    sync.Mutex
 	cache map[cacheKey]cacheEntry
+	// allowedRoles remembers get-allows per token hash. List allows are not stored.
+	allowedRoles map[string]map[string]struct{}
 }
 
 func NewSSARAccess(base *rest.Config) *SSARAccess {
@@ -64,13 +74,22 @@ func NewSSARAccess(base *rest.Config) *SSARAccess {
 
 func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interface, error)) *SSARAccess {
 	return &SSARAccess{
-		cache:     map[cacheKey]cacheEntry{},
-		newClient: newClient,
+		cache:        map[cacheKey]cacheEntry{},
+		allowedRoles: map[string]map[string]struct{}{},
+		newClient:    newClient,
 	}
 }
 
 func (a *SSARAccess) CanSee(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error) {
-	if role == nil {
+	return a.decide(ctx, userToken, role, false)
+}
+
+func (a *SSARAccess) CanSeeDeleted(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error) {
+	return a.decide(ctx, userToken, role, true)
+}
+
+func (a *SSARAccess) decide(ctx context.Context, userToken string, role *rbacv1.ClusterRole, deleted bool) (bool, error) {
+	if role == nil || role.Name == "" {
 		return false, nil
 	}
 	allowed, err := a.ssar(ctx, userToken, "list", "")
@@ -80,7 +99,64 @@ func (a *SSARAccess) CanSee(ctx context.Context, userToken string, role *rbacv1.
 	if allowed {
 		return true, nil
 	}
-	return a.ssar(ctx, userToken, "get", role.Name)
+	allowed, err = a.ssar(ctx, userToken, "get", role.Name)
+	if err != nil {
+		if deleted && apierrors.IsNotFound(err) && a.roleWasAllowed(userToken, role.Name) {
+			a.forgetRole(userToken, role.Name)
+			return true, nil
+		}
+		return false, err
+	}
+	if allowed {
+		if deleted {
+			a.forgetRole(userToken, role.Name)
+		} else {
+			a.rememberRole(userToken, role.Name)
+		}
+		return true, nil
+	}
+	if deleted && a.roleWasAllowed(userToken, role.Name) {
+		a.forgetRole(userToken, role.Name)
+		return true, nil
+	}
+	a.forgetRole(userToken, role.Name)
+	return false, nil
+}
+
+func (a *SSARAccess) rememberRole(userToken, name string) {
+	th := hashToken(userToken)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.allowedRoles == nil {
+		a.allowedRoles = map[string]map[string]struct{}{}
+	}
+	names := a.allowedRoles[th]
+	if names == nil {
+		names = map[string]struct{}{}
+		a.allowedRoles[th] = names
+	}
+	names[name] = struct{}{}
+}
+
+func (a *SSARAccess) forgetRole(userToken, name string) {
+	th := hashToken(userToken)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	names := a.allowedRoles[th]
+	if names == nil {
+		return
+	}
+	delete(names, name)
+	if len(names) == 0 {
+		delete(a.allowedRoles, th)
+	}
+}
+
+func (a *SSARAccess) roleWasAllowed(userToken, name string) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	_, ok := a.allowedRoles[hashToken(userToken)][name]
+	return ok
 }
 
 func hashToken(token string) string {

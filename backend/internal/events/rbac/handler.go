@@ -139,11 +139,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				return
 			}
-			if ev.Type != "DELETED" {
-				allowed, err := h.access.CanSee(r.Context(), token, ev.Role)
-				if err != nil || !allowed {
-					continue
-				}
+			allowed, err := h.see(r.Context(), token, ev)
+			if err != nil || !allowed {
+				continue
 			}
 			if err := writeSSE(w, flusher, watchPayload{Type: ev.Type, Object: ev.Role}); err != nil {
 				return
@@ -153,6 +151,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+func (h *Handler) see(ctx context.Context, token string, ev Event) (bool, error) {
+	if ev.Type == "DELETED" {
+		return h.access.CanSeeDeleted(ctx, token, ev.Role)
+	}
+	return h.access.CanSee(ctx, token, ev.Role)
 }
 
 func writeSSE(w http.ResponseWriter, flusher http.Flusher, payload watchPayload) error {

@@ -170,6 +170,10 @@ func (denyAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, er
 	return false, nil
 }
 
+func (denyAccess) CanSeeDeleted(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
+	return false, nil
+}
+
 func TestHandlerSSARDenyOmitsRole(t *testing.T) {
 	store := rbacevents.NewStore()
 	store.Upsert("ADDED", labeledRole("secret-role"))
@@ -194,6 +198,35 @@ func TestHandlerSSARDenyOmitsRole(t *testing.T) {
 	cancel()
 	if strings.Contains(body, "secret-role") {
 		t.Fatalf("denied role leaked: %s", body)
+	}
+}
+
+func TestHandlerDeletedDeniedOmitsRole(t *testing.T) {
+	store := rbacevents.NewStore()
+	role := labeledRole("secret-role")
+	store.Upsert("ADDED", role)
+	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, denyAccess{})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer user-token")
+	rec := httptest.NewRecorder()
+	go func() {
+		h.ServeHTTP(rec, req)
+	}()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(rec.Body.String(), `"type":"LOADED"`) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	store.Delete(role)
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	body := rec.Body.String()
+	if strings.Contains(body, "secret-role") || strings.Contains(body, `"type":"DELETED"`) {
+		t.Fatalf("denied delete leaked: %s", body)
 	}
 }
 
