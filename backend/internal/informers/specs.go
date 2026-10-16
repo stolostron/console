@@ -118,77 +118,109 @@ func IsClusterScopedKind(kind string) bool {
 	return ok
 }
 
+// watchDef is one row in DefaultWatchSpecs (kind + apiVersion + optional flags/selectors).
+type watchDef struct {
+	kind, apiVersion       string
+	cluster, polled, cache bool
+	labels, fields         []string
+}
+
+func (d watchDef) spec() WatchSpec {
+	s := watch(d.kind, d.apiVersion)
+	if d.cluster {
+		s = s.cluster()
+	}
+	if d.polled {
+		s = s.polled()
+	}
+	if d.cache {
+		s = s.cacheOnly()
+	}
+	if len(d.labels) > 0 {
+		s = s.labels(d.labels...)
+	}
+	if len(d.fields) > 0 {
+		s = s.fields(d.fields...)
+	}
+	return s
+}
+
 // DefaultWatchSpecs is the source of truth for hub list/watch specs (GET /events, POST /aggregate).
 func DefaultWatchSpecs() []WatchSpec {
-	return []WatchSpec{
-		watch("ClusterManagementAddOn", "addon.open-cluster-management.io/v1alpha1").cluster(),
-		watch("ManagedClusterAddOn", "addon.open-cluster-management.io/v1alpha1"),
-		watch("Agent", "agent-install.openshift.io/v1beta1"),
-		watch("AgentServiceConfig", "agent-install.openshift.io/v1beta1").cluster(),
-		watch("InfraEnv", "agent-install.openshift.io/v1beta1"),
-		watch("NMStateConfig", "agent-install.openshift.io/v1beta1"),
-		watch("Application", "app.k8s.io/v1beta1"),
-		watch("Channel", "apps.open-cluster-management.io/v1"),
-		watch("GitOpsCluster", "apps.open-cluster-management.io/v1beta1"),
-		watch("HelmRelease", "apps.open-cluster-management.io/v1"),
-		watch("Subscription", "apps.open-cluster-management.io/v1"),
-		watch("SubscriptionReport", "apps.open-cluster-management.io/v1alpha1"),
-		watch("Application", "argoproj.io/v1alpha1").polled(),
-		watch("ApplicationSet", "argoproj.io/v1alpha1").polled(),
-		watch("ArgoCD", "argoproj.io/v1alpha1"),
-		watch("Authentication", "config.openshift.io/v1").cacheOnly().cluster(),
-		watch("MultiClusterHub", "operator.open-cluster-management.io/v1").cacheOnly(),
-		watch("Infrastructure", "config.openshift.io/v1").cluster(),
-		watch("CertificateSigningRequest", "certificates.k8s.io/v1").labels("open-cluster-management.io/cluster-name", "").cluster(),
-		watch("ManagedCluster", "cluster.open-cluster-management.io/v1").cluster(),
-		watch("Placement", "cluster.open-cluster-management.io/v1beta1"),
-		watch("PlacementDecision", "cluster.open-cluster-management.io/v1beta1"),
-		watch("ManagedClusterSetBinding", "cluster.open-cluster-management.io/v1beta2"),
-		watch("ManagedClusterSet", "cluster.open-cluster-management.io/v1beta2").cluster(),
-		watch("ClusterCurator", "cluster.open-cluster-management.io/v1beta1"),
-		watch("Subscription", "operators.coreos.com/v1alpha1"),
-		watch("ClusterExtension", "olm.operatorframework.io/v1").cluster(),
-		watch("DiscoveredCluster", "discovery.open-cluster-management.io/v1"),
-		watch("DiscoveryConfig", "discovery.open-cluster-management.io/v1"),
-		watch("AgentClusterInstall", "extensions.hive.openshift.io/v1beta1"),
-		watch("ClusterClaim", "hive.openshift.io/v1"),
-		watch("ClusterDeployment", "hive.openshift.io/v1"),
-		watch("ClusterImageSet", "hive.openshift.io/v1").cluster(),
-		watch("ClusterPool", "hive.openshift.io/v1"),
-		watch("ClusterProvision", "hive.openshift.io/v1"),
-		watch("MachinePool", "hive.openshift.io/v1"),
-		watch("ManagedClusterInfo", "internal.open-cluster-management.io/v1beta1"),
-		watch("BareMetalHost", "metal3.io/v1alpha1"),
-		watch("MultiClusterEngine", "multicluster.openshift.io/v1").cluster(),
-		watch("ClusterVersion", "config.openshift.io/v1").cluster(),
-		watch("StorageClass", "storage.k8s.io/v1").cluster(),
-		watch("PlacementBinding", "policy.open-cluster-management.io/v1"),
-		watch("Policy", "policy.open-cluster-management.io/v1"),
-		watch("PolicyAutomation", "policy.open-cluster-management.io/v1beta1"),
-		watch("PolicySet", "policy.open-cluster-management.io/v1beta1"),
-		watch("SubmarinerConfig", "submarineraddon.open-cluster-management.io/v1alpha1"),
-		watch("AnsibleJob", "tower.ansible.com/v1alpha1"),
-		watch("AnsibleWorkflow", "tower.ansible.com/v1alpha1"),
-		watch("ConfigMap", "v1").fields("metadata.name", "assisted-service"),
-		watch("ConfigMap", "v1").fields("metadata.namespace", "openshift-config-managed", "metadata.name", "console-public"),
-		watch("ConfigMap", "v1").fields("metadata.name", "console-search-config"),
-		watch("Namespace", "v1").cluster(),
-		watch("Secret", "v1").labels("cluster.open-cluster-management.io/credentials", ""),
-		watch("Secret", "v1").labels("cluster.open-cluster-management.io/type", "ans"),
-		watch("Secret", "v1").fields("metadata.name", "auto-import-secret"),
-		watch("Secret", "v1").labels("argocd.argoproj.io/secret-type", "repository"),
-		watch("PolicyReport", "wgpolicyk8s.io/v1alpha2"),
-		watch("ClusterRole", "rbac.authorization.k8s.io/v1").labels("rbac.open-cluster-management.io/filter", "vm-clusterroles").cluster(),
-		watch("HostedCluster", "hypershift.openshift.io/v1beta1"),
-		watch("NodePool", "hypershift.openshift.io/v1beta1"),
-		watch("AgentMachine", "capi-provider.agent-install.openshift.io/v1alpha1"),
-		watch("ConfigMap", "v1").labels("hypershift.openshift.io/supported-versions", "true"),
-		watch("Search", "search.open-cluster-management.io/v1alpha1"),
-		watch("ConfigMap", "v1").fields("metadata.name", "grafana-dashboard-acm-openshift-virtualization-clusters-overview"),
-		watch("ConfigMap", "v1").fields("metadata.name", "grafana-dashboard-acm-openshift-virtualization-single-vm-view"),
-		watch("MulticlusterRoleAssignment", "rbac.open-cluster-management.io/v1beta1"),
-		watch("User", "user.openshift.io/v1").cluster(),
-		watch("Group", "user.openshift.io/v1").cluster(),
-		watch("Service", "v1").fields("metadata.name", "cluster-proxy-addon-user", "metadata.namespace", "multicluster-engine"),
+	defs := []watchDef{
+		{kind: "ClusterManagementAddOn", apiVersion: "addon.open-cluster-management.io/v1alpha1", cluster: true},
+		{kind: "ManagedClusterAddOn", apiVersion: "addon.open-cluster-management.io/v1alpha1"},
+		{kind: "Agent", apiVersion: "agent-install.openshift.io/v1beta1"},
+		{kind: "AgentServiceConfig", apiVersion: "agent-install.openshift.io/v1beta1", cluster: true},
+		{kind: "InfraEnv", apiVersion: "agent-install.openshift.io/v1beta1"},
+		{kind: "NMStateConfig", apiVersion: "agent-install.openshift.io/v1beta1"},
+		{kind: "Application", apiVersion: "app.k8s.io/v1beta1"},
+		{kind: "Channel", apiVersion: "apps.open-cluster-management.io/v1"},
+		{kind: "GitOpsCluster", apiVersion: "apps.open-cluster-management.io/v1beta1"},
+		{kind: "HelmRelease", apiVersion: "apps.open-cluster-management.io/v1"},
+		{kind: "Subscription", apiVersion: "apps.open-cluster-management.io/v1"},
+		{kind: "SubscriptionReport", apiVersion: "apps.open-cluster-management.io/v1alpha1"},
+		{kind: "Application", apiVersion: "argoproj.io/v1alpha1", polled: true},
+		{kind: "ApplicationSet", apiVersion: "argoproj.io/v1alpha1", polled: true},
+		{kind: "ArgoCD", apiVersion: "argoproj.io/v1alpha1"},
+		{kind: "Authentication", apiVersion: "config.openshift.io/v1", cache: true, cluster: true},
+		{kind: "MultiClusterHub", apiVersion: "operator.open-cluster-management.io/v1", cache: true},
+		{kind: "Infrastructure", apiVersion: "config.openshift.io/v1", cluster: true},
+		{kind: "CertificateSigningRequest", apiVersion: "certificates.k8s.io/v1", cluster: true, labels: []string{"open-cluster-management.io/cluster-name", ""}},
+		{kind: "ManagedCluster", apiVersion: "cluster.open-cluster-management.io/v1", cluster: true},
+		{kind: "Placement", apiVersion: "cluster.open-cluster-management.io/v1beta1"},
+		{kind: "PlacementDecision", apiVersion: "cluster.open-cluster-management.io/v1beta1"},
+		{kind: "ManagedClusterSetBinding", apiVersion: "cluster.open-cluster-management.io/v1beta2"},
+		{kind: "ManagedClusterSet", apiVersion: "cluster.open-cluster-management.io/v1beta2", cluster: true},
+		{kind: "ClusterCurator", apiVersion: "cluster.open-cluster-management.io/v1beta1"},
+		{kind: "Subscription", apiVersion: "operators.coreos.com/v1alpha1"},
+		{kind: "ClusterExtension", apiVersion: "olm.operatorframework.io/v1", cluster: true},
+		{kind: "DiscoveredCluster", apiVersion: "discovery.open-cluster-management.io/v1"},
+		{kind: "DiscoveryConfig", apiVersion: "discovery.open-cluster-management.io/v1"},
+		{kind: "AgentClusterInstall", apiVersion: "extensions.hive.openshift.io/v1beta1"},
+		{kind: "ClusterClaim", apiVersion: "hive.openshift.io/v1"},
+		{kind: "ClusterDeployment", apiVersion: "hive.openshift.io/v1"},
+		{kind: "ClusterImageSet", apiVersion: "hive.openshift.io/v1", cluster: true},
+		{kind: "ClusterPool", apiVersion: "hive.openshift.io/v1"},
+		{kind: "ClusterProvision", apiVersion: "hive.openshift.io/v1"},
+		{kind: "MachinePool", apiVersion: "hive.openshift.io/v1"},
+		{kind: "ManagedClusterInfo", apiVersion: "internal.open-cluster-management.io/v1beta1"},
+		{kind: "BareMetalHost", apiVersion: "metal3.io/v1alpha1"},
+		{kind: "MultiClusterEngine", apiVersion: "multicluster.openshift.io/v1", cluster: true},
+		{kind: "ClusterVersion", apiVersion: "config.openshift.io/v1", cluster: true},
+		{kind: "StorageClass", apiVersion: "storage.k8s.io/v1", cluster: true},
+		{kind: "PlacementBinding", apiVersion: "policy.open-cluster-management.io/v1"},
+		{kind: "Policy", apiVersion: "policy.open-cluster-management.io/v1"},
+		{kind: "PolicyAutomation", apiVersion: "policy.open-cluster-management.io/v1beta1"},
+		{kind: "PolicySet", apiVersion: "policy.open-cluster-management.io/v1beta1"},
+		{kind: "SubmarinerConfig", apiVersion: "submarineraddon.open-cluster-management.io/v1alpha1"},
+		{kind: "AnsibleJob", apiVersion: "tower.ansible.com/v1alpha1"},
+		{kind: "AnsibleWorkflow", apiVersion: "tower.ansible.com/v1alpha1"},
+		{kind: "ConfigMap", apiVersion: "v1", fields: []string{"metadata.name", "assisted-service"}},
+		{kind: "ConfigMap", apiVersion: "v1", fields: []string{"metadata.namespace", "openshift-config-managed", "metadata.name", "console-public"}},
+		{kind: "ConfigMap", apiVersion: "v1", fields: []string{"metadata.name", "console-search-config"}},
+		{kind: "Namespace", apiVersion: "v1", cluster: true},
+		{kind: "Secret", apiVersion: "v1", labels: []string{"cluster.open-cluster-management.io/credentials", ""}},
+		{kind: "Secret", apiVersion: "v1", labels: []string{"cluster.open-cluster-management.io/type", "ans"}},
+		{kind: "Secret", apiVersion: "v1", fields: []string{"metadata.name", "auto-import-secret"}},
+		{kind: "Secret", apiVersion: "v1", labels: []string{"argocd.argoproj.io/secret-type", "repository"}},
+		{kind: "PolicyReport", apiVersion: "wgpolicyk8s.io/v1alpha2"},
+		{kind: "ClusterRole", apiVersion: "rbac.authorization.k8s.io/v1", cluster: true, labels: []string{"rbac.open-cluster-management.io/filter", "vm-clusterroles"}},
+		{kind: "HostedCluster", apiVersion: "hypershift.openshift.io/v1beta1"},
+		{kind: "NodePool", apiVersion: "hypershift.openshift.io/v1beta1"},
+		{kind: "AgentMachine", apiVersion: "capi-provider.agent-install.openshift.io/v1alpha1"},
+		{kind: "ConfigMap", apiVersion: "v1", labels: []string{"hypershift.openshift.io/supported-versions", "true"}},
+		{kind: "Search", apiVersion: "search.open-cluster-management.io/v1alpha1"},
+		{kind: "ConfigMap", apiVersion: "v1", fields: []string{"metadata.name", "grafana-dashboard-acm-openshift-virtualization-clusters-overview"}},
+		{kind: "ConfigMap", apiVersion: "v1", fields: []string{"metadata.name", "grafana-dashboard-acm-openshift-virtualization-single-vm-view"}},
+		{kind: "MulticlusterRoleAssignment", apiVersion: "rbac.open-cluster-management.io/v1beta1"},
+		{kind: "User", apiVersion: "user.openshift.io/v1", cluster: true},
+		{kind: "Group", apiVersion: "user.openshift.io/v1", cluster: true},
+		{kind: "Service", apiVersion: "v1", fields: []string{"metadata.name", "cluster-proxy-addon-user", "metadata.namespace", "multicluster-engine"}},
 	}
+	out := make([]WatchSpec, 0, len(defs))
+	for _, d := range defs {
+		out = append(out, d.spec())
+	}
+	return out
 }

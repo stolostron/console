@@ -19,14 +19,6 @@ import (
 	"github.com/stolostron/console/backend/internal/outbound"
 )
 
-var requestHeaders = []string{
-	"Accept",
-	"Accept-Encoding",
-	"Content-Encoding",
-	"Content-Length",
-	"Content-Type",
-}
-
 const defaultDialTimeout = 60 * time.Second
 
 type tokenCtxKey struct{}
@@ -113,12 +105,7 @@ func (h *Handler) rewrite(pr *httputil.ProxyRequest) {
 	pr.Out.URL.RawQuery = pr.In.URL.RawQuery
 	pr.Out.Host = target.Host
 	pr.Out.Header = http.Header{}
-	for _, name := range requestHeaders {
-		if v := pr.In.Header.Get(name); v != "" {
-			pr.Out.Header.Set(name, v)
-		}
-	}
-	pr.Out.Header.Set("Authorization", "Bearer "+token)
+	outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
 }
 
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, bool) {

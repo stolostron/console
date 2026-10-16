@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"sort"
 	"sync"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/informers"
+	"github.com/stolostron/console/backend/internal/ssarcache"
 )
 
 const (
@@ -393,19 +393,13 @@ func (st *tokenState) enforceEntryCap() {
 	if len(st.entries) <= accessCacheMaxEntriesPerToken {
 		return
 	}
-	type pair struct {
-		key ssarKey
-		exp time.Time
-	}
-	all := make([]pair, 0, len(st.entries))
+	items := make([]ssarcache.Timed[ssarKey], 0, len(st.entries))
 	for k, e := range st.entries {
-		all = append(all, pair{k, e.expiry})
+		items = append(items, ssarcache.Timed[ssarKey]{Key: k, Time: e.expiry})
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].exp.Before(all[j].exp) })
-	extra := len(all) - accessCacheMaxEntriesPerToken
-	for i := 0; i < extra; i++ {
-		delete(st.entries, all[i].key)
-	}
+	ssarcache.EvictOldest(len(st.entries), accessCacheMaxEntriesPerToken, items, func(k ssarKey) {
+		delete(st.entries, k)
+	}, nil)
 }
 
 func (st *tokenState) empty() bool {
@@ -417,18 +411,7 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) {
 	if a == nil {
 		return
 	}
-	go func() {
-		tick := time.NewTicker(accessCleanupEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				a.cleanup(time.Now())
-			}
-		}
-	}()
+	ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
@@ -458,19 +441,13 @@ func (a *SSARAccess) cleanup(now time.Time) {
 	if len(a.byToken) <= accessCacheMaxTokens {
 		return
 	}
-	type pair struct {
-		hash string
-		last time.Time
-	}
-	all := make([]pair, 0, len(a.byToken))
+	items := make([]ssarcache.Timed[string], 0, len(a.byToken))
 	for h, st := range a.byToken {
-		all = append(all, pair{h, st.last})
+		items = append(items, ssarcache.Timed[string]{Key: h, Time: st.last})
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	extra := len(all) - accessCacheMaxTokens
-	for i := 0; i < extra; i++ {
-		delete(a.byToken, all[i].hash)
-	}
+	ssarcache.EvictOldest(len(a.byToken), accessCacheMaxTokens, items, func(h string) {
+		delete(a.byToken, h)
+	}, nil)
 }
 
 func (a *SSARAccess) tokenCount() int {

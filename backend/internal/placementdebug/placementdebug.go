@@ -21,14 +21,6 @@ import (
 
 const defaultPlacementDebugURL = "https://cluster-manager-placement.open-cluster-management-hub.svc.cluster.local:9443/debug/placements/"
 
-var requestHeaders = []string{
-	"Accept",
-	"Accept-Encoding",
-	"Content-Encoding",
-	"Content-Length",
-	"Content-Type",
-}
-
 var responseHeaders = []string{
 	"Cache-Control",
 	"Content-Length",
@@ -117,23 +109,15 @@ func (h *Handler) reverseProxy(target *url.URL, ca []byte) *httputil.ReverseProx
 			pr.Out.URL.RawQuery = pr.In.URL.RawQuery
 			pr.Out.Host = target.Hostname()
 			pr.Out.Header = http.Header{}
-			for _, name := range requestHeaders {
-				if v := pr.In.Header.Get(name); v != "" {
-					pr.Out.Header.Set(name, v)
-				}
-			}
+			outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
 			pr.Out.Header.Set("Content-Type", "application/json")
-			pr.Out.Header.Set("Authorization", "Bearer "+token)
 			pr.Out.Header.Set("Host", target.Hostname())
 		},
 		ModifyResponse: func(resp *http.Response) error {
-			filtered := http.Header{"Content-Type": []string{"application/json"}}
-			for _, name := range responseHeaders {
-				for _, v := range resp.Header.Values(name) {
-					filtered.Add(name, v)
-				}
+			if err := outbound.FilterResponseHeaders(resp, responseHeaders); err != nil {
+				return err
 			}
-			resp.Header = filtered
+			resp.Header.Set("Content-Type", "application/json")
 			return nil
 		},
 		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, err error) {

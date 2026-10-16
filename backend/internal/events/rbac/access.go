@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"sort"
 	"sync"
 	"time"
 
@@ -17,6 +16,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/ssarcache"
 )
 
 const (
@@ -128,18 +128,7 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) {
 	if a == nil {
 		return
 	}
-	go func() {
-		tick := time.NewTicker(accessCleanupEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				a.cleanup(time.Now())
-			}
-		}
-	}()
+	ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
@@ -153,18 +142,11 @@ func (a *SSARAccess) cleanup(now time.Time) {
 	if len(a.cache) <= accessCacheMaxSize {
 		return
 	}
-	// Evict oldest entries when the cache exceeds the size limit.
-	type pair struct {
-		key    cacheKey
-		expiry time.Time
-	}
-	all := make([]pair, 0, len(a.cache))
+	items := make([]ssarcache.Timed[cacheKey], 0, len(a.cache))
 	for k, e := range a.cache {
-		all = append(all, pair{k, e.expiry})
+		items = append(items, ssarcache.Timed[cacheKey]{Key: k, Time: e.expiry})
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].expiry.Before(all[j].expiry) })
-	extra := len(all) - accessCacheMaxSize
-	for i := 0; i < extra; i++ {
-		delete(a.cache, all[i].key)
-	}
+	ssarcache.EvictOldest(len(a.cache), accessCacheMaxSize, items, func(k cacheKey) {
+		delete(a.cache, k)
+	}, nil)
 }

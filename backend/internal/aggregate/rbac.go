@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"sort"
 	"sync"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/ssarcache"
 )
 
 const (
@@ -260,18 +260,7 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) {
 	if a == nil {
 		return
 	}
-	go func() {
-		tick := time.NewTicker(accessCleanupEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				a.cleanup(time.Now())
-			}
-		}
-	}()
+	ssarcache.Start(ctx, accessCleanupEvery, a.cleanup)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
@@ -291,20 +280,14 @@ func (a *SSARAccess) cleanup(now time.Time) {
 	if len(a.byToken) <= accessCacheMaxTokens {
 		return
 	}
-	type pair struct {
-		hash string
-		last time.Time
-	}
-	all := make([]pair, 0, len(a.byToken))
+	items := make([]ssarcache.Timed[string], 0, len(a.byToken))
 	for h, st := range a.byToken {
-		all = append(all, pair{h, st.last})
+		items = append(items, ssarcache.Timed[string]{Key: h, Time: st.last})
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	for i := 0; i < len(all) && len(a.byToken) > accessCacheMaxTokens; i++ {
-		st := a.byToken[all[i].hash]
-		if st != nil && st.clientWait != nil {
-			continue
-		}
-		delete(a.byToken, all[i].hash)
-	}
+	ssarcache.EvictOldest(len(a.byToken), accessCacheMaxTokens, items, func(h string) {
+		delete(a.byToken, h)
+	}, func(h string) bool {
+		st := a.byToken[h]
+		return st != nil && st.clientWait != nil
+	})
 }

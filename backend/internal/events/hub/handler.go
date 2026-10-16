@@ -11,7 +11,7 @@ import (
 
 	"k8s.io/client-go/rest"
 
-	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/events/sse"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -20,37 +20,18 @@ const keepAlive = 10 * time.Second
 const instanceIDLen = 8
 
 // Authenticator validates a user token (GET /api, same as Node /events).
-type Authenticator interface {
-	Authenticate(ctx context.Context, token string) (bool, error)
-}
+type Authenticator = sse.Authenticator
 
 // APIAuth validates the browser token with GET /api using the user Bearer token.
-type APIAuth struct {
-	base *rest.Config
-}
+type APIAuth = sse.APIAuth
 
+// NewAPIAuth returns an Authenticator backed by ValidateUserToken.
 func NewAPIAuth(base *rest.Config) *APIAuth {
-	return &APIAuth{base: base}
-}
-
-func (a *APIAuth) Authenticate(ctx context.Context, token string) (bool, error) {
-	if a == nil || a.base == nil {
-		return false, nil
-	}
-	if err := auth.ValidateUserToken(ctx, a.base, token); err != nil {
-		return false, err
-	}
-	return true, nil
+	return sse.NewAPIAuth(base)
 }
 
 // StaticAuth is for tests.
-type StaticAuth struct {
-	OK bool
-}
-
-func (s StaticAuth) Authenticate(context.Context, string) (bool, error) {
-	return s.OK, nil
-}
+type StaticAuth = sse.StaticAuth
 
 // Handler serves GET /events as gzip/deflate/identity SSE.
 type Handler struct {
@@ -83,21 +64,8 @@ func randomID(n int) string {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	token := auth.TokenFromRequest(r)
-	if token == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	ok, err := h.authn.Authenticate(r.Context(), token)
-	if err != nil || !ok {
-		applog.Logger().Warn("events unauthorized", "error", err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	flusher, ok := w.(http.Flusher)
+	token, flusher, ok := sse.Begin(w, r, h.authn, "events unauthorized")
 	if !ok {
-		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
 		return
 	}
 
