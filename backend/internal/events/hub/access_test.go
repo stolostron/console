@@ -5,6 +5,7 @@ package hub
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	authzv1 "k8s.io/api/authorization/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -32,12 +34,12 @@ func modifiedNS(name string) Event {
 	}
 }
 
-func TestAllowControlAndDeleted(t *testing.T) {
+func TestAllowControlEvents(t *testing.T) {
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
 		t.Fatal("SSAR should not run")
 		return nil, nil
 	})
-	for _, typ := range []string{TypeStart, TypeEOP, TypeLoaded, TypeSettings, TypeDeleted} {
+	for _, typ := range []string{TypeStart, TypeEOP, TypeLoaded, TypeSettings} {
 		ok, err := a.Allow(context.Background(), "tok", Event{Type: typ})
 		if err != nil || !ok {
 			t.Fatalf("%s allowed=%v err=%v", typ, ok, err)
@@ -67,17 +69,18 @@ func TestSSARCascadeListThenGetNamespace(t *testing.T) {
 	var namespaces []string
 	client := fake.NewSimpleClientset()
 	attachIncompleteRules(client)
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
-		attr := review.Spec.ResourceAttributes
-		verbs = append(verbs, attr.Verb)
-		namespaces = append(namespaces, attr.Namespace)
-		allowed := attr.Verb == "get"
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+			attr := review.Spec.ResourceAttributes
+			verbs = append(verbs, attr.Verb)
+			namespaces = append(namespaces, attr.Namespace)
+			allowed := attr.Verb == "get"
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ok, err := a.Allow(context.Background(), "tok", modifiedNS("default"))
 	if err != nil || !ok {
@@ -97,18 +100,19 @@ func TestSSARNamespacedListThenGet(t *testing.T) {
 	var names []string
 	client := fake.NewSimpleClientset()
 	attachIncompleteRules(client)
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
-		attr := review.Spec.ResourceAttributes
-		verbs = append(verbs, attr.Verb)
-		namespaces = append(namespaces, attr.Namespace)
-		names = append(names, attr.Name)
-		allowed := attr.Verb == "get"
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+			attr := review.Spec.ResourceAttributes
+			verbs = append(verbs, attr.Verb)
+			namespaces = append(namespaces, attr.Namespace)
+			names = append(names, attr.Name)
+			allowed := attr.Verb == "get"
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ev := Event{
 		Type: TypeModified,
@@ -134,18 +138,19 @@ func TestSSARCacheSeparatesSameKindDifferentGroups(t *testing.T) {
 	var mu sync.Mutex
 	var groups []string
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
-		attr := review.Spec.ResourceAttributes
-		mu.Lock()
-		groups = append(groups, attr.Group)
-		mu.Unlock()
-		allowed := attr.Group == "apps.open-cluster-management.io" && attr.Verb == "list" && attr.Namespace == ""
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+			attr := review.Spec.ResourceAttributes
+			mu.Lock()
+			groups = append(groups, attr.Group)
+			mu.Unlock()
+			allowed := attr.Group == "apps.open-cluster-management.io" && attr.Verb == "list" && attr.Namespace == ""
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	subscription := func(apiVersion, group, resource string) Event {
 		return Event{
@@ -189,12 +194,13 @@ func TestSSARCacheSeparatesSameKindDifferentGroups(t *testing.T) {
 func TestSSARCacheTTL(t *testing.T) {
 	var n int
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		n++
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			n++
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ev := modifiedNS("default")
 	if _, err := a.Allow(context.Background(), "tok", ev); err != nil {
@@ -214,11 +220,12 @@ func TestSSARCleanupExpiresAndMaxTokens(t *testing.T) {
 	t.Cleanup(func() { accessCacheMaxTokens = orig })
 
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ev := modifiedNS("default")
 	for _, tok := range []string{"a", "b", "c"} {
@@ -248,11 +255,12 @@ func TestSSARCleanupExpiresAndMaxTokens(t *testing.T) {
 func TestSSARReusesClientPerToken(t *testing.T) {
 	var n int
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
 		n++
 		return client, nil
@@ -404,11 +412,12 @@ func TestSSARPerTokenEntryCap(t *testing.T) {
 
 func TestAccessCacheHashesToken(t *testing.T) {
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	const raw = "raw-jwt-token"
 	if _, err := a.Allow(context.Background(), raw, modifiedNS("default")); err != nil {
@@ -421,5 +430,304 @@ func TestAccessCacheHashesToken(t *testing.T) {
 	}
 	if _, ok := a.byToken[hashToken(raw)]; !ok {
 		t.Fatal("expected hashed token key")
+	}
+}
+
+func secretEvent(typ, name, namespace string) Event {
+	return Event{
+		Type: typ,
+		GVR:  schema.GroupVersionResource{Version: "v1", Resource: "secrets"},
+		Object: map[string]any{
+			"kind": "Secret", "apiVersion": "v1",
+			"metadata": map[string]any{"name": name, "namespace": namespace},
+		},
+	}
+}
+
+func clearReviewCache(a *SSARAccess, token string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[hashToken(token)]
+	if st == nil {
+		return
+	}
+	st.entries = map[ssarKey]cacheEntry{}
+	st.rules = map[string]timedRules{}
+	st.kindAccess = map[kindAccessKey]timedKindAccess{}
+}
+
+func TestDeletedDeniedWithoutHistory(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: emptyRules()}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || ok {
+		t.Fatalf("allowed=%v err=%v", ok, err)
+	}
+}
+
+func TestDeletedAllowedByClusterList(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: attr.Verb == "list" && attr.Namespace == ""},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("cluster list allow must not be remembered")
+	}
+}
+
+func TestClusterListAllowDoesNotCoverLaterDelete(t *testing.T) {
+	listOK := true
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: emptyRules()}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			allowed := listOK && attr.Verb == "list" && attr.Namespace == ""
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("cluster list allow must not be remembered")
+	}
+	clearReviewCache(a, "tok")
+	listOK = false
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || ok {
+		t.Fatalf("deleted allowed=%v err=%v", ok, err)
+	}
+}
+
+func TestDeletedFallsBackWhenReviewDenies(t *testing.T) {
+	rules := secretGetRules()
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, keyed := objectSeenKey("", "secrets", "ns", "creds")
+	if !keyed || !a.wasAllowed("tok", key) {
+		t.Fatal("expected remembered namespaced allow")
+	}
+	clearReviewCache(a, "tok")
+	rules = emptyRules()
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("deleted allowed=%v err=%v", ok, err)
+	}
+	if a.wasAllowed("tok", key) {
+		t.Fatal("single-stream delete should drop the remembered allow")
+	}
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || ok {
+		t.Fatalf("second deleted allowed=%v err=%v", ok, err)
+	}
+}
+
+func TestDeletedFallbackSharedAcrossStreams(t *testing.T) {
+	rules := secretGetRules()
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	a.BeginStream("tok")
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	clearReviewCache(a, "tok")
+	rules = emptyRules()
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("first stream deleted allowed=%v err=%v", ok, err)
+	}
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("remembered allow must remain for the other active stream")
+	}
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("second stream deleted allowed=%v err=%v", ok, err)
+	}
+	if a.wasAllowed("tok", key) {
+		t.Fatal("allow should clear after every active stream consumed the delete")
+	}
+}
+
+func TestDeletedNotFoundUsesRememberedAllow(t *testing.T) {
+	rules := secretGetRules()
+	notFound := false
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if notFound && attr.Namespace != "" {
+				return true, nil, apierrors.NewNotFound(schema.GroupResource{Resource: "namespaces"}, attr.Namespace)
+			}
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	clearReviewCache(a, "tok")
+	rules = incompletePodRules()
+	notFound = true
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("deleted allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("delete should drop the remembered allow")
+	}
+}
+
+func TestDeletedClusterListErrorKeepsRememberedAllow(t *testing.T) {
+	rules := secretGetRules()
+	failList := false
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if failList && attr.Verb == "list" && attr.Namespace == "" {
+				return true, nil, errors.New("apiserver down")
+			}
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	if _, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns")); err != nil {
+		t.Fatal(err)
+	}
+	clearReviewCache(a, "tok")
+	failList = true
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err == nil || ok {
+		t.Fatalf("allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("unrelated error must keep the remembered allow")
+	}
+}
+
+func TestEndStreamClearsRememberedAllows(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: secretGetRules()}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("expected remembered allow while stream is open")
+	}
+	a.BeginStream("tok")
+	a.EndStream("tok")
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("remembered allow must survive while another stream is open")
+	}
+	a.EndStream("tok")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("last EndStream must clear remembered allows")
+	}
+}
+
+func TestModifiedDenyClearsDeletedFallback(t *testing.T) {
+	rules := secretGetRules()
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	clearReviewCache(a, "tok")
+	rules = emptyRules()
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || ok {
+		t.Fatalf("revoke allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("deny should drop the remembered allow")
+	}
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || ok {
+		t.Fatalf("deleted allowed=%v err=%v", ok, err)
 	}
 }
