@@ -508,3 +508,41 @@ func TestWebSocketProductionRejectsHTTPOriginOnTLS(t *testing.T) {
 		t.Fatal("upstream dialed after scheme reject")
 	}
 }
+
+func TestWebsocketDialerPinsHTTP11(t *testing.T) {
+	shared := &tls.Config{MinVersion: tls.VersionTLS12, NextProtos: []string{"h2", "http/1.1"}}
+	h := New(Options{
+		TLSConfig: shared,
+		Endpoint:  func(context.Context) string { return "https://example.invalid" },
+	})
+	req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+	dialer := h.websocketDialer(req)
+	if dialer.TLSClientConfig == shared {
+		t.Fatal("websocket dialer must clone TLS config")
+	}
+	if got := dialer.TLSClientConfig.NextProtos; len(got) != 1 || got[0] != "http/1.1" {
+		t.Fatalf("NextProtos %v want [http/1.1]", got)
+	}
+	if len(shared.NextProtos) != 2 || shared.NextProtos[0] != "h2" {
+		t.Fatalf("shared NextProtos mutated: %v", shared.NextProtos)
+	}
+
+	custom := &tls.Config{MinVersion: tls.VersionTLS12, ServerName: "search.example", NextProtos: []string{"h2"}}
+	h = New(Options{
+		Dialer:   &websocket.Dialer{TLSClientConfig: custom},
+		Endpoint: func(context.Context) string { return "https://example.invalid" },
+	})
+	dialer = h.websocketDialer(req)
+	if dialer.TLSClientConfig == custom {
+		t.Fatal("override dialer must clone TLS config")
+	}
+	if dialer.TLSClientConfig.ServerName != "search.example" {
+		t.Fatalf("ServerName %q", dialer.TLSClientConfig.ServerName)
+	}
+	if got := dialer.TLSClientConfig.NextProtos; len(got) != 1 || got[0] != "http/1.1" {
+		t.Fatalf("override NextProtos %v want [http/1.1]", got)
+	}
+	if len(custom.NextProtos) != 1 || custom.NextProtos[0] != "h2" {
+		t.Fatalf("custom NextProtos mutated: %v", custom.NextProtos)
+	}
+}
