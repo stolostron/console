@@ -344,7 +344,6 @@ func TestStartCleanupExitsOnCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	a.StartCleanup(ctx)
 	cancel()
-	time.Sleep(accessCleanupEvery / 4)
 }
 
 func TestSSARAuthorizedLargeChunk(t *testing.T) {
