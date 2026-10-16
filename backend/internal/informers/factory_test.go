@@ -481,7 +481,9 @@ func TestStartConcurrencyLimitsLists(t *testing.T) {
 		return false, nil, nil
 	})
 
-	mapper := mapperFor("v1", metav1.APIResource{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}})
+	mapper := mapperFor("v1", metav1.APIResource{
+		Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"},
+	})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	c := StartSpecs(ctx, client, mapper, []WatchSpec{

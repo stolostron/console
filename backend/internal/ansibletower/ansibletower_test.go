@@ -266,7 +266,12 @@ func TestMethodNotAllowed(t *testing.T) {
 }
 
 func TestMissingSecretFields400(t *testing.T) {
-	h := New(Options{Authn: authOK, KubeForUser: func(string) (kubernetes.Interface, error) { return fake.NewSimpleClientset(), nil }})
+	h := New(Options{
+		Authn: authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) {
+			return fake.NewSimpleClientset(), nil
+		},
+	})
 	rec := post(h, map[string]string{"secretNamespace": "ns"})
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status %d", rec.Code)

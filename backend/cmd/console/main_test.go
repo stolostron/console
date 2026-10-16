@@ -12,9 +12,6 @@ import (
 	"syscall"
 	"testing"
 	"time"
-	"errors"
-	"path/filepath"
-	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
 )

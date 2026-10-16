@@ -19,7 +19,11 @@ import (
 	"github.com/stolostron/console/backend/internal/outbound"
 )
 
-const defaultPlacementDebugURL = "https://cluster-manager-placement.open-cluster-management-hub.svc.cluster.local:9443/debug/placements/"
+const (
+	defaultPlacementDebugURL = "https://cluster-manager-placement.open-cluster-management-hub" +
+		".svc.cluster.local:9443/debug/placements/"
+	headerContentType = "Content-Type"
+)
 
 var responseHeaders = []string{
 	"Cache-Control",
@@ -110,14 +114,14 @@ func (h *Handler) reverseProxy(target *url.URL, ca []byte) *httputil.ReverseProx
 			pr.Out.Host = target.Hostname()
 			pr.Out.Header = http.Header{}
 			outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
-			pr.Out.Header.Set("Content-Type", "application/json")
+			pr.Out.Header.Set(headerContentType, "application/json")
 			pr.Out.Header.Set("Host", target.Hostname())
 		},
 		ModifyResponse: func(resp *http.Response) error {
 			if err := outbound.FilterResponseHeaders(resp, responseHeaders); err != nil {
 				return err
 			}
-			resp.Header.Set("Content-Type", "application/json")
+			resp.Header.Set(headerContentType, "application/json")
 			return nil
 		},
 		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, err error) {
@@ -144,7 +148,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	ca := h.caPEM()
 	if len(ca) == 0 {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(headerContentType, "application/json")
 		w.WriteHeader(http.StatusServiceUnavailable)
 		_ = json.NewEncoder(w).Encode(map[string]string{
 			"error": "Placement debug service unavailable — OCM CA bundle not configured",

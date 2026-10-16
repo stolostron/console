@@ -50,7 +50,9 @@ func (s StaticAuth) Authenticate(context.Context, string) (bool, error) {
 
 // Begin authenticates the request and returns a Flusher for SSE.
 // On failure it writes the HTTP error and returns ok=false.
-func Begin(w http.ResponseWriter, r *http.Request, authn Authenticator, unauthorizedLog string) (token string, flusher http.Flusher, ok bool) {
+func Begin(
+	w http.ResponseWriter, r *http.Request, authn Authenticator, unauthorizedLog string,
+) (token string, flusher http.Flusher, ok bool) {
 	token = auth.TokenFromRequest(r)
 	if token == "" {
 		w.WriteHeader(http.StatusUnauthorized)

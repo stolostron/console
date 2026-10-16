@@ -285,4 +285,3 @@ func TestAuthenticateRequest_StatusAndInternalError(t *testing.T) {
 		t.Fatalf("status %d", rec.Code)
 	}
 }
-

@@ -75,10 +75,14 @@ func globalHubCRD() *unstructured.Unstructured {
 
 func hubListKinds() map[schema.GroupVersionResource]string {
 	return map[schema.GroupVersionResource]string{
-		{Group: "cluster.open-cluster-management.io", Version: "v1", Resource: "managedclusters"}:          "ManagedClusterList",
-		{Group: "addon.open-cluster-management.io", Version: "v1alpha1", Resource: "managedclusteraddons"}: "ManagedClusterAddOnList",
-		{Group: "config.openshift.io", Version: "v1", Resource: "authentications"}:                         "AuthenticationList",
-		{Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions"}:              "CustomResourceDefinitionList",
+		{Group: "cluster.open-cluster-management.io", Version: "v1", Resource: "managedclusters"}: "ManagedClusterList",
+		{
+			Group: "addon.open-cluster-management.io", Version: "v1alpha1", Resource: "managedclusteraddons",
+		}: "ManagedClusterAddOnList",
+		{Group: "config.openshift.io", Version: "v1", Resource: "authentications"}: "AuthenticationList",
+		{
+			Group: "apiextensions.k8s.io", Version: "v1", Resource: "customresourcedefinitions",
+		}: "CustomResourceDefinitionList",
 	}
 }
 
@@ -89,17 +93,28 @@ func TestHubFromCache(t *testing.T) {
 	addon := observabilityAddon(hubName)
 	authn := authenticationOIDC()
 	crd := globalHubCRD()
-	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), hubListKinds(), mc, addon, authn, crd)
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(
+		runtime.NewScheme(), hubListKinds(), mc, addon, authn, crd,
+	)
 	mapper := staticMapper{lists: map[string]*metav1.APIResourceList{
-		"cluster.open-cluster-management.io/v1": {GroupVersion: "cluster.open-cluster-management.io/v1", APIResources: []metav1.APIResource{
-			{Name: "managedclusters", Kind: "ManagedCluster", Verbs: []string{"list", "watch"}},
-		}},
-		"addon.open-cluster-management.io/v1alpha1": {GroupVersion: "addon.open-cluster-management.io/v1alpha1", APIResources: []metav1.APIResource{
-			{Name: "managedclusteraddons", Kind: "ManagedClusterAddOn", Namespaced: true, Verbs: []string{"list", "watch"}},
-		}},
-		"config.openshift.io/v1": {GroupVersion: "config.openshift.io/v1", APIResources: []metav1.APIResource{
-			{Name: "authentications", Kind: "Authentication", Verbs: []string{"list", "watch"}},
-		}},
+		"cluster.open-cluster-management.io/v1": {
+			GroupVersion: "cluster.open-cluster-management.io/v1",
+			APIResources: []metav1.APIResource{
+				{Name: "managedclusters", Kind: "ManagedCluster", Verbs: []string{"list", "watch"}},
+			},
+		},
+		"addon.open-cluster-management.io/v1alpha1": {
+			GroupVersion: "addon.open-cluster-management.io/v1alpha1",
+			APIResources: []metav1.APIResource{
+				{Name: "managedclusteraddons", Kind: "ManagedClusterAddOn", Namespaced: true, Verbs: []string{"list", "watch"}},
+			},
+		},
+		"config.openshift.io/v1": {
+			GroupVersion: "config.openshift.io/v1",
+			APIResources: []metav1.APIResource{
+				{Name: "authentications", Kind: "Authentication", Verbs: []string{"list", "watch"}},
+			},
+		},
 	}}
 	ctx, _ := contextWithCancel(t)
 	cache := informers.StartSpecs(ctx, dyn, mapper, []informers.WatchSpec{

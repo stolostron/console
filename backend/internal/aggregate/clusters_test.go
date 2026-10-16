@@ -108,7 +108,10 @@ func TestClustersMergesSources(t *testing.T) {
 			uObj("cluster.open-cluster-management.io/v1", "ManagedCluster", "mc-1", "", map[string]any{
 				"status": map[string]any{
 					"clusterClaims": []any{
-						map[string]any{"name": "consoleurl.cluster.open-cluster-management.io", "value": "https://console.apps.mc-1.example"},
+						map[string]any{
+							"name":  "consoleurl.cluster.open-cluster-management.io",
+							"value": "https://console.apps.mc-1.example",
+						},
 					},
 				},
 			}),
@@ -116,7 +119,7 @@ func TestClustersMergesSources(t *testing.T) {
 		"hive.openshift.io/v1|ClusterDeployment": {
 			uObj("hive.openshift.io/v1", "ClusterDeployment", "mc-1", "", map[string]any{
 				"metadata": map[string]any{
-					"name": "mc-1",
+					"name":            "mc-1",
 					"ownerReferences": []any{map[string]any{"kind": "AgentCluster"}},
 				},
 			}),

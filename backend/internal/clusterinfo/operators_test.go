@@ -122,7 +122,8 @@ func TestOperatorCheck_NotInstalled(t *testing.T) {
 	_, base := apiProbeServer(t)
 	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), operatorListKinds())
 	h := clusterinfo.New(clusterinfo.Options{RESTConfig: base, Dynamic: dyn})
-	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", bytes.NewReader([]byte(`{"operator":"advanced-cluster-management"}`)))
+	body := bytes.NewReader([]byte(`{"operator":"advanced-cluster-management"}`))
+	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", body)
 	req.Header.Set("Authorization", "Bearer good")
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -251,10 +252,11 @@ func TestClusterVersionLive(t *testing.T) {
 		"metadata":   map[string]interface{}{"name": "version"},
 		"status":     map[string]interface{}{"desired": map[string]interface{}{"version": "4.18.1"}},
 	}}
-	gvr := schema.GroupVersionResource{Group: "config.openshift.io", Version: "v1", Resource: "clusterversions"}
-	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
-		gvr: "ClusterVersionList",
-	}, cv)
+	gvr := schema.GroupVersionResource{
+		Group: "config.openshift.io", Version: "v1", Resource: "clusterversions",
+	}
+	kinds := map[schema.GroupVersionResource]string{gvr: "ClusterVersionList"}
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), kinds, cv)
 	h := clusterinfo.New(clusterinfo.Options{RESTConfig: base, Dynamic: dyn})
 	req := httptest.NewRequest(http.MethodGet, "/cluster-version", nil)
 	req.Header.Set("Authorization", "Bearer good")
@@ -274,10 +276,11 @@ func TestClusterVersionLive(t *testing.T) {
 
 func TestMCHComponentsLiveMissingAPI(t *testing.T) {
 	_, base := apiProbeServer(t)
-	mchGVR := schema.GroupVersionResource{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}
-	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
-		mchGVR: "MultiClusterHubList",
-	})
+	mchGVR := schema.GroupVersionResource{
+		Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs",
+	}
+	kinds := map[schema.GroupVersionResource]string{mchGVR: "MultiClusterHubList"}
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), kinds)
 	dyn.PrependReactor("list", "multiclusterhubs", func(action k8stesting.Action) (bool, runtime.Object, error) {
 		return true, nil, apierrors.NewNotFound(schema.GroupResource{Group: mchGVR.Group, Resource: mchGVR.Resource}, "")
 	})
@@ -293,10 +296,11 @@ func TestMCHComponentsLiveMissingAPI(t *testing.T) {
 
 func TestMCEComponentsLiveMissingAPI(t *testing.T) {
 	_, base := apiProbeServer(t)
-	mceGVR := schema.GroupVersionResource{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}
-	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
-		mceGVR: "MultiClusterEngineList",
-	})
+	mceGVR := schema.GroupVersionResource{
+		Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines",
+	}
+	kinds := map[schema.GroupVersionResource]string{mceGVR: "MultiClusterEngineList"}
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), kinds)
 	dyn.PrependReactor("list", "multiclusterengines", func(action k8stesting.Action) (bool, runtime.Object, error) {
 		return true, nil, apierrors.NewNotFound(schema.GroupResource{Group: mceGVR.Group, Resource: mceGVR.Resource}, "")
 	})
@@ -325,14 +329,19 @@ func TestHypershiftStatus_ForbiddenAddon(t *testing.T) {
 			},
 		},
 	}}
-	mceGVR := schema.GroupVersionResource{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}
-	addonGVR := schema.GroupVersionResource{Group: "addon.open-cluster-management.io", Version: "v1alpha1", Resource: "managedclusteraddons"}
-	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
-		mceGVR:   "MultiClusterEngineList",
-		addonGVR: "ManagedClusterAddOnList",
-	}, mce)
+	mceGVR := schema.GroupVersionResource{
+		Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines",
+	}
+	addonGVR := schema.GroupVersionResource{
+		Group: "addon.open-cluster-management.io", Version: "v1alpha1", Resource: "managedclusteraddons",
+	}
+	kinds := map[schema.GroupVersionResource]string{
+		mceGVR: "MultiClusterEngineList", addonGVR: "ManagedClusterAddOnList",
+	}
+	dyn := dynamicfake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), kinds, mce)
 	dyn.PrependReactor("list", "managedclusteraddons", func(action k8stesting.Action) (bool, runtime.Object, error) {
-		return true, nil, apierrors.NewForbidden(schema.GroupResource{Group: "addon.open-cluster-management.io", Resource: "managedclusteraddons"}, "", errors.New("denied"))
+		gr := schema.GroupResource{Group: addonGVR.Group, Resource: addonGVR.Resource}
+		return true, nil, apierrors.NewForbidden(gr, "", errors.New("denied"))
 	})
 	h := clusterinfo.New(clusterinfo.Options{RESTConfig: base, Dynamic: dyn})
 	req := httptest.NewRequest(http.MethodGet, "/hypershift-status", nil)

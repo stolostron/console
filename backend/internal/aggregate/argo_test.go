@@ -183,11 +183,11 @@ func TestCreateArgoStatusMapAppSetBranches(t *testing.T) {
 		Items: []map[string]any{
 			{
 				"_hostingResource": "ApplicationSet/argocd/set-1",
-				"cluster": "remote", "healthStatus": "Healthy", "syncStatus": "Synced", "_uid": "h1",
+				"cluster":          "remote", "healthStatus": "Healthy", "syncStatus": "Synced", "_uid": "h1",
 			},
 			{
 				"applicationSet": "set-2", "namespace": "argocd", "name": "set-2-remote",
-				"label": "apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true",
+				"label":   "apps.open-cluster-management.io/pull-to-ocm-managed-cluster=true",
 				"cluster": "remote", "healthStatus": "Degraded", "syncStatus": "OutOfSync", "_uid": "skip",
 			},
 			{

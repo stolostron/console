@@ -90,7 +90,9 @@ func TestOCMServiceToken_NilClientUsesDefault(t *testing.T) {
 	defer sso.Close()
 	restore := auth.SetOCMTokenURL(sso.URL)
 	defer restore()
-	tok, err := auth.OCMServiceToken(context.Background(), nil, base64.StdEncoding.EncodeToString([]byte("id")), base64.StdEncoding.EncodeToString([]byte("secret")))
+	id := base64.StdEncoding.EncodeToString([]byte("id"))
+	secret := base64.StdEncoding.EncodeToString([]byte("secret"))
+	tok, err := auth.OCMServiceToken(context.Background(), nil, id, secret)
 	if err != nil {
 		t.Fatal(err)
 	}

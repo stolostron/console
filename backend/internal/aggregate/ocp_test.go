@@ -67,23 +67,23 @@ func TestCacheOCPApplicationsSkipsAndSplits(t *testing.T) {
 	search := searchapi.ResultBucket{
 		Items: []map[string]any{
 			{
-				"label": "app.kubernetes.io/instance=dup;app=skip-hosted",
+				"label":     "app.kubernetes.io/instance=dup;app=skip-hosted",
 				"namespace": "apps", "name": "dep1", "cluster": "local-cluster",
 				"kind": "Deployment", "apiversion": "apps", "apigroup": "apps",
 				"_hostingSubscription": "hosted",
 			},
 			{
-				"label": "app=helm-app;app.kubernetes.io/managed-by=Helm",
+				"label":     "app=helm-app;app.kubernetes.io/managed-by=Helm",
 				"namespace": "apps", "name": "dep2", "cluster": "local-cluster",
 				"kind": "Deployment", "apiversion": "apps", "apigroup": "apps",
 			},
 			{
-				"label": "app=remote-app",
+				"label":     "app=remote-app",
 				"namespace": "team", "name": "dep3", "cluster": "remote",
 				"kind": "Deployment", "apiversion": "apps", "apigroup": "apps",
 			},
 			{
-				"label": "app=dup",
+				"label":     "app=dup",
 				"namespace": "apps", "name": "dep4", "cluster": "c1",
 				"kind": "Deployment", "apiversion": "apps", "apigroup": "apps",
 			},

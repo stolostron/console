@@ -128,7 +128,7 @@ func TestComputeAppHealthAndSyncBranches(t *testing.T) {
 func TestExtractMessagesDedupes(t *testing.T) {
 	e := emptyStatusEntry()
 	item := map[string]any{
-		"healthStatus": "Degraded",
+		"healthStatus":   "Degraded",
 		"_foo_condition": "x",
 		"_bar_missing":   "y",
 	}
@@ -146,10 +146,10 @@ func TestExtractMessagesDedupes(t *testing.T) {
 func TestCollectRelatedResourcesAndDeployedMissingPods(t *testing.T) {
 	m := relatedMaps{
 		byName: map[string][]map[string]any{
-			"c1/ns/d1": {{ "_uid": "rs1", "available": 0, "desired": 2 }},
+			"c1/ns/d1": {{"_uid": "rs1", "available": 0, "desired": 2}},
 		},
 		byUID: map[string][]map[string]any{
-			"u1": {{ "_uid": "p1", "status": "Running" }},
+			"u1": {{"_uid": "p1", "status": "Running"}},
 		},
 	}
 	items := collectRelatedResources("c1", m, statusIDs{appName: "ns/app", deployments: []map[string]any{
@@ -169,8 +169,18 @@ func TestCollectRelatedResourcesAndDeployedMissingPods(t *testing.T) {
 	}
 	ids := map[string]*statusIDs{statusIDKey(appKey, "c1"): {appName: "ns/app", uids: []string{"u1"}}}
 	related := []mapKind{
-		{Kind: "ReplicaSet", Items: []map[string]any{{"cluster": "c1", "namespace": "ns", "label": "app=app", "desired": 2, "_uid": "rs1"}}},
-		{Kind: "Pod", Items: []map[string]any{{"cluster": "c1", "_uid": "p1", "_relatedUids": []any{"u1"}, "status": "Running"}}},
+		{
+			Kind: "ReplicaSet",
+			Items: []map[string]any{{
+				"cluster": "c1", "namespace": "ns", "label": "app=app", "desired": 2, "_uid": "rs1",
+			}},
+		},
+		{
+			Kind: "Pod",
+			Items: []map[string]any{{
+				"cluster": "c1", "_uid": "p1", "_relatedUids": []any{"u1"}, "status": "Running",
+			}},
+		},
 	}
 	computeDeployedPodStatuses(related, statuses, ids, false)
 	dep := statuses[appKey]["c1"].Deployed

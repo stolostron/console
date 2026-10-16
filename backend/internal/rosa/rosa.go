@@ -17,21 +17,31 @@ import (
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
-const defaultAPIURL = "https://api.openshift.com"
+const (
+	defaultAPIURL = "https://api.openshift.com"
+
+	pathOIDCConfigs       = "oidc-configs"
+	pathClusterNameCheck  = "cluster-name-check"
+	pathSTSRoleARNs       = "sts-role-arns"
+	pathSTSOCMRole        = "sts-ocm-role"
+	pathSTSUserRole       = "sts-user-role"
+	pathOpenShiftVersions = "openshift-versions"
+	pathMachineTypes      = "machine-types"
+)
 
 // Routes are the ROSA wizard POST paths (also registered under /multicloud).
 var Routes = []string{
 	"/aws-account-ids",
 	"/aws-billing-accounts",
-	"/oidc-configs",
+	"/" + pathOIDCConfigs,
 	"/regions",
-	"/cluster-name-check",
-	"/sts-role-arns",
+	"/" + pathClusterNameCheck,
+	"/" + pathSTSRoleARNs,
 	"/vpcs",
-	"/sts-ocm-role",
-	"/sts-user-role",
-	"/openshift-versions",
-	"/machine-types",
+	"/" + pathSTSOCMRole,
+	"/" + pathSTSUserRole,
+	"/" + pathOpenShiftVersions,
+	"/" + pathMachineTypes,
 }
 
 var (
@@ -122,23 +132,23 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.awsAccountIds(w, r, body)
 	case "aws-billing-accounts":
 		h.awsBillingAccounts(w, r, body)
-	case "oidc-configs":
+	case pathOIDCConfigs:
 		h.oidcConfigs(w, r, body)
 	case "regions":
 		h.regions(w, r, body)
-	case "cluster-name-check":
+	case pathClusterNameCheck:
 		h.clusterNameCheck(w, r, body)
-	case "sts-role-arns":
+	case pathSTSRoleARNs:
 		h.stsRoleARNs(w, r, body)
 	case "vpcs":
 		h.vpcs(w, r, body)
-	case "sts-ocm-role":
+	case pathSTSOCMRole:
 		h.stsOCMRole(w, r, body)
-	case "sts-user-role":
+	case pathSTSUserRole:
 		h.userRole(w, r, body)
-	case "openshift-versions":
+	case pathOpenShiftVersions:
 		h.versions(w, r, body)
-	case "machine-types":
+	case pathMachineTypes:
 		h.machineTypes(w, r, body)
 	default:
 		w.WriteHeader(http.StatusNotFound)
@@ -218,7 +228,9 @@ func (h *Handler) authPayload(w http.ResponseWriter, r *http.Request, body []byt
 }
 
 // authPayloadOrg is authPayload plus current_account org lookup.
-func (h *Handler) authPayloadOrg(w http.ResponseWriter, r *http.Request, body []byte, op string) (payload, string, orgAccount, bool) {
+func (h *Handler) authPayloadOrg(
+	w http.ResponseWriter, r *http.Request, body []byte, op string,
+) (payload, string, orgAccount, bool) {
 	p, tok, ok := h.authPayload(w, r, body, op)
 	if !ok {
 		return payload{}, "", orgAccount{}, false
@@ -313,12 +325,14 @@ func (h *Handler) awsBillingAccounts(w http.ResponseWriter, r *http.Request, bod
 	if !ok {
 		return
 	}
-	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/accounts_mgmt/v1/organizations/"+org.Organization.ID+"/quota_cost?fetchRelatedResources=true&fetchCloudAccounts=true")
+	quotaURL := h.APIURL + "/api/accounts_mgmt/v1/organizations/" + org.Organization.ID +
+		"/quota_cost?fetchRelatedResources=true&fetchCloudAccounts=true"
+	out, err := h.getJSON(r.Context(), tok, quotaURL)
 	h.writeUpstream(w, "aws-billing-accounts quota", out, err, nil)
 }
 
 func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, tok, ok := h.authPayload(w, r, body, "oidc-configs")
+	p, tok, ok := h.authPayload(w, r, body, pathOIDCConfigs)
 	if !ok {
 		return
 	}
@@ -329,7 +343,7 @@ func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byt
 	q := url.Values{}
 	q.Set("search", "aws.account_id="+p.AWSAccountID+" or aws.account_id=''")
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/oidc_configs?"+q.Encode())
-	h.writeUpstream(w, "oidc-configs", out, err, map[string]string{"error": errString(err)})
+	h.writeUpstream(w, pathOIDCConfigs, out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) regions(w http.ResponseWriter, r *http.Request, body []byte) {
@@ -342,7 +356,7 @@ func (h *Handler) regions(w http.ResponseWriter, r *http.Request, body []byte) {
 }
 
 func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, tok, ok := h.authPayload(w, r, body, "cluster-name-check")
+	p, tok, ok := h.authPayload(w, r, body, pathClusterNameCheck)
 	if !ok {
 		return
 	}
@@ -354,7 +368,7 @@ func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body 
 		"size":   1,
 		"search": "name = '" + p.ClusterName + "'",
 	})
-	h.writeUpstream(w, "cluster-name-check", out, err, nil)
+	h.writeUpstream(w, pathClusterNameCheck, out, err, nil)
 }
 
 func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
@@ -368,7 +382,8 @@ func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
 	if !ok {
 		return
 	}
-	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true", map[string]any{
+	vpcURL := h.APIURL + "/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true"
+	out, err := h.postJSON(r.Context(), tok, vpcURL, map[string]any{
 		"aws":    raw["aws"],
 		"region": raw["region"],
 	})
@@ -376,7 +391,7 @@ func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
 }
 
 func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, tok, ok := h.authPayload(w, r, body, "sts-role-arns")
+	p, tok, ok := h.authPayload(w, r, body, pathSTSRoleARNs)
 	if !ok {
 		return
 	}
@@ -384,14 +399,15 @@ func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byt
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/sts_account_roles", map[string]any{
+	rolesURL := h.APIURL + "/api/clusters_mgmt/v1/aws_inquiries/sts_account_roles"
+	out, err := h.postJSON(r.Context(), tok, rolesURL, map[string]any{
 		"account_id": p.AWSAccountID,
 	})
-	h.writeUpstream(w, "sts-role-arns", out, err, nil)
+	h.writeUpstream(w, pathSTSRoleARNs, out, err, nil)
 }
 
 func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, tok, ok := h.authPayload(w, r, body, "sts-ocm-role")
+	p, tok, ok := h.authPayload(w, r, body, pathSTSOCMRole)
 	if !ok {
 		return
 	}
@@ -402,20 +418,20 @@ func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte
 	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/sts_ocm_role", map[string]any{
 		"account_id": p.AWSAccountID,
 	})
-	h.writeUpstream(w, "sts-ocm-role", out, err, nil)
+	h.writeUpstream(w, pathSTSOCMRole, out, err, nil)
 }
 
 func (h *Handler) userRole(w http.ResponseWriter, r *http.Request, body []byte) {
-	_, tok, org, ok := h.authPayloadOrg(w, r, body, "sts-user-role")
+	_, tok, org, ok := h.authPayloadOrg(w, r, body, pathSTSUserRole)
 	if !ok {
 		return
 	}
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/accounts_mgmt/v1/accounts/"+org.ID+"/labels/sts_user_role")
-	h.writeUpstream(w, "sts-user-role", out, err, nil)
+	h.writeUpstream(w, pathSTSUserRole, out, err, nil)
 }
 
 func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, tok, ok := h.authPayload(w, r, body, "machine-types")
+	p, tok, ok := h.authPayload(w, r, body, pathMachineTypes)
 	if !ok {
 		return
 	}
@@ -423,22 +439,27 @@ func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []by
 	if zones == nil {
 		zones = []any{}
 	}
-	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/machine_types?size=-1", map[string]any{
+	typesURL := h.APIURL + "/api/clusters_mgmt/v1/aws_inquiries/machine_types?size=-1"
+	out, err := h.postJSON(r.Context(), tok, typesURL, map[string]any{
 		"aws":                map[string]any{"sts": map[string]any{"role_arn": p.RoleARN}},
 		"region":             map[string]any{"id": p.Region},
 		"availability_zones": zones,
 	})
-	h.writeUpstream(w, "machine-types", out, err, map[string]string{"error": errString(err)})
+	h.writeUpstream(w, pathMachineTypes, out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) versions(w http.ResponseWriter, r *http.Request, body []byte) {
-	_, tok, ok := h.authPayload(w, r, body, "openshift-versions")
+	_, tok, ok := h.authPayload(w, r, body, pathOpenShiftVersions)
 	if !ok {
 		return
 	}
-	rawURL := h.APIURL + "/api/clusters_mgmt/v1/versions/?order=end_of_life_timestamp desc&product=hcp&search=enabled='t' AND (channel_group='stable' OR channel_group='eus' OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly') AND rosa_enabled='t'&size=-1"
+	rawURL := h.APIURL + "/api/clusters_mgmt/v1/versions/" +
+		"?order=end_of_life_timestamp desc&product=hcp" +
+		"&search=enabled='t' AND (channel_group='stable' OR channel_group='eus'" +
+		" OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly')" +
+		" AND rosa_enabled='t'&size=-1"
 	out, err := h.getJSON(r.Context(), tok, rawURL)
-	h.writeUpstream(w, "openshift-versions", out, err, map[string]string{"error": errString(err)})
+	h.writeUpstream(w, pathOpenShiftVersions, out, err, map[string]string{"error": errString(err)})
 }
 
 func errString(err error) string {

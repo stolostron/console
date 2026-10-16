@@ -20,7 +20,7 @@ func TestKubeReviewerReview(t *testing.T) {
 		return true, &authv1.TokenReview{
 			Status: authv1.TokenReviewStatus{
 				Authenticated: true,
-				User: authv1.UserInfo{Username: "tester"},
+				User:          authv1.UserInfo{Username: "tester"},
 			},
 		}, nil
 	})

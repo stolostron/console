@@ -34,8 +34,18 @@ func TestStatusesClusterFilter(t *testing.T) {
 	eng := h.Engine
 	eng.mu.Lock()
 	eng.cache[cacheLocalArgo].Resources = []App{
-		{Transform: Transform{Name: "a1", Type: kindArgo, Clusters: []string{"c1"}, Statuses: StatusMap{"c1": emptyClusterStatuses()}, Scores: Scores{colHealth: 0}}},
-		{Transform: Transform{Name: "a2", Type: kindArgo, Clusters: []string{"c2"}, Statuses: StatusMap{"c2": emptyClusterStatuses()}, Scores: Scores{colHealth: 0}}},
+		{
+			Transform: Transform{
+				Name: "a1", Type: kindArgo, Clusters: []string{"c1"},
+				Statuses: StatusMap{"c1": emptyClusterStatuses()}, Scores: Scores{colHealth: 0},
+			},
+		},
+		{
+			Transform: Transform{
+				Name: "a2", Type: kindArgo, Clusters: []string{"c2"},
+				Statuses: StatusMap{"c2": emptyClusterStatuses()}, Scores: Scores{colHealth: 0},
+			},
+		},
 	}
 	eng.mu.Unlock()
 	resp := postAggregate(t, h, "/aggregate/statuses", requestStatuses{Clusters: []string{"c2"}})

@@ -22,12 +22,13 @@ import (
 func TestSSARAccessHashesTokenAndCaches(t *testing.T) {
 	var calls atomic.Int32
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		calls.Add(1)
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			calls.Add(1)
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	role := &rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "r1"}}
 	const token = "super-secret-bearer"
@@ -69,15 +70,16 @@ func TestCanSeeNilRole(t *testing.T) {
 func TestCanSeeListAllowsSkipsGet(t *testing.T) {
 	var verbs []string
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
-		verbs = append(verbs, review.Spec.ResourceAttributes.Verb)
-		allowed := review.Spec.ResourceAttributes.Verb == "list"
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+			verbs = append(verbs, review.Spec.ResourceAttributes.Verb)
+			allowed := review.Spec.ResourceAttributes.Verb == "list"
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ok, err := a.CanSee(context.Background(), "tok", &rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "r1"}})
 	if err != nil || !ok {
@@ -98,9 +100,10 @@ func TestSSARAccessClientAndReviewErrors(t *testing.T) {
 	}
 
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		return true, nil, errors.New("apiserver down")
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			return true, nil, errors.New("apiserver down")
+		})
 	a = NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	_, err = a.CanSee(context.Background(), "tok", &rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "r"}})
 	if err == nil {
@@ -109,7 +112,10 @@ func TestSSARAccessClientAndReviewErrors(t *testing.T) {
 }
 
 func TestNewSSARAccessConstructsClient(t *testing.T) {
-	a := NewSSARAccess(&rest.Config{Host: "https://example.invalid", TLSClientConfig: rest.TLSClientConfig{Insecure: true}})
+	a := NewSSARAccess(&rest.Config{
+		Host:            "https://example.invalid",
+		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
+	})
 	if a == nil || a.newClient == nil {
 		t.Fatal("expected accessor")
 	}
@@ -121,11 +127,12 @@ func TestSSARAccessCleanupAndStartCleanup(t *testing.T) {
 	t.Cleanup(func() { accessCacheMaxSize = orig })
 
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	role := &rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "a"}}
 	for _, name := range []string{"a", "b", "c"} {

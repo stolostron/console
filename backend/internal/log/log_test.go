@@ -9,8 +9,8 @@ import (
 
 func TestSetLevel(t *testing.T) {
 	cases := []struct {
-		name  string
-		want  slog.Level
+		name string
+		want slog.Level
 	}{
 		{"trace", slog.LevelDebug},
 		{"DEBUG", slog.LevelDebug},
