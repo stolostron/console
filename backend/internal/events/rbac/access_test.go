@@ -21,12 +21,13 @@ import (
 func TestSSARAccessHashesTokenAndCaches(t *testing.T) {
 	var calls atomic.Int32
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		calls.Add(1)
-		return true, &authzv1.SelfSubjectAccessReview{
-			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
-		}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			calls.Add(1)
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
+			}, nil
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	role := &rbacv1.ClusterRole{ObjectMeta: metav1.ObjectMeta{Name: "r1"}}
 	const token = "super-secret-bearer"
@@ -78,11 +79,12 @@ func TestCanSeeDeletedDeniedWithoutHistory(t *testing.T) {
 
 func TestCanSeeDeletedListAllowIsNotRemembered(t *testing.T) {
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		verb := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes.Verb
-		return ssarReview(verb == "list")
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			verb := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes.Verb
+			return ssarReview(verb == "list")
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ok, err := a.CanSeeDeleted(context.Background(), "tok", testRole("r1"))
 	if err != nil || !ok {
@@ -96,17 +98,18 @@ func TestCanSeeDeletedListAllowIsNotRemembered(t *testing.T) {
 func TestCanSeeDeletedNotFoundUsesLastAllow(t *testing.T) {
 	missing := false
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
-		if attr.Verb == "list" {
-			return ssarReview(false)
-		}
-		if missing {
-			return true, nil, apierrors.NewNotFound(schema.GroupResource{Resource: "clusterroles"}, attr.Name)
-		}
-		return ssarReview(true)
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if attr.Verb == "list" {
+				return ssarReview(false)
+			}
+			if missing {
+				return true, nil, apierrors.NewNotFound(schema.GroupResource{Resource: "clusterroles"}, attr.Name)
+			}
+			return ssarReview(true)
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ok, err := a.CanSee(context.Background(), "tok", testRole("r1"))
 	if err != nil || !ok {
@@ -130,14 +133,15 @@ func TestCanSeeDeletedNotFoundUsesLastAllow(t *testing.T) {
 
 func TestEndStreamClearsRememberedRoles(t *testing.T) {
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
-		if attr.Verb == "list" {
-			return ssarReview(false)
-		}
-		return ssarReview(true)
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if attr.Verb == "list" {
+				return ssarReview(false)
+			}
+			return ssarReview(true)
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	a.BeginStream("tok")
 	ok, err := a.CanSee(context.Background(), "tok", testRole("r1"))
@@ -161,14 +165,15 @@ func TestEndStreamClearsRememberedRoles(t *testing.T) {
 func TestCanSeeDenyClearsDeletedFallback(t *testing.T) {
 	getAllowed := true
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		create := action.(ktesting.CreateAction)
-		attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
-		if attr.Verb == "list" {
-			return ssarReview(false)
-		}
-		return ssarReview(getAllowed)
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if attr.Verb == "list" {
+				return ssarReview(false)
+			}
+			return ssarReview(getAllowed)
+		})
 	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
 	ok, err := a.CanSee(context.Background(), "tok", testRole("r1"))
 	if err != nil || !ok {

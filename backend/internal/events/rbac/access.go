@@ -98,7 +98,9 @@ func (a *SSARAccess) CanSeeDeleted(ctx context.Context, userToken string, role *
 	return a.decide(ctx, userToken, role, true)
 }
 
-func (a *SSARAccess) decide(ctx context.Context, userToken string, role *rbacv1.ClusterRole, deleted bool) (bool, error) {
+func (a *SSARAccess) decide(
+	ctx context.Context, userToken string, role *rbacv1.ClusterRole, deleted bool,
+) (bool, error) {
 	if role == nil || role.Name == "" {
 		return false, nil
 	}
