@@ -22,8 +22,9 @@ import (
 const (
 	accessCacheTTL     = 60 * time.Second
 	accessCleanupEvery = 90 * time.Second
-	accessCacheMaxSize = 5000
 )
+
+var accessCacheMaxSize = 5000
 
 // AccessChecker decides whether a user token may see a ClusterRole.
 type AccessChecker interface {
