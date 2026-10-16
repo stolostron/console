@@ -9,6 +9,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
@@ -27,10 +29,17 @@ func newTestHandler(t *testing.T, prefix string, upstream http.Handler) http.Han
 	return metricsproxy.New(target, tlsCfg, prefix)
 }
 
+func drainResponse(t *testing.T, resp *http.Response) {
+	t.Helper()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestUnauthorizedWithoutToken(t *testing.T) {
-	var called bool
+	var called atomic.Bool
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		called = true
+		called.Store(true)
 	}))
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -40,20 +49,24 @@ func TestUnauthorizedWithoutToken(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
-	if called {
+	if called.Load() {
 		t.Fatal("upstream should not be called")
 	}
 }
 
 func TestPrometheusRewritesToAPIV1(t *testing.T) {
 	var capturedPath, capturedQuery, capturedAuth string
+	var capturedMu sync.Mutex
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
 		capturedQuery = r.URL.RawQuery
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.Header().Set("Content-Type", "application/json")
 		w.Header().Set("Audit-Id", "drop")
 		w.WriteHeader(http.StatusOK)
@@ -71,7 +84,12 @@ func TestPrometheusRewritesToAPIV1(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -97,8 +115,11 @@ func TestPrometheusRewritesToAPIV1(t *testing.T) {
 
 func TestObservabilityRewritesToAPIV1(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newTestHandler(t, "/observability", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -110,7 +131,10 @@ func TestObservabilityRewritesToAPIV1(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/api/v1/query_range" {
 		t.Fatalf("path %q", capturedPath)
 	}
@@ -118,8 +142,11 @@ func TestObservabilityRewritesToAPIV1(t *testing.T) {
 
 func TestPrometheusReplacesOnlyFirstPrefix(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -131,7 +158,10 @@ func TestPrometheusReplacesOnlyFirstPrefix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/api/v1/prometheus/query" {
 		t.Fatalf("path %q", capturedPath)
 	}
@@ -139,8 +169,11 @@ func TestPrometheusReplacesOnlyFirstPrefix(t *testing.T) {
 
 func TestCookieToken(t *testing.T) {
 	var capturedAuth string
+	var capturedMu sync.Mutex
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -152,7 +185,10 @@ func TestCookieToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedAuth != "Bearer cookie-token" {
 		t.Fatalf("auth %q", capturedAuth)
 	}
@@ -160,8 +196,11 @@ func TestCookieToken(t *testing.T) {
 
 func TestRequestHeaderAllowlist(t *testing.T) {
 	var captured http.Header
+	var capturedMu sync.Mutex
 	h := newTestHandler(t, "/prometheus", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		captured = r.Header.Clone()
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -175,7 +214,10 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if captured.Get("X-Custom-Header") != "" {
 		t.Fatal("custom header should not be forwarded")
 	}
