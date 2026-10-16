@@ -131,13 +131,7 @@ func run() error {
 		SearchAPIURL: os.Getenv("SEARCH_API_URL"),
 		Federated:    func() bool { return os.Getenv("globalSearchFeatureFlag") == "enabled" },
 		Namespace:    serviceAccountNamespace(),
-		MCHNamespace: func(reqCtx context.Context) string {
-			ns, nsErr := hubresources.MCHNamespace(reqCtx, dyn)
-			if nsErr != nil {
-				return ""
-			}
-			return ns
-		},
+		MCHNamespace: hubresources.CachedMCHNamespace(dyn),
 	}
 	opts = append(opts, server.WithEvents(eventsHandler))
 	ca := sa.ServiceCACert
@@ -223,6 +217,7 @@ func run() error {
 			RESTConfig: restCfg,
 			TLSConfig:  serviceTLS,
 			Endpoint:   searchDiscovery.Endpoint,
+			Production: cfg.Production,
 		})),
 		server.WithRosa(rosa.New(rosa.Options{
 			RESTConfig: restCfg,
@@ -253,7 +248,7 @@ func run() error {
 		slog.String("CONFIG_DIR", cfg.ConfigDir),
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
-	return server.ListenAndServe(ctx, cfg, handler, func() {
+	return server.ListenAndServe(ctx, cfg, handler, dyn, func() {
 		go func() {
 			if err := rbacevents.StartInformer(ctx, kube, store); err != nil {
 				applog.Logger().Error("rbac informer", "error", err)

@@ -131,8 +131,8 @@ func (h *Handler) appSetData(w http.ResponseWriter, r *http.Request, token strin
 	h.Engine.mu.RLock()
 	defer h.Engine.mu.RUnlock()
 	name := metaName(appset)
-	nsName := metaNamespace(appset) + "/" + name
-	appSetApps := eMaps(h.Engine.appSetAppsMap[name])
+	nsName := appSetMapKey(metaNamespace(appset), name)
+	appSetApps := eMaps(h.Engine.appSetAppsMap[nsName])
 	statusByName := h.Engine.appStatusByName[nsName]
 	if statusByName == nil {
 		statusByName = map[string]AppHealthSync{}

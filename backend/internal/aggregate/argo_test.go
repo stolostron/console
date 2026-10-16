@@ -34,8 +34,41 @@ func TestFilterArgoAppsSkipsAppSetChildren(t *testing.T) {
 	if len(out) != 1 || metaName(out[0]) != "app" {
 		t.Fatalf("parents %+v", out)
 	}
-	if len(appSets["set-1"]) != 1 {
+	if len(appSets["argocd/set-1"]) != 1 {
 		t.Fatalf("child map %+v", appSets)
+	}
+}
+
+func TestFilterArgoAppsSameNameDifferentNamespaces(t *testing.T) {
+	ocp := map[string]struct{}{}
+	appSets := map[string][]map[string]any{}
+	child := func(namespace, uid string) map[string]any {
+		return map[string]any{
+			"apiVersion": "argoproj.io/v1alpha1",
+			"kind":       "Application",
+			"metadata": map[string]any{
+				"name":      "child",
+				"namespace": namespace,
+				"uid":       uid,
+				"ownerReferences": []any{
+					map[string]any{"kind": "ApplicationSet", "name": "set-1"},
+				},
+			},
+			"spec": map[string]any{"destination": map[string]any{"namespace": "dest", "name": "in-cluster"}},
+		}
+	}
+	out := filterArgoApps([]map[string]any{child("team-a", "a"), child("team-b", "b")}, nil, ocp, appSets, "local-cluster")
+	if len(out) != 0 {
+		t.Fatalf("parents %+v", out)
+	}
+	if len(appSets["team-a/set-1"]) != 1 || metaUID(appSets["team-a/set-1"][0]) != "a" {
+		t.Fatalf("team-a %+v", appSets["team-a/set-1"])
+	}
+	if len(appSets["team-b/set-1"]) != 1 || metaUID(appSets["team-b/set-1"][0]) != "b" {
+		t.Fatalf("team-b %+v", appSets["team-b/set-1"])
+	}
+	if _, shared := appSets["set-1"]; shared {
+		t.Fatal("name-only key must not be used")
 	}
 }
 

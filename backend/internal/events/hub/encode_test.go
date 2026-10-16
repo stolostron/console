@@ -11,17 +11,33 @@ import (
 )
 
 func TestNegotiateEncoding(t *testing.T) {
-	if got := negotiateEncoding("gzip, deflate, br", false); got != "gzip" {
-		t.Fatalf("gzip preferred, got %s", got)
+	cases := []struct {
+		accept   string
+		disabled bool
+		want     string
+	}{
+		{accept: "gzip, deflate, br", want: "gzip"},
+		{accept: "deflate, gzip", want: "gzip"},
+		{accept: "deflate", want: "deflate"},
+		{accept: "gzip", disabled: true, want: "identity"},
+		{accept: "", want: "identity"},
+		{accept: "gzip;q=0", want: "identity"},
+		{accept: "gzip;q=0.", want: "identity"},
+		{accept: "gzip;q=0, deflate", want: "deflate"},
+		{accept: "gzip;q=0., deflate;q=1.", want: "deflate"},
+		{accept: "gzip;q=0.5, deflate;q=0.8", want: "deflate"},
+		{accept: "deflate;q=0.2, gzip; q=0.8", want: "gzip"},
+		{accept: "gzip;q=1, deflate;q=1", want: "gzip"},
+		{accept: "gzip;q=0, *", want: "deflate"},
+		{accept: "gzip;q=0, deflate;q=0, *", want: "identity"},
+		{accept: "notgzip", want: "identity"},
+		{accept: "gzip;q=abc", want: "identity"},
+		{accept: "gzip;q=abc, deflate", want: "deflate"},
 	}
-	if got := negotiateEncoding("deflate", false); got != "deflate" {
-		t.Fatalf("got %s", got)
-	}
-	if got := negotiateEncoding("gzip", true); got != "identity" {
-		t.Fatalf("disabled got %s", got)
-	}
-	if got := negotiateEncoding("", false); got != "identity" {
-		t.Fatalf("empty got %s", got)
+	for _, tc := range cases {
+		if got := negotiateEncoding(tc.accept, tc.disabled); got != tc.want {
+			t.Fatalf("negotiateEncoding(%q, %v)=%q want %q", tc.accept, tc.disabled, got, tc.want)
+		}
 	}
 }
 

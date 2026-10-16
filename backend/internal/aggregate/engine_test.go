@@ -186,7 +186,7 @@ func TestPushModelQueryFromAppSet(t *testing.T) {
 		},
 	}, nil, nil)
 	e.appSetAppsMap = map[string][]map[string]any{
-		"set-1": {{
+		"argocd/set-1": {{
 			"metadata": map[string]any{"name": "child", "namespace": "argocd"},
 			"spec":     map[string]any{"destination": map[string]any{"name": "remote", "namespace": "ns"}},
 			"status": map[string]any{
@@ -197,7 +197,9 @@ func TestPushModelQueryFromAppSet(t *testing.T) {
 		}},
 	}
 	q := searchapi.NewQuery()
+	e.mu.Lock()
 	push, err := e.addPushModelPodQueryInputs(&q)
+	e.mu.Unlock()
 	if err != nil {
 		t.Fatal(err)
 	}

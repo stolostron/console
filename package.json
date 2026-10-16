@@ -35,7 +35,7 @@
     "lint:fix:backend": "cd backend && gofmt -w . && ../scripts/golangci-lint-backend.sh --fix",
     "lint:fix:frontend": "cd frontend && npm run lint:fix",
     "test": "concurrently --kill-others-on-fail npm:test:backend npm:test:frontend -c green,blue",
-    "test:backend": "cd backend && go test ./...",
+    "test:backend": "cd backend && mkdir -p coverage && go test ./... -coverprofile=coverage/coverage.out -covermode=atomic",
     "test:frontend": "cd frontend && npm test --",
     "i18n": "concurrently --kill-others-on-fail \"npm:i18n:*(!fix)\" -c green,blue,magenta",
     "i18n:frontend": "cd frontend && npm run i18n --",

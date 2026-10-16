@@ -99,5 +99,8 @@ func snapshotIdentities(t *testing.T, url, token string) map[string]bool {
 		id := ev.Type + "|" + ev.Object.APIVersion + "|" + ev.Object.Kind + "|" + ev.Object.Metadata.Namespace + "|" + ev.Object.Metadata.Name
 		out[id] = true
 	}
+	if err := sc.Err(); err != nil {
+		t.Fatal(err)
+	}
 	return out
 }

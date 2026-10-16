@@ -179,7 +179,25 @@ func TestOpenshiftVersionsQuery(t *testing.T) {
 	}
 }
 
-func TestOIDCConfigsEscapesAccountID(t *testing.T) {
+func TestOIDCConfigsRejectsBadAccountID(t *testing.T) {
+	called := false
+	h, _ := testHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		called = true
+	}))
+	rec := post(h, "/oidc-configs", map[string]string{
+		"service_account_id":     b64("id"),
+		"service_account_secret": b64("secret"),
+		"aws_account_id":         "a b&c",
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
+	}
+	if called {
+		t.Fatal("upstream should not be called")
+	}
+}
+
+func TestOIDCConfigsAcceptsAccountID(t *testing.T) {
 	var gotQuery string
 	h, _ := testHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/api/clusters_mgmt/v1/oidc_configs" {
@@ -192,12 +210,12 @@ func TestOIDCConfigsEscapesAccountID(t *testing.T) {
 	rec := post(h, "/oidc-configs", map[string]string{
 		"service_account_id":     b64("id"),
 		"service_account_secret": b64("secret"),
-		"aws_account_id":         "a b&c",
+		"aws_account_id":         "123456789012",
 	})
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d %s", rec.Code, rec.Body.String())
 	}
-	want := url.Values{"search": {"aws.account_id=a b&c or aws.account_id=''"}}.Encode()
+	want := url.Values{"search": {"aws.account_id=123456789012 or aws.account_id=''"}}.Encode()
 	if gotQuery != want {
 		t.Fatalf("query %q want %q", gotQuery, want)
 	}

@@ -390,7 +390,7 @@ func (e *Engine) addUIData(items []App) []App {
 		placement := []any{"", []string{}}
 		if kindOf(item.Object) == "ApplicationSet" {
 			placement = e.appSetPlacementData(item.Object, argoAppSets)
-			if list := e.appSetAppsMap[metaName(item.Object)]; list != nil {
+			if list := e.appSetAppsMap[appSetMapKey(metaNamespace(item.Object), metaName(item.Object))]; list != nil {
 				for _, app := range list {
 					apps = append(apps, metaName(app))
 				}

@@ -36,12 +36,12 @@ func TestUnauthorizedEmptyBody(t *testing.T) {
 	}
 }
 
-func TestGetWithoutUpgradeNotFound(t *testing.T) {
+func TestGetWithoutUpgradeMethodNotAllowed(t *testing.T) {
 	h := New(Options{Authn: authOK, Endpoint: func(context.Context) string { return "http://example.invalid" }})
 	req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
-	if rec.Code != http.StatusNotFound {
+	if rec.Code != http.StatusMethodNotAllowed {
 		t.Fatalf("status %d", rec.Code)
 	}
 	if rec.Body.Len() != 0 {
@@ -288,6 +288,224 @@ func TestSubprotocolsDefault(t *testing.T) {
 	got = subprotocolsForUpstream(req)
 	if len(got) != 2 || got[0] != "graphql-ws" {
 		t.Fatalf("%v", got)
+	}
+}
+
+func wsUpgradeRequest(origin string) *http.Request {
+	req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+	req.Host = "console.example:4000"
+	req.Header.Set("Upgrade", "websocket")
+	req.Header.Set("Connection", "Upgrade")
+	req.Header.Set("Sec-WebSocket-Version", "13")
+	req.Header.Set("Sec-WebSocket-Key", "dGhlIHNhbXBsZSBub25jZQ==")
+	if origin != "" {
+		req.Header.Set("Origin", origin)
+	}
+	return req
+}
+
+func TestWebSocketProductionRejectsForeignOrigin(t *testing.T) {
+	dialed := false
+	h := New(Options{
+		Authn:      authOK,
+		Production: true,
+		Endpoint: func(context.Context) string {
+			dialed = true
+			return "http://127.0.0.1:1/searchapi/graphql"
+		},
+	})
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, wsUpgradeRequest("https://evil.example"))
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if rec.Body.Len() != 0 {
+		t.Fatalf("body %q", rec.Body.String())
+	}
+	if dialed {
+		t.Fatal("upstream dialed after origin reject")
+	}
+}
+
+func TestWebSocketProductionAllowsEmptyAndSameHostOrigin(t *testing.T) {
+	upgrader := websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }, EnableCompression: false}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		_, _, _ = conn.ReadMessage()
+	}))
+	defer upstream.Close()
+
+	h := New(Options{
+		Authn:      authOK,
+		Production: true,
+		Endpoint:   func(context.Context) string { return upstream.URL + "/searchapi/graphql" },
+	})
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/proxy/search"
+	for _, origin := range []string{"", "http://" + strings.TrimPrefix(ts.URL, "http://")} {
+		hdr := http.Header{"Authorization": []string{"Bearer user-token"}}
+		if origin != "" {
+			hdr.Set("Origin", origin)
+		}
+		client, resp, err := websocket.DefaultDialer.Dial(wsURL, hdr)
+		if err != nil {
+			t.Fatalf("origin %q: %v", origin, err)
+		}
+		if resp != nil && resp.Body != nil {
+			_ = resp.Body.Close()
+		}
+		_ = client.WriteMessage(websocket.TextMessage, []byte(`{"type":"connection_init","payload":{}}`))
+		_ = client.Close()
+	}
+}
+
+func TestWebSocketProductionCheckOriginOverride(t *testing.T) {
+	upgrader := websocket.Upgrader{CheckOrigin: func(*http.Request) bool { return true }, EnableCompression: false}
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		_, _, _ = conn.ReadMessage()
+	}))
+	defer upstream.Close()
+
+	h := New(Options{
+		Authn:       authOK,
+		Production:  true,
+		CheckOrigin: func(*http.Request) bool { return true },
+		Endpoint:    func(context.Context) string { return upstream.URL + "/searchapi/graphql" },
+	})
+	ts := httptest.NewServer(h)
+	defer ts.Close()
+
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http") + "/proxy/search"
+	client, resp, err := websocket.DefaultDialer.Dial(wsURL, http.Header{
+		"Authorization": []string{"Bearer user-token"},
+		"Origin":        []string{"https://evil.example"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close()
+	}
+	_ = client.WriteMessage(websocket.TextMessage, []byte(`{"type":"connection_init","payload":{}}`))
+	_ = client.Close()
+}
+
+func TestWebSocketNonProductionAllowsForeignOrigin(t *testing.T) {
+	h := New(Options{
+		Authn:      authOK,
+		Production: false,
+		Endpoint:   func(context.Context) string { return "http://127.0.0.1:1/searchapi/graphql" },
+	})
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, wsUpgradeRequest("https://evil.example"))
+	if rec.Code == http.StatusForbidden {
+		t.Fatal("non-production rejected foreign origin")
+	}
+	if rec.Code != http.StatusBadGateway {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestRequestScheme(t *testing.T) {
+	tests := []struct {
+		name string
+		tls  bool
+		fwd  string
+		want string
+	}{
+		{name: "plain http", want: "http"},
+		{name: "tls", tls: true, want: "https"},
+		{name: "tls ignores forwarded proto", tls: true, fwd: "http", want: "https"},
+		{name: "forwarded https", fwd: "https", want: "https"},
+		{name: "forwarded first of list", fwd: "https, http", want: "https"},
+		{name: "forwarded trim and lower", fwd: " HTTPS ", want: "https"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+			if tt.tls {
+				req.TLS = &tls.ConnectionState{}
+			}
+			if tt.fwd != "" {
+				req.Header.Set("X-Forwarded-Proto", tt.fwd)
+			}
+			if got := requestScheme(req); got != tt.want {
+				t.Fatalf("got %q want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestCheckConsoleOrigin(t *testing.T) {
+	tests := []struct {
+		name   string
+		host   string
+		origin string
+		tls    bool
+		fwd    string
+		want   bool
+	}{
+		{name: "empty origin", host: "console.example:4000", want: true},
+		{name: "http same host", host: "console.example:4000", origin: "http://console.example:4000", want: true},
+		{name: "http host case fold", host: "console.example:4000", origin: "http://CONSOLE.EXAMPLE:4000", want: true},
+		{name: "foreign host", host: "console.example:4000", origin: "http://evil.example", want: false},
+		{name: "invalid origin", host: "console.example:4000", origin: "://bad", want: false},
+		{name: "tls https same host", host: "console.example:4000", origin: "https://console.example:4000", tls: true, want: true},
+		{name: "tls rejects http same host", host: "console.example:4000", origin: "http://console.example:4000", tls: true, want: false},
+		{name: "forwarded https same host", host: "console.example:4000", origin: "https://console.example:4000", fwd: "https", want: true},
+		{name: "forwarded https rejects http", host: "console.example:4000", origin: "http://console.example:4000", fwd: "https", want: false},
+		{name: "http rejects https same host", host: "console.example:4000", origin: "https://console.example:4000", want: false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodGet, "/proxy/search", nil)
+			req.Host = tt.host
+			if tt.tls {
+				req.TLS = &tls.ConnectionState{}
+			}
+			if tt.fwd != "" {
+				req.Header.Set("X-Forwarded-Proto", tt.fwd)
+			}
+			if tt.origin != "" {
+				req.Header.Set("Origin", tt.origin)
+			}
+			if got := checkConsoleOrigin(req); got != tt.want {
+				t.Fatalf("got %v want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWebSocketProductionRejectsHTTPOriginOnTLS(t *testing.T) {
+	dialed := false
+	h := New(Options{
+		Authn:      authOK,
+		Production: true,
+		Endpoint: func(context.Context) string {
+			dialed = true
+			return "http://127.0.0.1:1/searchapi/graphql"
+		},
+	})
+	req := wsUpgradeRequest("http://console.example:4000")
+	req.TLS = &tls.ConnectionState{}
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusForbidden {
+		t.Fatalf("status %d", rec.Code)
+	}
+	if dialed {
+		t.Fatal("upstream dialed after scheme reject")
 	}
 }
 
