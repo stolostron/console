@@ -38,6 +38,13 @@ type AccessChecker interface {
 	Prefetch(ctx context.Context, token string, events []Event)
 }
 
+// StreamTracker is optional: SSARAccess implements it so remembered DELETED allows
+// are cleared when the last SSE stream for a token closes.
+type StreamTracker interface {
+	BeginStream(token string)
+	EndStream(token string)
+}
+
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
@@ -70,6 +77,7 @@ type inflight struct {
 
 type tokenState struct {
 	last           time.Time
+	streams        int
 	entries        map[ssarKey]cacheEntry
 	flight         map[ssarKey]*inflight
 	rules          map[string]timedRules
@@ -245,6 +253,40 @@ func (a *SSARAccess) wasAllowed(token string, key seenKey) bool {
 	}
 	_, ok := st.allowedObjects[key]
 	return ok
+}
+
+func (a *SSARAccess) BeginStream(token string) {
+	if a == nil || token == "" {
+		return
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.ensureTokenLocked(hashToken(token))
+	st.streams++
+	st.last = time.Now()
+}
+
+func (a *SSARAccess) EndStream(token string) {
+	if a == nil || token == "" {
+		return
+	}
+	th := hashToken(token)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[th]
+	if st == nil {
+		return
+	}
+	if st.streams > 0 {
+		st.streams--
+	}
+	st.last = time.Now()
+	if st.streams == 0 {
+		clear(st.allowedObjects)
+	}
+	if st.empty() {
+		delete(a.byToken, th)
+	}
 }
 
 // Prefetch warms cluster-scoped list SSARs for distinct kinds so snapshot writes hit cache.
@@ -484,7 +526,8 @@ func (st *tokenState) enforceEntryCap() {
 }
 
 func (st *tokenState) empty() bool {
-	return len(st.entries) == 0 && len(st.flight) == 0 &&
+	return st.streams == 0 &&
+		len(st.entries) == 0 && len(st.flight) == 0 &&
 		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0 &&
 		len(st.allowedObjects) == 0
 }
@@ -540,10 +583,16 @@ func (a *SSARAccess) cleanup(now time.Time) {
 	}
 	all := make([]pair, 0, len(a.byToken))
 	for h, st := range a.byToken {
+		if st.streams > 0 {
+			continue
+		}
 		all = append(all, pair{h, st.last})
 	}
 	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	extra := len(all) - accessCacheMaxTokens
+	extra := len(a.byToken) - accessCacheMaxTokens
+	if extra > len(all) {
+		extra = len(all)
+	}
 	for i := 0; i < extra; i++ {
 		delete(a.byToken, all[i].hash)
 	}

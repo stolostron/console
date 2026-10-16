@@ -128,6 +128,36 @@ func TestCanSeeDeletedNotFoundUsesLastAllow(t *testing.T) {
 	}
 }
 
+func TestEndStreamClearsRememberedRoles(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
+		create := action.(ktesting.CreateAction)
+		attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+		if attr.Verb == "list" {
+			return ssarReview(false)
+		}
+		return ssarReview(true)
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	ok, err := a.CanSee(context.Background(), "tok", testRole("r1"))
+	if err != nil || !ok {
+		t.Fatalf("see allowed=%v err=%v", ok, err)
+	}
+	if !a.roleWasAllowed("tok", "r1") {
+		t.Fatal("expected remembered allow while stream is open")
+	}
+	a.BeginStream("tok")
+	a.EndStream("tok")
+	if !a.roleWasAllowed("tok", "r1") {
+		t.Fatal("remembered allow must survive while another stream is open")
+	}
+	a.EndStream("tok")
+	if a.roleWasAllowed("tok", "r1") {
+		t.Fatal("last EndStream must clear remembered roles")
+	}
+}
+
 func TestCanSeeDenyClearsDeletedFallback(t *testing.T) {
 	getAllowed := true
 	client := fake.NewSimpleClientset()

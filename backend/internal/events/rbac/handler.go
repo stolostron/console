@@ -98,6 +98,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	flusher.Flush()
 
+	if tracker, ok := h.access.(StreamTracker); ok {
+		tracker.BeginStream(token)
+		defer tracker.EndStream(token)
+	}
+
 	ch := h.store.Subscribe()
 	defer h.store.Unsubscribe(ch)
 

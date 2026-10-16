@@ -34,6 +34,13 @@ type AccessChecker interface {
 	CanSeeDeleted(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error)
 }
 
+// StreamTracker is optional: SSARAccess implements it so remembered DELETED allows
+// are cleared when the last SSE stream for a token closes.
+type StreamTracker interface {
+	BeginStream(userToken string)
+	EndStream(userToken string)
+}
+
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
@@ -64,6 +71,8 @@ type SSARAccess struct {
 	cache map[cacheKey]cacheEntry
 	// allowedRoles remembers get-allows per token hash. List allows are not stored.
 	allowedRoles map[string]map[string]struct{}
+	// activeStreams counts open SSE streams per token hash.
+	activeStreams map[string]int
 }
 
 func NewSSARAccess(base *rest.Config) *SSARAccess {
@@ -74,9 +83,10 @@ func NewSSARAccess(base *rest.Config) *SSARAccess {
 
 func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interface, error)) *SSARAccess {
 	return &SSARAccess{
-		cache:        map[cacheKey]cacheEntry{},
-		allowedRoles: map[string]map[string]struct{}{},
-		newClient:    newClient,
+		cache:         map[cacheKey]cacheEntry{},
+		allowedRoles:  map[string]map[string]struct{}{},
+		activeStreams: map[string]int{},
+		newClient:     newClient,
 	}
 }
 
@@ -157,6 +167,35 @@ func (a *SSARAccess) roleWasAllowed(userToken, name string) bool {
 	defer a.mu.Unlock()
 	_, ok := a.allowedRoles[hashToken(userToken)][name]
 	return ok
+}
+
+func (a *SSARAccess) BeginStream(userToken string) {
+	if a == nil || userToken == "" {
+		return
+	}
+	th := hashToken(userToken)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	if a.activeStreams == nil {
+		a.activeStreams = map[string]int{}
+	}
+	a.activeStreams[th]++
+}
+
+func (a *SSARAccess) EndStream(userToken string) {
+	if a == nil || userToken == "" {
+		return
+	}
+	th := hashToken(userToken)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	n := a.activeStreams[th]
+	if n <= 1 {
+		delete(a.activeStreams, th)
+		delete(a.allowedRoles, th)
+		return
+	}
+	a.activeStreams[th] = n - 1
 }
 
 func hashToken(token string) string {

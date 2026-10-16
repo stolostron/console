@@ -620,6 +620,37 @@ func TestDeletedClusterListErrorKeepsRememberedAllow(t *testing.T) {
 	}
 }
 
+func TestEndStreamClearsRememberedAllows(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: secretGetRules()}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectAccessReview{
+			Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+		}, nil
+	})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("expected remembered allow while stream is open")
+	}
+	a.BeginStream("tok")
+	a.EndStream("tok")
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("remembered allow must survive while another stream is open")
+	}
+	a.EndStream("tok")
+	if a.wasAllowed("tok", key) {
+		t.Fatal("last EndStream must clear remembered allows")
+	}
+}
+
 func TestModifiedDenyClearsDeletedFallback(t *testing.T) {
 	rules := secretGetRules()
 	client := fake.NewSimpleClientset()
