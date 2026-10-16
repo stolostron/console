@@ -4,6 +4,7 @@ package ansibletower
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 )
 
 func authOK(_ http.ResponseWriter, _ *http.Request) (string, bool) {
@@ -241,6 +243,106 @@ func TestRejectsBadPath(t *testing.T) {
 		t.Fatalf("status %d", rec.Code)
 	}
 }
+
+func TestNewDefaultDependencies(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+	h := New(Options{RESTConfig: &rest.Config{Host: ts.URL, TLSClientConfig: rest.TLSClientConfig{Insecure: true}}})
+	if h.Authn == nil || h.KubeForUser == nil || h.Tower == nil {
+		t.Fatal("expected default authn, kube, and tower client")
+	}
+}
+
+func TestMethodNotAllowed(t *testing.T) {
+	h := New(Options{Authn: authOK})
+	req := httptest.NewRequest(http.MethodGet, "/ansibletower", nil)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNotFound {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestMissingSecretFields400(t *testing.T) {
+	h := New(Options{Authn: authOK, KubeForUser: func(string) (kubernetes.Interface, error) { return fake.NewSimpleClientset(), nil }})
+	rec := post(h, map[string]string{"secretNamespace": "ns"})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestKubeForUserError400(t *testing.T) {
+	h := New(Options{
+		Authn: authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) {
+			return nil, errors.New("no client")
+		},
+	})
+	rec := post(h, map[string]string{
+		"secretNamespace": "app-team",
+		"secretName":      "tower-cred",
+		"ansiblePath":     Paths[0],
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestInvalidHostURL400(t *testing.T) {
+	kube := fake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "tower-cred", Namespace: "app-team"},
+		Data:       map[string][]byte{"host": []byte("://bad"), "token": []byte("12345")},
+	})
+	h := New(Options{
+		Authn:       authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) { return kube, nil },
+	})
+	rec := post(h, map[string]string{
+		"secretNamespace": "app-team",
+		"secretName":      "tower-cred",
+		"ansiblePath":     Paths[0],
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestInvalidAnsiblePath400(t *testing.T) {
+	tower := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	defer tower.Close()
+	kube := fake.NewSimpleClientset(&corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "tower-cred", Namespace: "app-team"},
+		Data:       map[string][]byte{"host": []byte(tower.URL), "token": []byte("12345")},
+	})
+	h := New(Options{
+		Authn:       authOK,
+		KubeForUser: func(string) (kubernetes.Interface, error) { return kube, nil },
+	})
+	rec := post(h, map[string]string{
+		"secretNamespace": "app-team",
+		"secretName":      "tower-cred",
+		"ansiblePath":     "://not-a-url",
+	})
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestReadBodyError400(t *testing.T) {
+	h := New(Options{Authn: authOK})
+	req := httptest.NewRequest(http.MethodPost, "/ansibletower", errReader{})
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+type errReader struct{}
+
+func (errReader) Read([]byte) (int, error) { return 0, errors.New("read failed") }
 
 func TestGatewayPath(t *testing.T) {
 	var gotPath string

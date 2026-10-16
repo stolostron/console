@@ -101,3 +101,143 @@ func TestArgoPushModelClustersNameOnlyRemote(t *testing.T) {
 		t.Fatalf("got %v want [remote] (empty dest.server must not count as local)", got)
 	}
 }
+
+func TestClustersMergesSources(t *testing.T) {
+	lister := MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {
+			uObj("cluster.open-cluster-management.io/v1", "ManagedCluster", "mc-1", "", map[string]any{
+				"status": map[string]any{
+					"clusterClaims": []any{
+						map[string]any{"name": "consoleurl.cluster.open-cluster-management.io", "value": "https://console.apps.mc-1.example"},
+					},
+				},
+			}),
+		},
+		"hive.openshift.io/v1|ClusterDeployment": {
+			uObj("hive.openshift.io/v1", "ClusterDeployment", "mc-1", "", map[string]any{
+				"metadata": map[string]any{
+					"name": "mc-1",
+					"ownerReferences": []any{map[string]any{"kind": "AgentCluster"}},
+				},
+			}),
+			uObj("hive.openshift.io/v1", "ClusterDeployment", "keep", "", map[string]any{
+				"metadata": map[string]any{"name": "keep"},
+				"status":   map[string]any{"apiURL": "https://api.keep.example", "webConsoleURL": "https://console.keep.example"},
+			}),
+		},
+		"internal.open-cluster-management.io/v1beta1|ManagedClusterInfo": {
+			uObj("internal.open-cluster-management.io/v1beta1", "ManagedClusterInfo", "info-1", "", map[string]any{
+				"metadata": map[string]any{"name": "info-1"},
+				"spec":     map[string]any{"masterEndpoint": "https://api.info.example"},
+			}),
+		},
+		"hypershift.openshift.io/v1beta1|HostedCluster": {
+			uObj("hypershift.openshift.io/v1beta1", "HostedCluster", "hc-1", "", map[string]any{
+				"metadata": map[string]any{"name": "hc-1"},
+				"spec":     map[string]any{"dns": map[string]any{"baseDomain": "hc.example"}},
+			}),
+		},
+	}
+	e := NewEngine(lister, nil, nil)
+	got := e.clusters()
+	names := map[string]Cluster{}
+	for _, c := range got {
+		names[c.Name] = c
+	}
+	if names["mc-1"].ConsoleURL != "https://console.apps.mc-1.example" {
+		t.Fatalf("mc-1 %+v", names["mc-1"])
+	}
+	if names["keep"].KubeAPIServer != "https://api.keep.example" {
+		t.Fatalf("keep %+v", names["keep"])
+	}
+	if names["info-1"].KubeAPIServer != "https://api.info.example" {
+		t.Fatalf("info %+v", names["info-1"])
+	}
+	if names["hc-1"].ConsoleURL != "https://console-openshift-console.apps.hc-1.hc.example" {
+		t.Fatalf("hc %+v", names["hc-1"])
+	}
+}
+
+func TestKubeAPIServerFromSpec(t *testing.T) {
+	cd := map[string]any{
+		"spec": map[string]any{"clusterName": "c", "baseDomain": "example.com"},
+	}
+	if kubeAPIServer(cd, nil) != "https://api.c.example.com" {
+		t.Fatal("constructed api")
+	}
+}
+
+func TestApplicationClustersPaths(t *testing.T) {
+	e := NewEngine(nil, nil, nil)
+	local := &Cluster{Name: "local-cluster"}
+	clusters := []Cluster{{Name: "local-cluster"}, {Name: "remote"}}
+	flux := map[string]any{"status": map[string]any{"cluster": "remote"}}
+	if cs := e.applicationClusters(flux, kindFlux, nil, nil, local, clusters); cs[0] != "remote" {
+		t.Fatalf("flux %v", cs)
+	}
+	pullSet := map[string]any{
+		"metadata": map[string]any{"name": "set", "namespace": "argocd"},
+		"spec": map[string]any{
+			"template": map[string]any{
+				"metadata": map[string]any{
+					"annotations": map[string]any{
+						"apps.open-cluster-management.io/ocm-managed-cluster": "true",
+					},
+				},
+			},
+		},
+	}
+	e.pulledAppSetMap = map[string][]map[string]any{
+		"argocd/set": {{"cluster": "remote-a"}, {"cluster": "remote-b"}},
+	}
+	got := e.applicationClusters(pullSet, kindAppSet, nil, nil, local, clusters)
+	if len(got) != 2 {
+		t.Fatalf("pull %v", got)
+	}
+}
+
+func TestSubscriptionClustersAndLocalSkip(t *testing.T) {
+	app := map[string]any{
+		"metadata": map[string]any{
+			"annotations": map[string]any{
+				"apps.open-cluster-management.io/subscriptions": "ns/sub,ns/sub-local",
+			},
+		},
+	}
+	subs := []map[string]any{{
+		"metadata": map[string]any{"name": "sub", "namespace": "ns"},
+		"spec": map[string]any{
+			"placement": map[string]any{"placementRef": map[string]any{"name": "place"}},
+		},
+	}}
+	pd := []map[string]any{{
+		"metadata": map[string]any{
+			"labels": map[string]any{"cluster.open-cluster-management.io/placement": "place"},
+		},
+		"status": map[string]any{
+			"decisions": []any{map[string]any{"clusterName": "c1"}},
+		},
+	}}
+	got := subscriptionClusters(app, subs, pd)
+	if len(got) != 1 || got[0] != "c1" {
+		t.Fatalf("%v", got)
+	}
+	if !isLocalSubscription("ns/sub-local", []string{"ns/sub", "ns/sub-local"}) {
+		t.Fatal("local sub")
+	}
+}
+
+func TestArgoClusterAndDestinationKubeAPI(t *testing.T) {
+	e := NewEngine(nil, nil, nil)
+	hub := "local-cluster"
+	app := map[string]any{
+		"spec": map[string]any{"destination": map[string]any{"server": "https://kubernetes.default.svc"}},
+	}
+	if e.argoCluster(app, nil) != hub {
+		t.Fatal("default svc hub")
+	}
+	dest := map[string]any{"server": "https://kubernetes.default.svc"}
+	if e.argoDestinationCluster(dest, nil, "hint", hub) != "hint" {
+		t.Fatal("cluster hint for in-cluster server")
+	}
+}
