@@ -3,6 +3,7 @@
 package outbound
 
 import (
+	"github.com/stolostron/console/backend/internal/httpx"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,11 +12,11 @@ import (
 func TestCopyRequestHeaders(t *testing.T) {
 	t.Parallel()
 	src := http.Header{}
-	src.Set("Accept", "application/json")
+	src.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	src.Set("X-Other", "nope")
 	dst := http.Header{}
 	CopyRequestHeaders(dst, src, "tok", ProxyRequestHeaders)
-	if dst.Get("Accept") != "application/json" {
+	if dst.Get(httpx.HeaderAccept) != httpx.MIMEJSON {
 		t.Fatalf("Accept=%q", dst.Get("Accept"))
 	}
 	if dst.Get("Authorization") != "Bearer tok" {

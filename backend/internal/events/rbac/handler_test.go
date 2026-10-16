@@ -25,6 +25,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 // syncRecorder guards ResponseRecorder reads/writes across handler and test goroutines.
@@ -352,11 +353,11 @@ func TestHandlerSnapshotUserListFallback(t *testing.T) {
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.URL.Path == "/api":
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{"kind":"APIVersions"}`))
 		case strings.Contains(r.URL.Path, "clusterroles"):
-			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 			_ = json.NewEncoder(w).Encode(list)
 		default:
 			http.NotFound(w, r)

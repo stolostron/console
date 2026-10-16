@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -305,7 +306,7 @@ func TestSnapshotHandlerJSON(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatal(rec.Header().Get("Content-Type"))
 	}
 	if !strings.Contains(rec.Body.String(), `"kind":"Namespace"`) ||

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
 
@@ -57,7 +58,7 @@ func TestSearchAndPing(t *testing.T) {
 		body, _ := io.ReadAll(r.Body)
 		var payload map[string]any
 		_ = json.Unmarshal(body, &payload)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if q, _ := payload["query"].(string); q == searchapi.NewQuery().Query {
 			_, _ = w.Write([]byte(`{"data":{"searchResult":[{"items":[{"name":"a"}],"related":[]}]}}`))
 			return

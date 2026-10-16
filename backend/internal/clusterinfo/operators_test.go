@@ -23,6 +23,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/clusterinfo"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func subscriptionOperator(name, csv string) *unstructured.Unstructured {
@@ -78,7 +79,7 @@ func TestOperatorCheck_SubscriptionInstalled(t *testing.T) {
 	body := fmt.Sprintf(`{"operator":"%s"}`, op)
 	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", bytes.NewReader([]byte(body)))
 	req.Header.Set("Authorization", "Bearer good")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
@@ -103,7 +104,7 @@ func TestOperatorCheck_ClusterExtensionInstalled(t *testing.T) {
 	body := fmt.Sprintf(`{"operator":"%s"}`, op)
 	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", bytes.NewReader([]byte(body)))
 	req.Header.Set("Authorization", "Bearer good")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
@@ -125,7 +126,7 @@ func TestOperatorCheck_NotInstalled(t *testing.T) {
 	body := bytes.NewReader([]byte(`{"operator":"advanced-cluster-management"}`))
 	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", body)
 	req.Header.Set("Authorization", "Bearer good")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {

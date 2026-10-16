@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -24,7 +25,7 @@ func authOK(_ http.ResponseWriter, _ *http.Request) (string, bool) {
 func post(h http.Handler, body any) *httptest.ResponseRecorder {
 	raw, _ := json.Marshal(body)
 	req := httptest.NewRequest(http.MethodPost, "/ansibletower", strings.NewReader(string(raw)))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	return rec
@@ -51,7 +52,7 @@ func TestProxiesAllowlistedPath(t *testing.T) {
 	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		gotPath = r.URL.RequestURI()
 		gotAuth = r.Header.Get("Authorization")
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"count":1}`))
 	}))
 	defer tower.Close()
@@ -86,7 +87,7 @@ func TestProxiesAllowlistedPath(t *testing.T) {
 
 func TestSkipsHopByHopHeaders(t *testing.T) {
 	tower := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.Header().Set("Cache-Control", "no-store")
 		w.Header().Set("Etag", `"abc"`)
 		w.Header().Set("Set-Cookie", "session=secret")
@@ -111,7 +112,7 @@ func TestSkipsHopByHopHeaders(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatalf("content-type %q", rec.Header().Get("Content-Type"))
 	}
 	if rec.Header().Get("Cache-Control") != "no-store" || rec.Header().Get("Etag") != `"abc"` {

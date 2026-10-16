@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,7 +62,7 @@ func TestListVMClusterRolesForToken(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_ = json.NewEncoder(w).Encode(list)
 	}))
 	defer ts.Close()

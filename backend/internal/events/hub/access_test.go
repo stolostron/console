@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	authzv1 "k8s.io/api/authorization/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -299,7 +300,7 @@ func TestPrefetchParallelKindList(t *testing.T) {
 		mu.Lock()
 		inFlight--
 		mu.Unlock()
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_ = json.NewEncoder(w).Encode(&authzv1.SelfSubjectAccessReview{
 			Status: authzv1.SubjectAccessReviewStatus{Allowed: true},
 		})

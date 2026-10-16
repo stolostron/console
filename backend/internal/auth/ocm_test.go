@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func TestOCMServiceToken(t *testing.T) {
@@ -28,7 +29,7 @@ func TestOCMServiceToken(t *testing.T) {
 		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
 			t.Errorf("content-type %q", r.Header.Get("Content-Type"))
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"mock-access-token"}`))
 	}))
 	defer sso.Close()
@@ -84,7 +85,7 @@ func TestTLSConfigFromCA_AppendsPEM(t *testing.T) {
 
 func TestOCMServiceToken_NilClientUsesDefault(t *testing.T) {
 	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"via-default"}`))
 	}))
 	defer sso.Close()
@@ -103,7 +104,7 @@ func TestOCMServiceToken_NilClientUsesDefault(t *testing.T) {
 
 func TestOCMServiceToken_MissingAccessToken(t *testing.T) {
 	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"token_type":"bearer"}`))
 	}))
 	defer sso.Close()
@@ -134,7 +135,7 @@ func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
 		b, _ := io.ReadAll(r.Body)
 		posted, _ := url.ParseQuery(string(b))
 		forms <- posted
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"ok"}`))
 	}))
 	defer sso.Close()

@@ -12,6 +12,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
@@ -44,7 +45,7 @@ func TestPostsChunksAndWrapsJSON(t *testing.T) {
 		b, _ := io.ReadAll(r.Body)
 		bodies = append(bodies, string(b))
 		mu.Unlock()
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"status":"ok"}`))
 	}))
 	defer insights.Close()

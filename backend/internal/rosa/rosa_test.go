@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func authOK(_ http.ResponseWriter, _ *http.Request) (string, bool) {
@@ -28,7 +29,7 @@ func b64(s string) string {
 func testHandler(t *testing.T, api http.Handler) (*Handler, *httptest.Server) {
 	t.Helper()
 	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"mock-ocm-token"}`))
 	}))
 	t.Cleanup(sso.Close)
@@ -42,7 +43,7 @@ func testHandler(t *testing.T, api http.Handler) (*Handler, *httptest.Server) {
 func post(h http.Handler, path string, body any) *httptest.ResponseRecorder {
 	raw, _ := json.Marshal(body)
 	req := httptest.NewRequest(http.MethodPost, path, strings.NewReader(string(raw)))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	return rec
@@ -392,7 +393,7 @@ func TestServeHTTP_UnknownRoute(t *testing.T) {
 func TestInvalidPayloadReturns500(t *testing.T) {
 	h := New(Options{Authn: authOK})
 	req := httptest.NewRequest(http.MethodPost, "/regions", strings.NewReader(`{`))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusInternalServerError {
@@ -611,7 +612,7 @@ func TestUserRoleUpstreamError(t *testing.T) {
 func TestVpcsInvalidJSON(t *testing.T) {
 	h := New(Options{Authn: authOK})
 	req := httptest.NewRequest(http.MethodPost, "/vpcs", strings.NewReader(`{`))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusInternalServerError {
@@ -649,7 +650,7 @@ func TestStripPathRoot(t *testing.T) {
 func TestBillingAccountsInvalidJSON(t *testing.T) {
 	h := New(Options{Authn: authOK})
 	req := httptest.NewRequest(http.MethodPost, "/aws-billing-accounts", strings.NewReader(`{`))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusInternalServerError {
@@ -660,7 +661,7 @@ func TestBillingAccountsInvalidJSON(t *testing.T) {
 func TestOIDCConfigsInvalidJSON(t *testing.T) {
 	h := New(Options{Authn: authOK})
 	req := httptest.NewRequest(http.MethodPost, "/oidc-configs", strings.NewReader(`{`))
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusInternalServerError {
