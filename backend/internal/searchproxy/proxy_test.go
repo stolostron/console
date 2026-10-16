@@ -461,11 +461,26 @@ func TestCheckConsoleOrigin(t *testing.T) {
 		{name: "http host case fold", host: "console.example:4000", origin: "http://CONSOLE.EXAMPLE:4000", want: true},
 		{name: "foreign host", host: "console.example:4000", origin: "http://evil.example", want: false},
 		{name: "invalid origin", host: "console.example:4000", origin: "://bad", want: false},
-		{name: "tls https same host", host: "console.example:4000", origin: "https://console.example:4000", tls: true, want: true},
-		{name: "tls rejects http same host", host: "console.example:4000", origin: "http://console.example:4000", tls: true, want: false},
-		{name: "forwarded https same host", host: "console.example:4000", origin: "https://console.example:4000", fwd: "https", want: true},
-		{name: "forwarded https rejects http", host: "console.example:4000", origin: "http://console.example:4000", fwd: "https", want: false},
-		{name: "http rejects https same host", host: "console.example:4000", origin: "https://console.example:4000", want: false},
+		{
+			name: "tls https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", tls: true, want: true,
+		},
+		{
+			name: "tls rejects http same host", host: "console.example:4000",
+			origin: "http://console.example:4000", tls: true, want: false,
+		},
+		{
+			name: "forwarded https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", fwd: "https", want: true,
+		},
+		{
+			name: "forwarded https rejects http", host: "console.example:4000",
+			origin: "http://console.example:4000", fwd: "https", want: false,
+		},
+		{
+			name: "http rejects https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
