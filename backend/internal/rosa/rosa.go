@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -182,7 +183,7 @@ func writeJSON(w http.ResponseWriter, v any) {
 }
 
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if status != http.StatusOK {
 		w.WriteHeader(status)
 	}
@@ -258,9 +259,9 @@ func (h *Handler) doJSON(ctx context.Context, method, token, rawURL string, body
 		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	}
 	resp, err := h.client().Do(req)
 	if err != nil {

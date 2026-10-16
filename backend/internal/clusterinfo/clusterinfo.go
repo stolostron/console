@@ -21,6 +21,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/hubresources"
 	"github.com/stolostron/console/backend/internal/informers"
 	applog "github.com/stolostron/console/backend/internal/log"
@@ -146,7 +147,7 @@ func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 		"isObservabilityInstalled": flags.isObservabilityInstalled,
 		"authentication":           flags.authentication,
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
@@ -411,7 +412,7 @@ func (h *Handler) clusterVersion(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if obj, ok := h.clusterVersionFromCache(); ok {
 		_ = json.NewEncoder(w).Encode(clusterVersionPayload(obj))
 		return
@@ -492,7 +493,7 @@ func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 }
 
 func writeHypershiftStatus(w http.ResponseWriter, enabled bool) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"statusCode": http.StatusOK,
 		"body": map[string]bool{
@@ -682,7 +683,7 @@ func (h *Handler) operatorCheck(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
@@ -808,12 +809,12 @@ func (h *Handler) apiPaths(w http.ResponseWriter, r *http.Request) {
 		}
 		result[list.GroupVersion] = kindMap
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(result)
 }
 
 func writeJSON(w http.ResponseWriter, v interface{}) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if v == nil {
 		_, _ = w.Write([]byte("null"))
 		return
