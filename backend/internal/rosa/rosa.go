@@ -168,15 +168,14 @@ type postResult struct {
 }
 
 func writeJSON(w http.ResponseWriter, v any) {
-	w.Header().Set("Content-Type", "application/json")
-	enc := json.NewEncoder(w)
-	enc.SetEscapeHTML(false)
-	_ = enc.Encode(v)
+	writeJSONStatus(w, http.StatusOK, v)
 }
 
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	if status != http.StatusOK {
+		w.WriteHeader(status)
+	}
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	_ = enc.Encode(v)
@@ -200,47 +199,79 @@ func (h *Handler) ssoToken(ctx context.Context, p payload) (string, error) {
 	return auth.OCMServiceToken(ctx, h.client(), p.ServiceAccountID, p.ServiceAccountSecret)
 }
 
-func (h *Handler) getJSON(ctx context.Context, token, rawURL string) (any, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, encodeRequestURL(rawURL), nil)
+// authPayload parses the body and exchanges SSO credentials. ok is false when
+// the error response was already written.
+func (h *Handler) authPayload(w http.ResponseWriter, r *http.Request, body []byte, op string) (payload, string, bool) {
+	p, err := parsePayload(body)
 	if err != nil {
-		return nil, err
+		applog.Logger().Error("rosa "+op, "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return payload{}, "", false
+	}
+	tok, err := h.ssoToken(r.Context(), p)
+	if err != nil {
+		applog.Logger().Error("rosa "+op+" sso", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return payload{}, "", false
+	}
+	return p, tok, true
+}
+
+// authPayloadOrg is authPayload plus current_account org lookup.
+func (h *Handler) authPayloadOrg(w http.ResponseWriter, r *http.Request, body []byte, op string) (payload, string, orgAccount, bool) {
+	p, tok, ok := h.authPayload(w, r, body, op)
+	if !ok {
+		return payload{}, "", orgAccount{}, false
+	}
+	org, err := h.getOrg(r.Context(), tok)
+	if err != nil {
+		applog.Logger().Error("rosa "+op+" org", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return payload{}, "", orgAccount{}, false
+	}
+	return p, tok, org, true
+}
+
+func (h *Handler) doJSON(ctx context.Context, method, token, rawURL string, body any) (status int, out any, err error) {
+	var reader io.Reader
+	if body != nil {
+		raw, marshalErr := json.Marshal(body)
+		if marshalErr != nil {
+			return 0, nil, marshalErr
+		}
+		reader = strings.NewReader(string(raw))
+	}
+	req, err := http.NewRequestWithContext(ctx, method, encodeRequestURL(rawURL), reader)
+	if err != nil {
+		return 0, nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Accept", "application/json")
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
 	resp, err := h.client().Do(req)
 	if err != nil {
-		return nil, err
+		return 0, nil, err
 	}
 	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
-	var out any
 	if err = json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return nil, err
+		return 0, nil, err
 	}
-	return out, nil
+	return resp.StatusCode, out, nil
+}
+
+func (h *Handler) getJSON(ctx context.Context, token, rawURL string) (any, error) {
+	_, out, err := h.doJSON(ctx, http.MethodGet, token, rawURL, nil)
+	return out, err
 }
 
 func (h *Handler) postJSON(ctx context.Context, token, rawURL string, body any) (postResult, error) {
-	raw, err := json.Marshal(body)
+	status, out, err := h.doJSON(ctx, http.MethodPost, token, rawURL, body)
 	if err != nil {
 		return postResult{}, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, encodeRequestURL(rawURL), strings.NewReader(string(raw)))
-	if err != nil {
-		return postResult{}, err
-	}
-	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := h.client().Do(req)
-	if err != nil {
-		return postResult{}, err
-	}
-	defer func() { _, _ = io.Copy(io.Discard, resp.Body); _ = resp.Body.Close() }()
-	var out any
-	if err = json.NewDecoder(resp.Body).Decode(&out); err != nil {
-		return postResult{}, err
-	}
-	return postResult{StatusCode: resp.StatusCode, Body: out}, nil
+	return postResult{StatusCode: status, Body: out}, nil
 }
 
 func (h *Handler) getOrg(ctx context.Context, token string) (orgAccount, error) {
@@ -259,140 +290,71 @@ func (h *Handler) getOrg(ctx context.Context, token string) (orgAccount, error) 
 	return org, nil
 }
 
+func (h *Handler) writeUpstream(w http.ResponseWriter, op string, out any, err error, onErr any) {
+	if err != nil {
+		applog.Logger().Error("rosa "+op, "error", err)
+		writeJSON(w, onErr)
+		return
+	}
+	writeJSON(w, out)
+}
+
 func (h *Handler) awsAccountIds(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa aws-account-ids", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa aws-account-ids sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	org, err := h.getOrg(r.Context(), tok)
-	if err != nil {
-		applog.Logger().Error("rosa aws-account-ids org", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, org, ok := h.authPayloadOrg(w, r, body, "aws-account-ids")
+	if !ok {
 		return
 	}
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/accounts_mgmt/v1/organizations/"+org.Organization.ID+"/labels")
-	if err != nil {
-		applog.Logger().Error("rosa aws-account-ids labels", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "aws-account-ids labels", out, err, nil)
 }
 
 func (h *Handler) awsBillingAccounts(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa aws-billing-accounts", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa aws-billing-accounts sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	org, err := h.getOrg(r.Context(), tok)
-	if err != nil {
-		applog.Logger().Error("rosa aws-billing-accounts org", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, org, ok := h.authPayloadOrg(w, r, body, "aws-billing-accounts")
+	if !ok {
 		return
 	}
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/accounts_mgmt/v1/organizations/"+org.Organization.ID+"/quota_cost?fetchRelatedResources=true&fetchCloudAccounts=true")
-	if err != nil {
-		applog.Logger().Error("rosa aws-billing-accounts quota", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "aws-billing-accounts quota", out, err, nil)
 }
 
 func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa oidc-configs", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	p, tok, ok := h.authPayload(w, r, body, "oidc-configs")
+	if !ok {
 		return
 	}
 	if !validAWSAccountID(p.AWSAccountID) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa oidc-configs sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	q := url.Values{}
 	q.Set("search", "aws.account_id="+p.AWSAccountID+" or aws.account_id=''")
-	rawURL := h.APIURL + "/api/clusters_mgmt/v1/oidc_configs?" + q.Encode()
-	out, err := h.getJSON(r.Context(), tok, rawURL)
-	if err != nil {
-		applog.Logger().Error("rosa oidc-configs", "error", err)
-		writeJSON(w, map[string]string{"error": err.Error()})
-		return
-	}
-	writeJSON(w, out)
+	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/oidc_configs?"+q.Encode())
+	h.writeUpstream(w, "oidc-configs", out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) regions(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa regions", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa regions sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, ok := h.authPayload(w, r, body, "regions")
+	if !ok {
 		return
 	}
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/cloud_providers?size=-1&fetchRegions=true")
-	if err != nil {
-		applog.Logger().Error("rosa regions", "error", err)
-		writeJSON(w, map[string]string{"error": err.Error()})
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "regions", out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa cluster-name-check", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	p, tok, ok := h.authPayload(w, r, body, "cluster-name-check")
+	if !ok {
 		return
 	}
 	if p.ClusterName == "" || !clusterNameRE.MatchString(p.ClusterName) {
 		writeJSONStatus(w, http.StatusBadRequest, map[string]string{"error": "Invalid cluster name format"})
 		return
 	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa cluster-name-check sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/clusters?method=get", map[string]any{
 		"size":   1,
 		"search": "name = '" + p.ClusterName + "'",
 	})
-	if err != nil {
-		applog.Logger().Error("rosa cluster-name-check", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "cluster-name-check", out, err, nil)
 }
 
 func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
@@ -402,123 +364,59 @@ func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa vpcs", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, ok := h.authPayload(w, r, body, "vpcs")
+	if !ok {
 		return
 	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa vpcs sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	payloadBody := map[string]any{"aws": raw["aws"], "region": raw["region"]}
-	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true", payloadBody)
-	if err != nil {
-		applog.Logger().Error("rosa vpcs", "error", err)
-		writeJSON(w, map[string]string{"error": err.Error()})
-		return
-	}
-	writeJSON(w, out)
+	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true", map[string]any{
+		"aws":    raw["aws"],
+		"region": raw["region"],
+	})
+	h.writeUpstream(w, "vpcs", out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa sts-role-arns", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	p, tok, ok := h.authPayload(w, r, body, "sts-role-arns")
+	if !ok {
 		return
 	}
 	if !validAWSAccountID(p.AWSAccountID) {
 		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa sts-role-arns sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/sts_account_roles", map[string]any{
 		"account_id": p.AWSAccountID,
 	})
-	if err != nil {
-		applog.Logger().Error("rosa sts-role-arns", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "sts-role-arns", out, err, nil)
 }
 
 func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa sts-ocm-role", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	p, tok, ok := h.authPayload(w, r, body, "sts-ocm-role")
+	if !ok {
 		return
 	}
 	if !validAWSAccountID(p.AWSAccountID) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa sts-ocm-role sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
 	out, err := h.postJSON(r.Context(), tok, h.APIURL+"/api/clusters_mgmt/v1/aws_inquiries/sts_ocm_role", map[string]any{
 		"account_id": p.AWSAccountID,
 	})
-	if err != nil {
-		applog.Logger().Error("rosa sts-ocm-role", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "sts-ocm-role", out, err, nil)
 }
 
 func (h *Handler) userRole(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa sts-user-role", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa sts-user-role sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	org, err := h.getOrg(r.Context(), tok)
-	if err != nil {
-		applog.Logger().Error("rosa sts-user-role org", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, org, ok := h.authPayloadOrg(w, r, body, "sts-user-role")
+	if !ok {
 		return
 	}
 	out, err := h.getJSON(r.Context(), tok, h.APIURL+"/api/accounts_mgmt/v1/accounts/"+org.ID+"/labels/sts_user_role")
-	if err != nil {
-		applog.Logger().Error("rosa sts-user-role", "error", err)
-		writeJSON(w, nil)
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "sts-user-role", out, err, nil)
 }
 
 func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa machine-types", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa machine-types sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	p, tok, ok := h.authPayload(w, r, body, "machine-types")
+	if !ok {
 		return
 	}
 	zones := p.AvailabilityZones
@@ -530,33 +428,22 @@ func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []by
 		"region":             map[string]any{"id": p.Region},
 		"availability_zones": zones,
 	})
-	if err != nil {
-		applog.Logger().Error("rosa machine-types", "error", err)
-		writeJSON(w, map[string]string{"error": err.Error()})
-		return
-	}
-	writeJSON(w, out)
+	h.writeUpstream(w, "machine-types", out, err, map[string]string{"error": errString(err)})
 }
 
 func (h *Handler) versions(w http.ResponseWriter, r *http.Request, body []byte) {
-	p, err := parsePayload(body)
-	if err != nil {
-		applog.Logger().Error("rosa openshift-versions", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	tok, err := h.ssoToken(r.Context(), p)
-	if err != nil {
-		applog.Logger().Error("rosa openshift-versions sso", "error", err)
-		w.WriteHeader(http.StatusInternalServerError)
+	_, tok, ok := h.authPayload(w, r, body, "openshift-versions")
+	if !ok {
 		return
 	}
 	rawURL := h.APIURL + "/api/clusters_mgmt/v1/versions/?order=end_of_life_timestamp desc&product=hcp&search=enabled='t' AND (channel_group='stable' OR channel_group='eus' OR channel_group='candidate' OR channel_group='fast' OR channel_group='nightly') AND rosa_enabled='t'&size=-1"
 	out, err := h.getJSON(r.Context(), tok, rawURL)
-	if err != nil {
-		applog.Logger().Error("rosa openshift-versions", "error", err)
-		writeJSON(w, map[string]string{"error": err.Error()})
-		return
+	h.writeUpstream(w, "openshift-versions", out, err, map[string]string{"error": errString(err)})
+}
+
+func errString(err error) string {
+	if err == nil {
+		return ""
 	}
-	writeJSON(w, out)
+	return err.Error()
 }
