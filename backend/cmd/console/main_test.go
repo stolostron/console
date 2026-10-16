@@ -106,14 +106,25 @@ func TestRun_StartsAndStopsOnSignal(t *testing.T) {
 	errCh := make(chan error, 1)
 	go func() { errCh <- run() }()
 
+	addr := "127.0.0.1:" + os.Getenv("PORT")
 	deadline := time.Now().Add(5 * time.Second)
-	for time.Now().Before(deadline) {
-		conn, dialErr := net.DialTimeout("tcp", "127.0.0.1:"+os.Getenv("PORT"), 50*time.Millisecond)
+	ready := false
+	for !ready && time.Now().Before(deadline) {
+		select {
+		case err := <-errCh:
+			t.Fatalf("run exited before listener ready: %v", err)
+		default:
+		}
+		conn, dialErr := net.DialTimeout("tcp", addr, 50*time.Millisecond)
 		if dialErr == nil {
-			conn.Close()
+			_ = conn.Close()
+			ready = true
 			break
 		}
 		time.Sleep(20 * time.Millisecond)
+	}
+	if !ready {
+		t.Fatal("listener not ready before deadline")
 	}
 
 	if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {

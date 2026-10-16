@@ -100,7 +100,12 @@ func TestValidateAuthFailure(t *testing.T) {
 	})
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
-	resp, err := ts.Client().Get(ts.URL + "/virtualmachines/get/c/n/ns")
+	req, err := http.NewRequest(http.MethodGet, ts.URL+"/virtualmachines/get/c/n/ns", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer user-token")
+	resp, err := ts.Client().Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -200,11 +200,15 @@ func TestCreateArgoStatusMapAppSetBranches(t *testing.T) {
 	if out["appset/argocd/set-1"]["remote"].Health.Counts[scoreHealthy] != 1 {
 		t.Fatalf("hosting %+v", out["appset/argocd/set-1"])
 	}
-	if out["appset/argocd/set-2"]["remote"].Health.Counts[scoreHealthy] != 1 {
-		t.Fatalf("appset %+v", out["appset/argocd/set-2"])
+	st := out["appset/argocd/set-2"]["remote"]
+	if st.Health.Counts[scoreHealthy] != 1 {
+		t.Fatalf("appset healthy %+v", st)
 	}
-	if _, ok := out["appset/argocd/set-2"]["remote"]; !ok {
-		t.Fatal("missing appset status")
+	// Pull-to-OCM Degraded/OutOfSync item is skipped — no non-healthy health counts.
+	for _, score := range []int{scoreProgress, scoreWarning, scoreDanger, scoreUnknown} {
+		if st.Health.Counts[score] != 0 {
+			t.Fatalf("expected zero non-healthy counts, got %+v", st.Health.Counts)
+		}
 	}
 }
 

@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Start runs cleanup on a ticker until ctx is cancelled.
+// Start runs cleanup on a ticker until ctx is canceled.
 func Start(ctx context.Context, every time.Duration, cleanup func(time.Time)) {
 	if cleanup == nil {
 		return

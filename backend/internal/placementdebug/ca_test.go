@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -116,11 +117,26 @@ func TestCAWatchWatchModifiedAndDeleted(t *testing.T) {
 		ObjectMeta: metav1.ObjectMeta{Name: configMapName, Namespace: hubNamespace, ResourceVersion: "1"},
 		Data:       map[string]string{caBundleKey: pem},
 	})
+	var watchOnce sync.Once
+	watchReady := make(chan struct{})
+	kube.PrependWatchReactor("configmaps", func(action ktesting.Action) (bool, watch.Interface, error) {
+		w, err := kube.Tracker().Watch(action.GetResource(), action.GetNamespace())
+		if err != nil {
+			return true, nil, err
+		}
+		watchOnce.Do(func() { close(watchReady) })
+		return true, w, nil
+	})
 	w := &CAWatch{Kube: kube}
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 	w.Start(ctx)
 	waitForCA(t, w, pem)
+	select {
+	case <-watchReady:
+	case <-time.After(2 * time.Second):
+		t.Fatal("watch not registered before update")
+	}
 
 	updated := pem + "-rotated"
 	_, err := kube.CoreV1().ConfigMaps(hubNamespace).Update(ctx, &corev1.ConfigMap{

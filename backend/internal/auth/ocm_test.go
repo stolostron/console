@@ -127,10 +127,11 @@ func TestOCMServiceToken_InvalidJSON(t *testing.T) {
 }
 
 func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
-	var posted url.Values
+	forms := make(chan url.Values, 3)
 	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
-		posted, _ = url.ParseQuery(string(b))
+		posted, _ := url.ParseQuery(string(b))
+		forms <- posted
 		w.Header().Set("Content-Type", "application/json")
 		_, _ = w.Write([]byte(`{"access_token":"ok"}`))
 	}))
@@ -143,6 +144,7 @@ func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	posted := <-forms
 	if posted.Get("client_id") != "plain-id" || posted.Get("client_secret") != "plain-secret" {
 		t.Fatalf("posted %v", posted)
 	}
@@ -154,6 +156,7 @@ func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	posted = <-forms
 	if posted.Get("client_id") != "raw-id" || posted.Get("client_secret") != "raw-secret" {
 		t.Fatalf("posted %v", posted)
 	}
@@ -163,6 +166,7 @@ func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	posted = <-forms
 	if posted.Get("client_id") != "" || posted.Get("client_secret") != "" {
 		t.Fatalf("posted %v", posted)
 	}

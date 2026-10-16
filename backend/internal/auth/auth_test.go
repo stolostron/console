@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 
 	"k8s.io/client-go/rest"
@@ -207,9 +208,9 @@ func TestValidateUserTokenStatus_NilConfig(t *testing.T) {
 }
 
 func TestValidateUserTokenStatus_CachesClient(t *testing.T) {
-	var requests int
+	var requests atomic.Int32
 	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		requests++
+		requests.Add(1)
 		w.WriteHeader(http.StatusOK)
 	}))
 	defer ts.Close()
@@ -220,8 +221,8 @@ func TestValidateUserTokenStatus_CachesClient(t *testing.T) {
 	if _, err := auth.ValidateUserTokenStatus(context.Background(), base, "b"); err != nil {
 		t.Fatal(err)
 	}
-	if requests != 2 {
-		t.Fatalf("requests %d", requests)
+	if got := requests.Load(); got != 2 {
+		t.Fatalf("requests %d", got)
 	}
 }
 

@@ -134,8 +134,12 @@ func TestExtractMessagesDedupes(t *testing.T) {
 	}
 	extractMessages(&e, item, "Degraded")
 	extractMessages(&e, item, "Degraded")
-	if len(e.Messages) < 3 {
-		t.Fatalf("%+v", e.Messages)
+	counts := map[string]int{}
+	for _, msg := range e.Messages {
+		counts[msg["key"]]++
+	}
+	if counts["_foo_condition"] != 1 || counts["_bar_missing"] != 1 {
+		t.Fatalf("message keys %+v from %+v", counts, e.Messages)
 	}
 }
 

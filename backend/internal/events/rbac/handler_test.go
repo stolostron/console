@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -25,6 +26,38 @@ import (
 	"github.com/stolostron/console/backend/internal/auth"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
 )
+
+// syncRecorder guards ResponseRecorder reads/writes across handler and test goroutines.
+type syncRecorder struct {
+	mu  sync.Mutex
+	rec *httptest.ResponseRecorder
+}
+
+func newSyncRecorder() *syncRecorder {
+	return &syncRecorder{rec: httptest.NewRecorder()}
+}
+
+func (s *syncRecorder) Header() http.Header { return s.rec.Header() }
+
+func (s *syncRecorder) Write(b []byte) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.rec.Write(b)
+}
+
+func (s *syncRecorder) WriteHeader(code int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.rec.WriteHeader(code)
+}
+
+func (s *syncRecorder) Flush() { s.rec.Flush() }
+
+func (s *syncRecorder) BodyString() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.rec.Body.String()
+}
 
 func labeledRole(name string) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
@@ -336,7 +369,7 @@ func TestHandlerSnapshotUserListFallback(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer good")
-	rec := httptest.NewRecorder()
+	rec := newSyncRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
@@ -345,7 +378,7 @@ func TestHandlerSnapshotUserListFallback(t *testing.T) {
 	deadline := time.Now().Add(2 * time.Second)
 	var body string
 	for time.Now().Before(deadline) {
-		body = rec.Body.String()
+		body = rec.BodyString()
 		if strings.Contains(body, "fallback-role") {
 			break
 		}
@@ -364,11 +397,15 @@ func TestHandlerLiveEventsAndDeletedBypass(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := httptest.NewRecorder()
-	go func() { h.ServeHTTP(rec, req) }()
+	rec := newSyncRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
-		if strings.Contains(rec.Body.String(), `"type":"LOADED"`) {
+		if strings.Contains(rec.BodyString(), `"type":"LOADED"`) {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
@@ -377,21 +414,24 @@ func TestHandlerLiveEventsAndDeletedBypass(t *testing.T) {
 	live := labeledRole("live-role")
 	store.Upsert("MODIFIED", live)
 	time.Sleep(50 * time.Millisecond)
-	if strings.Contains(rec.Body.String(), "live-role") {
+	if strings.Contains(rec.BodyString(), "live-role") {
+		cancel()
+		<-done
 		t.Fatalf("denied live role leaked")
 	}
 
 	store.Delete(live)
 	deadline = time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
-		if strings.Contains(rec.Body.String(), `"type":"DELETED"`) {
+		if strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 	cancel()
-	if !strings.Contains(rec.Body.String(), `"type":"DELETED"`) {
-		t.Fatalf("missing DELETED %s", rec.Body.String())
+	<-done
+	if !strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
+		t.Fatalf("missing DELETED %s", rec.BodyString())
 	}
 }
 
@@ -402,17 +442,22 @@ func TestHandlerSSARErrorSkipsSnapshotRole(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := httptest.NewRecorder()
-	go func() { h.ServeHTTP(rec, req) }()
+	rec := newSyncRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
-		if strings.Contains(rec.Body.String(), `"type":"LOADED"`) {
+		if strings.Contains(rec.BodyString(), `"type":"LOADED"`) {
 			break
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
 	cancel()
-	if strings.Contains(rec.Body.String(), "hidden") {
-		t.Fatalf("ssar error should skip role: %s", rec.Body.String())
+	<-done
+	if strings.Contains(rec.BodyString(), "hidden") {
+		t.Fatalf("ssar error should skip role: %s", rec.BodyString())
 	}
 }

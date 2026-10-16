@@ -154,7 +154,7 @@ func TestOperatorCheck_InvalidJSON(t *testing.T) {
 func TestAPIPaths_DiscoveryHardError(t *testing.T) {
 	_, base := apiProbeServer(t)
 	disc := &discoveryfake.FakeDiscovery{Fake: &k8stesting.Fake{}}
-	disc.Fake.PrependReactor("get", "resource", func(action k8stesting.Action) (bool, runtime.Object, error) {
+	disc.PrependReactor("get", "resource", func(action k8stesting.Action) (bool, runtime.Object, error) {
 		return true, nil, errors.New("discovery unavailable")
 	})
 	h := clusterinfo.New(clusterinfo.Options{RESTConfig: base, Discovery: disc})
@@ -177,7 +177,7 @@ func TestAPIPaths_PartialDiscovery(t *testing.T) {
 			}},
 		},
 	}
-	disc.Fake.PrependReactor("get", "resource", func(action k8stesting.Action) (bool, runtime.Object, error) {
+	disc.PrependReactor("get", "resource", func(action k8stesting.Action) (bool, runtime.Object, error) {
 		return true, nil, &discovery.ErrGroupDiscoveryFailed{Groups: map[schema.GroupVersion]error{
 			{Group: "broken", Version: "v1"}: fmt.Errorf("fail"),
 		}}

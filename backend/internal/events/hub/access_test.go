@@ -453,7 +453,9 @@ func TestObjectMetaAndResourceNameHelpers(t *testing.T) {
 	if kind != "Pod" || ver != "v1" || name != "p" || ns != "ns" {
 		t.Fatalf("meta %s %s %s %s", kind, ver, name, ns)
 	}
-	if _, _, _, _ = objectMeta(Event{Object: map[string]any{"kind": "Pod"}}); true {
+	kind, _, name, ns = objectMeta(Event{Object: map[string]any{"kind": "Pod"}})
+	if kind != "Pod" || name != "" || ns != "" {
+		t.Fatalf("kind-only meta kind=%q name=%q ns=%q", kind, name, ns)
 	}
 	if resourceName(Event{GVR: schema.GroupVersionResource{Resource: "pods"}}) != "pods" {
 		t.Fatal("resourceName")
