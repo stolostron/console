@@ -27,12 +27,10 @@ import {
 import { createResource, isRequestAbortedError, patchResource } from '../../resources/utils'
 import {
   AcmEmptyState,
-  AcmIcon,
   AcmPage,
   AcmPageHeader,
   AcmToastContext,
   Provider,
-  ProviderIconMap,
   ProviderLongTextMap,
 } from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
@@ -621,18 +619,10 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'credentialsType',
-            type: 'Select',
+            type: 'Text',
             label: t('Credential type'),
-            value: credentialsType,
+            value: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
             onChange: noop,
-            options: [
-              {
-                id: credentialsType,
-                value: credentialsType,
-                icon: credentialsType ? <AcmIcon icon={ProviderIconMap[credentialsType as Provider]} /> : '',
-                text: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
-              },
-            ],
             isRequired: false, // always pre-filled
             isDisabled: true, // always pre-filled
           },
