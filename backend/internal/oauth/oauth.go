@@ -18,6 +18,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -105,7 +106,7 @@ type acceptJSON struct {
 func (t acceptJSON) RoundTrip(req *http.Request) (*http.Response, error) {
 	r := req.Clone(req.Context())
 	if r.Header.Get("Accept") == "" {
-		r.Header.Set("Accept", "application/json")
+		r.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	}
 	base := t.base
 	if base == nil {
@@ -225,7 +226,7 @@ func (h *Handler) Configure(w http.ResponseWriter, r *http.Request) {
 	} else {
 		token = info.TokenEndpoint
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	body, err := json.Marshal(struct {
 		TokenEndpoint string `json:"token_endpoint"`
 	}{TokenEndpoint: token})

@@ -15,22 +15,6 @@ import (
 	"github.com/stolostron/console/backend/internal/server"
 )
 
-var requestHeaders = []string{
-	"Accept",
-	"Accept-Encoding",
-	"Content-Encoding",
-	"Content-Length",
-	"Content-Type",
-}
-
-var responseHeaders = []string{
-	"Cache-Control",
-	"Content-Type",
-	"Content-Length",
-	"Content-Encoding",
-	"Etag",
-}
-
 // TLSConfigFromCA builds TLS config matching Node getDefaultAgent (cluster CA + system roots).
 func TLSConfigFromCA(caCert []byte) *tls.Config {
 	tlsCfg := &tls.Config{
@@ -60,19 +44,13 @@ func New(clusterURL *url.URL, tlsConfig *tls.Config) http.Handler {
 			pr.Out.URL.Path = stripped
 			pr.Out.URL.RawQuery = pr.In.URL.RawQuery
 			pr.Out.Host = clusterURL.Host
-
 			pr.Out.Header = http.Header{}
-			for _, name := range requestHeaders {
-				if v := pr.In.Header.Get(name); v != "" {
-					pr.Out.Header.Set(name, v)
-				}
-			}
-			pr.Out.Header.Set("Authorization", "Bearer "+token)
+			outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
 		},
-		ModifyResponse: filterResponseHeaders,
-		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, _ error) {
-			w.WriteHeader(http.StatusBadGateway)
+		ModifyResponse: func(resp *http.Response) error {
+			return outbound.FilterResponseHeaders(resp, outbound.ProxyResponseHeaders)
 		},
+		ErrorHandler:  outbound.BadGateway,
 		Transport:     transport,
 		FlushInterval: -1 * time.Millisecond,
 	}
@@ -83,15 +61,4 @@ func New(clusterURL *url.URL, tlsConfig *tls.Config) http.Handler {
 		}
 		rp.ServeHTTP(w, r)
 	})
-}
-
-func filterResponseHeaders(resp *http.Response) error {
-	filtered := http.Header{}
-	for _, name := range responseHeaders {
-		for _, v := range resp.Header.Values(name) {
-			filtered.Add(name, v)
-		}
-	}
-	resp.Header = filtered
-	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"io"
 	"net/http"
 	"net/url"
@@ -41,7 +42,7 @@ func OCMServiceToken(ctx context.Context, client *http.Client, clientID, clientS
 		return "", err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", err

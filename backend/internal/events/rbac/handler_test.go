@@ -5,9 +5,11 @@ package rbac_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,11 +20,45 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/rest"
 	ktesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
 	rbacevents "github.com/stolostron/console/backend/internal/events/rbac"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
+
+// syncRecorder guards ResponseRecorder reads/writes across handler and test goroutines.
+type syncRecorder struct {
+	mu  sync.Mutex
+	rec *httptest.ResponseRecorder
+}
+
+func newSyncRecorder() *syncRecorder {
+	return &syncRecorder{rec: httptest.NewRecorder()}
+}
+
+func (s *syncRecorder) Header() http.Header { return s.rec.Header() }
+
+func (s *syncRecorder) Write(b []byte) (int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.rec.Write(b)
+}
+
+func (s *syncRecorder) WriteHeader(code int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.rec.WriteHeader(code)
+}
+
+func (s *syncRecorder) Flush() { s.rec.Flush() }
+
+func (s *syncRecorder) BodyString() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.rec.Body.String()
+}
 
 func labeledRole(name string) *rbacv1.ClusterRole {
 	return &rbacv1.ClusterRole{
@@ -245,5 +281,184 @@ func TestSSARAccessListThenGet(t *testing.T) {
 	}
 	if len(verbs) < 2 || verbs[0] != "list" || verbs[1] != "get" {
 		t.Fatalf("verbs %v", verbs)
+	}
+}
+
+type errAccess struct{}
+
+func (errAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
+	return false, errors.New("ssar down")
+}
+
+type noFlushResponse struct {
+	header http.Header
+	code   int
+}
+
+func (w *noFlushResponse) Header() http.Header {
+	if w.header == nil {
+		w.header = make(http.Header)
+	}
+	return w.header
+}
+
+func (w *noFlushResponse) Write(b []byte) (int, error) { return len(b), nil }
+
+func (w *noFlushResponse) WriteHeader(status int) { w.code = status }
+
+func TestHandlerStreamingUnsupported(t *testing.T) {
+	h := rbacevents.NewHandler(rbacevents.NewStore(), rbacevents.StaticAuth{OK: true}, rbacevents.AllowAllAccess{})
+	rec := &noFlushResponse{}
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil)
+	req.Header.Set("Authorization", "Bearer tok")
+	h.ServeHTTP(rec, req)
+	if rec.code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.code)
+	}
+}
+
+func TestAPIAuth(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api" {
+			http.NotFound(w, r)
+			return
+		}
+		if r.Header.Get("Authorization") != "Bearer good" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+	base := &rest.Config{Host: ts.URL, TLSClientConfig: rest.TLSClientConfig{Insecure: true}}
+	a := rbacevents.NewAPIAuth(base)
+	ok, err := a.Authenticate(context.Background(), "good")
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	ok, err = a.Authenticate(context.Background(), "bad")
+	if err == nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	var nilAuth *rbacevents.APIAuth
+	ok, err = nilAuth.Authenticate(context.Background(), "x")
+	if err != nil || ok {
+		t.Fatalf("nil auth ok=%v err=%v", ok, err)
+	}
+}
+
+func TestHandlerSnapshotUserListFallback(t *testing.T) {
+	role := labeledRole("fallback-role")
+	list := &rbacv1.ClusterRoleList{Items: []rbacv1.ClusterRole{*role}}
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.URL.Path == "/api":
+			w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"kind":"APIVersions"}`))
+		case strings.Contains(r.URL.Path, "clusterroles"):
+			w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+			_ = json.NewEncoder(w).Encode(list)
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	defer ts.Close()
+	base := &rest.Config{Host: ts.URL, TLSClientConfig: rest.TLSClientConfig{Insecure: true}}
+	h := rbacevents.NewHandler(rbacevents.NewStore(), rbacevents.NewAPIAuth(base), rbacevents.AllowAllAccess{})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := newSyncRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
+	deadline := time.Now().Add(2 * time.Second)
+	var body string
+	for time.Now().Before(deadline) {
+		body = rec.BodyString()
+		if strings.Contains(body, "fallback-role") {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	cancel()
+	<-done
+	if !strings.Contains(body, "fallback-role") {
+		t.Fatalf("missing fallback role in %s", body)
+	}
+}
+
+func TestHandlerLiveEventsAndDeletedBypass(t *testing.T) {
+	store := rbacevents.NewStore()
+	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, denyAccess{})
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer user")
+	rec := newSyncRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(rec.BodyString(), `"type":"LOADED"`) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+
+	live := labeledRole("live-role")
+	store.Upsert("MODIFIED", live)
+	time.Sleep(50 * time.Millisecond)
+	if strings.Contains(rec.BodyString(), "live-role") {
+		cancel()
+		<-done
+		t.Fatalf("denied live role leaked")
+	}
+
+	store.Delete(live)
+	deadline = time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	cancel()
+	<-done
+	if !strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
+		t.Fatalf("missing DELETED %s", rec.BodyString())
+	}
+}
+
+func TestHandlerSSARErrorSkipsSnapshotRole(t *testing.T) {
+	store := rbacevents.NewStore()
+	store.Upsert("ADDED", labeledRole("hidden"))
+	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, errAccess{})
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer user")
+	rec := newSyncRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if strings.Contains(rec.BodyString(), `"type":"LOADED"`) {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	cancel()
+	<-done
+	if strings.Contains(rec.BodyString(), "hidden") {
+		t.Fatalf("ssar error should skip role: %s", rec.BodyString())
 	}
 }

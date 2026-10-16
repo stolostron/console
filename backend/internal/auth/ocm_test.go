@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func TestOCMServiceToken(t *testing.T) {
@@ -28,7 +29,7 @@ func TestOCMServiceToken(t *testing.T) {
 		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
 			t.Errorf("content-type %q", r.Header.Get("Content-Type"))
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"mock-access-token"}`))
 	}))
 	defer sso.Close()
@@ -79,5 +80,97 @@ func TestTLSConfigFromCA_AppendsPEM(t *testing.T) {
 	client := auth.HTTPClient(nil, 0)
 	if client.Timeout == 0 || client.Transport == nil {
 		t.Fatal("expected timeout and transport")
+	}
+}
+
+func TestOCMServiceToken_NilClientUsesDefault(t *testing.T) {
+	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+		_, _ = w.Write([]byte(`{"access_token":"via-default"}`))
+	}))
+	defer sso.Close()
+	restore := auth.SetOCMTokenURL(sso.URL)
+	defer restore()
+	id := base64.StdEncoding.EncodeToString([]byte("id"))
+	secret := base64.StdEncoding.EncodeToString([]byte("secret"))
+	tok, err := auth.OCMServiceToken(context.Background(), nil, id, secret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tok != "via-default" {
+		t.Fatalf("token %q", tok)
+	}
+}
+
+func TestOCMServiceToken_MissingAccessToken(t *testing.T) {
+	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+		_, _ = w.Write([]byte(`{"token_type":"bearer"}`))
+	}))
+	defer sso.Close()
+	restore := auth.SetOCMTokenURL(sso.URL)
+	defer restore()
+	_, err := auth.OCMServiceToken(context.Background(), sso.Client(), "id", "secret")
+	if err == nil || !strings.Contains(err.Error(), "missing access_token") {
+		t.Fatalf("err %v", err)
+	}
+}
+
+func TestOCMServiceToken_InvalidJSON(t *testing.T) {
+	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(`not-json`))
+	}))
+	defer sso.Close()
+	restore := auth.SetOCMTokenURL(sso.URL)
+	defer restore()
+	_, err := auth.OCMServiceToken(context.Background(), sso.Client(), "id", "secret")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestOCMServiceToken_PlainAndRawBase64Credentials(t *testing.T) {
+	forms := make(chan url.Values, 3)
+	sso := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		b, _ := io.ReadAll(r.Body)
+		posted, _ := url.ParseQuery(string(b))
+		forms <- posted
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+		_, _ = w.Write([]byte(`{"access_token":"ok"}`))
+	}))
+	defer sso.Close()
+	restore := auth.SetOCMTokenURL(sso.URL)
+	defer restore()
+
+	// Non-base64 values are returned as-is.
+	_, err := auth.OCMServiceToken(context.Background(), sso.Client(), "plain-id", "plain-secret")
+	if err != nil {
+		t.Fatal(err)
+	}
+	posted := <-forms
+	if posted.Get("client_id") != "plain-id" || posted.Get("client_secret") != "plain-secret" {
+		t.Fatalf("posted %v", posted)
+	}
+
+	// Raw (unpadded) standard encoding also works.
+	rawID := base64.RawStdEncoding.EncodeToString([]byte("raw-id"))
+	rawSecret := base64.RawStdEncoding.EncodeToString([]byte("raw-secret"))
+	_, err = auth.OCMServiceToken(context.Background(), sso.Client(), rawID, rawSecret)
+	if err != nil {
+		t.Fatal(err)
+	}
+	posted = <-forms
+	if posted.Get("client_id") != "raw-id" || posted.Get("client_secret") != "raw-secret" {
+		t.Fatalf("posted %v", posted)
+	}
+
+	// Empty credentials stay empty.
+	_, err = auth.OCMServiceToken(context.Background(), sso.Client(), "", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	posted = <-forms
+	if posted.Get("client_id") != "" || posted.Get("client_secret") != "" {
+		t.Fatalf("posted %v", posted)
 	}
 }

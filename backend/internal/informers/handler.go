@@ -9,6 +9,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -52,7 +53,7 @@ func (h *SnapshotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Query().Get("excludePolled") == "true" {
 		doc.Items = excludePolled(doc.Items, h.Cache)
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if err := json.NewEncoder(w).Encode(doc); err != nil {
 		applog.Logger().Warn("informer snapshot encode", "error", err)
 	}

@@ -13,6 +13,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
 
@@ -48,7 +49,7 @@ func postAggregate(t *testing.T, h http.Handler, path string, body any) *http.Re
 		}
 	}
 	req := httptest.NewRequest(http.MethodPost, path, r)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	return rec.Result()

@@ -21,6 +21,7 @@ import (
 	k8stesting "k8s.io/client-go/testing"
 
 	"github.com/stolostron/console/backend/internal/clusterinfo"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/informers"
 )
 
@@ -46,7 +47,7 @@ func TestOperatorCheck_BadBody(t *testing.T) {
 	h := clusterinfo.New(clusterinfo.Options{RESTConfig: base})
 	req := httptest.NewRequest(http.MethodPost, "/operatorCheck", bytes.NewReader([]byte(`{"operator":"not-real"}`)))
 	req.Header.Set("Authorization", "Bearer good")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusBadRequest {
