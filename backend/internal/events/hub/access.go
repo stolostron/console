@@ -567,10 +567,12 @@ func (st *tokenState) enforceEntryCap() {
 }
 
 func (st *tokenState) empty() bool {
-	return st.streams == 0 &&
-		len(st.entries) == 0 && len(st.flight) == 0 &&
-		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0 &&
-		len(st.allowedObjects) == 0 && len(st.deleteAcks) == 0
+	if st.streams != 0 {
+		return false
+	}
+	return len(st.entries)+len(st.flight)+len(st.rules)+
+		len(st.rulesFlight)+len(st.kindAccess)+
+		len(st.allowedObjects)+len(st.deleteAcks) == 0
 }
 
 func (a *SSARAccess) StartCleanup(ctx context.Context) {
