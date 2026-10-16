@@ -71,6 +71,8 @@ type SSARAccess struct {
 	cache map[cacheKey]cacheEntry
 	// allowedRoles remembers get-allows per token hash. List allows are not stored.
 	allowedRoles map[string]map[string]struct{}
+	// deleteAcks is remaining streams that may still use a remembered role allow.
+	deleteAcks map[string]map[string]int
 	// activeStreams counts open SSE streams per token hash.
 	activeStreams map[string]int
 }
@@ -85,6 +87,7 @@ func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interf
 	return &SSARAccess{
 		cache:         map[cacheKey]cacheEntry{},
 		allowedRoles:  map[string]map[string]struct{}{},
+		deleteAcks:    map[string]map[string]int{},
 		activeStreams: map[string]int{},
 		newClient:     newClient,
 	}
@@ -113,8 +116,7 @@ func (a *SSARAccess) decide(
 	}
 	allowed, err = a.ssar(ctx, userToken, "get", role.Name)
 	if err != nil {
-		if deleted && apierrors.IsNotFound(err) && a.roleWasAllowed(userToken, role.Name) {
-			a.forgetRole(userToken, role.Name)
+		if deleted && apierrors.IsNotFound(err) && a.takeDeletedRole(userToken, role.Name) {
 			return true, nil
 		}
 		return false, err
@@ -127,8 +129,7 @@ func (a *SSARAccess) decide(
 		}
 		return true, nil
 	}
-	if deleted && a.roleWasAllowed(userToken, role.Name) {
-		a.forgetRole(userToken, role.Name)
+	if deleted && a.takeDeletedRole(userToken, role.Name) {
 		return true, nil
 	}
 	a.forgetRole(userToken, role.Name)
@@ -148,6 +149,12 @@ func (a *SSARAccess) rememberRole(userToken, name string) {
 		a.allowedRoles[th] = names
 	}
 	names[name] = struct{}{}
+	if acks := a.deleteAcks[th]; acks != nil {
+		delete(acks, name)
+		if len(acks) == 0 {
+			delete(a.deleteAcks, th)
+		}
+	}
 }
 
 func (a *SSARAccess) forgetRole(userToken, name string) {
@@ -155,12 +162,17 @@ func (a *SSARAccess) forgetRole(userToken, name string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	names := a.allowedRoles[th]
-	if names == nil {
-		return
+	if names != nil {
+		delete(names, name)
+		if len(names) == 0 {
+			delete(a.allowedRoles, th)
+		}
 	}
-	delete(names, name)
-	if len(names) == 0 {
-		delete(a.allowedRoles, th)
+	if acks := a.deleteAcks[th]; acks != nil {
+		delete(acks, name)
+		if len(acks) == 0 {
+			delete(a.deleteAcks, th)
+		}
 	}
 }
 
@@ -169,6 +181,50 @@ func (a *SSARAccess) roleWasAllowed(userToken, name string) bool {
 	defer a.mu.Unlock()
 	_, ok := a.allowedRoles[hashToken(userToken)][name]
 	return ok
+}
+
+// takeDeletedRole lets each active stream use a remembered allow once for a DELETED
+// fallback. The role stays until every stream has taken it (or EndStream clears state).
+func (a *SSARAccess) takeDeletedRole(userToken, name string) bool {
+	th := hashToken(userToken)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	names := a.allowedRoles[th]
+	if names == nil {
+		return false
+	}
+	if _, ok := names[name]; !ok {
+		return false
+	}
+	if a.deleteAcks == nil {
+		a.deleteAcks = map[string]map[string]int{}
+	}
+	acks := a.deleteAcks[th]
+	if acks == nil {
+		acks = map[string]int{}
+		a.deleteAcks[th] = acks
+	}
+	remaining, tracking := acks[name]
+	if !tracking {
+		remaining = a.activeStreams[th]
+		if remaining < 1 {
+			remaining = 1
+		}
+	}
+	remaining--
+	if remaining <= 0 {
+		delete(names, name)
+		delete(acks, name)
+		if len(names) == 0 {
+			delete(a.allowedRoles, th)
+		}
+		if len(acks) == 0 {
+			delete(a.deleteAcks, th)
+		}
+		return true
+	}
+	acks[name] = remaining
+	return true
 }
 
 func (a *SSARAccess) BeginStream(userToken string) {
@@ -195,6 +251,7 @@ func (a *SSARAccess) EndStream(userToken string) {
 	if n <= 1 {
 		delete(a.activeStreams, th)
 		delete(a.allowedRoles, th)
+		delete(a.deleteAcks, th)
 		return
 	}
 	a.activeStreams[th] = n - 1

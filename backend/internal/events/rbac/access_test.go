@@ -127,7 +127,38 @@ func TestCanSeeDeletedNotFoundUsesLastAllow(t *testing.T) {
 		t.Fatalf("deleted allowed=%v err=%v", ok, err)
 	}
 	if a.roleWasAllowed("tok", "r1") {
-		t.Fatal("delete should drop the remembered allow")
+		t.Fatal("single-stream delete should drop the remembered allow")
+	}
+}
+
+func TestCanSeeDeletedSharedAcrossStreams(t *testing.T) {
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			attr := create.GetObject().(*authzv1.SelfSubjectAccessReview).Spec.ResourceAttributes
+			if attr.Verb == "list" {
+				return ssarReview(false)
+			}
+			return ssarReview(false)
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	a.BeginStream("tok")
+	a.rememberRole("tok", "r1")
+	ok, err := a.CanSeeDeleted(context.Background(), "tok", testRole("r1"))
+	if err != nil || !ok {
+		t.Fatalf("first stream deleted allowed=%v err=%v", ok, err)
+	}
+	if !a.roleWasAllowed("tok", "r1") {
+		t.Fatal("remembered allow must remain for the other active stream")
+	}
+	ok, err = a.CanSeeDeleted(context.Background(), "tok", testRole("r1"))
+	if err != nil || !ok {
+		t.Fatalf("second stream deleted allowed=%v err=%v", ok, err)
+	}
+	if a.roleWasAllowed("tok", "r1") {
+		t.Fatal("allow should clear after every active stream consumed the delete")
 	}
 }
 

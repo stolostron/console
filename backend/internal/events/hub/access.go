@@ -84,9 +84,11 @@ type tokenState struct {
 	rulesFlight    map[string]*rulesInflight
 	kindAccess     map[kindAccessKey]timedKindAccess
 	allowedObjects map[seenKey]struct{}
-	client         kubernetes.Interface
-	clientErr      error
-	clientWait     chan struct{}
+	// deleteAcks is remaining streams that may still use a remembered allow for a key.
+	deleteAcks map[seenKey]int
+	client     kubernetes.Interface
+	clientErr  error
+	clientWait chan struct{}
 }
 
 type prefetchJob struct {
@@ -193,8 +195,7 @@ func (a *SSARAccess) allowObject(ctx context.Context, token string, ev Event, de
 
 	allowed, err = a.canGetResource(ctx, token, group, resource, kind, name, namespace)
 	if err != nil {
-		if deleted && keyed && apierrors.IsNotFound(err) && a.wasAllowed(token, key) {
-			a.forgetAllowed(token, key)
+		if deleted && keyed && apierrors.IsNotFound(err) && a.takeDeletedAllow(token, key) {
 			return true, nil
 		}
 		return false, err
@@ -204,14 +205,14 @@ func (a *SSARAccess) allowObject(ctx context.Context, token string, ev Event, de
 	}
 	if allowed {
 		if deleted {
+			// Live allow still works for every stream; drop the remembered key.
 			a.forgetAllowed(token, key)
 		} else {
 			a.rememberAllowed(token, key)
 		}
 		return true, nil
 	}
-	if deleted && a.wasAllowed(token, key) {
-		a.forgetAllowed(token, key)
+	if deleted && a.takeDeletedAllow(token, key) {
 		return true, nil
 	}
 	a.forgetAllowed(token, key)
@@ -230,6 +231,7 @@ func (a *SSARAccess) rememberAllowed(token string, key seenKey) {
 	defer a.mu.Unlock()
 	st := a.ensureTokenLocked(hashToken(token))
 	st.allowedObjects[key] = struct{}{}
+	delete(st.deleteAcks, key)
 	st.last = time.Now()
 }
 
@@ -241,6 +243,7 @@ func (a *SSARAccess) forgetAllowed(token string, key seenKey) {
 		return
 	}
 	delete(st.allowedObjects, key)
+	delete(st.deleteAcks, key)
 	st.last = time.Now()
 }
 
@@ -253,6 +256,39 @@ func (a *SSARAccess) wasAllowed(token string, key seenKey) bool {
 	}
 	_, ok := st.allowedObjects[key]
 	return ok
+}
+
+// takeDeletedAllow lets each active stream use a remembered allow once for a DELETED
+// fallback. The key stays until every stream has taken it (or EndStream clears state).
+func (a *SSARAccess) takeDeletedAllow(token string, key seenKey) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[hashToken(token)]
+	if st == nil {
+		return false
+	}
+	if _, ok := st.allowedObjects[key]; !ok {
+		return false
+	}
+	if st.deleteAcks == nil {
+		st.deleteAcks = map[seenKey]int{}
+	}
+	remaining, tracking := st.deleteAcks[key]
+	if !tracking {
+		remaining = st.streams
+		if remaining < 1 {
+			remaining = 1
+		}
+	}
+	remaining--
+	st.last = time.Now()
+	if remaining <= 0 {
+		delete(st.allowedObjects, key)
+		delete(st.deleteAcks, key)
+		return true
+	}
+	st.deleteAcks[key] = remaining
+	return true
 }
 
 func (a *SSARAccess) BeginStream(token string) {
@@ -283,6 +319,7 @@ func (a *SSARAccess) EndStream(token string) {
 	st.last = time.Now()
 	if st.streams == 0 {
 		clear(st.allowedObjects)
+		clear(st.deleteAcks)
 	}
 	if st.empty() {
 		delete(a.byToken, th)
@@ -383,6 +420,7 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 			rulesFlight:    map[string]*rulesInflight{},
 			kindAccess:     map[kindAccessKey]timedKindAccess{},
 			allowedObjects: map[seenKey]struct{}{},
+			deleteAcks:     map[seenKey]int{},
 		}
 		a.byToken[th] = st
 	}
@@ -403,6 +441,9 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	}
 	if st.allowedObjects == nil {
 		st.allowedObjects = map[seenKey]struct{}{}
+	}
+	if st.deleteAcks == nil {
+		st.deleteAcks = map[seenKey]int{}
 	}
 	return st
 }
@@ -529,7 +570,7 @@ func (st *tokenState) empty() bool {
 	return st.streams == 0 &&
 		len(st.entries) == 0 && len(st.flight) == 0 &&
 		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0 &&
-		len(st.allowedObjects) == 0
+		len(st.allowedObjects) == 0 && len(st.deleteAcks) == 0
 }
 
 func (a *SSARAccess) StartCleanup(ctx context.Context) {

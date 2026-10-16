@@ -553,11 +553,49 @@ func TestDeletedFallsBackWhenReviewDenies(t *testing.T) {
 		t.Fatalf("deleted allowed=%v err=%v", ok, err)
 	}
 	if a.wasAllowed("tok", key) {
-		t.Fatal("delete should drop the remembered allow")
+		t.Fatal("single-stream delete should drop the remembered allow")
 	}
 	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
 	if err != nil || ok {
 		t.Fatalf("second deleted allowed=%v err=%v", ok, err)
+	}
+}
+
+func TestDeletedFallbackSharedAcrossStreams(t *testing.T) {
+	rules := secretGetRules()
+	client := fake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectrulesreviews", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, &authzv1.SelfSubjectRulesReview{Status: rules}, nil
+	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(ktesting.Action) (bool, runtime.Object, error) {
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: false},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	a.BeginStream("tok")
+	a.BeginStream("tok")
+	ok, err := a.Allow(context.Background(), "tok", secretEvent(TypeModified, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("modified allowed=%v err=%v", ok, err)
+	}
+	key, _ := objectSeenKey("", "secrets", "ns", "creds")
+	clearReviewCache(a, "tok")
+	rules = emptyRules()
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("first stream deleted allowed=%v err=%v", ok, err)
+	}
+	if !a.wasAllowed("tok", key) {
+		t.Fatal("remembered allow must remain for the other active stream")
+	}
+	ok, err = a.Allow(context.Background(), "tok", secretEvent(TypeDeleted, "creds", "ns"))
+	if err != nil || !ok {
+		t.Fatalf("second stream deleted allowed=%v err=%v", ok, err)
+	}
+	if a.wasAllowed("tok", key) {
+		t.Fatal("allow should clear after every active stream consumed the delete")
 	}
 }
 
