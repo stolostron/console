@@ -202,6 +202,30 @@ describe('networking patch utils', () => {
     expect(ingressVIPsPatch.value).toEqual(['10.0.0.101', '2001:db8::101'])
   })
 
+  it('creates patches for ntpSources from InfraEnv exclusive NTP', () => {
+    const aci: AgentClusterInstallK8sResource = {
+      spec: {
+        networking: {
+          userManagedNetworking: true,
+        },
+        platformType: 'BareMetal',
+        provisionRequirements: {
+          controlPlaneAgents: 0,
+        },
+      },
+    }
+    const patches = getNetworkingPatches(aci, {
+      managedNetworkingType: 'userManaged',
+      enableProxy: false,
+      editProxy: false,
+      ntpSources: ['0.pool.ntp.org', '1.pool.ntp.org'],
+    })
+
+    const ntpPatch = patches.find((p: any) => p.path === '/spec/ntpSources')
+    expect(ntpPatch).toBeDefined()
+    expect(ntpPatch.value).toEqual(['0.pool.ntp.org', '1.pool.ntp.org'])
+  })
+
   it('enables cluster networking', () => {
     const aci: AgentClusterInstallK8sResource = {
       spec: {
