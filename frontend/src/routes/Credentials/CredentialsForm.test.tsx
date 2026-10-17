@@ -686,3 +686,73 @@ current-context: 'mock-context'
     await waitForNock(createNock)
   })
 })
+
+describe('view and edit credentials page', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  const renderCredentialPage = (path: string) => {
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+    nockGet(
+      {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name: providerConnection.metadata.name,
+          namespace: providerConnection.metadata.namespace,
+        },
+      },
+      providerConnection
+    )
+
+    render(
+      <StateProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <Routes>
+            <Route path={NavigationPath.viewCredentials} element={<ViewEditCredentialsFormPage />} />
+            <Route path={NavigationPath.editCredentials} element={<ViewEditCredentialsFormPage />} />
+          </Routes>
+        </MemoryRouter>
+      </StateProvider>
+    )
+
+    return providerConnection
+  }
+
+  it('uses a visible Reveal credentials action on the details page', async () => {
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+    const viewPath = `/multicloud/credentials/details/${providerConnection.metadata.namespace}/${providerConnection.metadata.name}`
+    renderCredentialPage(viewPath)
+
+    await waitForText('Reveal credentials')
+    expect(screen.queryByText('ansibleToken')).not.toBeInTheDocument()
+
+    await clickByText('Reveal credentials')
+
+    expect(screen.getByText('Hide credentials')).toBeInTheDocument()
+    expect(screen.getByText('ansibleToken')).toBeInTheDocument()
+  })
+
+  it('keeps masked values read-only when editing', async () => {
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+    const editPath = `/multicloud/credentials/edit/${providerConnection.metadata.namespace}/${providerConnection.metadata.name}`
+    renderCredentialPage(editPath)
+
+    await waitForText('Ansible Automation controller host')
+
+    expect(screen.getByTestId('ansibleHost')).toHaveValue('https://ansiblehost.com')
+    expect(screen.getByTestId('ansibleToken')).toHaveValue('ansibleToken')
+    expect(screen.getByTestId('ansibleToken')).toHaveAttribute('readonly')
+  })
+})

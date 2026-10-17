@@ -285,7 +285,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                 <ActionList>
                   {mode === 'details' && props.edit !== undefined && (
                     <ActionListItem>
-                      <Button onClick={props.edit}>{t('Edit')}</Button>
+                      <Button onClick={props.edit}>{t('Edit credential')}</Button>
                     </ActionListItem>
                   )}
                 </ActionList>
@@ -814,6 +814,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
 
 function AcmInputDescription(props: { input: Input }): JSX.Element {
   const [showSecrets, setShowSecrets] = useState(false)
+  const { t } = useTranslation()
   const { input } = props
   if (input.isHidden) return <Fragment />
   if (!inputHasValue(input)) return <Fragment />
@@ -831,15 +832,13 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                   : input.value?.split('\n').map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
               </SplitItem>
               {input.isSecret && (
-                <Stack>
-                  <Button
-                    icon={showSecrets ? <EyeIcon /> : <EyeSlashIcon />}
-                    variant="plain"
-                    style={{ marginTop: '-8px' }}
-                    onClick={() => setShowSecrets(!showSecrets)}
-                  />
-                  <StackItem isFilled />
-                </Stack>
+                <Button
+                  icon={showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
+                  variant="link"
+                  onClick={() => setShowSecrets(!showSecrets)}
+                >
+                  {showSecrets ? t('credentials.hide') : t('credentials.show')}
+                </Button>
               )}
             </Split>
           </DescriptionListDescription>
@@ -1019,6 +1018,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               validated={validated}
               spellCheck="false"
               type={!isSecret || showSecrets ? 'text' : 'password'}
+              readOnly={isReadOnly || (value !== '' && isSecret && !showSecrets)}
               readOnlyVariant={isReadOnly ? 'default' : undefined}
             />
           </InputGroupItem>
@@ -1061,7 +1061,7 @@ export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isR
               value={'**************'}
               validated={validated}
               type={'password'}
-              readOnlyVariant={isReadOnly ? 'default' : undefined}
+              isDisabled
             />
           ) : (
             <TextArea
