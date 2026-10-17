@@ -71,7 +71,7 @@
   "devDependencies": {
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.19.1",
-    "concurrently": "9.2.4",
+    "concurrently": "9.2.5",
     "dotenv": "^17.4.2",
     "husky": "7.0.4",
     "lint-staged": "^13.3.0",
