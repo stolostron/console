@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/stolostron/console/backend/internal/config"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/rosa"
 	"github.com/stolostron/console/backend/internal/server"
@@ -93,7 +94,7 @@ func TestListenAndServeOnListeningAfterBind(t *testing.T) {
 
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- server.ListenAndServe(ctx, cfg, newHandler(t), func() {
+		errCh <- server.ListenAndServe(ctx, cfg, newHandler(t), nil, func() {
 			close(hookStarted)
 			// Mimic async informer start: hook returns immediately while sync work continues.
 			go func() { <-releaseSync }()
@@ -149,7 +150,7 @@ func TestListenAndServeRejectsPartialTLS(t *testing.T) {
 			cfg := &config.Config{Port: port, CertsDir: dir}
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
-			err := server.ListenAndServe(ctx, cfg, newHandler(t))
+			err := server.ListenAndServe(ctx, cfg, newHandler(t), nil)
 			if err == nil {
 				t.Fatal("expected error for partial TLS material")
 			}
@@ -554,7 +555,7 @@ func TestMigratedUserAndClusterInfoRegistered(t *testing.T) {
 		}
 		req, _ := http.NewRequest(method, ts.URL+path, strings.NewReader(`{"operator":"advanced-cluster-management"}`))
 		if method == http.MethodPost {
-			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		}
 		resp, getErr := ts.Client().Do(req)
 		if getErr != nil {
@@ -570,7 +571,7 @@ func TestMigratedUserAndClusterInfoRegistered(t *testing.T) {
 
 func TestDebugSnapshotRegistered(t *testing.T) {
 	dump := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"synced":true,"items":[]}`))
 	})
@@ -592,7 +593,7 @@ func TestDebugSnapshotRegistered(t *testing.T) {
 
 func TestAggregateRegistered(t *testing.T) {
 	agg := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"ok":true}`))
 	})
@@ -601,7 +602,7 @@ func TestAggregateRegistered(t *testing.T) {
 
 	for _, path := range []string{"/aggregate/applications", "/multicloud/aggregate/statuses", "/aggregate/appSetData"} {
 		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		resp, getErr := ts.Client().Do(req)
 		if getErr != nil {
 			t.Fatal(getErr)
@@ -616,7 +617,7 @@ func TestAggregateRegistered(t *testing.T) {
 
 func TestSearchRegistered(t *testing.T) {
 	searchH := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"ok":true}`))
 	})
@@ -625,7 +626,7 @@ func TestSearchRegistered(t *testing.T) {
 
 	for _, path := range []string{"/proxy/search", "/multicloud/proxy/search"} {
 		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		resp, getErr := ts.Client().Do(req)
 		if getErr != nil {
 			t.Fatal(getErr)
@@ -672,7 +673,7 @@ func TestLongTailRegistered(t *testing.T) {
 	}
 	for _, path := range paths {
 		req, _ := http.NewRequest(http.MethodPost, ts.URL+path, strings.NewReader(`{}`))
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		resp, getErr := ts.Client().Do(req)
 		if getErr != nil {
 			t.Fatal(getErr)

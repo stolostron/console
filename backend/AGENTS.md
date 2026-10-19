@@ -8,6 +8,7 @@ Public listener for the ACM/MCE console. It owns TLS, health probes, config, aut
 - **Router**: `chi` — all public routes registered natively; static GET assets; unknown paths 404; wrong method 405
 - **Logging**: `log/slog` JSON (`method`, `path`, `status`, `duration`)
 - **Config watch**: `fsnotify` on `config/` (1s debounce)
+- **TLS**: `GetConfigForClient` / `GetCertificate` hot-reload of OpenShift `APIServer` `tlsSecurityProfile` (Old/Intermediate/Modern/Custom) and `certs/tls.{crt,key}`; no server restart. Default Intermediate until the watch returns.
 - **Auth**: cookie `acm-access-token-cookie` then `Authorization: Bearer`; TokenReview is a library, not a global gate
 
 ## Source Layout
@@ -38,6 +39,7 @@ Public listener for the ACM/MCE console. It owns TLS, health probes, config, aut
 | `internal/placementdebug` | `POST /placement-debug` reverse proxy + independent watch of OCM CA ConfigMap |
 | `internal/upgraderisks` | `POST /upgrade-risks-prediction`: SA list `pull-secret`, chunked Insights POSTs |
 | `internal/informers` | Hub resource cache (`DefaultWatchSpecs()`). Dev: `GET /debug/informer-snapshot` |
+| `internal/tlsconfig` | OpenShift TLS security profile + certificate hot-reload (`GetConfigForClient`) |
 | `internal/static` | Plugin and SPA files: cache headers, CSP, brotli/gzip negotiation |
 | `internal/log` | slog JSON helper |
 | `config/` | Runtime settings from `config/` files and `.env` |

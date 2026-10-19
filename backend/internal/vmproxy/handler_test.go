@@ -5,6 +5,7 @@ package vmproxy_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -22,6 +23,7 @@ import (
 	authzv1 "k8s.io/api/authorization/v1"
 
 	"github.com/stolostron/console/backend/internal/clusterproxy"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/vmproxy"
 )
 
@@ -80,13 +82,109 @@ func doJSON(t *testing.T, h http.Handler, method, path string, body any) *http.R
 	}
 	req.Header.Set("Authorization", "Bearer user-token")
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	}
 	resp, err := ts.Client().Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return resp
+}
+
+func TestValidateAuthFailure(t *testing.T) {
+	up := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
+	t.Cleanup(up.Close)
+	target, _ := url.Parse(up.URL)
+	h := vmproxy.New(vmproxy.Options{
+		Resolver: &clusterproxy.Resolver{Target: target},
+		Validate: func(context.Context, string) error { return errors.New("bad") },
+	})
+	ts := httptest.NewServer(h)
+	t.Cleanup(ts.Close)
+	req, err := http.NewRequest(http.MethodGet, ts.URL+"/virtualmachines/get/c/n/ns", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req.Header.Set("Authorization", "Bearer user-token")
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+}
+
+func TestGetShortPathReturnsNull(t *testing.T) {
+	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), nil)
+	resp := doJSON(t, h, http.MethodGet, "/virtualmachines/get/only/three", nil)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK || string(body) != "null" {
+		t.Fatalf("status %d body %s", resp.StatusCode, body)
+	}
+}
+
+func TestGetUpstreamNetworkError(t *testing.T) {
+	target, _ := url.Parse("http://127.0.0.1:1")
+	h := vmproxy.New(vmproxy.Options{
+		Resolver:    &clusterproxy.Resolver{Target: target},
+		Validate:    func(context.Context, string) error { return nil },
+		FineGrained: func(context.Context) (bool, error) { return true, nil },
+	})
+	resp := doJSON(t, h, http.MethodGet, "/virtualmachines/get/c/vm/ns", nil)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK || string(body) != "null" {
+		t.Fatalf("status %d body %s", resp.StatusCode, body)
+	}
+}
+
+func TestGetInvalidJSONBody(t *testing.T) {
+	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
+		_, _ = w.Write([]byte(`{invalid`))
+	}), nil)
+	resp := doJSON(t, h, http.MethodGet, "/virtualmachines/get/c/vm/ns", nil)
+	defer resp.Body.Close()
+	body, _ := io.ReadAll(resp.Body)
+	if string(body) != "null" {
+		t.Fatalf("body %s", body)
+	}
+}
+
+func TestActionInvalidJSON400(t *testing.T) {
+	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), nil)
+	ts := httptest.NewServer(h)
+	t.Cleanup(ts.Close)
+	req, _ := http.NewRequest(http.MethodPut, ts.URL+"/virtualmachines/start", strings.NewReader(`{`))
+	req.Header.Set("Authorization", "Bearer user-token")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
+	resp, err := ts.Client().Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("status %d", resp.StatusCode)
+	}
+}
+
+func TestActionPlainTextResponse(t *testing.T) {
+	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		_, _ = w.Write([]byte("ok"))
+	}), nil)
+	resp := doJSON(t, h, http.MethodPut, "/virtualmachines/start", map[string]string{
+		"managedCluster": "testCluster",
+		"vmName":         "vmName",
+		"vmNamespace":    "vmNamespace",
+	})
+	defer resp.Body.Close()
+	if resp.Header.Get("Content-Type") != "text/plain" {
+		t.Fatalf("content-type %q", resp.Header.Get("Content-Type"))
+	}
 }
 
 func TestUnauthorized(t *testing.T) {
@@ -111,7 +209,7 @@ func TestStartAction(t *testing.T) {
 		capturedPath = r.URL.Path
 		capturedAuth = r.Header.Get("Authorization")
 		capturedMethod = r.Method
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"statusCode":200}`))
 	}), nil)
@@ -139,7 +237,7 @@ func TestPauseAction(t *testing.T) {
 	var capturedPath string
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
 	}), nil)
@@ -160,7 +258,7 @@ func TestSnapshotCreate(t *testing.T) {
 		capturedPath = r.URL.Path
 		b, _ := io.ReadAll(r.Body)
 		capturedBody = string(b)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
 	}), nil)
@@ -199,7 +297,7 @@ func TestGetVM(t *testing.T) {
 	var capturedPath string
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"kind":"VirtualMachine"}`))
 	}), nil)
@@ -221,7 +319,7 @@ func TestGetVMSnapshot(t *testing.T) {
 	var capturedPath string
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"kind":"VirtualMachineSnapshot"}`))
 	}), nil)
 	resp := doJSON(t, h, http.MethodGet, "/multicloud/virtualmachinesnapshots/get/testCluster/vmName/vmNamespace", nil)
@@ -236,7 +334,7 @@ func TestDeleteVM(t *testing.T) {
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
 		capturedMethod = r.Method
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
 	}), nil)
@@ -259,7 +357,7 @@ func TestRestoreSnapshot(t *testing.T) {
 	var capturedPath string
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedPath = r.URL.Path
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
 	}), nil)
@@ -279,7 +377,7 @@ func TestFineGrainedUsesUserToken(t *testing.T) {
 	var capturedAuth string
 	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		capturedAuth = r.Header.Get("Authorization")
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{}`))
 	}))
 	t.Cleanup(up.Close)
@@ -351,7 +449,7 @@ func TestUsageMissingParams(t *testing.T) {
 
 func TestUsageAggregate(t *testing.T) {
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		switch {
 		case strings.Contains(r.URL.Path, "/apis/metrics.k8s.io/"):
 			_, _ = w.Write([]byte(`{"items":[

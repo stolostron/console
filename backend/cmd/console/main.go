@@ -134,10 +134,7 @@ func run() error {
 		MCHNamespace: hubresources.CachedMCHNamespace(dyn),
 	}
 	opts = append(opts, server.WithEvents(eventsHandler))
-	ca := sa.ServiceCACert
-	if len(ca) == 0 {
-		ca = sa.CACert
-	}
+	ca := preferServiceCA(sa.ServiceCACert, sa.CACert)
 	searchClient := &searchapi.Client{
 		HTTP:         auth.HTTPClient(ca, 0),
 		Token:        sa.Token,
@@ -169,10 +166,7 @@ func run() error {
 	})))
 
 	serviceTLS := auth.ServiceTLSConfig(sa)
-	insightsCA := sa.ServiceCACert
-	if len(insightsCA) == 0 {
-		insightsCA = sa.CACert
-	}
+	insightsCA := preferServiceCA(sa.ServiceCACert, sa.CACert)
 	placementCA := &placementdebug.CAWatch{Kube: kube}
 	placementCA.Start(ctx)
 	addonResolver := &clusterproxy.Resolver{
@@ -248,7 +242,7 @@ func run() error {
 		slog.String("CONFIG_DIR", cfg.ConfigDir),
 		slog.String("PUBLIC_FOLDER", cfg.PublicFolder),
 	)
-	return server.ListenAndServe(ctx, cfg, handler, func() {
+	return server.ListenAndServe(ctx, cfg, handler, dyn, func() {
 		go func() {
 			if err := rbacevents.StartInformer(ctx, kube, store); err != nil {
 				applog.Logger().Error("rbac informer", "error", err)
@@ -264,12 +258,29 @@ func run() error {
 	})
 }
 
+var serviceAccountNamespacePath = "/var/run/secrets/kubernetes.io/serviceaccount/namespace"
+
+// setServiceAccountNamespacePath overrides the namespace file path (tests).
+func setServiceAccountNamespacePath(path string) func() {
+	prev := serviceAccountNamespacePath
+	serviceAccountNamespacePath = path
+	return func() { serviceAccountNamespacePath = prev }
+}
+
 func serviceAccountNamespace() string {
-	data, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
+	data, err := os.ReadFile(serviceAccountNamespacePath)
 	if err != nil {
 		return strings.TrimSpace(os.Getenv("NAMESPACE"))
 	}
 	return strings.TrimSpace(string(data))
+}
+
+// preferServiceCA returns the service-cluster CA when present, otherwise the cluster CA.
+func preferServiceCA(serviceCA, clusterCA []byte) []byte {
+	if len(serviceCA) == 0 {
+		return clusterCA
+	}
+	return serviceCA
 }
 
 var errMissingToken = errors.New("service account token missing")

@@ -12,6 +12,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/static"
 )
 
@@ -131,7 +132,7 @@ func TestPluginManifestNoCache(t *testing.T) {
 	if resp.Header.Get("Cache-Control") != "no-cache" {
 		t.Fatalf("cache %q", resp.Header.Get("Cache-Control"))
 	}
-	if resp.Header.Get("Content-Type") != "application/json; charset=utf-8" {
+	if resp.Header.Get(httpx.HeaderContentType) != httpx.MIMEJSON+"; charset=utf-8" {
 		t.Fatalf("ct %q", resp.Header.Get("Content-Type"))
 	}
 }

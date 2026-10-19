@@ -731,3 +731,113 @@ func TestModifiedDenyClearsDeletedFallback(t *testing.T) {
 		t.Fatalf("deleted allowed=%v err=%v", ok, err)
 	}
 }
+
+func TestAllowAllAccessPrefetchNoOp(t *testing.T) {
+	var a AllowAllAccess
+	a.Prefetch(context.Background(), "tok", []Event{modifiedNS("default")})
+}
+
+func TestNewSSARAccess(t *testing.T) {
+	a := NewSSARAccess(&rest.Config{
+		Host:            "https://example.invalid",
+		TLSClientConfig: rest.TLSClientConfig{Insecure: true},
+	})
+	if a == nil || a.newClient == nil {
+		t.Fatal("expected client factory")
+	}
+}
+
+func TestObjectMetaAndResourceNameHelpers(t *testing.T) {
+	if apiGroup("not-a-version") != "" {
+		t.Fatal("invalid apiVersion")
+	}
+	if apiGroup("apps/v1") != "apps" {
+		t.Fatal("apiGroup")
+	}
+	kind, ver, name, ns := objectMeta(Event{Object: map[string]any{
+		"kind": "Pod", "apiVersion": "v1",
+		"metadata": map[string]any{"name": "p", "namespace": "ns"},
+	}})
+	if kind != "Pod" || ver != "v1" || name != "p" || ns != "ns" {
+		t.Fatalf("meta %s %s %s %s", kind, ver, name, ns)
+	}
+	kind, _, name, ns = objectMeta(Event{Object: map[string]any{"kind": "Pod"}})
+	if kind != "Pod" || name != "" || ns != "" {
+		t.Fatalf("kind-only meta kind=%q name=%q ns=%q", kind, name, ns)
+	}
+	if resourceName(Event{GVR: schema.GroupVersionResource{Resource: "pods"}}) != "pods" {
+		t.Fatal("resourceName")
+	}
+	if resourceName(Event{}) != "" {
+		t.Fatal("empty resource")
+	}
+}
+
+func TestIncompleteFallbackNamespacedListThenGet(t *testing.T) {
+	var verbs []string
+	client := fake.NewSimpleClientset()
+	attachIncompleteRules(client)
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			create := action.(ktesting.CreateAction)
+			review := create.GetObject().(*authzv1.SelfSubjectAccessReview)
+			attr := review.Spec.ResourceAttributes
+			verbs = append(verbs, attr.Verb)
+			allowed := attr.Verb == "get"
+			return true, &authzv1.SelfSubjectAccessReview{
+				Status: authzv1.SubjectAccessReviewStatus{Allowed: allowed},
+			}, nil
+		})
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+	ev := Event{
+		Type: TypeModified,
+		GVR:  schema.GroupVersionResource{Version: "v1", Resource: "secrets"},
+		Object: map[string]any{
+			"kind": "Secret", "apiVersion": "v1",
+			"metadata": map[string]any{"name": "s", "namespace": "ns"},
+		},
+	}
+	ok, err := a.Allow(context.Background(), "tok", ev)
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if len(verbs) < 2 {
+		t.Fatalf("verbs %v", verbs)
+	}
+}
+
+func TestEnsureTokenLockedRepairsNilMaps(t *testing.T) {
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
+		return fake.NewSimpleClientset(), nil
+	})
+	th := hashToken("tok")
+	a.mu.Lock()
+	a.byToken[th] = &tokenState{}
+	a.mu.Unlock()
+	a.mu.Lock()
+	st := a.ensureTokenLocked(th)
+	a.mu.Unlock()
+	if st.entries == nil || st.flight == nil || st.rules == nil {
+		t.Fatal("expected maps initialized")
+	}
+}
+
+func TestSSARAccessStartCleanup(t *testing.T) {
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
+		return fake.NewSimpleClientset(), nil
+	})
+	ctx, cancel := context.WithCancel(context.Background())
+	a.StartCleanup(ctx)
+	cancel()
+	var nilAccess *SSARAccess
+	nilAccess.StartCleanup(ctx)
+}
+
+func TestPrefetchEmptyInputs(t *testing.T) {
+	a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) {
+		t.Fatal("unexpected client")
+		return nil, nil
+	})
+	a.Prefetch(context.Background(), "", nil)
+	a.Prefetch(context.Background(), "tok", []Event{{Type: TypeDeleted}})
+}

@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/clusterproxy"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func TestParseUsagePath(t *testing.T) {
@@ -39,7 +40,7 @@ func TestParseUsagePath(t *testing.T) {
 
 func TestAggregateUsage_SkipsUnmatchedPods(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		switch {
 		case strings.Contains(r.URL.Path, "/apis/metrics.k8s.io/"):
 			_, _ = w.Write([]byte(`{"items":[
@@ -92,7 +93,7 @@ func TestGetJSON_RejectsNon2xx(t *testing.T) {
 
 func TestAggregateUsage_EmptyMetrics(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if strings.Contains(r.URL.Path, "/apis/metrics.k8s.io/") {
 			_, _ = w.Write([]byte(`{"items":[]}`))
 			return
@@ -126,7 +127,7 @@ func TestGetJSON_DecodesResponse(t *testing.T) {
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"items":[{"metadata":{"name":"pod-a"}}]}`))
 	}))
 	t.Cleanup(ts.Close)
