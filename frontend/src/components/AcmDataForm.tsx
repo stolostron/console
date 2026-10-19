@@ -1005,7 +1005,11 @@ export function AcmDataFormInputs(props: {
 export function AcmDataFormInput(props: { input: Input; validated?: 'error'; isReadOnly: boolean }): JSX.Element {
   const { input, validated, isReadOnly } = props
   const [showSecrets, setShowSecrets] = useState(input.value === '')
-  const isLockedSecret = (input.type === 'Text' || input.type === 'TextArea') && input.isSecret === true && !showSecrets
+  const isLockedSecret =
+    (input.type === 'Text' || input.type === 'TextArea') &&
+    input.isSecret === true &&
+    input.value !== '' &&
+    !showSecrets
   const clearValue = (onChange: (value: string) => void) => () => {
     onChange('')
     setShowSecrets(true)
