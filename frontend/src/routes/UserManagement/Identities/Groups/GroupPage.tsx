@@ -39,13 +39,13 @@ export const useCurrentGroup = (): CurrentGroup => {
   const hubName = useLocalHubName()
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const mras = useSharedValue(multiclusterRoleAssignmentState)
-  const [group, setGroup] = useState<Group>()
+  const [fetched, setFetched] = useState<Group>()
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState<Error>()
 
   useEffect(() => {
     if (!id) {
-      setGroup(undefined)
+      setFetched(undefined)
       setError(undefined)
       setLoaded(true)
       return
@@ -60,32 +60,35 @@ export const useCurrentGroup = (): CurrentGroup => {
         const direct = await readGroup(id)
         if (cancelled) return
         if (direct) {
-          setGroup(direct)
+          setFetched(direct)
           setLoaded(true)
           return
         }
 
-        const indexedName = await findIndexedGroupName(id, hubName)
+        let indexedName: string | undefined
+        try {
+          indexedName = await findIndexedGroupName(id, hubName)
+        } catch {
+          // Search failures must not block the MRA-only fallback below.
+          indexedName = undefined
+        }
         if (cancelled) return
         if (indexedName && indexedName !== id) {
           const resolved = await readGroup(indexedName)
           if (cancelled) return
           if (resolved) {
-            setGroup(resolved)
+            setFetched(resolved)
             setLoaded(true)
             return
           }
         }
 
-        const synthetic = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
-          (candidate) => candidate.metadata.name === id || candidate.metadata.uid === id
-        )
         if (cancelled) return
-        setGroup(synthetic)
+        setFetched(undefined)
         setLoaded(true)
       } catch (err) {
         if (cancelled) return
-        setGroup(undefined)
+        setFetched(undefined)
         setError(err instanceof Error ? err : new Error('Failed to load group'))
         setLoaded(true)
       }
@@ -95,9 +98,19 @@ export const useCurrentGroup = (): CurrentGroup => {
     return () => {
       cancelled = true
     }
-  }, [hubName, id, mras])
+  }, [hubName, id])
 
-  return { group, loaded, error }
+  const synthetic = useMemo(
+    () =>
+      id && loaded && !fetched && !error
+        ? groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
+            (candidate) => candidate.metadata.name === id || candidate.metadata.uid === id
+          )
+        : undefined,
+    [error, fetched, id, loaded, mras]
+  )
+
+  return { group: fetched ?? synthetic, loaded, error }
 }
 
 export type GroupDetailsContext = {

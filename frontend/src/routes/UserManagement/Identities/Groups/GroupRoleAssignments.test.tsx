@@ -5,15 +5,15 @@ import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
 import { useSharedValue } from '../../../../shared-atoms'
-import { useCurrentGroup } from './GroupPage'
+import { useGroupDetailsContext } from './GroupPage'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
 jest.mock('./GroupPage', () => ({
-  useCurrentGroup: jest.fn(),
+  useGroupDetailsContext: jest.fn(),
 }))
 
-const mockUseCurrentGroup = useCurrentGroup as jest.Mock
+const mockUseGroupDetailsContext = useGroupDetailsContext as jest.Mock
 
 // Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -164,11 +164,11 @@ function Component({ groupId = 'developers' }: { groupId?: string } = {}) {
 describe('GroupRoleAssignments', () => {
   beforeEach(() => {
     ;(useSharedValue as jest.Mock).mockClear()
-    mockUseCurrentGroup.mockReset()
+    mockUseGroupDetailsContext.mockReset()
   })
 
   it('renders GroupRoleAssignments component with no group found', async () => {
-    mockUseCurrentGroup.mockReturnValue({ group: undefined, loaded: true })
+    mockUseGroupDetailsContext.mockReturnValue({ group: undefined })
     ;(useSharedValue as jest.Mock).mockReturnValue([])
 
     render(<Component groupId="non-existent-group" />)
@@ -177,7 +177,7 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders GroupRoleAssignments component with developers group found', async () => {
-    mockUseCurrentGroup.mockReturnValue({ group: mockGroups[0], loaded: true })
+    mockUseGroupDetailsContext.mockReturnValue({ group: mockGroups[0] })
     ;(useSharedValue as jest.Mock).mockReturnValue(mockMulticlusterRoleAssignments)
 
     render(<Component groupId="developers" />)
@@ -197,7 +197,7 @@ describe('GroupRoleAssignments', () => {
   })
 
   it('renders without crashing when multicluster role assignment state is undefined', async () => {
-    mockUseCurrentGroup.mockReturnValue({ group: mockGroups[0], loaded: true })
+    mockUseGroupDetailsContext.mockReturnValue({ group: mockGroups[0] })
     ;(useSharedValue as jest.Mock).mockReturnValue(undefined)
 
     render(<Component groupId="developers" />)

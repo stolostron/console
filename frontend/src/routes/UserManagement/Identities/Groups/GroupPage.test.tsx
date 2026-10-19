@@ -97,6 +97,9 @@ const opsMra: MulticlusterRoleAssignment = {
   },
 }
 
+const emptyMras: MulticlusterRoleAssignment[] = []
+const opsMras: MulticlusterRoleAssignment[] = [opsMra]
+
 function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
   return (
     <StateProvider>
@@ -125,7 +128,7 @@ describe('GroupPage', () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === groupsAtom) throw new Error('groupsState should not be read')
       if (atom === usersAtom) return mockUsers
-      if (atom === mraAtom) return []
+      if (atom === mraAtom) return emptyMras
       if (atom === authAtom) return false
       return undefined
     })
@@ -195,10 +198,27 @@ describe('GroupPage', () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === groupsAtom) throw new Error('groupsState should not be read')
       if (atom === usersAtom) return mockUsers
-      if (atom === mraAtom) return [opsMra]
+      if (atom === mraAtom) return opsMras
       if (atom === authAtom) return false
       return undefined
     })
+
+    render(<Component groupId="ops-team" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: 'ops-team' })).toBeInTheDocument()
+    })
+  })
+
+  test('should fall back to an MRA group when Search lookup fails', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === groupsAtom) throw new Error('groupsState should not be read')
+      if (atom === usersAtom) return mockUsers
+      if (atom === mraAtom) return opsMras
+      if (atom === authAtom) return false
+      return undefined
+    })
+    mockSearchQuery.mockRejectedValue(new Error('search unavailable'))
 
     render(<Component groupId="ops-team" />)
 
@@ -211,7 +231,7 @@ describe('GroupPage', () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === groupsAtom) throw new Error('groupsState should not be read')
       if (atom === usersAtom) return mockUsers
-      if (atom === mraAtom) return []
+      if (atom === mraAtom) return emptyMras
       if (atom === authAtom) return true
       return undefined
     })
