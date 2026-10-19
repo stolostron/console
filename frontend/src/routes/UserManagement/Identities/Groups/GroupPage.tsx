@@ -1,23 +1,103 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { generatePath, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { LoadingPage } from '../../../../components/LoadingPage'
+import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group, User } from '../../../../resources/rbac'
-import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { Group, GroupKind, User, UserApiVersion } from '../../../../resources/rbac'
+import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
-import { useMergedGroups } from '../useMergedIdentities'
+import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
+import { findIndexedGroupName } from './useGroupsSearch'
 
-export const useCurrentGroup = (): Group | undefined => {
+export type CurrentGroup = {
+  group?: Group
+  loaded: boolean
+  error?: Error
+}
+
+async function readGroup(name: string): Promise<Group | undefined> {
+  try {
+    const group = await getResource<Group>({
+      apiVersion: UserApiVersion,
+      kind: GroupKind,
+      metadata: { name },
+      users: [],
+    }).promise
+    return { ...group, users: group.users ?? [] }
+  } catch (err) {
+    if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) return undefined
+    throw err
+  }
+}
+
+export const useCurrentGroup = (): CurrentGroup => {
   const { id } = useParams()
-  const groups = useMergedGroups()
+  const hubName = useLocalHubName()
+  const { multiclusterRoleAssignmentState } = useSharedAtoms()
+  const mras = useSharedValue(multiclusterRoleAssignmentState)
+  const [group, setGroup] = useState<Group>()
+  const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState<Error>()
 
-  return useMemo(
-    () => (!groups || !id ? undefined : groups.find((g) => g.metadata.uid === id || g.metadata.name === id)),
-    [groups, id]
-  )
+  useEffect(() => {
+    if (!id) {
+      setGroup(undefined)
+      setError(undefined)
+      setLoaded(true)
+      return
+    }
+
+    let cancelled = false
+    setLoaded(false)
+    setError(undefined)
+
+    const load = async () => {
+      try {
+        const direct = await readGroup(id)
+        if (cancelled) return
+        if (direct) {
+          setGroup(direct)
+          setLoaded(true)
+          return
+        }
+
+        const indexedName = await findIndexedGroupName(id, hubName)
+        if (cancelled) return
+        if (indexedName && indexedName !== id) {
+          const resolved = await readGroup(indexedName)
+          if (cancelled) return
+          if (resolved) {
+            setGroup(resolved)
+            setLoaded(true)
+            return
+          }
+        }
+
+        const synthetic = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
+          (candidate) => candidate.metadata.name === id || candidate.metadata.uid === id
+        )
+        if (cancelled) return
+        setGroup(synthetic)
+        setLoaded(true)
+      } catch (err) {
+        if (cancelled) return
+        setGroup(undefined)
+        setError(err instanceof Error ? err : new Error('Failed to load group'))
+        setLoaded(true)
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [hubName, id, mras])
+
+  return { group, loaded, error }
 }
 
 export type GroupDetailsContext = {
@@ -30,7 +110,7 @@ const GroupPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const group = useCurrentGroup()
+  const { group, loaded, error } = useCurrentGroup()
   const { usersState, isDirectAuthenticationEnabledState } = useSharedAtoms()
   const users = useSharedValue(usersState)
   const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
@@ -48,19 +128,18 @@ const GroupPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isUsersActive = location.pathname.includes('/users')
 
+  const backToGroups = (
+    <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
+      {t('button.backToGroups')}
+    </AcmButton>
+  )
+
+  if (!loaded) {
+    return <LoadingPage />
+  }
+
   if (!group) {
-    return (
-      <>
-        <ErrorPage
-          error={new ResourceError(ResourceErrorCode.NotFound)}
-          actions={
-            <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
-              {t('button.backToGroups')}
-            </AcmButton>
-          }
-        />
-      </>
-    )
+    return <ErrorPage error={error ?? new ResourceError(ResourceErrorCode.NotFound)} actions={backToGroups} />
   }
 
   return (

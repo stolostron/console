@@ -6,7 +6,7 @@ import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
 import { useCurrentGroup } from './GroupPage'
 
 const GroupRoleAssignments = () => {
-  const group = useCurrentGroup()
+  const { group, loaded } = useCurrentGroup()
 
   const roleAssignments = useFindRoleAssignments({
     subjectNames: group?.metadata.name ? [group.metadata.name] : [],
@@ -17,7 +17,7 @@ const GroupRoleAssignments = () => {
     <PageSection hasBodyWrapper={false}>
       <RoleAssignments
         roleAssignments={roleAssignments}
-        isLoading={false}
+        isLoading={!loaded}
         hiddenColumns={['subject', 'name']}
         hiddenFilters={['identity']}
         preselected={{ subject: { kind: GroupKind, value: group?.metadata.name }, context: 'identity' }}

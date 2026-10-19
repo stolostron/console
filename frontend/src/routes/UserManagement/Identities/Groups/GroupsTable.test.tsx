@@ -8,6 +8,21 @@ import { Group } from '../../../../resources/rbac'
 import { IAcmTableButtonAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { GroupsTable } from './GroupsTable'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
+import { useFleetSearch } from '@stolostron/multicluster-sdk'
+import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
+
+jest.mock('@stolostron/multicluster-sdk', () => ({
+  useFleetSearch: jest.fn(),
+}))
+
+jest.mock('../../../Search/search-sdk/search-sdk', () => ({
+  useSearchResultCountQuery: jest.fn(),
+  SearchResultItemsDocument: 'SearchResultItemsDocument',
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -35,6 +50,13 @@ jest.mock('../../../../ui-components/IdentityStatus/IdentityStatus', () => ({
 
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockUseFleetSearch = useFleetSearch as jest.MockedFunction<typeof useFleetSearch>
+const mockUseSearchResultCountQuery = useSearchResultCountQuery as jest.Mock
+
+type FleetSearchInput = {
+  orderBy?: string
+  filters?: { property: string; values?: Array<string | null> }[]
+}
 
 const groupsAtom = Symbol('groupsState')
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
@@ -59,6 +81,7 @@ const mockGroups: Group[] = [
       creationTimestamp: '2023-01-02T00:00:00Z',
     },
     users: ['dev1', 'dev2'],
+    userCount: 9,
   },
   {
     apiVersion: 'user.openshift.io/v1',
@@ -112,6 +135,43 @@ function Component(props: any = {}) {
   )
 }
 
+function mockSearch(groups: Group[]) {
+  mockUseFleetSearch.mockImplementation((input) => {
+    const searchInput = input as FleetSearchInput | undefined
+    if (!searchInput) return [undefined, true, undefined, jest.fn()]
+    if (searchInput.orderBy) return [groups, true, undefined, jest.fn()]
+    const names = new Set(searchInput.filters?.find((filter) => filter.property === 'name')?.values ?? [])
+    return [groups.filter((group) => names.has(group.metadata.name ?? '')), true, undefined, jest.fn()]
+  })
+
+  mockUseSearchResultCountQuery.mockImplementation(
+    (options?: { skip?: boolean; variables?: { input?: FleetSearchInput[] } }) => {
+      if (options?.skip) return { data: undefined, loading: false, error: undefined, refetch: jest.fn() }
+      const inputs = options?.variables?.input ?? []
+      const ranked = inputs.some((input) =>
+        input.filters?.some((filter) => {
+          const value = filter.values?.[0]
+          return typeof value === 'string' && (value.startsWith('<') || value.startsWith('>'))
+        })
+      )
+      if (ranked) {
+        return {
+          data: { searchResult: inputs.map(() => ({ count: 0 })) },
+          loading: false,
+          error: undefined,
+          refetch: jest.fn(),
+        }
+      }
+      return {
+        data: { searchResult: [{ count: groups.length }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      }
+    }
+  )
+}
+
 function setupMocks(groups: Group[] = mockGroups, mras: MulticlusterRoleAssignment[] = mockMras) {
   mockUseSharedAtoms.mockReturnValue({
     groupsState: groupsAtom,
@@ -119,10 +179,11 @@ function setupMocks(groups: Group[] = mockGroups, mras: MulticlusterRoleAssignme
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: any) => {
-    if (atom === groupsAtom) return groups
+    if (atom === groupsAtom) throw new Error('groupsState should not be read')
     if (atom === mraAtom) return mras
     return []
   })
+  mockSearch(groups)
 }
 
 describe('GroupsTable', () => {
@@ -151,8 +212,19 @@ describe('GroupsTable', () => {
       expect(screen.getByText('sre-team')).toBeInTheDocument()
 
       expect(screen.getAllByText('1').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+      expect(screen.getByText('9')).toBeInTheDocument()
     })
+    expect(mockUseFleetSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: 'name asc',
+        filters: expect.arrayContaining([
+          { property: 'kind', values: ['Group'] },
+          { property: 'apigroup', values: ['user.openshift.io'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ]),
+      }),
+      true
+    )
   })
 
   test('should render empty state when no groups', async () => {
@@ -176,7 +248,7 @@ describe('GroupsTable', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText('1').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('2').length).toBeGreaterThan(0)
+      expect(screen.getByText('9')).toBeInTheDocument()
     })
   })
 
@@ -328,7 +400,7 @@ describe('GroupsTable', () => {
 
   describe('empty state create button', () => {
     beforeEach(() => {
-      mockUseSharedValue.mockReturnValue([])
+      setupMocks([], [])
     })
 
     test('should not show create button in empty state by default', async () => {

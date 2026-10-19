@@ -2,7 +2,10 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { Group, User } from '../../../../resources/rbac'
+import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { searchClient } from '../../../Search/search-sdk/search-client'
 import { GroupPage } from './GroupPage'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
@@ -23,8 +26,31 @@ jest.mock('../../../../shared-atoms', () => ({
   useSharedAtoms: jest.fn(),
 }))
 
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
+jest.mock('../../../../resources/utils', () => {
+  const actual = jest.requireActual('../../../../resources/utils')
+  return {
+    ...actual,
+    getResource: jest.fn(),
+  }
+})
+
+jest.mock('../../../Search/search-sdk/search-client', () => ({
+  searchClient: { query: jest.fn() },
+}))
+
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockGetResource = getResource as jest.Mock
+const mockSearchQuery = searchClient.query as jest.Mock
+
+const usersAtom = Symbol('usersState')
+const groupsAtom = Symbol('groupsState')
+const mraAtom = Symbol('multiclusterRoleAssignmentState')
+const authAtom = Symbol('isDirectAuthenticationEnabledState')
 
 const mockGroups: Group[] = [
   {
@@ -32,7 +58,7 @@ const mockGroups: Group[] = [
     kind: 'Group',
     metadata: {
       name: 'kubevirt-admins',
-      uid: 'kubevirt-admins',
+      uid: 'kubevirt-admins-uid',
       creationTimestamp: '2023-01-01T00:00:00Z',
     },
     users: ['admin1'],
@@ -59,25 +85,17 @@ const mockUsers: User[] = [
       creationTimestamp: '2023-01-01T00:00:00Z',
     },
   },
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'dev1',
-      uid: 'dev1',
-      creationTimestamp: '2023-01-02T00:00:00Z',
-    },
-  },
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'User',
-    metadata: {
-      name: 'dev2',
-      uid: 'dev2',
-      creationTimestamp: '2023-01-03T00:00:00Z',
-    },
-  },
 ]
+
+const opsMra: MulticlusterRoleAssignment = {
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name: 'mra-ops', creationTimestamp: '2023-02-01T00:00:00Z' },
+  spec: {
+    subject: { kind: 'Group', name: 'ops-team' },
+    roleAssignments: [],
+  },
+}
 
 function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
   return (
@@ -91,36 +109,47 @@ function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
   )
 }
 
+function notFound() {
+  return Promise.reject(new ResourceError(ResourceErrorCode.NotFound))
+}
+
 describe('GroupPage', () => {
   beforeEach(() => {
-    mockUseSharedValue.mockClear()
-    mockUseSharedAtoms.mockClear()
-
     mockUseSharedAtoms.mockReturnValue({
-      usersState: {} as any,
-      groupsState: {} as any,
-      multiclusterRoleAssignmentState: {} as any,
-      isDirectAuthenticationEnabledState: {} as any,
+      usersState: usersAtom,
+      groupsState: groupsAtom,
+      multiclusterRoleAssignmentState: mraAtom,
+      isDirectAuthenticationEnabledState: authAtom,
     } as any)
+
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === groupsAtom) throw new Error('groupsState should not be read')
+      if (atom === usersAtom) return mockUsers
+      if (atom === mraAtom) return []
+      if (atom === authAtom) return false
+      return undefined
+    })
+
+    mockGetResource.mockImplementation((resource: Group) => {
+      const group = mockGroups.find((item) => item.metadata.name === resource.metadata.name)
+      return { promise: group ? Promise.resolve(group) : notFound() }
+    })
+    mockSearchQuery.mockResolvedValue({ data: { searchResult: [{ items: [] }] } })
   })
 
   test('should render group page with data', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
-      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
-
     render(<Component />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
     })
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+    )
+    expect(mockSearchQuery).not.toHaveBeenCalled()
   })
 
   test('should render group not found error', async () => {
-    mockUseSharedValue.mockReturnValue([])
-
     render(<Component groupId="non-existent-group" />)
 
     await waitFor(() => {
@@ -130,17 +159,10 @@ describe('GroupPage', () => {
   })
 
   test('should render group page with navigation tabs', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
-      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
-
     render(<Component />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
-      expect(screen.getAllByText('kubevirt-admins').length).toBeGreaterThan(0)
       expect(screen.getByRole('tab', { name: 'Details' })).toBeInTheDocument()
       expect(screen.getByRole('tab', { name: 'YAML' })).toBeInTheDocument()
       expect(screen.getByRole('tab', { name: 'Role assignments' })).toBeInTheDocument()
@@ -148,37 +170,51 @@ describe('GroupPage', () => {
     })
   })
 
-  test('should render group page with empty group name', async () => {
-    mockUseSharedValue.mockReturnValue([])
+  test('should resolve a group uid through Search and then load the Group resource', async () => {
+    mockSearchQuery.mockImplementation(
+      ({ variables }: { variables: { input: { filters: { property: string; values: string[] }[] }[] } }) => {
+        const uidFilter = variables.input[0].filters.find((filter) => filter.property === '_uid')
+        if (uidFilter?.values[0] === 'local-cluster/kubevirt-admins-uid') {
+          return Promise.resolve({ data: { searchResult: [{ items: [{ name: 'kubevirt-admins' }] }] } })
+        }
+        return Promise.resolve({ data: { searchResult: [{ items: [] }] } })
+      }
+    )
 
-    render(<Component groupId="group-with-empty-name" />)
-
-    await waitFor(() => {
-      expect(screen.getByText('Not found')).toBeInTheDocument()
-      expect(screen.getByText('Back to groups')).toBeInTheDocument()
-    })
-  })
-
-  test('should find group by UID', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
-      .mockReturnValueOnce(false) // GroupPage: isDirectAuth
-
-    render(<Component groupId="kubevirt-admins" />)
+    render(<Component groupId="kubevirt-admins-uid" />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
     })
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+    )
+  })
+
+  test('should show an MRA group that has no Group resource', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === groupsAtom) throw new Error('groupsState should not be read')
+      if (atom === usersAtom) return mockUsers
+      if (atom === mraAtom) return [opsMra]
+      if (atom === authAtom) return false
+      return undefined
+    })
+
+    render(<Component groupId="ops-team" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: 'ops-team' })).toBeInTheDocument()
+    })
   })
 
   test('should hide YAML and Users tabs when isDirectAuthenticationEnabled', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(mockGroups) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce(mockUsers) // GroupPage: usersState
-      .mockReturnValueOnce(true) // GroupPage: isDirectAuth
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === groupsAtom) throw new Error('groupsState should not be read')
+      if (atom === usersAtom) return mockUsers
+      if (atom === mraAtom) return []
+      if (atom === authAtom) return true
+      return undefined
+    })
 
     render(<Component />)
 

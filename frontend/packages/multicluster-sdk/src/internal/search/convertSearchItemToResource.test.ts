@@ -1745,6 +1745,43 @@ describe('convertSearchItemToResource', () => {
     })
   })
 
+  describe('Group.user.openshift.io', () => {
+    const groupItem = {
+      cluster: 'local-cluster',
+      apigroup: 'user.openshift.io',
+      apiversion: 'v1',
+      kind: 'Group',
+      name: 'devs',
+      created: '2023-01-01T00:00:00Z',
+      _uid: 'local-cluster/uid-1',
+    }
+
+    it('should map a string userCount and leave membership off the list item', () => {
+      const result = convert({ ...groupItem, userCount: '2' })
+
+      expect(result.userCount).toBe(2)
+      expect(result.users).toBeUndefined()
+      expect(result.apiVersion).toBe('user.openshift.io/v1')
+      expect(result.metadata?.name).toBe('devs')
+      expect(result.metadata?.uid).toBe('uid-1')
+    })
+
+    it('should keep a zero userCount', () => {
+      const result = convert({ ...groupItem, userCount: '0' })
+      expect(result.userCount).toBe(0)
+    })
+
+    it('should map a numeric userCount', () => {
+      const result = convert({ ...groupItem, userCount: 4 })
+      expect(result.userCount).toBe(4)
+    })
+
+    it('should omit userCount when it is missing or not numeric', () => {
+      expect(convert(groupItem).userCount).toBeUndefined()
+      expect(convert({ ...groupItem, userCount: 'many' }).userCount).toBeUndefined()
+    })
+  })
+
   describe('unknown resource types', () => {
     it('should handle unknown resource types with basic transformation', () => {
       const unknownItem = {

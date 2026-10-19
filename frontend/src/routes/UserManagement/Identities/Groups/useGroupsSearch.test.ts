@@ -1,0 +1,290 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import { renderHook, waitFor } from '@testing-library/react'
+import { SortByDirection } from '@patternfly/react-table'
+import { useFleetSearch, type SearchInput } from '@stolostron/multicluster-sdk'
+import { Group } from '../../../../resources/rbac'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
+import { searchClient } from '../../../Search/search-sdk/search-client'
+import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
+import { useGroupsSearch, useGroupIdentity, useHasHubGroups } from './useGroupsSearch'
+
+jest.mock('@stolostron/multicluster-sdk', () => ({
+  useFleetSearch: jest.fn(),
+}))
+
+jest.mock('../../../Search/search-sdk/search-sdk', () => ({
+  useSearchResultCountQuery: jest.fn(),
+  SearchResultItemsDocument: 'SearchResultItemsDocument',
+}))
+
+jest.mock('../../../Search/search-sdk/search-client', () => ({
+  searchClient: { query: jest.fn() },
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
+}))
+
+const mockUseFleetSearch = useFleetSearch as jest.MockedFunction<typeof useFleetSearch>
+const mockUseSearchResultCountQuery = useSearchResultCountQuery as jest.Mock
+const mockUseSharedValue = useSharedValue as jest.Mock
+const mockUseSharedAtoms = useSharedAtoms as jest.Mock
+const mockSearchQuery = searchClient.query as jest.Mock
+
+const groupsAtom = Symbol('groupsState')
+const mraAtom = Symbol('multiclusterRoleAssignmentState')
+
+const developers: Group = {
+  apiVersion: 'user.openshift.io/v1',
+  kind: 'Group',
+  metadata: { name: 'developers', uid: 'developers', creationTimestamp: '2023-01-02T00:00:00Z' },
+  users: ['dev1', 'dev2'],
+  userCount: 2,
+}
+
+const opsMra: MulticlusterRoleAssignment = {
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name: 'mra-ops', creationTimestamp: '2023-02-01T00:00:00Z' },
+  spec: { subject: { kind: 'Group', name: 'ops-team' }, roleAssignments: [] },
+}
+
+const developersMra: MulticlusterRoleAssignment = {
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name: 'mra-devs', creationTimestamp: '2023-02-02T00:00:00Z' },
+  spec: { subject: { kind: 'Group', name: 'developers' }, roleAssignments: [] },
+}
+
+const columns = [
+  { sort: 'metadata.name', isHidden: false },
+  { sort: 'users.length', isHidden: false },
+  { sort: 'metadata.creationTimestamp', isHidden: false },
+]
+
+function isComparator(input: SearchInput): boolean {
+  return (
+    input.filters?.some((filter) => {
+      const value = filter?.values?.[0]
+      return typeof value === 'string' && (value.startsWith('<') || value.startsWith('>'))
+    }) ?? false
+  )
+}
+
+function mockSearch(pageGroups: Group[], indexed: Group[] = pageGroups, ranks: number[] = []) {
+  const refetchPage = jest.fn()
+  mockUseFleetSearch.mockImplementation((input, subscriptionEnabled) => {
+    if (!input) return [undefined, true, undefined, jest.fn()]
+    if (input.orderBy) return [pageGroups, true, undefined, refetchPage]
+    if (subscriptionEnabled) return [pageGroups, true, undefined, refetchPage]
+    const names = new Set(input.filters?.find((filter) => filter?.property === 'name')?.values ?? [])
+    return [indexed.filter((group) => names.has(group.metadata.name ?? '')), true, undefined, jest.fn()]
+  })
+
+  mockUseSearchResultCountQuery.mockImplementation(
+    (options?: { skip?: boolean; variables?: { input?: SearchInput[] } }) => {
+      if (options?.skip) return { data: undefined, loading: false, error: undefined, refetch: jest.fn() }
+      const inputs = options?.variables?.input ?? []
+      if (inputs.some(isComparator)) {
+        return {
+          data: { searchResult: ranks.map((count) => ({ count })) },
+          loading: false,
+          error: undefined,
+          refetch: jest.fn(),
+        }
+      }
+      return {
+        data: { searchResult: [{ count: pageGroups.length }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      }
+    }
+  )
+  return { refetchPage }
+}
+
+function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
+  mockUseSharedAtoms.mockReturnValue({
+    groupsState: groupsAtom,
+    multiclusterRoleAssignmentState: mraAtom,
+  })
+  mockUseSharedValue.mockImplementation((atom: unknown) => {
+    if (atom === groupsAtom) throw new Error('groupsState should not be read')
+    if (atom === mraAtom) return mras
+    return []
+  })
+}
+
+describe('useGroupsSearch', () => {
+  beforeEach(() => {
+    setupAtoms()
+    mockSearch([developers])
+  })
+
+  test('maps page, sort and keywords onto the subscribed Search query', () => {
+    const { result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: {
+          page: 2,
+          perPage: 5,
+          search: 'Ops Team',
+          sortBy: { index: 1, direction: SortByDirection.desc },
+          filters: {},
+        },
+      })
+    )
+
+    expect(mockUseFleetSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: 'userCount desc',
+        keywords: ['Ops', 'Team'],
+        offset: 5,
+        limit: 5,
+        filters: expect.arrayContaining([
+          { property: 'kind', values: ['Group'] },
+          { property: 'apigroup', values: ['user.openshift.io'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ]),
+      }),
+      true
+    )
+    expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
+    expect(result.current.processedItemCount).toBe(1)
+  })
+
+  test('includes an MRA group that Search has not indexed and skips one that it has', () => {
+    setupAtoms([opsMra, developersMra])
+    mockSearch([developers], [developers], [0])
+
+    const { result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['ops-team', 'developers'])
+    expect(result.current.processedItemCount).toBe(2)
+  })
+
+  test('drops an MRA group that does not match the toolbar keywords', () => {
+    setupAtoms([opsMra])
+    mockSearch([developers], [developers], [])
+
+    const { result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: {
+          page: 1,
+          perPage: 10,
+          search: 'dev',
+          sortBy: { index: 0, direction: SortByDirection.asc },
+          filters: {},
+        },
+      })
+    )
+
+    expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
+    expect(mockUseFleetSearch).toHaveBeenCalledWith(expect.objectContaining({ keywords: ['dev'] }), true)
+  })
+
+  test('refetches after additionalGroups changes so a created group fills the index gap', async () => {
+    const { refetchPage } = mockSearch([], [], [0])
+    const created: Group = {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: { name: 'created-group', uid: 'created-group' },
+      users: [],
+    }
+
+    const { rerender, result } = renderHook(
+      ({ additionalGroups }: { additionalGroups?: Group[] }) =>
+        useGroupsSearch({
+          columns,
+          additionalGroups,
+          request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+        }),
+      { initialProps: { additionalGroups: undefined as Group[] | undefined } }
+    )
+
+    expect(refetchPage).not.toHaveBeenCalled()
+    rerender({ additionalGroups: [created] })
+
+    await waitFor(() => {
+      expect(refetchPage).toHaveBeenCalled()
+    })
+    expect(result.current.groups.map((group) => group.metadata.name)).toContain('created-group')
+  })
+
+  test('exports every hub group plus MRA-only groups', async () => {
+    setupAtoms([opsMra])
+    mockSearch([developers], [], [0])
+    mockSearchQuery.mockResolvedValue({
+      data: { searchResult: [{ items: [{ name: 'developers', userCount: '2', created: '2023-01-02T00:00:00Z' }] }] },
+    })
+
+    const { result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    const exported = await result.current.fetchExport({
+      page: 1,
+      perPage: -1,
+      sortBy: undefined,
+      filters: {},
+    })
+
+    expect(mockSearchQuery).toHaveBeenCalledWith(
+      expect.objectContaining({
+        variables: {
+          input: [
+            expect.objectContaining({
+              limit: -1,
+              orderBy: 'name asc',
+              filters: expect.arrayContaining([{ property: 'cluster', values: ['local-cluster'] }]),
+            }),
+          ],
+        },
+      })
+    )
+    expect(exported?.items.map((item) => item.metadata?.name)).toEqual(['developers', 'ops-team'])
+  })
+})
+
+describe('useHasHubGroups and useGroupIdentity', () => {
+  beforeEach(() => {
+    setupAtoms([opsMra])
+    mockSearch([], [], [])
+  })
+
+  test('reports hub groups from the count or an MRA subject', () => {
+    mockUseSearchResultCountQuery.mockReturnValue({
+      data: { searchResult: [{ count: 0 }] },
+      loading: false,
+      error: undefined,
+      refetch: jest.fn(),
+    })
+
+    const { result } = renderHook(() => useHasHubGroups())
+    expect(result.current).toEqual({ hasGroups: true, loaded: true })
+  })
+
+  test('resolves a missing Search group from an MRA subject', () => {
+    mockUseFleetSearch.mockReturnValue([undefined, true, undefined, jest.fn()])
+
+    const { result } = renderHook(() => useGroupIdentity('ops-team'))
+    expect(result.current?.metadata.name).toBe('ops-team')
+    expect(result.current?.users).toEqual([])
+  })
+})
