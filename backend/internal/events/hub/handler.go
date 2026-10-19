@@ -87,6 +87,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	enc := newStreamEncoder(w, flusher, encoding)
 	defer enc.Close()
 
+	if tracker, ok := h.access.(StreamTracker); ok {
+		tracker.BeginStream(token)
+		defer tracker.EndStream(token)
+	}
+
 	c := h.hub.subscribe()
 	defer h.hub.unsubscribe(c)
 

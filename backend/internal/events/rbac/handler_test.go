@@ -28,36 +28,64 @@ import (
 	"github.com/stolostron/console/backend/internal/httpx"
 )
 
-// syncRecorder guards ResponseRecorder reads/writes across handler and test goroutines.
-type syncRecorder struct {
+type concurrentRecorder struct {
 	mu  sync.Mutex
 	rec *httptest.ResponseRecorder
 }
 
-func newSyncRecorder() *syncRecorder {
-	return &syncRecorder{rec: httptest.NewRecorder()}
+func newConcurrentRecorder() *concurrentRecorder {
+	return &concurrentRecorder{rec: httptest.NewRecorder()}
 }
 
-func (s *syncRecorder) Header() http.Header { return s.rec.Header() }
-
-func (s *syncRecorder) Write(b []byte) (int, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.rec.Write(b)
+func (c *concurrentRecorder) Header() http.Header {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Header()
 }
 
-func (s *syncRecorder) WriteHeader(code int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	s.rec.WriteHeader(code)
+func (c *concurrentRecorder) Write(b []byte) (int, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Write(b)
 }
 
-func (s *syncRecorder) Flush() { s.rec.Flush() }
+func (c *concurrentRecorder) WriteHeader(code int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rec.WriteHeader(code)
+}
 
-func (s *syncRecorder) BodyString() string {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	return s.rec.Body.String()
+func (c *concurrentRecorder) Flush() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.rec.Flush()
+}
+
+func (c *concurrentRecorder) Code() int {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Code
+}
+
+func (c *concurrentRecorder) BodyString() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.rec.Body.String()
+}
+
+func waitBody(t *testing.T, rec *concurrentRecorder, substr string) string {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	var body string
+	for time.Now().Before(deadline) {
+		body = rec.BodyString()
+		if strings.Contains(body, substr) {
+			return body
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("missing %s in %s", substr, body)
+	return body
 }
 
 func labeledRole(name string) *rbacv1.ClusterRole {
@@ -143,31 +171,23 @@ func TestHandlerSnapshotSSE(t *testing.T) {
 	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, rbacevents.AllowAllAccess{})
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.AddCookie(&http.Cookie{Name: auth.AccessTokenCookie, Value: "user-token"})
 
-	rec := httptest.NewRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
 		close(done)
 	}()
 
-	deadline := time.Now().Add(2 * time.Second)
-	var body string
-	for time.Now().Before(deadline) {
-		body = rec.Body.String()
-		if strings.Contains(body, `"type":"LOADED"`) {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	waitBody(t, rec, `"type":"LOADED"`)
 	cancel()
 	<-done
+	body := rec.BodyString()
 
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d body %s", rec.Code, body)
+	if rec.Code() != http.StatusOK {
+		t.Fatalf("status %d body %s", rec.Code(), body)
 	}
 	if ct := rec.Header().Get("Content-Type"); !strings.Contains(ct, "text/event-stream") {
 		t.Fatalf("content-type %s", ct)
@@ -206,6 +226,10 @@ func (denyAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, er
 	return false, nil
 }
 
+func (denyAccess) CanSeeDeleted(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
+	return false, nil
+}
+
 func TestHandlerSSARDenyOmitsRole(t *testing.T) {
 	store := rbacevents.NewStore()
 	store.Upsert("ADDED", labeledRole("secret-role"))
@@ -214,22 +238,44 @@ func TestHandlerSSARDenyOmitsRole(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer user-token")
-	rec := httptest.NewRecorder()
+	rec := newConcurrentRecorder()
+	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
+		close(done)
 	}()
-	deadline := time.Now().Add(2 * time.Second)
-	var body string
-	for time.Now().Before(deadline) {
-		body = rec.Body.String()
-		if strings.Contains(body, `"type":"LOADED"`) {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	waitBody(t, rec, `"type":"LOADED"`)
 	cancel()
+	<-done
+	body := rec.BodyString()
 	if strings.Contains(body, "secret-role") {
 		t.Fatalf("denied role leaked: %s", body)
+	}
+}
+
+func TestHandlerDeletedDeniedOmitsRole(t *testing.T) {
+	store := rbacevents.NewStore()
+	role := labeledRole("secret-role")
+	store.Upsert("ADDED", role)
+	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, denyAccess{})
+
+	ctx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
+	req.Header.Set("Authorization", "Bearer user-token")
+	rec := newConcurrentRecorder()
+	done := make(chan struct{})
+	go func() {
+		h.ServeHTTP(rec, req)
+		close(done)
+	}()
+	waitBody(t, rec, `"type":"LOADED"`)
+	store.Delete(role)
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	<-done
+	body := rec.BodyString()
+	if strings.Contains(body, "secret-role") || strings.Contains(body, `"type":"DELETED"`) {
+		t.Fatalf("denied delete leaked: %s", body)
 	}
 }
 
@@ -287,6 +333,10 @@ func TestSSARAccessListThenGet(t *testing.T) {
 type errAccess struct{}
 
 func (errAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
+	return false, errors.New("ssar down")
+}
+
+func (errAccess) CanSeeDeleted(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
 	return false, errors.New("ssar down")
 }
 
@@ -370,7 +420,7 @@ func TestHandlerSnapshotUserListFallback(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer good")
-	rec := newSyncRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
@@ -392,47 +442,27 @@ func TestHandlerSnapshotUserListFallback(t *testing.T) {
 	}
 }
 
-func TestHandlerLiveEventsAndDeletedBypass(t *testing.T) {
+func TestHandlerLiveEventsDenied(t *testing.T) {
 	store := rbacevents.NewStore()
 	h := rbacevents.NewHandler(store, rbacevents.StaticAuth{OK: true}, denyAccess{})
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := newSyncRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
 		close(done)
 	}()
-	deadline := time.Now().Add(2 * time.Second)
-	for time.Now().Before(deadline) {
-		if strings.Contains(rec.BodyString(), `"type":"LOADED"`) {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
+	waitBody(t, rec, `"type":"LOADED"`)
 
 	live := labeledRole("live-role")
 	store.Upsert("MODIFIED", live)
 	time.Sleep(50 * time.Millisecond)
-	if strings.Contains(rec.BodyString(), "live-role") {
-		cancel()
-		<-done
-		t.Fatalf("denied live role leaked")
-	}
-
-	store.Delete(live)
-	deadline = time.Now().Add(2 * time.Second)
-	for time.Now().Before(deadline) {
-		if strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
-			break
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
 	cancel()
 	<-done
-	if !strings.Contains(rec.BodyString(), `"type":"DELETED"`) {
-		t.Fatalf("missing DELETED %s", rec.BodyString())
+	if strings.Contains(rec.BodyString(), "live-role") {
+		t.Fatalf("denied live role leaked")
 	}
 }
 
@@ -443,7 +473,7 @@ func TestHandlerSSARErrorSkipsSnapshotRole(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	req := httptest.NewRequest(http.MethodGet, "/events/rbac", nil).WithContext(ctx)
 	req.Header.Set("Authorization", "Bearer user")
-	rec := newSyncRecorder()
+	rec := newConcurrentRecorder()
 	done := make(chan struct{})
 	go func() {
 		h.ServeHTTP(rec, req)
