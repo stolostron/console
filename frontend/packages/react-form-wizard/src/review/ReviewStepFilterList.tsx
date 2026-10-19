@@ -974,7 +974,10 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                       ) : (
                         <>
                           <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                          <DescriptionListDescription id={row.node.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+                          <DescriptionListDescription
+                            id={row.node.id ?? ''}
+                            style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+                          >
                             <span className="wizard-review-inline-value">{valueContent}</span>
                           </DescriptionListDescription>
                         </>

@@ -52,7 +52,7 @@ export function WizTextDetail(props: {
     <Stack>
       <DescriptionListGroup>
         <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={props.id} style={{ whiteSpace: 'pre-wrap' }}>
+        <DescriptionListDescription id={props.id} style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
           <Split>
             <SplitItem isFilled>{props.secret && !showSecrets ? '****************' : stringValue}</SplitItem>
             {props.secret && (

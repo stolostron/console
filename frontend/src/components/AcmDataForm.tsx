@@ -825,7 +825,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
       return (
         <DescriptionListGroup key={input.label}>
           <DescriptionListTerm>{input.label}</DescriptionListTerm>
-          <DescriptionListDescription style={{ whiteSpace: 'pre-wrap' }}>
+          <DescriptionListDescription style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
             <Split>
               <SplitItem isFilled>
                 {input.isSecret && !showSecrets

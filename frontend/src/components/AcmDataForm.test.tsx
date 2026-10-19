@@ -5,7 +5,13 @@ import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
-import { AcmDataFormInput, AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
+import {
+  AcmDataFormDetails,
+  AcmDataFormInput,
+  AcmDataFormPage,
+  generalValidationMessage,
+  requiredValidationMessage,
+} from './AcmDataForm'
 import { clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
@@ -176,6 +182,60 @@ describe('ACMDataForm', () => {
       // Banner sits between header and form content (not inside the drawer form section only)
       const header = screen.getByRole('heading', { name: 'Test form' })
       expect(header.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+  })
+
+  describe('details-mode secret values (ACM-48319)', () => {
+    const longSecret = `{"auths":{"registry.redhat.io":{"auth":"${'E2OFJJNjdZWUY2ODZmQWhjNW9mMUM3TDNESHdDU'.repeat(20)}"}}}`
+    const multilineSecret = ['-----BEGIN CERTIFICATE-----', 'A'.repeat(600), '', 'A'.repeat(600), ''].join('\n')
+
+    function detailsFormData(value: string): FormData {
+      return {
+        title: 'Credential',
+        sections: [
+          {
+            type: 'Section',
+            title: 'Pull secret',
+            inputs: [
+              {
+                id: 'pullSecret',
+                type: 'TextArea',
+                label: 'Pull secret',
+                value,
+                onChange: () => undefined,
+                isSecret: true,
+              },
+            ],
+          },
+        ],
+        submit: () => undefined,
+        cancel: () => undefined,
+        submitText: 'Submit',
+        submittingText: 'Submitting',
+        reviewTitle: 'Review',
+        reviewDescription: 'Review',
+        cancelLabel: 'Cancel',
+        nextLabel: 'Next',
+        backLabel: 'Back',
+        stateToData: () => [{}],
+      }
+    }
+
+    test.each([
+      ['a long single-line secret', longSecret],
+      ['a multiline secret', multilineSecret],
+    ])('revealing %s keeps the value wrappable instead of widening the page', async (_name, value) => {
+      const { container } = render(<AcmDataFormDetails formData={detailsFormData(value)} />)
+
+      expect(screen.getByText('****************')).toBeInTheDocument()
+
+      await clickElement(container.querySelector('button') as HTMLElement)
+
+      const description = container.querySelector('.pf-v6-c-description-list__description') as HTMLElement
+      expect(description).toBeInTheDocument()
+
+      expect(description).toHaveStyle({ whiteSpace: 'pre-wrap' })
+      expect(description).toHaveStyle({ overflowWrap: 'anywhere' })
     })
   })
 })

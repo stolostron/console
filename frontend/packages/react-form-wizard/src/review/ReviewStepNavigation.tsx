@@ -508,7 +508,10 @@ export function ReviewPenHoverZone({
       onKeyDown={zoneClickable ? onZoneKeyDown : undefined}
     >
       <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-      <DescriptionListDescription id={descriptionListDescriptionId ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+      <DescriptionListDescription
+        id={descriptionListDescriptionId ?? ''}
+        style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
+      >
         <span className="wizard-review-inline-value wizard-review-dl-pen-inline-row">
           <span className="wizard-review-dl-pen-value">{children}</span>
           <span className="wizard-review-pen-controls wizard-review-pen-controls--dl-inline">
