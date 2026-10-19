@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 func authOK(_ http.ResponseWriter, _ *http.Request) (string, bool) {
@@ -61,7 +62,7 @@ func TestPostProxiesUserTokenAndStripsCookie(t *testing.T) {
 		gotCT = r.Header.Get("Content-Type")
 		gotXFF = r.Header.Get("X-Forwarded-For")
 		gotBody, _ = io.ReadAll(r.Body)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"data":{"searchResult":[]}}`))
 	}))
 	defer upstream.Close()
@@ -72,7 +73,7 @@ func TestPostProxiesUserTokenAndStripsCookie(t *testing.T) {
 	})
 	req := httptest.NewRequest(http.MethodPost, "/proxy/search", strings.NewReader(`{"query":"{ __typename }"}`))
 	req.Header.Set("Authorization", "Bearer user-token")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	req.Header.Set("Cookie", "session=secret")
 	req.Header.Set("X-Forwarded-For", "1.2.3.4")
 	rec := httptest.NewRecorder()
@@ -92,13 +93,13 @@ func TestPostProxiesUserTokenAndStripsCookie(t *testing.T) {
 	if gotPath != "/searchapi/graphql" {
 		t.Fatalf("path %q", gotPath)
 	}
-	if gotCT != "application/json" {
+	if gotCT != httpx.MIMEJSON {
 		t.Fatalf("content-type %q", gotCT)
 	}
 	if string(gotBody) != `{"query":"{ __typename }"}` {
 		t.Fatalf("body %s", gotBody)
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatalf("resp content-type %q", rec.Header().Get("Content-Type"))
 	}
 }
@@ -461,11 +462,26 @@ func TestCheckConsoleOrigin(t *testing.T) {
 		{name: "http host case fold", host: "console.example:4000", origin: "http://CONSOLE.EXAMPLE:4000", want: true},
 		{name: "foreign host", host: "console.example:4000", origin: "http://evil.example", want: false},
 		{name: "invalid origin", host: "console.example:4000", origin: "://bad", want: false},
-		{name: "tls https same host", host: "console.example:4000", origin: "https://console.example:4000", tls: true, want: true},
-		{name: "tls rejects http same host", host: "console.example:4000", origin: "http://console.example:4000", tls: true, want: false},
-		{name: "forwarded https same host", host: "console.example:4000", origin: "https://console.example:4000", fwd: "https", want: true},
-		{name: "forwarded https rejects http", host: "console.example:4000", origin: "http://console.example:4000", fwd: "https", want: false},
-		{name: "http rejects https same host", host: "console.example:4000", origin: "https://console.example:4000", want: false},
+		{
+			name: "tls https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", tls: true, want: true,
+		},
+		{
+			name: "tls rejects http same host", host: "console.example:4000",
+			origin: "http://console.example:4000", tls: true, want: false,
+		},
+		{
+			name: "forwarded https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", fwd: "https", want: true,
+		},
+		{
+			name: "forwarded https rejects http", host: "console.example:4000",
+			origin: "http://console.example:4000", fwd: "https", want: false,
+		},
+		{
+			name: "http rejects https same host", host: "console.example:4000",
+			origin: "https://console.example:4000", want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

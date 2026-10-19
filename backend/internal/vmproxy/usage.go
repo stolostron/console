@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -85,7 +86,7 @@ type filesystemType struct {
 func (h *Handler) usage(w http.ResponseWriter, r *http.Request, token, path string) {
 	cluster, namespace, ok := parseUsagePath(path)
 	if !ok || cluster == "" || namespace == "" {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte(`{"error":"Cluster name and namespace are required"}`))
 		return
@@ -102,7 +103,7 @@ func (h *Handler) usage(w http.ResponseWriter, r *http.Request, token, path stri
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	enc, _ := json.Marshal(result)
 	_, _ = w.Write(enc)
 }
@@ -225,7 +226,7 @@ func (h *Handler) getJSON(ctx context.Context, rawURL, token string, dest any) e
 		return err
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	resp, err := h.addonClient.Do(req)
 	if err != nil {
 		return err

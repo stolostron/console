@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -107,7 +108,7 @@ func (h *Handler) username(w http.ResponseWriter, r *http.Request) {
 	if result.Authenticated && result.Username != "" {
 		username = result.Username
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
 		"statusCode": http.StatusOK,
 		"body": map[string]string{
@@ -144,7 +145,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		obj, getErr := client.Get(ctx, name, metav1.GetOptions{})
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if getErr != nil {
 			if apierrors.IsNotFound(getErr) {
 				_, _ = w.Write([]byte("null"))
@@ -182,7 +183,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 			},
 		}}
 		created, createErr := client.Create(ctx, obj, metav1.CreateOptions{})
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if createErr != nil {
 			applog.Logger().Error("create userpreference failed", "error", createErr)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -198,7 +199,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		patched, patchErr := client.Patch(ctx, name, "application/json-patch+json", body, metav1.PatchOptions{})
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if patchErr != nil {
 			applog.Logger().Error("patch userpreference failed", "error", patchErr)
 			w.WriteHeader(http.StatusInternalServerError)
@@ -217,7 +218,7 @@ func preferenceName(username string) string {
 }
 
 func writeJSONNull(w http.ResponseWriter, status int) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	w.WriteHeader(status)
 	_, _ = w.Write([]byte("null"))
 }

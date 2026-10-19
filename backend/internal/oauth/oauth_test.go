@@ -20,6 +20,7 @@ import (
 	"k8s.io/client-go/dynamic"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/oauth"
 )
 
@@ -130,10 +131,10 @@ func TestCallback_SetsCookieAndRedirects(t *testing.T) {
 		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
 			t.Errorf("content-type %q", r.Header.Get("Content-Type"))
 		}
-		if r.Header.Get("Accept") != "application/json" {
+		if r.Header.Get(httpx.HeaderAccept) != httpx.MIMEJSON {
 			t.Errorf("accept %q", r.Header.Get("Accept"))
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"sha256~user-token","token_type":"Bearer"}`))
 	}))
 	defer idp.Close()
@@ -179,7 +180,7 @@ func TestCallback_SetsCookieAndRedirects(t *testing.T) {
 
 func TestCallback_ProductionSecureCookieAndIDToken(t *testing.T) {
 	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"not-this","id_token":"header.payload.sig","token_type":"Bearer"}`))
 	}))
 	defer idp.Close()
@@ -221,7 +222,7 @@ func TestCallback_Errors(t *testing.T) {
 	}
 
 	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"token_type":"Bearer"}`))
 	}))
 	defer idp.Close()
@@ -242,7 +243,7 @@ func TestRefresh_UsesRefreshTokenGrant(t *testing.T) {
 	idp := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		b, _ := io.ReadAll(r.Body)
 		posted, _ = url.ParseQuery(string(b))
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"access_token":"rotated","token_type":"Bearer","expires_in":3600}`))
 	}))
 	defer idp.Close()
@@ -355,7 +356,7 @@ func TestConfigure_TokenEndpoint(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d", rec.Code)
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatalf("content-type %q", rec.Header().Get("Content-Type"))
 	}
 	var body struct {

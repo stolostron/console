@@ -91,17 +91,21 @@ func (c *InformerCache) HasSynced() bool {
 	return true
 }
 
-// List returns objects for a GVR across all matching specs (union).
-func (c *InformerCache) List(gvr schema.GroupVersionResource) []unstructured.Unstructured {
-	if c == nil {
-		return nil
+func objectDedupKey(u *unstructured.Unstructured) string {
+	key := string(u.GetUID())
+	if key == "" {
+		return u.GetNamespace() + "/" + u.GetName()
 	}
-	c.mu.RLock()
-	defer c.mu.RUnlock()
+	return key
+}
+
+// listMatching returns DeepCopy objects from specs that match, deduped by UID/name.
+// Caller must hold c.mu (at least RLock).
+func (c *InformerCache) listMatching(match func(*specRuntime) bool) []unstructured.Unstructured {
 	var out []unstructured.Unstructured
 	seen := map[string]struct{}{}
 	for _, s := range c.states {
-		if s.informer == nil || s.gvr != gvr {
+		if s.informer == nil || !match(s) {
 			continue
 		}
 		for _, obj := range s.informer.GetStore().List() {
@@ -109,10 +113,7 @@ func (c *InformerCache) List(gvr schema.GroupVersionResource) []unstructured.Uns
 			if !ok {
 				continue
 			}
-			key := string(u.GetUID())
-			if key == "" {
-				key = u.GetNamespace() + "/" + u.GetName()
-			}
+			key := objectDedupKey(u)
 			if _, dup := seen[key]; dup {
 				continue
 			}
@@ -123,6 +124,16 @@ func (c *InformerCache) List(gvr schema.GroupVersionResource) []unstructured.Uns
 	return out
 }
 
+// List returns objects for a GVR across all matching specs (union).
+func (c *InformerCache) List(gvr schema.GroupVersionResource) []unstructured.Unstructured {
+	if c == nil {
+		return nil
+	}
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.listMatching(func(s *specRuntime) bool { return s.gvr == gvr })
+}
+
 // ListByKind returns cached objects for apiVersion+kind across matching specs.
 func (c *InformerCache) ListByKind(apiVersion, kind string) []unstructured.Unstructured {
 	if c == nil {
@@ -130,29 +141,9 @@ func (c *InformerCache) ListByKind(apiVersion, kind string) []unstructured.Unstr
 	}
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	var out []unstructured.Unstructured
-	seen := map[string]struct{}{}
-	for _, s := range c.states {
-		if s.informer == nil || s.spec.APIVersion != apiVersion || s.spec.Kind != kind {
-			continue
-		}
-		for _, obj := range s.informer.GetStore().List() {
-			u, ok := asUnstructured(obj)
-			if !ok {
-				continue
-			}
-			key := string(u.GetUID())
-			if key == "" {
-				key = u.GetNamespace() + "/" + u.GetName()
-			}
-			if _, dup := seen[key]; dup {
-				continue
-			}
-			seen[key] = struct{}{}
-			out = append(out, *u.DeepCopy())
-		}
-	}
-	return out
+	return c.listMatching(func(s *specRuntime) bool {
+		return s.spec.APIVersion == apiVersion && s.spec.Kind == kind
+	})
 }
 
 // ForwardedObject is a cache entry that GET /events should include in snapshots.
@@ -200,10 +191,7 @@ func (c *InformerCache) ListForwardedRefs() []ForwardedRef {
 			if !ok {
 				continue
 			}
-			key := string(u.GetUID())
-			if key == "" {
-				key = u.GetNamespace() + "/" + u.GetName()
-			}
+			key := objectDedupKey(u)
 			if _, dup := seen[key]; dup {
 				continue
 			}

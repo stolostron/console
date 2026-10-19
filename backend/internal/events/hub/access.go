@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"sort"
 	"sync"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/informers"
+	"github.com/stolostron/console/backend/internal/ssarcache"
 )
 
 const (
@@ -393,19 +393,13 @@ func (st *tokenState) enforceEntryCap() {
 	if len(st.entries) <= accessCacheMaxEntriesPerToken {
 		return
 	}
-	type pair struct {
-		key ssarKey
-		exp time.Time
-	}
-	all := make([]pair, 0, len(st.entries))
+	items := make([]ssarcache.Timed[ssarKey], 0, len(st.entries))
 	for k, e := range st.entries {
-		all = append(all, pair{k, e.expiry})
+		items = append(items, ssarcache.Timed[ssarKey]{Key: k, Time: e.expiry})
 	}
-	sort.Slice(all, func(i, j int) bool { return all[i].exp.Before(all[j].exp) })
-	extra := len(all) - accessCacheMaxEntriesPerToken
-	for i := 0; i < extra; i++ {
-		delete(st.entries, all[i].key)
-	}
+	ssarcache.EvictOldest(len(st.entries), accessCacheMaxEntriesPerToken, items, func(k ssarKey) {
+		delete(st.entries, k)
+	}, nil)
 }
 
 func (st *tokenState) empty() bool {
@@ -413,64 +407,26 @@ func (st *tokenState) empty() bool {
 		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0
 }
 
-func (a *SSARAccess) StartCleanup(ctx context.Context) {
-	if a == nil {
-		return
-	}
-	go func() {
-		tick := time.NewTicker(accessCleanupEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				a.cleanup(time.Now())
-			}
-		}
-	}()
+// StartCleanup expires SSAR cache entries periodically.
+// The returned channel is closed when the cleanup goroutine exits.
+func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
+	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	for th, st := range a.byToken {
-		for k, e := range st.entries {
-			if !e.expiry.After(now) {
-				delete(st.entries, k)
-			}
-		}
-		st.enforceEntryCap()
-		for ns, e := range st.rules {
-			if !e.expiry.After(now) {
-				delete(st.rules, ns)
-			}
-		}
-		for k, e := range st.kindAccess {
-			if !e.expiry.After(now) {
-				delete(st.kindAccess, k)
-			}
-		}
-		if st.empty() {
-			delete(a.byToken, th)
-		}
-	}
-	if len(a.byToken) <= accessCacheMaxTokens {
-		return
-	}
-	type pair struct {
-		hash string
-		last time.Time
-	}
-	all := make([]pair, 0, len(a.byToken))
-	for h, st := range a.byToken {
-		all = append(all, pair{h, st.last})
-	}
-	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	extra := len(all) - accessCacheMaxTokens
-	for i := 0; i < extra; i++ {
-		delete(a.byToken, all[i].hash)
-	}
+	ssarcache.Sweep(a.byToken, accessCacheMaxTokens,
+		func(st *tokenState) time.Time { return st.last },
+		func(st *tokenState) bool {
+			ssarcache.ExpireIf(st.entries, func(e cacheEntry) bool { return !e.expiry.After(now) })
+			st.enforceEntryCap()
+			ssarcache.ExpireIf(st.rules, func(e timedRules) bool { return !e.expiry.After(now) })
+			ssarcache.ExpireIf(st.kindAccess, func(e timedKindAccess) bool { return !e.expiry.After(now) })
+			return st.empty()
+		},
+		nil,
+	)
 }
 
 func (a *SSARAccess) tokenCount() int {

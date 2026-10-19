@@ -4,6 +4,7 @@ package vmproxy
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	authzv1 "k8s.io/api/authorization/v1"
@@ -132,5 +133,42 @@ func TestUserKubeNilRESTConfig(t *testing.T) {
 	h := &Handler{}
 	if _, err := h.userKube("tok"); err == nil {
 		t.Fatal("expected error")
+	}
+}
+
+func TestFineGrainedRBAC_OptionError(t *testing.T) {
+	h := &Handler{opts: Options{FineGrained: func(context.Context) (bool, error) { return false, errors.New("fail") }}}
+	if h.fineGrainedRBAC(context.Background()) {
+		t.Fatal("expected false on error")
+	}
+}
+
+func TestCanCreateMCA_UserKubeError(t *testing.T) {
+	h := &Handler{opts: Options{UserKube: func(string) (kubernetes.Interface, error) {
+		return nil, errors.New("no kube")
+	}}}
+	if h.canCreateMCA(context.Background(), "tok", "ns") {
+		t.Fatal("expected false")
+	}
+}
+
+func TestCanCreateMCA_SSError(t *testing.T) {
+	client := kubefake.NewSimpleClientset()
+	client.PrependReactor("create", "selfsubjectaccessreviews", func(k8stesting.Action) (bool, runtime.Object, error) {
+		return true, nil, errors.New("ssar failed")
+	})
+	h := &Handler{opts: Options{UserKube: func(string) (kubernetes.Interface, error) { return client, nil }}}
+	if h.canCreateMCA(context.Background(), "tok", "ns") {
+		t.Fatal("expected false")
+	}
+}
+
+func TestUserKube_CustomClient(t *testing.T) {
+	h := &Handler{opts: Options{UserKube: func(string) (kubernetes.Interface, error) {
+		return kubefake.NewSimpleClientset(), nil
+	}}}
+	client, err := h.userKube("tok")
+	if err != nil || client == nil {
+		t.Fatalf("client %v err %v", client, err)
 	}
 }

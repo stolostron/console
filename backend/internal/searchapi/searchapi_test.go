@@ -5,11 +5,14 @@ package searchapi_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
 
@@ -55,7 +58,7 @@ func TestSearchAndPing(t *testing.T) {
 		body, _ := io.ReadAll(r.Body)
 		var payload map[string]any
 		_ = json.Unmarshal(body, &payload)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		if q, _ := payload["query"].(string); q == searchapi.NewQuery().Query {
 			_, _ = w.Write([]byte(`{"data":{"searchResult":[{"items":[{"name":"a"}],"related":[]}]}}`))
 			return
@@ -96,6 +99,58 @@ func TestSearchMessageError(t *testing.T) {
 	if err == nil || err.Error() != "boom" {
 		t.Fatalf("err %v", err)
 	}
+}
+
+func TestClientDiscovery(t *testing.T) {
+	c := &searchapi.Client{
+		SearchAPIURL: "https://search.example",
+		Namespace:    "ns",
+		Federated:    func() bool { return true },
+	}
+	d := c.Discovery()
+	if d.SearchAPIURL != c.SearchAPIURL || d.Namespace != "ns" {
+		t.Fatalf("discovery %+v", d)
+	}
+}
+
+func TestSearchUsesDefaultHTTPClient(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"data":{"searchResult":[]}}`))
+	}))
+	defer ts.Close()
+	c := &searchapi.Client{SearchAPIURL: ts.URL, Token: "tok"}
+	if _, err := c.Search(context.Background(), searchapi.NewQuery()); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestPostInvalidJSONResponse(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`not-json`))
+	}))
+	defer ts.Close()
+	c := &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL}
+	_, err := c.Search(context.Background(), searchapi.NewQuery())
+	if err == nil || !strings.Contains(err.Error(), "parse search response") {
+		t.Fatalf("err %v", err)
+	}
+}
+
+func TestPingNoData(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write([]byte(`{"data":null}`))
+	}))
+	defer ts.Close()
+	c := &searchapi.Client{HTTP: ts.Client(), SearchAPIURL: ts.URL}
+	ok, err := c.Ping(context.Background())
+	if err == nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+}
+
+func TestLogSearchError(t *testing.T) {
+	searchapi.LogSearchError("op", nil)
+	searchapi.LogSearchError("op", fmt.Errorf("boom"))
 }
 
 func TestSearchNon2xx(t *testing.T) {

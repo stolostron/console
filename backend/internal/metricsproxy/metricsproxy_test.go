@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 )
 
@@ -67,7 +68,7 @@ func TestPrometheusRewritesToAPIV1(t *testing.T) {
 		capturedQuery = r.URL.RawQuery
 		capturedAuth = r.Header.Get("Authorization")
 		capturedMu.Unlock()
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.Header().Set("Audit-Id", "drop")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"success"}`))
@@ -77,7 +78,7 @@ func TestPrometheusRewritesToAPIV1(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodGet, ts.URL+"/multicloud/prometheus/query?query=ALERTS", nil)
 	req.Header.Set("Authorization", "Bearer user-token")
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	req.Header.Set("X-Custom", "drop")
 	resp, err := ts.Client().Do(req)
 	if err != nil {
@@ -105,7 +106,7 @@ func TestPrometheusRewritesToAPIV1(t *testing.T) {
 	if string(body) != `{"status":"success"}` {
 		t.Fatalf("body %s", body)
 	}
-	if resp.Header.Get("Content-Type") != "application/json" {
+	if resp.Header.Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatal("missing Content-Type")
 	}
 	if resp.Header.Get("Audit-Id") != "" {
@@ -208,7 +209,7 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/prometheus/query", strings.NewReader(`{"q":"up"}`))
 	req.Header.Set("Authorization", "Bearer t")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	req.Header.Set("X-Custom-Header", "drop-me")
 	resp, err := ts.Client().Do(req)
 	if err != nil {
@@ -221,7 +222,7 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 	if captured.Get("X-Custom-Header") != "" {
 		t.Fatal("custom header should not be forwarded")
 	}
-	if captured.Get("Content-Type") != "application/json" {
+	if captured.Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatal("missing Content-Type")
 	}
 }

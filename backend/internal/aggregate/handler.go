@@ -11,6 +11,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 )
 
 // Handler serves POST /aggregate/{applications,statuses,appSetData}.
@@ -81,7 +82,7 @@ func writeJSON(w http.ResponseWriter, v any) {
 }
 
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	w.WriteHeader(status)
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
