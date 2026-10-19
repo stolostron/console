@@ -1,33 +1,61 @@
 # Backend Internal Architecture
 
-This document outlines the architecture of the `backend/internal` directory, showing the file tree sorted by component size (number of files).
+This document outlines the architecture of the `backend/internal` directory.
+
+## Handler → Paths
+
+| Handler | Paths |
+|---------|-------|
+| [health.go](internal/health/health.go) | `GET /livenessProbe`, `GET /readinessProbe`, `GET /ping` |
+| [rbac/handler.go](internal/events/rbac/handler.go) | `GET /events/rbac` |
+| [hub/handler.go](internal/events/hub/handler.go) | `GET /events` |
+| [aggregate/handler.go](internal/aggregate/handler.go) | `POST /aggregate/*` |
+| [proxy.go](internal/searchproxy/proxy.go) | `ALL /proxy/search` |
+| [rosa.go](internal/rosa/rosa.go) | `POST /aws-account-ids`, `/aws-billing-accounts`, `/oidc-configs`, `/regions`, `/cluster-name-check`, `/sts-role-arns`, `/vpcs`, `/sts-ocm-role`, `/sts-user-role`, `/openshift-versions`, `/machine-types` |
+| [ansibletower.go](internal/ansibletower/ansibletower.go) | `POST /ansibletower` |
+| [placementdebug.go](internal/placementdebug/placementdebug.go) | `POST /placement-debug` |
+| [upgraderisks.go](internal/upgraderisks/upgraderisks.go) | `POST /upgrade-risks-prediction` |
+| [k8sproxy.go](internal/k8sproxy/k8sproxy.go) | `ALL /api`, `ALL /api/*`, `ALL /apis`, `ALL /apis/*`, `GET /version` |
+| [oauth.go](internal/oauth/oauth.go) | `GET /configure`, `/login`, `/login/callback`, `/logout` |
+| [mcproxy.go](internal/mcproxy/mcproxy.go) | `ALL /managedclusterproxy/*` |
+| [metricsproxy.go](internal/metricsproxy/metricsproxy.go) | `GET /prometheus/*`, `GET /observability/*` |
+| [vmproxy/handler.go](internal/vmproxy/handler.go) | `GET /virtualmachines/get/*`, `ALL /virtualmachines/*`, `ALL /virtualmachineinstances/*`, `GET /virtualmachinesnapshots/get/*`, `ALL /virtualmachinesnapshots/*`, `ALL /virtualmachinerestores`, `GET /vmResourceUsage/*` |
+| [user.go](internal/user/user.go) | `GET /authenticated`, `GET /username`, `ALL /userpreference` |
+| [clusterinfo.go](internal/clusterinfo/clusterinfo.go) | `GET /hub`, `/cluster-version`, `/hypershift-status`, `/multiclusterhub/components`, `/multiclusterengine/components`, `/apiPaths`, `ALL /operatorCheck` |
+| [informers/handler.go](internal/informers/handler.go) | `GET /debug/informer-snapshot` |
+| [static.go](internal/static/static.go) | `GET /*` (static fallback) |
+
+All routes are also registered under `/multicloud` prefix.
+
+## Folder Directory
 
 - **cmd/console/** - Process entry point.
-  - [main.go](cmd/console/main.go) - Main application entry point. It orchestrates the setup and initialization of the backend server by calling:
-    - [`config.Load()`](internal/config/config.go) to load environment variables and configuration.
-    - [`auth.LoadServiceAccount()`](internal/auth/auth.go), [`auth.RESTConfig()`](internal/auth/auth.go), and [`auth.NewTokenReviewer()`](internal/auth/auth.go) to set up authentication and Kubernetes client configurations.
+  - [main.go](cmd/console/main.go) - Main application entry point. Key initialization steps (not exhaustive):
+    - **[`server.Handler()`](internal/server/server.go), [`server.ListenAndServe()`](internal/server/server.go) to construct the main router mux and start the HTTP/TLS server.**
+    - **[`rosa.New()`](internal/rosa/rosa.go) to set up the ROSA HCP wizard proxy (11 POST routes).**
+    - **[`clusterinfo.New()`](internal/clusterinfo/clusterinfo.go) to set up cluster information endpoints (`/hub`, `/cluster-version`, `/hypershift-status`, components, `/apiPaths`, `/operatorCheck`).**
+    - **[`vmproxy.New()`](internal/vmproxy/handler.go) to configure VirtualMachine proxy handlers (`/virtualmachines/*`, `/virtualmachineinstances/*`, `/virtualmachinesnapshots/*`, `/vmResourceUsage/*`).**
+    - **[`k8sproxy.New()`](internal/k8sproxy/k8sproxy.go) to set up the hub kube-apiserver passthrough proxy (`/api/*`, `/apis/*`, `/version`).**
+    - [`config.Load()`](internal/config/config.go) to load environment variables and configuration; [`cfg.Watch()`](internal/config/config.go) to live-reload the `config/` directory via fsnotify.
+    - [`auth.LoadServiceAccount()`](internal/auth/auth.go#L63), [`auth.RESTConfig()`](internal/auth/auth.go#L136), and [`auth.NewTokenReviewer()`](internal/auth/auth.go#L255) to set up authentication and Kubernetes client configurations.
     - [`kubernetes.NewForConfig()`](https://pkg.go.dev/k8s.io/client-go/kubernetes#NewForConfig), [`dynamic.NewForConfig()`](https://pkg.go.dev/k8s.io/client-go/dynamic#NewForConfig), and [`discovery.NewDiscoveryClientForConfig()`](https://pkg.go.dev/k8s.io/client-go/discovery#NewDiscoveryClientForConfig) to initialize Kubernetes clients.
-    - [`rbacevents.NewStore()`](internal/events/rbac/store.go), [`rbacevents.NewSSARAccess()`](internal/events/rbac/access.go), and [`rbacevents.NewHandler()`](internal/events/rbac/handler.go) to set up RBAC event handling.
-    - [`informers.New()`](internal/informers/factory.go) with [`informers.DefaultWatchSpecs()`](internal/informers/specs.go) to initialize the hub resource cache.
-    - [`eventshub.New()`](internal/events/hub/hub.go), [`eventshub.NewSSARAccess()`](internal/events/hub/access.go), and [`eventshub.NewHandler()`](internal/events/hub/handler.go) to set up the SSE event hub.
+    - [`rbacevents.NewStore()`](internal/events/rbac/store.go), [`rbacevents.NewSSARAccess()`](internal/events/rbac/access.go), and [`rbacevents.NewHandler()`](internal/events/rbac/handler.go) to set up RBAC event handling. `StartCleanup` begins periodic SSAR cache eviction.
+    - [`informers.New()`](internal/informers/factory.go) with [`informers.DefaultWatchSpecs()`](internal/informers/specs.go) to initialize the hub resource cache. A separate [`informers.RESTConfig()`](internal/informers/factory.go) creates dedicated rate-limited clients for the informer list/watch traffic.
+    - [`eventshub.New()`](internal/events/hub/hub.go), [`eventshub.NewSSARAccess()`](internal/events/hub/access.go), and [`eventshub.NewHandler()`](internal/events/hub/handler.go) to set up the SSE event hub. `StartCleanup` begins periodic SSAR cache eviction. `infCache.SetSink(eventHub)` wires informer callbacks to the hub, and `cfg.OnReload(eventHub.PublishSettings)` re-publishes settings on config change.
     - [`oauth.New()`](internal/oauth/oauth.go) to configure OAuth/OIDC authentication.
     - [`searchapi.Client`](internal/searchapi/searchapi.go) to set up the Search GraphQL client.
-    - [`aggregate.NewEngine()`](internal/aggregate/engine.go), [`aggregate.NewSSARAccess()`](internal/aggregate/rbac.go), and [`aggregate.NewHandler()`](internal/aggregate/handler.go) to initialize the application aggregator cache and search loop.
-    - [`k8sproxy.New()`](internal/k8sproxy/k8sproxy.go) to set up the hub kube-apiserver passthrough proxy.
+    - [`aggregate.NewEngine()`](internal/aggregate/engine.go), [`aggregate.NewSSARAccess()`](internal/aggregate/rbac.go), and [`aggregate.NewHandler()`](internal/aggregate/handler.go) to initialize the application aggregator cache and search loop. `StartCleanup` begins periodic SSAR cache eviction.
+    - Non-production mode adds [`server.WithOAuthLogin()`](internal/server/server.go) for standalone login routes and [`server.WithDebugSnapshot()`](internal/server/server.go) for `GET /debug/informer-snapshot`.
     - [`static.New()`](internal/static/static.go) to configure static asset serving for the frontend.
-    - [`placementdebug.CAWatch`](internal/placementdebug/ca.go) and [`placementdebug.New()`](internal/placementdebug/placementdebug.go) to set up the placement-debug reverse proxy.
-    - [`clusterproxy.Resolver`](internal/clusterproxy/resolver.go) to discover the cluster-proxy-addon-user endpoint.
     - [`mcproxy.New()`](internal/mcproxy/mcproxy.go) to configure the managed-cluster reverse proxy.
     - [`metricsproxy.New()`](internal/metricsproxy/metricsproxy.go) to set up Prometheus and observability reverse proxies.
-    - [`vmproxy.New()`](internal/vmproxy/handler.go) to configure VirtualMachine proxy handlers.
     - [`user.New()`](internal/user/user.go) to set up user info routes.
-    - [`clusterinfo.New()`](internal/clusterinfo/clusterinfo.go) to set up cluster information endpoints.
     - [`searchproxy.New()`](internal/searchproxy/proxy.go) to configure the search GraphQL proxy.
-    - [`rosa.New()`](internal/rosa/rosa.go) to set up the ROSA HCP wizard proxy.
+    - [`placementdebug.New()`](internal/placementdebug/placementdebug.go) to set up the placement-debug reverse proxy.
     - [`ansibletower.New()`](internal/ansibletower/ansibletower.go) to configure the Ansible Tower proxy.
     - [`upgraderisks.New()`](internal/upgraderisks/upgraderisks.go) to set up the upgrade risks prediction proxy.
-    - [`server.Handler()`](internal/server/server.go) and [`server.ListenAndServe()`](internal/server/server.go) to construct the main router mux and start the HTTP/TLS server.
-    - [`rbacevents.StartInformer()`](internal/events/rbac/informer.go), [`informers.StartCache()`](internal/informers/factory.go), `eventHub.Start()`, and [`aggEng.Start()`](internal/aggregate/engine.go) to start background cache and informer loops.
+    - [`rbacevents.StartInformer()`](internal/events/rbac/informer.go) to start the ClusterRole informer (always runs).
+    - [`informers.StartCache()`](internal/informers/factory.go), `eventHub.Start()`, and [`aggEng.Start()`](internal/aggregate/engine.go) to start background cache and informer loops (only when `DISABLE_EVENTS` is false).
 - **informers/** - Watches and caches hub resources for application aggregation and the server-sent event (SSE) stream.
   - [factory.go](internal/informers/factory.go) - Creates and starts resource informers, limits concurrent startup, and tracks initial cache synchronization. Configures dedicated API request rate limits for the informer client.
   - [specs.go](internal/informers/specs.go) - Defines the hub resources to watch, their label and field selectors, resource scope, and whether changes are forwarded to SSE clients.
@@ -38,101 +66,108 @@ This document outlines the architecture of the `backend/internal` directory, sho
   - [gvr.go](internal/informers/gvr.go) - Resolves API version and kind to a group/version/resource (GVR) through Kubernetes discovery and identifies unavailable or forbidden resources.
   - [retry.go](internal/informers/retry.go) - Defines retry delays with jitter, the initial synchronization timeout, and the disabled periodic resync setting. Provides retry waits that stop when the context is canceled.
 - **events/** - SSE (Server-Sent Events) resource watch stream and event hubs.
-  - **hub/** - Informer fan-out, snapshot packets, and per-user RBAC for events.
-    - [snapshot.go](internal/events/hub/snapshot.go) - Modifies and formats events for the SSE hub.
-    - [access.go](internal/events/hub/access.go) - AccessChecker decides whether a user may receive an SSE event.
-    - [event.go](internal/events/hub/event.go) - Event is one SSE data payload for GET /events.
-    - [flap.go](internal/events/hub/flap.go) - Handles connection flap configuration and logic.
-    - [handler.go](internal/events/hub/handler.go) - Authenticator validates a user token.
-    - [hub.go](internal/events/hub/hub.go) - Implements the core event hub logic.
-    - [access_rules.go](internal/events/hub/access_rules.go) - SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only.
-    - [encode.go](internal/events/hub/encode.go) - Encodes event stream payloads.
-    - [frame.go](internal/events/hub/frame.go) - FormatSSE is the Node createEventString frame: id + data JSON + blank line.
-  - **rbac/** - ClusterRole watch logic and informer.
-    - [informer.go](internal/events/rbac/informer.go) - StartInformer watches vm-clusterroles ClusterRoles into store until ctx is canceled.
-    - [store.go](internal/events/rbac/store.go) - Event is a watch-style change from the ClusterRole informer.
-    - [handler.go](internal/events/rbac/handler.go) - Authenticator validates a user token.
-    - [access.go](internal/events/rbac/access.go) - AccessChecker decides whether a user token may see a ClusterRole.
-    - [list.go](internal/events/rbac/list.go) - Implements listVMClusterRolesForToken function.
-- **aggregate/** - Application inventory, informer cache, and search loop.
-  - [engine.go](internal/aggregate/engine.go) - Engine holds the application cache and Search loop.
-  - [types.go](internal/aggregate/types.go) - Package aggregate serves POST /aggregate/{applications,statuses,appSetData}.
-  - [argo.go](internal/aggregate/argo.go) - Implements relatedKinds function.
-  - [clusters.go](internal/aggregate/clusters.go) - Cluster is the aggregator subset of a managed cluster.
-  - [lister.go](internal/aggregate/lister.go) - Lister is InformerCache.ListByKind (or a test fake).
-  - [transform.go](internal/aggregate/transform.go) - Implements getApplicationType function.
-  - [ocp.go](internal/aggregate/ocp.go) - Implements addOCPQueryInputs function.
-  - [pushmodel.go](internal/aggregate/pushmodel.go) - Handles push model queries for aggregate endpoints.
-  - [pages.go](internal/aggregate/pages.go) - Implements nextAppPageChunk function.
-  - [status.go](internal/aggregate/status.go) - Implements extractMessages function.
-  - [appset.go](internal/aggregate/appset.go) - Defines requestStatuses type.
-  - [handler.go](internal/aggregate/handler.go) - Handler serves POST /aggregate/{applications,statuses,appSetData}.
-  - [rbac.go](internal/aggregate/rbac.go) - Access filters aggregated rows with SSAR (and ManagedClusterView create for remote apps).
-  - [pagination.go](internal/aggregate/pagination.go) - FilterSelections is filter id → selected values.
-  - [fuse.go](internal/aggregate/fuse.go) - fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over name/namespace/clusters.
-- **vmproxy/** - VirtualMachine proxy handlers, actions, and resource-usage aggregation.
-  - [units.go](internal/vmproxy/units.go) - Implements parseLeadingInt function.
-  - [usage.go](internal/vmproxy/usage.go) - Defines usageMetrics type.
-  - [handler.go](internal/vmproxy/handler.go) - Options configure VirtualMachine proxy handlers.
-  - [hub.go](internal/vmproxy/hub.go) - Implements fineGrainedRBAC function.
-  - [kubevirt.go](internal/vmproxy/kubevirt.go) - Implements kubeVirtAPI function.
+  - **sse/** - Shared SSE authentication (`Authenticator`, `APIAuth`) used by both the hub and rbac event handlers.
+    - [auth.go](internal/events/sse/auth.go) - `Authenticator` interface and `APIAuth` implementation that validates user tokens via `GET /api`.
+  - **hub/** - Informer fan-out, snapshot packets, and per-user RBAC for `GET /events`.
+    - [hub.go](internal/events/hub/hub.go) - Hub fans informer events out to connected SSE clients; manages per-client channels, blocked-client purging, and keepalive pings.
+    - [handler.go](internal/events/hub/handler.go) - HTTP handler for `GET /events`: authenticates the user token, streams snapshot then live events, and writes keepalive frames.
+    - [access.go](internal/events/hub/access.go) - Per-user RBAC gate: cluster-scoped `list` SSAR → SelfSubjectRulesReview per namespace → SSAR fallback. 60s TTL cache keyed by token hash.
+    - [access_rules.go](internal/events/hub/access_rules.go) - SelfSubjectRulesReview evaluation: classifies each namespace as deny-all, allow-all, or allow-names. Cluster-scoped kinds probe the `default` namespace only.
+    - [snapshot.go](internal/events/hub/snapshot.go) - Builds the initial snapshot packet sequence (START → SETTINGS → priority resources with EOP → LOADED) and converts informer objects to SSE events.
+    - [event.go](internal/events/hub/event.go) - Event type: one SSE data payload carrying a GVR, type (MODIFIED/DELETED/SETTINGS/…), and optional resource object.
+    - [encode.go](internal/events/hub/encode.go) - Negotiates gzip/deflate from `Accept-Encoding` and writes compressed SSE streams.
+    - [frame.go](internal/events/hub/frame.go) - Formats an SSE wire frame (`id:` + `data:` JSON + blank line), matching the Node `createEventString` layout.
+    - [flap.go](internal/events/hub/flap.go) - Connection-flap detection: tracks rapid reconnects and backs off snapshot delivery to protect the hub under client churn.
+  - **rbac/** - `GET /events/rbac` ClusterRole watch stream.
+    - [informer.go](internal/events/rbac/informer.go) - Runs a ClusterRole informer filtered by `vm-clusterroles` label; feeds add/update/delete events into the store.
+    - [store.go](internal/events/rbac/store.go) - Thread-safe ClusterRole store with snapshot and delta retrieval for SSE streaming.
+    - [handler.go](internal/events/rbac/handler.go) - HTTP handler for `GET /events/rbac`: authenticates the user, streams matching ClusterRoles with keepalive pings.
+    - [access.go](internal/events/rbac/access.go) - Per-user SSAR check for ClusterRole visibility; caches results with 60s TTL.
+    - [list.go](internal/events/rbac/list.go) - Lists `vm-clusterroles` ClusterRoles using the user's own token for fine-grained RBAC filtering.
+- **aggregate/** - `POST /aggregate/{applications,statuses,appSetData}` application inventory.
+  - [handler.go](internal/aggregate/handler.go) - HTTP handler for the three aggregate endpoints; authenticates via `GET /api`, delegates to Engine, and returns JSON.
+  - [pagination.go](internal/aggregate/pagination.go) - Request body types (`FilterSelections`, `SortBy`, `RequestListView`) and the `/applications` paginate handler: decodes the request, reads the cached app list, and applies server-side preprocessing when item count exceeds the breakpoint.
+  - [engine.go](internal/aggregate/engine.go) - Holds the application cache and Search polling loop; rebuilds local apps from informer cache and fetches remote status from Search on a configurable interval.
+  - [lister.go](internal/aggregate/lister.go) - `Lister` interface wrapping `InformerCache.ListByKind`; includes `MapLister` test double.
+  - [clusters.go](internal/aggregate/clusters.go) - Extracts managed-cluster metadata (name, API URL, console URL) from informer cache for aggregation.
+  - [transform.go](internal/aggregate/transform.go) - Classifies unstructured objects into application types (Subscription, Argo, Flux, OCP, AppSet).
+  - [types.go](internal/aggregate/types.go) - Constants (search limits, pagination breakpoints, intervals), cache keys, and JSON wire format types used throughout the package.
+  - [argo.go](internal/aggregate/argo.go) - Extracts related-resource kinds from Argo ApplicationSet and Application objects for Search queries.
+  - [ocp.go](internal/aggregate/ocp.go) - Builds Search query inputs for remote OCP Deployment-based applications.
+  - [pushmodel.go](internal/aggregate/pushmodel.go) - Builds Search query inputs for push-model pod status on AppSet-owned applications.
+  - [pages.go](internal/aggregate/pages.go) - Chunks cached application lists into pages for incremental Search status fetching.
+  - [status.go](internal/aggregate/status.go) - Extracts status messages and condition fields from Search result items into `StatusEntry` rows.
+  - [fuse.go](internal/aggregate/fuse.go) - Client-side search port: Fuse.js 6.6.2 `ignoreLocation` + threshold 0.3 over name/namespace/clusters when item count exceeds 500.
+  - [rbac.go](internal/aggregate/rbac.go) - Windowed SSAR access filter for aggregated rows; also checks ManagedClusterView `create` for remote Argo/Flux apps.
+  - [appset.go](internal/aggregate/appset.go) - Fetches full ApplicationSet objects with the user token for the `/appSetData` endpoint.
+- **ssarcache/** - Shared SSAR result cache and periodic cleanup used by the events hub, RBAC events, and aggregate access checkers.
+  - [ssarcache.go](internal/ssarcache/ssarcache.go) - Token-keyed SSAR result cache with periodic expiry (`StartCleanup`).
+- **httpx/** - Shared HTTP helpers and request/response utilities.
+  - [httpx.go](internal/httpx/httpx.go) - Common HTTP request/response helpers.
+- **vmproxy/** - VirtualMachine CRUD, lifecycle actions, and resource-usage aggregation via managed-cluster proxy.
+  - [handler.go](internal/vmproxy/handler.go) - Routes `/virtualmachines/*`, `/virtualmachineinstances/*`, `/virtualmachinesnapshots/*`, and `/vmResourceUsage/*` through the cluster-proxy addon with the user token.
+  - [hub.go](internal/vmproxy/hub.go) - Fine-grained RBAC: SSAR checks for VirtualMachine `get`/`update`/`delete` and subresource actions before proxying.
+  - [kubevirt.go](internal/vmproxy/kubevirt.go) - Maps handler URL paths to KubeVirt and subresource API paths (`kubevirt.io`, `subresources.kubevirt.io`, `snapshot.kubevirt.io`).
+  - [usage.go](internal/vmproxy/usage.go) - Queries Prometheus on the managed cluster for VM CPU, memory, and storage metrics; normalizes units and returns a usage summary.
+  - [units.go](internal/vmproxy/units.go) - Parses Kubernetes resource quantities (Ki/Mi/Gi/m suffixes) into comparable integer values.
 - **tlsconfig/** - TLS certificate reloading, ciphers, and security profile configuration.
-  - [watch.go](internal/tlsconfig/watch.go) - Watches for TLS config changes.
-  - [profile.go](internal/tlsconfig/profile.go) - SecurityProfile is apiserver.spec.tlsSecurityProfile (config.openshift.io/v1).
-  - [reloader.go](internal/tlsconfig/reloader.go) - Dynamically reloads TLS certificates.
-  - [ciphers.go](internal/tlsconfig/ciphers.go) - Maps OpenSSL cipher names to IANA IDs.
+  - [watch.go](internal/tlsconfig/watch.go) - Watches the OpenShift `APIServer` resource for `tlsSecurityProfile` changes via fsnotify.
+  - [profile.go](internal/tlsconfig/profile.go) - Parses Old/Intermediate/Modern/Custom TLS security profiles from `config.openshift.io/v1` APIServer.
+  - [reloader.go](internal/tlsconfig/reloader.go) - Hot-reloads TLS certificates via `GetConfigForClient`/`GetCertificate` without server restart.
+  - [ciphers.go](internal/tlsconfig/ciphers.go) - Maps OpenSSL cipher suite names to Go `tls` constants (IANA IDs).
 - **oauth/** - OpenShift OAuth/OIDC login, token exchange, and discovery logic.
-  - [oauth.go](internal/oauth/oauth.go) - Info is the OAuth/OIDC discovery subset used by login and token exchange.
-  - [revoke.go](internal/oauth/revoke.go) - RevokeOAuthAccessToken deletes an OAuthAccessToken with gracePeriodSeconds=0.
-  - [token.go](internal/oauth/token.go) - AccessTokenName is the OpenShift OAuthAccessToken object name for a bearer token.
+  - [oauth.go](internal/oauth/oauth.go) - `GET /configure` discovery; standalone `GET /login`, `/login/callback`, `/logout` flows for non-production mode.
+  - [revoke.go](internal/oauth/revoke.go) - Deletes an OAuthAccessToken with `gracePeriodSeconds=0` on logout.
+  - [token.go](internal/oauth/token.go) - Derives the OpenShift OAuthAccessToken object name from a bearer token (SHA-256 prefix).
 - **auth/** - Authentication, TokenReview helper, OCM SSO, and cookie parsing.
-  - [tls.go](internal/auth/tls.go) - Builds TLS configuration from CA bundles.
-  - [auth.go](internal/auth/auth.go) - SetServiceAccountDir overrides the SA mount path (tests).
-  - [ocm.go](internal/auth/ocm.go) - SetOCMTokenURL overrides the Red Hat SSO token endpoint (tests).
+  - [auth.go](internal/auth/auth.go) - Loads projected SA credentials (`LoadServiceAccount`), builds hub `rest.Config` (`RESTConfig`), validates user tokens via `GET /api` (`ValidateUserToken`), and provides a `TokenReviewer` interface backed by the TokenReview API.
+  - [tls.go](internal/auth/tls.go) - Builds `tls.Config` from SA CA bundles for outbound service-to-service calls.
+  - [ocm.go](internal/auth/ocm.go) - OCM SSO client-credentials token exchange (`sso.redhat.com`) for ROSA and Insights proxies.
 - **searchproxy/** - `POST /proxy/search` and graphql-ws relay to search-api.
-  - [ws.go](internal/searchproxy/ws.go) - Implements serveWebSocket function.
-  - [inject.go](internal/searchproxy/inject.go) - InjectConnectionInitAuthorization adds Authorization to a graphql-ws connection_init payload.
-  - [proxy.go](internal/searchproxy/proxy.go) - Defines tokenCtxKey type.
-- **hubresources/** - MCH/MCE components and hub overrides.
-  - [components.go](internal/hubresources/components.go) - Component is an MCH/MCE override component entry.
-  - [hubresources.go](internal/hubresources/hubresources.go) - MCETargetNamespace returns spec.targetNamespace from the first MultiClusterEngine.
+  - [proxy.go](internal/searchproxy/proxy.go) - Reverse proxy to Search GraphQL: authenticates via `GET /api`, forwards the user Bearer token and an allowlisted header set, returns upstream errors as 502/504.
+  - [ws.go](internal/searchproxy/ws.go) - WebSocket relay for graphql-ws subscriptions: upgrades the client connection, dials the upstream Search service, and bidirectionally copies frames.
+  - [inject.go](internal/searchproxy/inject.go) - Rewrites the first graphql-ws `connection_init` payload to inject `Authorization: Bearer <token>` for upstream authentication.
+- **hubresources/** - MCH/MCE component discovery and hub overrides.
+  - [hubresources.go](internal/hubresources/hubresources.go) - Resolves MCE `spec.targetNamespace` and caches MCH namespace for Search and cluster-proxy discovery.
+  - [components.go](internal/hubresources/components.go) - Lists MCH/MCE override component entries for `/multiclusterhub/components` and `/multiclusterengine/components`.
 - **searchapi/** - Search GraphQL client for application aggregation.
-  - [searchapi.go](internal/searchapi/searchapi.go) - Query is the GraphQL search payload used by application aggregation.
-  - [discovery.go](internal/searchapi/discovery.go) - Discovery resolves the Search GraphQL HTTP(S) URL (user proxy and SA client).
+  - [searchapi.go](internal/searchapi/searchapi.go) - SA-authenticated GraphQL client: sends `searchInput` queries with configurable timeouts and retries.
+  - [discovery.go](internal/searchapi/discovery.go) - Resolves the Search service URL: `SEARCH_API_URL` env, or in-cluster `search-search-api.<ns>:4010`, plus `/searchapi/graphql` (or `/federated` when global search is enabled).
 - **placementdebug/** - `POST /placement-debug` reverse proxy and CA ConfigMap watch.
-  - [placementdebug.go](internal/placementdebug/placementdebug.go) - Options configure the placement-debug reverse proxy.
-  - [ca.go](internal/placementdebug/ca.go) - CAWatch lists and watches the OCM placement CA ConfigMap.
+  - [placementdebug.go](internal/placementdebug/placementdebug.go) - Reverse proxy to the OCM placement service; returns 503 when the CA is unavailable.
+  - [ca.go](internal/placementdebug/ca.go) - Watches the `open-cluster-management-hub/ca-bundle-configmap` ConfigMap and exposes the latest CA bundle for TLS verification.
 - **ansibletower/** - `POST /ansibletower`: user-token Secret GET and AAP proxying.
-  - [ansibletower.go](internal/ansibletower/ansibletower.go) - Paths is the AAP pathname allowlist (must match frontend ansiblePaths).
+  - [ansibletower.go](internal/ansibletower/ansibletower.go) - Reads credential Secrets with the user token, enforces a pathname allowlist matching the frontend, and proxies to AAP with `InsecureSkipVerify`.
 - **upgraderisks/** - `POST /upgrade-risks-prediction`: Insights POST chunks and pull-secret extraction.
-  - [upgraderisks.go](internal/upgraderisks/upgraderisks.go) - Defines requestBody type.
+  - [upgraderisks.go](internal/upgraderisks/upgraderisks.go) - Lists `pull-secret` in `openshift-config` with the SA, extracts `cloud.openshift.com` auth, and POSTs cluster IDs to Insights in chunks of 100.
 - **config/** - Runtime settings and process configuration from env and files.
-  - [config.go](internal/config/config.go) - Config is process configuration loaded from env, .env, and the config/ directory.
+  - [config.go](internal/config/config.go) - Loads `.env` and `config/` directory (filename = key); `Watch()` enables fsnotify live-reload with 1s debounce; `OnReload` notifies subscribers.
 - **clusterproxy/** - `cluster-proxy-addon-user` endpoint URL discovery.
-  - [resolver.go](internal/clusterproxy/resolver.go) - Resolver finds the cluster-proxy-addon-user endpoint (env override or MCE target namespace).
+  - [resolver.go](internal/clusterproxy/resolver.go) - Resolves the cluster-proxy-addon-user endpoint from env overrides or by looking up the MCE target namespace at runtime.
 - **health/** - Health probe endpoints.
-  - [health.go](internal/health/health.go) - Probes serves /ping, /livenessProbe, and /readinessProbe.
+  - [health.go](internal/health/health.go) - Serves `/ping`, `/livenessProbe`, and `/readinessProbe` (process-level liveness; no dependency checks).
 - **mcproxy/** - Managed-cluster reverse proxy.
-  - [mcproxy.go](internal/mcproxy/mcproxy.go) - Options configure the managed-cluster reverse proxy.
-- **acceptenc/** - Parses `Accept-Encoding` headers and their q-values.
-  - [acceptenc.go](internal/acceptenc/acceptenc.go) - Package acceptenc parses Accept-Encoding list elements and their q-values.
+  - [mcproxy.go](internal/mcproxy/mcproxy.go) - Routes `/managedclusterproxy/*` to the cluster-proxy addon with the user token; supports HTTP and WebSocket upgrade.
+- **acceptenc/** - `Accept-Encoding` header parsing.
+  - [acceptenc.go](internal/acceptenc/acceptenc.go) - Parses `Accept-Encoding` list elements and their q-values; used by static and SSE encoders to negotiate gzip/deflate/br.
 - **server/** - Main router mux, TLS listener, and HTTP server core.
-  - [server.go](internal/server/server.go) - Defines handlerOptions type.
+  - [server.go](internal/server/server.go) - Builds the chi mux from `server.Option` functions, binds the TLS listener with hot-reload, strips `/multicloud` prefixes, and runs the post-listen startup callback.
 - **user/** - User info routes.
-  - [user.go](internal/user/user.go) - Options configure user route handlers.
+  - [user.go](internal/user/user.go) - Serves `/authenticated`, `/username`, and `/userpreference`; reads/writes `UserPreference` CRs via dynamic client.
 - **static/** - Plugin and SPA static asset serving.
-  - [static.go](internal/static/static.go) - Options configure static asset serving.
-- **cors/** - Development CORS middleware logic.
-  - [cors.go](internal/cors/cors.go) - Middleware that implements CORS logic.
+  - [static.go](internal/static/static.go) - Serves plugin and SPA files with cache headers, CSP, and content-negotiated compression (brotli/gzip via pre-compressed `.br`/`.gz` sidecars).
+- **cors/** - Development CORS middleware.
+  - [cors.go](internal/cors/cors.go) - Answers `OPTIONS` with 200 in non-production; allows credentialed requests from localhost dev origins (ports 3000–3002). No-op in production.
 - **log/** - Logging initialization and `slog` JSON formatting.
-  - [log.go](internal/log/log.go) - Provides logging initialization and configuration.
+  - [log.go](internal/log/log.go) - Configures the process-wide `slog.Logger` with JSON output and dynamic level control.
 - **k8sproxy/** - Hub kube-apiserver passthrough proxy.
-  - [k8sproxy.go](internal/k8sproxy/k8sproxy.go) - TLSConfigFromCA builds TLS config matching Node getDefaultAgent (cluster CA + system roots).
+  - [k8sproxy.go](internal/k8sproxy/k8sproxy.go) - Reverse proxy for `/api`, `/apis`, and `/version`: forwards the user Bearer token to the hub API server with request/response header allowlists. `TLSConfigFromCA` builds TLS matching the Node `getDefaultAgent` (cluster CA + system roots).
 - **clusterinfo/** - Cluster information endpoints.
-  - [clusterinfo.go](internal/clusterinfo/clusterinfo.go) - SupportedOperator names accepted by POST /operatorCheck.
-- **outbound/** - HTTP transport settings, timeouts, and dials.
-  - [transport.go](internal/outbound/transport.go) - Provides HTTP transport settings and timeouts.
+  - [clusterinfo.go](internal/clusterinfo/clusterinfo.go) - Serves `/hub`, `/cluster-version`, `/hypershift-status`, MCH/MCE components, `/apiPaths`, and `POST /operatorCheck` using informer cache and dynamic client.
+- **outbound/** - HTTP transport settings, timeouts, dials, and header allowlists.
+  - [transport.go](internal/outbound/transport.go) - Builds `http.Transport` with dial and response-header timeouts to prevent orphaned goroutines on reverse proxies.
+  - [headers.go](internal/outbound/headers.go) - Request and response header forwarding allowlists shared across reverse proxies.
 - **metricsproxy/** - Prometheus and observability reverse proxies.
-  - [metricsproxy.go](internal/metricsproxy/metricsproxy.go) - New returns a ReverseProxy that rewrites /prometheus or /observability to /api/v1 on target.
+  - [metricsproxy.go](internal/metricsproxy/metricsproxy.go) - Reverse proxy that rewrites `/prometheus` or `/observability` to `/api/v1` on the target backend; forwards the user token and allowlisted headers.
 - **rosa/** - ROSA HCP wizard proxy connecting to OCM and SSO.
-  - [rosa.go](internal/rosa/rosa.go) - Options configure the ROSA wizard proxy.
+  - [rosa.go](internal/rosa/rosa.go) - Proxies ROSA wizard POSTs (`/aws-account-ids`, `/regions`, `/vpcs`, …) to `api.openshift.com` after exchanging OCM client credentials at `sso.redhat.com`.
