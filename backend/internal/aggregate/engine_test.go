@@ -25,6 +25,7 @@ import (
 	"k8s.io/client-go/dynamic/fake"
 	ktesting "k8s.io/client-go/testing"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
 
@@ -152,7 +153,7 @@ func TestAggregateRemoteCachesArgo(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body, _ := io.ReadAll(r.Body)
 		_ = json.Unmarshal(body, &gotQuery)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"data":{"searchResult":[
 			{"items":[{"name":"remote-app","namespace":"argocd","cluster":"remote","healthStatus":"Healthy","syncStatus":"Synced","_uid":"1","destinationNamespace":"ns","destinationName":"in-cluster"}],"related":[]},
 			{"items":[],"related":[]}
@@ -474,7 +475,7 @@ func countingSearch(t *testing.T, hits *atomic.Int32, pingOK bool, first chan st
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"data":{"searchResult":[]}}`))
 	}))
 }

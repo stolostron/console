@@ -14,6 +14,7 @@ import (
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"github.com/stolostron/console/backend/internal/k8sproxy"
 )
 
@@ -164,9 +165,9 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 
 	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/api/v1/namespaces", strings.NewReader(`{"kind":"Namespace"}`))
 	req.Header.Set("Authorization", "Bearer token")
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
 	req.Header.Set("Accept-Encoding", "gzip")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	req.Header.Set("Content-Length", "20")
 	req.Header.Set("X-Custom-Header", "drop-me")
 	resp, err := ts.Client().Do(req)
@@ -181,7 +182,7 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 	if captured.Get("Authorization") != "Bearer token" {
 		t.Fatalf("Authorization %q", captured.Get("Authorization"))
 	}
-	if captured.Get("Accept") != "application/json" {
+	if captured.Get(httpx.HeaderAccept) != httpx.MIMEJSON {
 		t.Fatal("missing Accept")
 	}
 	if captured.Get("X-Custom-Header") != "" {
@@ -194,7 +195,7 @@ func TestRequestHeaderAllowlist(t *testing.T) {
 
 func TestResponseHeaderAllowlist(t *testing.T) {
 	_, h := newTestHandler(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.Header().Set("Cache-Control", "no-cache")
 		w.Header().Set("Audit-Id", "secret")
 		w.WriteHeader(http.StatusOK)
@@ -211,7 +212,7 @@ func TestResponseHeaderAllowlist(t *testing.T) {
 	}
 	defer resp.Body.Close()
 	drainResponse(t, resp)
-	if resp.Header.Get("Content-Type") != "application/json" {
+	if resp.Header.Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatal("missing Content-Type")
 	}
 	if resp.Header.Get("Cache-Control") != "no-cache" {
@@ -263,7 +264,7 @@ func TestStreamsRequestBody(t *testing.T) {
 	body := `{"kind":"Namespace"}`
 	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/apis/apps/v1/namespaces/default/deployments", strings.NewReader(body))
 	req.Header.Set("Authorization", "Bearer token")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	resp, err := ts.Client().Do(req)
 	if err != nil {
 		t.Fatal(err)

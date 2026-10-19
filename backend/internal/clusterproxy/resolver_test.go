@@ -4,6 +4,7 @@ package clusterproxy_test
 
 import (
 	"context"
+	"net/url"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -104,5 +105,87 @@ func TestTargetURL(t *testing.T) {
 	}
 	if u.Scheme != "https" || u.Host != "addon.example.com:443" {
 		t.Fatalf("url %s", u)
+	}
+}
+
+func TestTargetURLEmptyHost(t *testing.T) {
+	_, err := clusterproxy.TargetURL("", "9092")
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestTargetURLDefaultPort(t *testing.T) {
+	u, err := clusterproxy.TargetURL("addon.example.com", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Host != "addon.example.com:9092" {
+		t.Fatalf("host %s", u.Host)
+	}
+}
+
+func TestResolverTargetURL(t *testing.T) {
+	target, _ := url.Parse("http://[::1]:8080/path")
+	r := &clusterproxy.Resolver{Target: target}
+	host, port := r.HostPort(context.Background())
+	if host != "::1" || port != "8080" {
+		t.Fatalf("got %s:%s", host, port)
+	}
+	u, err := r.ProxyURL(context.Background())
+	if err != nil || u != target {
+		t.Fatalf("proxy %v err %v", u, err)
+	}
+	u2, err := r.URL(context.Background())
+	if err != nil || u2 != target {
+		t.Fatalf("url %v err %v", u2, err)
+	}
+}
+
+func TestHostPortWithoutHostOverride(t *testing.T) {
+	dc := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}: "MultiClusterEngineList",
+	}, mceObject("mce-ns"))
+	r := &clusterproxy.Resolver{Dynamic: dc, HostOverride: "route.example.com"}
+	host, port := r.HostPortWithoutHostOverride(context.Background())
+	if host != "cluster-proxy-addon-user.mce-ns.svc.cluster.local" || port != "9092" {
+		t.Fatalf("got %s:%s", host, port)
+	}
+	u, err := r.URL(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Host != "cluster-proxy-addon-user.mce-ns.svc.cluster.local:9092" {
+		t.Fatalf("url %s", u.String())
+	}
+}
+
+func TestResolverNilNamespace(t *testing.T) {
+	var r *clusterproxy.Resolver
+	host, port := r.HostPort(context.Background())
+	want := clusterproxy.ServiceHost(clusterproxy.DefaultNamespace)
+	if host != want || port != "9092" {
+		t.Fatalf("got %s:%s", host, port)
+	}
+}
+
+func TestTargetURLIPv6Host(t *testing.T) {
+	u, err := clusterproxy.TargetURL("2001:db8::1", "443")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Host != "[2001:db8::1]:443" {
+		t.Fatalf("host %s", u.Host)
+	}
+}
+
+func TestNamespaceEmptyTargetNamespace(t *testing.T) {
+	dc := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}: "MultiClusterEngineList",
+	}, mceObject(""))
+	r := &clusterproxy.Resolver{Dynamic: dc}
+	host, _ := r.HostPort(context.Background())
+	if host != clusterproxy.ServiceHost(clusterproxy.DefaultNamespace) {
+		t.Fatalf("host %s", host)
 	}
 }

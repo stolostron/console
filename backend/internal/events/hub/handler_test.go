@@ -18,6 +18,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic/fake"
+	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/informers"
@@ -322,4 +323,106 @@ func (m staticMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIReso
 		return l, nil
 	}
 	return &metav1.APIResourceList{GroupVersion: gv}, nil
+}
+
+func TestHubAPIAuth(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/api" {
+			http.NotFound(w, r)
+			return
+		}
+		if r.Header.Get("Authorization") != "Bearer good" {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+	base := &rest.Config{Host: ts.URL, TLSClientConfig: rest.TLSClientConfig{Insecure: true}}
+	a := NewAPIAuth(base)
+	ok, err := a.Authenticate(context.Background(), "good")
+	if err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	var nilAuth *APIAuth
+	ok, err = nilAuth.Authenticate(context.Background(), "x")
+	if err != nil || ok {
+		t.Fatalf("nil ok=%v err=%v", ok, err)
+	}
+}
+
+func TestNewHandlerNilAccessDefaultsAllowAll(t *testing.T) {
+	h := NewHandler(New(nil, nil), StaticAuth{OK: true}, nil)
+	if h == nil || h.access == nil {
+		t.Fatal("expected default access")
+	}
+}
+
+type noFlushHubResponse struct {
+	header http.Header
+	code   int
+}
+
+func (w *noFlushHubResponse) Header() http.Header {
+	if w.header == nil {
+		w.header = make(http.Header)
+	}
+	return w.header
+}
+
+func (w *noFlushHubResponse) Write(b []byte) (int, error) { return len(b), nil }
+
+func (w *noFlushHubResponse) WriteHeader(status int) { w.code = status }
+
+func TestHandlerStreamingUnsupported(t *testing.T) {
+	h := NewHandler(New(nil, nil), StaticAuth{OK: true}, AllowAllAccess{})
+	rec := &noFlushHubResponse{}
+	req := httptest.NewRequest(http.MethodGet, "/events", nil)
+	req.Header.Set("Authorization", "Bearer tok")
+	h.ServeHTTP(rec, req)
+	if rec.code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.code)
+	}
+}
+
+func TestHandlerLiveSSARErrorSkipsResource(t *testing.T) {
+	hub := New(nil, nil)
+	h := NewHandler(hub, StaticAuth{OK: true}, errAccess{})
+	reqCtx, cancel := context.WithCancel(context.Background())
+	req := httptest.NewRequest(http.MethodGet, "/events", nil).WithContext(reqCtx)
+	req.Header.Set("Authorization", "Bearer user")
+	rec := newConcurrentRecorder()
+	go func() { h.ServeHTTP(rec, req) }()
+	waitBody(t, rec, func() {}, `"type":"LOADED"`)
+	hub.OnResource(informers.ResourceEvent{
+		Type: TypeModified,
+		Object: &unstructured.Unstructured{Object: map[string]any{
+			"kind": "Secret", "apiVersion": "v1",
+			"metadata": map[string]any{"name": "creds", "namespace": "ns"},
+		}},
+	})
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	if strings.Contains(rec.BodyString(), "creds") {
+		t.Fatalf("ssar error leaked resource: %s", rec.BodyString())
+	}
+}
+
+func TestMarshalEventSettingsEmpty(t *testing.T) {
+	body, err := marshalEvent(Event{Type: TypeSettings, Settings: nil})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), `"settings":{}`) {
+		t.Fatalf("body %s", body)
+	}
+}
+
+func TestWriteEventNoFlush(t *testing.T) {
+	rec := httptest.NewRecorder()
+	enc := newStreamEncoder(rec, rec, "identity")
+	if err := writeEvent(enc, Event{Type: TypeStart}, false); err != nil {
+		t.Fatal(err)
+	}
+	enc.Close()
 }

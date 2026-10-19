@@ -27,7 +27,24 @@ func StartInformer(ctx context.Context, client kubernetes.Interface, store *Stor
 		}),
 	)
 	informer := factory.Rbac().V1().ClusterRoles().Informer()
-	_, err := informer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+	_, err := informer.AddEventHandler(clusterRoleHandlers(store))
+	if err != nil {
+		return err
+	}
+
+	factory.Start(ctx.Done())
+	syncCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	defer cancel()
+	if !cache.WaitForCacheSync(syncCtx.Done(), informer.HasSynced) {
+		// Do not block the public listener: console-mce may lack clusterroles
+		// list/watch. SSE still serves a per-user list fallback.
+		applog.Logger().Error("clusterrole informer cache sync timed out; continuing")
+	}
+	return nil
+}
+
+func clusterRoleHandlers(store *Store) cache.ResourceEventHandlerFuncs {
+	return cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj any) {
 			if role, ok := obj.(*rbacv1.ClusterRole); ok {
 				store.Upsert("ADDED", role)
@@ -52,18 +69,5 @@ func StartInformer(ctx context.Context, client kubernetes.Interface, store *Stor
 			}
 			store.Delete(role)
 		},
-	})
-	if err != nil {
-		return err
 	}
-
-	factory.Start(ctx.Done())
-	syncCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
-	defer cancel()
-	if !cache.WaitForCacheSync(syncCtx.Done(), informer.HasSynced) {
-		// Do not block the public listener: console-mce may lack clusterroles
-		// list/watch. SSE still serves a per-user list fallback.
-		applog.Logger().Error("clusterrole informer cache sync timed out; continuing")
-	}
-	return nil
 }

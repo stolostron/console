@@ -62,3 +62,68 @@ func TestMCEComponents(t *testing.T) {
 		t.Fatalf("components %#v", components)
 	}
 }
+
+func TestMCHComponents_NilClient(t *testing.T) {
+	_, err := hubresources.MCHComponents(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestMCEComponents_NilClient(t *testing.T) {
+	_, err := hubresources.MCEComponents(context.Background(), nil)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
+
+func TestMCHComponents_EmptyList(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "operator.open-cluster-management.io", Version: "v1", Resource: "multiclusterhubs"}: "MultiClusterHubList",
+	})
+	components, err := hubresources.MCHComponents(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if components != nil {
+		t.Fatalf("expected nil, got %#v", components)
+	}
+}
+
+func TestMCEComponents_EmptyList(t *testing.T) {
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{
+		{Group: "multicluster.openshift.io", Version: "v1", Resource: "multiclusterengines"}: "MultiClusterEngineList",
+	})
+	components, err := hubresources.MCEComponents(context.Background(), client)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if components != nil {
+		t.Fatalf("expected nil, got %#v", components)
+	}
+}
+
+func TestParseComponents(t *testing.T) {
+	got, err := hubresources.ParseComponents(map[string]interface{}{})
+	if err != nil || got != nil {
+		t.Fatalf("empty obj: %#v %v", got, err)
+	}
+
+	got, err = hubresources.ParseComponents(map[string]interface{}{
+		"spec": map[string]interface{}{
+			"overrides": map[string]interface{}{
+				"components": []interface{}{
+					"skip-me",
+					map[string]interface{}{"name": "search", "enabled": true},
+					map[string]interface{}{"name": "console", "enabled": false},
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got) != 2 || got[0].Name != "search" || !got[0].Enabled || got[1].Name != "console" || got[1].Enabled {
+		t.Fatalf("got %#v", got)
+	}
+}

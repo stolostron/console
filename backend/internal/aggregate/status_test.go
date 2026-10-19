@@ -97,3 +97,94 @@ func TestIncStatusCountsDeployed(t *testing.T) {
 		t.Fatalf("%+v", counts)
 	}
 }
+
+func TestComputeAppHealthAndSyncBranches(t *testing.T) {
+	cases := []struct {
+		field  string
+		status string
+		score  int
+	}{
+		{"healthStatus", "Healthy", scoreHealthy},
+		{"healthStatus", "Progressing", scoreProgress},
+		{"healthStatus", "Unknown", scoreUnknown},
+		{"healthStatus", "Weird", scoreWarning},
+		{"syncStatus", "Synced", scoreHealthy},
+		{"syncStatus", "Unknown", scoreUnknown},
+		{"syncStatus", "Failed", scoreDanger},
+	}
+	for _, tc := range cases {
+		h := emptyStatusEntry()
+		if tc.field == "healthStatus" {
+			computeAppHealthStatus(&h, map[string]any{"healthStatus": tc.status})
+		} else {
+			computeAppSyncStatus(&h, map[string]any{"syncStatus": tc.status})
+		}
+		if h.Counts[tc.score] != 1 {
+			t.Fatalf("%s %s %+v", tc.field, tc.status, h.Counts)
+		}
+	}
+}
+
+func TestExtractMessagesDedupes(t *testing.T) {
+	e := emptyStatusEntry()
+	item := map[string]any{
+		"healthStatus":   "Degraded",
+		"_foo_condition": "x",
+		"_bar_missing":   "y",
+	}
+	extractMessages(&e, item, "Degraded")
+	extractMessages(&e, item, "Degraded")
+	counts := map[string]int{}
+	for _, msg := range e.Messages {
+		counts[msg["key"]]++
+	}
+	if counts["_foo_condition"] != 1 || counts["_bar_missing"] != 1 {
+		t.Fatalf("message keys %+v from %+v", counts, e.Messages)
+	}
+}
+
+func TestCollectRelatedResourcesAndDeployedMissingPods(t *testing.T) {
+	m := relatedMaps{
+		byName: map[string][]map[string]any{
+			"c1/ns/d1": {{"_uid": "rs1", "available": 0, "desired": 2}},
+		},
+		byUID: map[string][]map[string]any{
+			"u1": {{"_uid": "p1", "status": "Running"}},
+		},
+	}
+	items := collectRelatedResources("c1", m, statusIDs{appName: "ns/app", deployments: []map[string]any{
+		{"namespace": "ns", "name": "d1", "_uid": "d1"},
+		{"namespace": "ns", "name": "d2", "_uid": "d2"},
+	}})
+	if len(items) == 0 {
+		t.Fatal("multi deployment lookup")
+	}
+	appKey := "argo/ns/app"
+	statuses := map[string]StatusMap{
+		appKey: {"c1": ClusterStatuses{
+			Health:   StatusEntry{Counts: []int{1, 0, 0, 0, 0}},
+			Synced:   StatusEntry{Counts: []int{1, 0, 0, 0, 0}},
+			Deployed: emptyStatusEntry(),
+		}},
+	}
+	ids := map[string]*statusIDs{statusIDKey(appKey, "c1"): {appName: "ns/app", uids: []string{"u1"}}}
+	related := []mapKind{
+		{
+			Kind: "ReplicaSet",
+			Items: []map[string]any{{
+				"cluster": "c1", "namespace": "ns", "label": "app=app", "desired": 2, "_uid": "rs1",
+			}},
+		},
+		{
+			Kind: "Pod",
+			Items: []map[string]any{{
+				"cluster": "c1", "_uid": "p1", "_relatedUids": []any{"u1"}, "status": "Running",
+			}},
+		},
+	}
+	computeDeployedPodStatuses(related, statuses, ids, false)
+	dep := statuses[appKey]["c1"].Deployed
+	if dep.Counts[scoreHealthy] != 1 || dep.Counts[scoreDanger] < 1 {
+		t.Fatalf("%+v", dep)
+	}
+}
