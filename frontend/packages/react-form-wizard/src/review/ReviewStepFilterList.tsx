@@ -24,6 +24,7 @@ import {
 } from './ReviewStepContexts'
 import { ReviewPenHoverZone, type OnReviewEditHandler } from './ReviewStepNavigation'
 import { getItemValue, horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
+import '../common/wrapValue.css'
 
 type WizardInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.INPUT }>
 type WizardArrayInputDomNode = Extract<WizardDomTreeNode, { type: InputReviewMeta.ARRAY_INPUT }>
@@ -974,10 +975,7 @@ export function ReviewStepFindList(props: ReviewStepFindListProps) {
                       ) : (
                         <>
                           <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                          <DescriptionListDescription
-                            id={row.node.id ?? ''}
-                            style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}
-                          >
+                          <DescriptionListDescription id={row.node.id ?? ''} className="wiz-wrap-value">
                             <span className="wizard-review-inline-value">{valueContent}</span>
                           </DescriptionListDescription>
                         </>
