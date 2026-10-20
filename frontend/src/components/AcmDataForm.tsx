@@ -825,9 +825,9 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
       return (
         <DescriptionListGroup key={input.label}>
           <DescriptionListTerm>{input.label}</DescriptionListTerm>
-          <DescriptionListDescription style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+          <DescriptionListDescription>
             <Split>
-              <SplitItem isFilled>
+              <SplitItem isFilled style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
                 {input.isSecret && !showSecrets
                   ? '****************'
                   : input.value?.split('\n').map((line) => <div key={`input-value-line-${line}`}>{line}</div>)}
@@ -836,6 +836,7 @@ function AcmInputDescription(props: { input: Input }): JSX.Element {
                 <Button
                   icon={showSecrets ? <EyeSlashIcon /> : <EyeIcon />}
                   variant="link"
+                  style={{ flexShrink: 0, alignSelf: 'flex-start' }}
                   onClick={() => setShowSecrets(!showSecrets)}
                 >
                   {showSecrets ? t('credentials.hide') : t('credentials.show')}

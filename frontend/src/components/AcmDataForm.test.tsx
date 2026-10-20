@@ -229,13 +229,15 @@ describe('ACMDataForm', () => {
 
       expect(screen.getByText('****************')).toBeInTheDocument()
 
-      await clickElement(container.querySelector('button') as HTMLElement)
+      await clickElement(screen.getByRole('button', { name: /reveal credentials/i }))
 
-      const description = container.querySelector('.pf-v6-c-description-list__description') as HTMLElement
-      expect(description).toBeInTheDocument()
+      const valueCell = container.querySelector('.pf-v6-l-split__item.pf-m-fill') as HTMLElement
+      expect(valueCell).toBeInTheDocument()
+      expect(valueCell).toHaveStyle({ whiteSpace: 'pre-wrap' })
+      expect(valueCell).toHaveStyle({ overflowWrap: 'anywhere' })
 
-      expect(description).toHaveStyle({ whiteSpace: 'pre-wrap' })
-      expect(description).toHaveStyle({ overflowWrap: 'anywhere' })
+      const revealButton = screen.getByRole('button', { name: /hide credentials/i })
+      expect(valueCell.contains(revealButton)).toBe(false)
     })
   })
 })
