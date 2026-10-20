@@ -166,6 +166,20 @@ describe('GroupPage', () => {
     )
   })
 
+  test('should resolve name via Search and then load the Group resource (same flow as uid)', async () => {
+    mockSearchWithKubevirtAdmins()
+    render(<Component groupId="kubevirt-admins" />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
+    })
+    expect(mockSearchQuery).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+    )
+  })
+
   test('should render group not found error', async () => {
     render(<Component groupId="non-existent-uid" />)
 

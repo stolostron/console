@@ -57,8 +57,8 @@ export const useCurrentGroup = (): CurrentGroup => {
 
     const load = async () => {
       try {
-        // Route id is the Group uid. Search returns `_uid` on items but cannot filter by it,
-        // so resolve uid→name via Search, then load the full CR (Search does not return it).
+        // Same path for uid or name in the URL: Search → resolve name → getResource (full CR).
+        // Search alone is not enough (no users/annotations); MRA synthetic is last resort only.
         let indexedName: string | undefined
         try {
           indexedName = await findIndexedGroupName(id, hubName)
@@ -98,7 +98,7 @@ export const useCurrentGroup = (): CurrentGroup => {
     () =>
       id && loaded && !fetched && !error
         ? groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
-            (candidate) => candidate.metadata.uid === id
+            (candidate) => candidate.metadata.uid === id || candidate.metadata.name === id
           )
         : undefined,
     [error, fetched, id, loaded, mras]

@@ -406,10 +406,11 @@ export function useGroupIdentity(name: string | undefined): Group | undefined {
 }
 
 /**
- * Resolve a Group CR name from a Kubernetes uid.
- * Search returns `_uid` on items but rejects it as a filter, so load hub Groups once and match.
+ * Resolve a Group CR name from a route id (uid or name).
+ * Search returns `_uid` on items but rejects it as a filter, so load hub Groups once and match
+ * by `_uid` or `name`. Callers then load the full CR via getResource(name).
  */
-export async function findIndexedGroupName(uid: string, hubName: string): Promise<string | undefined> {
+export async function findIndexedGroupName(id: string, hubName: string): Promise<string | undefined> {
   const result = await searchClient.query({
     query: SearchResultItemsDocument,
     variables: {
@@ -422,11 +423,12 @@ export async function findIndexedGroupName(uid: string, hubName: string): Promis
     },
   })
   const items = result.data?.searchResult?.[0]?.items ?? []
-  const prefixed = `${hubName}/${uid}`
+  const prefixed = `${hubName}/${id}`
   for (const item of items) {
     if (typeof item?.name !== 'string') continue
+    if (item.name === id) return item.name
     const itemUid = typeof item._uid === 'string' ? item._uid : ''
-    if (itemUid === uid || itemUid === prefixed || itemUid.endsWith(`/${uid}`)) return item.name
+    if (itemUid === id || itemUid === prefixed || itemUid.endsWith(`/${id}`)) return item.name
   }
   return undefined
 }
