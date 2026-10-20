@@ -11,7 +11,8 @@ This document outlines the architecture of the `backend/internal` directory.
 | `POST /ansibletower` | [ansibletower.go](internal/ansibletower/ansibletower.go) |
 | `GET /authenticated`, `GET /username`, `ALL /userpreference` | [user.go](internal/user/user.go) |
 | `POST /aws-account-ids`, `/aws-billing-accounts`, `/oidc-configs`, `/regions`, `/cluster-name-check`, `/sts-role-arns`, `/vpcs`, `/sts-ocm-role`, `/sts-user-role`, `/openshift-versions`, `/machine-types` | [rosa.go](internal/rosa/rosa.go) |
-| `GET /configure`, `/login`, `/login/callback`, `/logout` | [oauth.go](internal/oauth/oauth.go) |
+| `GET /configure` | [oauth.go](internal/oauth/oauth.go) |
+| `GET /login`, `/login/callback`, `/logout` *(non-production)* | [oauth.go](internal/oauth/oauth.go) |
 | `GET /debug/informer-snapshot` | [informers/handler.go](internal/informers/handler.go) |
 | `GET /events` | [hub/handler.go](internal/events/hub/handler.go) |
 | `GET /events/rbac` | [rbac/handler.go](internal/events/rbac/handler.go) |
@@ -20,12 +21,41 @@ This document outlines the architecture of the `backend/internal` directory.
 | `ALL /managedclusterproxy/*` | [mcproxy.go](internal/mcproxy/mcproxy.go) |
 | `POST /placement-debug` | [placementdebug.go](internal/placementdebug/placementdebug.go) |
 | `GET /prometheus/*`, `GET /observability/*` | [metricsproxy.go](internal/metricsproxy/metricsproxy.go) |
-| `ALL /proxy/search` | [proxy.go](internal/searchproxy/proxy.go) |
+| `POST /proxy/search`, `WS /proxy/search` | [proxy.go](internal/searchproxy/proxy.go) |
 | `GET /*` (static fallback) | [static.go](internal/static/static.go) |
 | `POST /upgrade-risks-prediction` | [upgraderisks.go](internal/upgraderisks/upgraderisks.go) |
 | `GET /virtualmachines/get/*`, `ALL /virtualmachines/*`, `ALL /virtualmachineinstances/*`, `GET /virtualmachinesnapshots/get/*`, `ALL /virtualmachinesnapshots/*`, `ALL /virtualmachinerestores`, `GET /vmResourceUsage/*` | [vmproxy/handler.go](internal/vmproxy/handler.go) |
 
 All routes are also registered under `/multicloud` prefix.
+
+## Constants
+
+| Constants | Description | File |
+|-----------|-------------|------|
+| `appSearchIntervalDefault = 60`<br>`appSearchLimitDefault = 5000`<br>`firstPassesFastInterval = 3`<br>`preprocessBreakpoint = 500`<br>`remoteClusterChunks = 10`<br>`scoreColumnSize = 5`<br>`searchQueryLimit = 20000` | Default polling interval, search limit, fast-interval pass count, pagination breakpoint, remote cluster chunk size, score column width, and search query limit for application aggregation. | [aggregate/types.go](internal/aggregate/types.go) |
+| `colName`, `colType`, `colNamespace`, `colClusters`, `colHealth`, `colSynced`, `colDeployed`, `colCreated` | Column indices (0–7) for the application table matching Node `aggregators/applications.ts`. | [aggregate/types.go](internal/aggregate/types.go) |
+| `scoreHealthy`, `scoreProgress`, `scoreWarning`, `scoreDanger`, `scoreUnknown` | Health-score ranks (0–4) for application status ordering. | [aggregate/types.go](internal/aggregate/types.go) |
+| `fuseThreshold = 0.3` | Fuse.js 6.6.2 match threshold for client-side search when item count exceeds 500. | [aggregate/fuse.go](internal/aggregate/fuse.go) |
+| `accessCacheMaxTokens = 1000`<br>`accessCacheTTL = 60s`<br>`accessCleanupEvery = 90s` | Max cached tokens, SSAR access cache TTL, and cleanup interval for aggregate RBAC filtering. | [aggregate/rbac.go](internal/aggregate/rbac.go) |
+| `bearerSchemePrefixLen = 7` | Precomputed length of the RFC 6750 `Bearer ` prefix. | [auth/auth.go](internal/auth/auth.go) |
+| `globalHubCRDCacheTTL = 30s`<br>`hubFlagsCacheTTL = 10s` | Cache TTLs for Global Hub CRD check and hub feature flags. | [clusterinfo/clusterinfo.go](internal/clusterinfo/clusterinfo.go) |
+| `debounce = 1s` | fsnotify debounce interval for config directory live-reload. | [config/config.go](internal/config/config.go) |
+| `accessCacheTTL = 60s`<br>`accessCleanupEvery = 90s`<br>`prefetchConcurrency = 32` | SSE hub SSAR cache TTL, cleanup interval, and concurrent prefetch goroutines. | [events/hub/access.go](internal/events/hub/access.go) |
+| `defaultFlapCooldown = 60s`<br>`defaultFlapSettling = 60s`<br>`defaultFlapThreshold = 5`<br>`defaultFlapWindow = 60s`<br>`defaultThrottlingCheck = 60s`<br>`flapTrackerTTL = 12h`<br>`rankNonCompliant = 2`<br>`rankOK = 0`<br>`rankPending = 1`<br>`recentHistoryScan = 2` | Connection-flap detection: cooldown, settling period, threshold, window, throttling check interval, tracker TTL, non-compliant rank, OK rank, pending rank, and recent history scan depth. | [events/hub/flap.go](internal/events/hub/flap.go) |
+| `instanceIDLen = 8`<br>`keepAlive = 10s` | Random instance ID length and SSE keepalive ping interval. | [events/hub/handler.go](internal/events/hub/handler.go) |
+| `defaultBuffer = 256`<br>`defaultPurge = 30m` | Per-client SSE channel buffer size and blocked-client purge interval. | [events/hub/hub.go](internal/events/hub/hub.go) |
+| `accessCacheTTL = 60s`<br>`accessCleanupEvery = 90s` | RBAC event SSAR cache TTL and cleanup interval. | [events/rbac/access.go](internal/events/rbac/access.go) |
+| `keepAlive = 10s` | SSE keepalive ping interval for the RBAC ClusterRole stream. | [events/rbac/handler.go](internal/events/rbac/handler.go) |
+| `resync = 10m` | ClusterRole informer resync period. | [events/rbac/informer.go](internal/events/rbac/informer.go) |
+| `subscriberBuffer = 64` | Per-subscriber SSE channel buffer size for ClusterRole events. | [events/rbac/store.go](internal/events/rbac/store.go) |
+| `defaultStartConcurrency = 8`<br>`InformerBurst = 40`<br>`InformerQPS = 20` | Max concurrent informer startups, burst rate limit, and QPS rate limit. | [informers/factory.go](internal/informers/factory.go) |
+| `resyncPeriod = 0`<br>`retryBase = 60s`<br>`retryJitter = 10s`<br>`syncGiveUpAfter = 45s` | Informer resync disabled, retry base delay, jitter, and initial sync timeout. | [informers/retry.go](internal/informers/retry.go) |
+| `DialTimeout = 10s`<br>`ResponseHeaderTimeout = 60s` | TCP dial timeout and upstream response-header timeout for reverse-proxy transports. | [outbound/transport.go](internal/outbound/transport.go) |
+| `pingTimeout = 4m`<br>`searchTimeout = 2m` | Keepalive ping timeout and search GraphQL request timeout. | [searchapi/searchapi.go](internal/searchapi/searchapi.go) |
+| `defaultDialTimeout = 60s` | WebSocket upstream dial timeout for the Search proxy relay. | [searchproxy/proxy.go](internal/searchproxy/proxy.go) |
+| `defaultDebounce = 1s` | TLS certificate reload debounce interval. | [tlsconfig/reloader.go](internal/tlsconfig/reloader.go) |
+| `retryBase = 60s`<br>`retryJitter = 10s` | TLS profile watch retry base delay and jitter. | [tlsconfig/watch.go](internal/tlsconfig/watch.go) |
+| `chunkSize = 100`<br>`crcTokenTTL = 60s` | Insights cluster-ID chunk size and CRC token TTL. | [upgraderisks/upgraderisks.go](internal/upgraderisks/upgraderisks.go) |
 
 ## Folder Directory
 
@@ -100,10 +130,10 @@ All routes are also registered under `/multicloud` prefix.
   - [fuse.go](internal/aggregate/fuse.go) - Client-side search port: Fuse.js 6.6.2 `ignoreLocation` + threshold 0.3 over name/namespace/clusters when item count exceeds 500.
   - [rbac.go](internal/aggregate/rbac.go) - Windowed SSAR access filter for aggregated rows; also checks ManagedClusterView `create` for remote Argo/Flux apps.
   - [appset.go](internal/aggregate/appset.go) - Fetches full ApplicationSet objects with the user token for the `/appSetData` endpoint.
-- **ssarcache/** - Shared SSAR result cache and periodic cleanup used by the events hub, RBAC events, and aggregate access checkers.
-  - [ssarcache.go](internal/ssarcache/ssarcache.go) - Token-keyed SSAR result cache with periodic expiry (`StartCleanup`).
-- **httpx/** - Shared HTTP helpers and request/response utilities.
-  - [httpx.go](internal/httpx/httpx.go) - Common HTTP request/response helpers.
+- **ssarcache/** - Shared periodic-cleanup toolkit used by the events hub, RBAC events, and aggregate access checkers.
+  - [cleanup.go](internal/ssarcache/cleanup.go) - Generic periodic cleanup helpers: `Start`/`StartIf` run a ticker-based cleanup goroutine, `ExpireIf` removes expired map entries, `Sweep` prunes tokens by predicate then evicts oldest, and `EvictOldest` caps a cache at a maximum size.
+- **httpx/** - Shared HTTP header and media-type constants.
+  - [media.go](internal/httpx/media.go) - `HeaderContentType`, `HeaderAccept`, and `MIMEJSON` constants used across handlers.
 - **vmproxy/** - VirtualMachine CRUD, lifecycle actions, and resource-usage aggregation via managed-cluster proxy.
   - [handler.go](internal/vmproxy/handler.go) - Routes `/virtualmachines/*`, `/virtualmachineinstances/*`, `/virtualmachinesnapshots/*`, and `/vmResourceUsage/*` through the cluster-proxy addon with the user token.
   - [hub.go](internal/vmproxy/hub.go) - Fine-grained RBAC: SSAR checks for VirtualMachine `get`/`update`/`delete` and subresource actions before proxying.
@@ -111,7 +141,7 @@ All routes are also registered under `/multicloud` prefix.
   - [usage.go](internal/vmproxy/usage.go) - Queries Prometheus on the managed cluster for VM CPU, memory, and storage metrics; normalizes units and returns a usage summary.
   - [units.go](internal/vmproxy/units.go) - Parses Kubernetes resource quantities (Ki/Mi/Gi/m suffixes) into comparable integer values.
 - **tlsconfig/** - TLS certificate reloading, ciphers, and security profile configuration.
-  - [watch.go](internal/tlsconfig/watch.go) - Watches the OpenShift `APIServer` resource for `tlsSecurityProfile` changes via fsnotify.
+  - [watch.go](internal/tlsconfig/watch.go) - List/watches the `config.openshift.io/v1` APIServer `cluster` resource via the dynamic client and applies `tlsSecurityProfile` changes to the Reloader.
   - [profile.go](internal/tlsconfig/profile.go) - Parses Old/Intermediate/Modern/Custom TLS security profiles from `config.openshift.io/v1` APIServer.
   - [reloader.go](internal/tlsconfig/reloader.go) - Hot-reloads TLS certificates via `GetConfigForClient`/`GetCertificate` without server restart.
   - [ciphers.go](internal/tlsconfig/ciphers.go) - Maps OpenSSL cipher suite names to Go `tls` constants (IANA IDs).
