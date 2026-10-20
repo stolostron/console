@@ -2,28 +2,28 @@
 
 This document outlines the architecture of the `backend/internal` directory.
 
-## Handler → Paths
+## Paths → Handler
 
-| Handler | Paths |
-|---------|-------|
-| [health.go](internal/health/health.go) | `GET /livenessProbe`, `GET /readinessProbe`, `GET /ping` |
-| [rbac/handler.go](internal/events/rbac/handler.go) | `GET /events/rbac` |
-| [hub/handler.go](internal/events/hub/handler.go) | `GET /events` |
-| [aggregate/handler.go](internal/aggregate/handler.go) | `POST /aggregate/*` |
-| [proxy.go](internal/searchproxy/proxy.go) | `ALL /proxy/search` |
-| [rosa.go](internal/rosa/rosa.go) | `POST /aws-account-ids`, `/aws-billing-accounts`, `/oidc-configs`, `/regions`, `/cluster-name-check`, `/sts-role-arns`, `/vpcs`, `/sts-ocm-role`, `/sts-user-role`, `/openshift-versions`, `/machine-types` |
-| [ansibletower.go](internal/ansibletower/ansibletower.go) | `POST /ansibletower` |
-| [placementdebug.go](internal/placementdebug/placementdebug.go) | `POST /placement-debug` |
-| [upgraderisks.go](internal/upgraderisks/upgraderisks.go) | `POST /upgrade-risks-prediction` |
-| [k8sproxy.go](internal/k8sproxy/k8sproxy.go) | `ALL /api`, `ALL /api/*`, `ALL /apis`, `ALL /apis/*`, `GET /version` |
-| [oauth.go](internal/oauth/oauth.go) | `GET /configure`, `/login`, `/login/callback`, `/logout` |
-| [mcproxy.go](internal/mcproxy/mcproxy.go) | `ALL /managedclusterproxy/*` |
-| [metricsproxy.go](internal/metricsproxy/metricsproxy.go) | `GET /prometheus/*`, `GET /observability/*` |
-| [vmproxy/handler.go](internal/vmproxy/handler.go) | `GET /virtualmachines/get/*`, `ALL /virtualmachines/*`, `ALL /virtualmachineinstances/*`, `GET /virtualmachinesnapshots/get/*`, `ALL /virtualmachinesnapshots/*`, `ALL /virtualmachinerestores`, `GET /vmResourceUsage/*` |
-| [user.go](internal/user/user.go) | `GET /authenticated`, `GET /username`, `ALL /userpreference` |
-| [clusterinfo.go](internal/clusterinfo/clusterinfo.go) | `GET /hub`, `/cluster-version`, `/hypershift-status`, `/multiclusterhub/components`, `/multiclusterengine/components`, `/apiPaths`, `ALL /operatorCheck` |
-| [informers/handler.go](internal/informers/handler.go) | `GET /debug/informer-snapshot` |
-| [static.go](internal/static/static.go) | `GET /*` (static fallback) |
+| Paths | Handler |
+|-------|---------|
+| `POST /aggregate/*` | [aggregate/handler.go](internal/aggregate/handler.go) |
+| `ALL /api`, `ALL /api/*`, `ALL /apis`, `ALL /apis/*`, `GET /version` | [k8sproxy.go](internal/k8sproxy/k8sproxy.go) |
+| `POST /ansibletower` | [ansibletower.go](internal/ansibletower/ansibletower.go) |
+| `GET /authenticated`, `GET /username`, `ALL /userpreference` | [user.go](internal/user/user.go) |
+| `POST /aws-account-ids`, `/aws-billing-accounts`, `/oidc-configs`, `/regions`, `/cluster-name-check`, `/sts-role-arns`, `/vpcs`, `/sts-ocm-role`, `/sts-user-role`, `/openshift-versions`, `/machine-types` | [rosa.go](internal/rosa/rosa.go) |
+| `GET /configure`, `/login`, `/login/callback`, `/logout` | [oauth.go](internal/oauth/oauth.go) |
+| `GET /debug/informer-snapshot` | [informers/handler.go](internal/informers/handler.go) |
+| `GET /events` | [hub/handler.go](internal/events/hub/handler.go) |
+| `GET /events/rbac` | [rbac/handler.go](internal/events/rbac/handler.go) |
+| `GET /hub`, `/cluster-version`, `/hypershift-status`, `/multiclusterhub/components`, `/multiclusterengine/components`, `/apiPaths`, `ALL /operatorCheck` | [clusterinfo.go](internal/clusterinfo/clusterinfo.go) |
+| `GET /livenessProbe`, `GET /readinessProbe`, `GET /ping` | [health.go](internal/health/health.go) |
+| `ALL /managedclusterproxy/*` | [mcproxy.go](internal/mcproxy/mcproxy.go) |
+| `POST /placement-debug` | [placementdebug.go](internal/placementdebug/placementdebug.go) |
+| `GET /prometheus/*`, `GET /observability/*` | [metricsproxy.go](internal/metricsproxy/metricsproxy.go) |
+| `ALL /proxy/search` | [proxy.go](internal/searchproxy/proxy.go) |
+| `GET /*` (static fallback) | [static.go](internal/static/static.go) |
+| `POST /upgrade-risks-prediction` | [upgraderisks.go](internal/upgraderisks/upgraderisks.go) |
+| `GET /virtualmachines/get/*`, `ALL /virtualmachines/*`, `ALL /virtualmachineinstances/*`, `GET /virtualmachinesnapshots/get/*`, `ALL /virtualmachinesnapshots/*`, `ALL /virtualmachinerestores`, `GET /vmResourceUsage/*` | [vmproxy/handler.go](internal/vmproxy/handler.go) |
 
 All routes are also registered under `/multicloud` prefix.
 
