@@ -3,10 +3,10 @@ import { PageSection } from '@patternfly/react-core'
 import { GroupKind } from '../../../../resources'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { useCurrentGroup } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 const GroupRoleAssignments = () => {
-  const group = useCurrentGroup()
+  const { group } = useGroupDetailsContext()
 
   const roleAssignments = useFindRoleAssignments({
     subjectNames: group?.metadata.name ? [group.metadata.name] : [],

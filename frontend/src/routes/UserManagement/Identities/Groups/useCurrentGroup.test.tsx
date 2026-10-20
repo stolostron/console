@@ -1,0 +1,171 @@
+/* Copyright Contributors to the Open Cluster Management project */
+import { renderHook, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import { ReactNode } from 'react'
+import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
+import { Group } from '../../../../resources/rbac'
+import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { searchClient } from '../../../Search/search-sdk/search-client'
+import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
+import { useCurrentGroup } from './useCurrentGroup'
+
+jest.mock('../../../../shared-atoms', () => ({
+  useSharedValue: jest.fn(),
+  useSharedAtoms: jest.fn(),
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
+jest.mock('../../../../resources/utils', () => {
+  const actual = jest.requireActual('../../../../resources/utils')
+  return {
+    ...actual,
+    getResource: jest.fn(),
+  }
+})
+
+jest.mock('../../../Search/search-sdk/search-client', () => ({
+  searchClient: { query: jest.fn() },
+}))
+
+const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
+const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockGetResource = getResource as jest.Mock
+const mockSearchQuery = searchClient.query as jest.Mock
+
+const mraAtom = Symbol('multiclusterRoleAssignmentState')
+
+const kubevirtAdmins: Group = {
+  apiVersion: 'user.openshift.io/v1',
+  kind: 'Group',
+  metadata: {
+    name: 'kubevirt-admins',
+    uid: 'kubevirt-admins-uid',
+    creationTimestamp: '2023-01-01T00:00:00Z',
+  },
+  users: ['admin1'],
+}
+
+const opsMra: MulticlusterRoleAssignment = {
+  apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+  kind: 'MulticlusterRoleAssignment',
+  metadata: { name: 'mra-ops', creationTimestamp: '2023-02-01T00:00:00Z' },
+  spec: {
+    subject: { kind: 'Group', name: 'ops-team' },
+    roleAssignments: [],
+  },
+}
+
+function wrapper(groupId: string) {
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <MemoryRouter initialEntries={[`/groups/${groupId}`]}>
+        <Routes>
+          <Route path="/groups/:id" element={children} />
+        </Routes>
+      </MemoryRouter>
+    )
+  }
+}
+
+function notFound() {
+  return Promise.reject(new ResourceError(ResourceErrorCode.NotFound))
+}
+
+function mockSearchWithKubevirtAdmins() {
+  mockSearchQuery.mockResolvedValue({
+    data: {
+      searchResult: [{ items: [{ name: 'kubevirt-admins', _uid: 'local-cluster/kubevirt-admins-uid' }] }],
+    },
+  })
+}
+
+describe('useCurrentGroup', () => {
+  beforeEach(() => {
+    mockUseSharedAtoms.mockReturnValue({
+      multiclusterRoleAssignmentState: mraAtom,
+    } as any)
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return []
+      return undefined
+    })
+    mockGetResource.mockImplementation((resource: Group) => {
+      if (resource.metadata.name === 'kubevirt-admins') {
+        return { promise: Promise.resolve(kubevirtAdmins) }
+      }
+      return { promise: notFound() }
+    })
+    mockSearchQuery.mockResolvedValue({ data: { searchResult: [{ items: [] }] } })
+  })
+
+  test('resolves uid via Search then loads the Group CR', async () => {
+    mockSearchWithKubevirtAdmins()
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins-uid') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('kubevirt-admins')
+      expect(result.current.group?.users).toEqual(['admin1'])
+    })
+    expect(mockSearchQuery).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+    )
+  })
+
+  test('resolves name via Search then loads the Group CR (same flow as uid)', async () => {
+    mockSearchWithKubevirtAdmins()
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('kubevirt-admins')
+    })
+    expect(mockSearchQuery).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+  })
+
+  test('returns loaded with no group when Search finds nothing', async () => {
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('missing-uid') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+    })
+    expect(result.current.group).toBeUndefined()
+    expect(result.current.error).toBeUndefined()
+    expect(mockGetResource).not.toHaveBeenCalled()
+  })
+
+  test('falls back to an MRA-only group when Search finds nothing', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [opsMra]
+      return undefined
+    })
+
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('ops-team') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('ops-team')
+    })
+    expect(mockGetResource).not.toHaveBeenCalled()
+  })
+
+  test('falls back to an MRA-only group when Search fails', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [opsMra]
+      return undefined
+    })
+    mockSearchQuery.mockRejectedValue(new Error('search unavailable'))
+
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('ops-team') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('ops-team')
+    })
+  })
+})
