@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook, waitFor } from '@testing-library/react'
 import { SortByDirection } from '@patternfly/react-table'
-import { useFleetSearch, type SearchInput } from '@stolostron/multicluster-sdk'
+import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSearch'
+import type { SearchInput } from '@stolostron/multicluster-sdk'
 import { Group } from '../../../../resources/rbac'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
@@ -9,7 +10,7 @@ import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
 import { useGroupsSearch, useGroupIdentity, useHasHubGroups } from './useGroupsSearch'
 
-jest.mock('@stolostron/multicluster-sdk', () => ({
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
   useFleetSearch: jest.fn(),
 }))
 

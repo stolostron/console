@@ -57,14 +57,8 @@ export const useCurrentGroup = (): CurrentGroup => {
 
     const load = async () => {
       try {
-        const direct = await readGroup(id)
-        if (cancelled) return
-        if (direct) {
-          setFetched(direct)
-          setLoaded(true)
-          return
-        }
-
+        // Route id is the Group uid. Search returns `_uid` on items but cannot filter by it,
+        // so resolve uid→name via Search, then load the full CR (Search does not return it).
         let indexedName: string | undefined
         try {
           indexedName = await findIndexedGroupName(id, hubName)
@@ -73,7 +67,7 @@ export const useCurrentGroup = (): CurrentGroup => {
           indexedName = undefined
         }
         if (cancelled) return
-        if (indexedName && indexedName !== id) {
+        if (indexedName) {
           const resolved = await readGroup(indexedName)
           if (cancelled) return
           if (resolved) {
@@ -104,7 +98,7 @@ export const useCurrentGroup = (): CurrentGroup => {
     () =>
       id && loaded && !fetched && !error
         ? groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
-            (candidate) => candidate.metadata.name === id || candidate.metadata.uid === id
+            (candidate) => candidate.metadata.uid === id
           )
         : undefined,
     [error, fetched, id, loaded, mras]

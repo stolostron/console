@@ -8,10 +8,10 @@ import { Group } from '../../../../resources/rbac'
 import { IAcmTableButtonAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { GroupsTable } from './GroupsTable'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
-import { useFleetSearch } from '@stolostron/multicluster-sdk'
+import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSearch'
 import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
 
-jest.mock('@stolostron/multicluster-sdk', () => ({
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
   useFleetSearch: jest.fn(),
 }))
 

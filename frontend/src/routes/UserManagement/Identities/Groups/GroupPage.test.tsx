@@ -100,7 +100,7 @@ const opsMra: MulticlusterRoleAssignment = {
 const emptyMras: MulticlusterRoleAssignment[] = []
 const opsMras: MulticlusterRoleAssignment[] = [opsMra]
 
-function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
+function Component({ groupId = 'kubevirt-admins-uid' }: { groupId?: string }) {
   return (
     <StateProvider>
       <MemoryRouter initialEntries={[`/groups/${groupId}`]}>
@@ -114,6 +114,18 @@ function Component({ groupId = 'kubevirt-admins' }: { groupId?: string }) {
 
 function notFound() {
   return Promise.reject(new ResourceError(ResourceErrorCode.NotFound))
+}
+
+function mockSearchWithKubevirtAdmins() {
+  mockSearchQuery.mockResolvedValue({
+    data: {
+      searchResult: [
+        {
+          items: [{ name: 'kubevirt-admins', _uid: 'local-cluster/kubevirt-admins-uid' }],
+        },
+      ],
+    },
+  })
 }
 
 describe('GroupPage', () => {
@@ -140,28 +152,32 @@ describe('GroupPage', () => {
     mockSearchQuery.mockResolvedValue({ data: { searchResult: [{ items: [] }] } })
   })
 
-  test('should render group page with data', async () => {
+  test('should resolve uid via Search and then load the Group resource', async () => {
+    mockSearchWithKubevirtAdmins()
     render(<Component />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
     })
+    expect(mockSearchQuery).toHaveBeenCalledTimes(1)
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
     expect(mockGetResource).toHaveBeenCalledWith(
       expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
     )
-    expect(mockSearchQuery).not.toHaveBeenCalled()
   })
 
   test('should render group not found error', async () => {
-    render(<Component groupId="non-existent-group" />)
+    render(<Component groupId="non-existent-uid" />)
 
     await waitFor(() => {
       expect(screen.getByText('Not found')).toBeInTheDocument()
       expect(screen.getByText('Back to groups')).toBeInTheDocument()
     })
+    expect(mockGetResource).not.toHaveBeenCalled()
   })
 
   test('should render group page with navigation tabs', async () => {
+    mockSearchWithKubevirtAdmins()
     render(<Component />)
 
     await waitFor(() => {
@@ -173,27 +189,6 @@ describe('GroupPage', () => {
     })
   })
 
-  test('should resolve a group uid through Search and then load the Group resource', async () => {
-    mockSearchQuery.mockImplementation(
-      ({ variables }: { variables: { input: { filters: { property: string; values: string[] }[] }[] } }) => {
-        const uidFilter = variables.input[0].filters.find((filter) => filter.property === '_uid')
-        if (uidFilter?.values[0] === 'local-cluster/kubevirt-admins-uid') {
-          return Promise.resolve({ data: { searchResult: [{ items: [{ name: 'kubevirt-admins' }] }] } })
-        }
-        return Promise.resolve({ data: { searchResult: [{ items: [] }] } })
-      }
-    )
-
-    render(<Component groupId="kubevirt-admins-uid" />)
-
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
-    })
-    expect(mockGetResource).toHaveBeenCalledWith(
-      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
-    )
-  })
-
   test('should show an MRA group that has no Group resource', async () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === groupsAtom) throw new Error('groupsState should not be read')
@@ -203,11 +198,13 @@ describe('GroupPage', () => {
       return undefined
     })
 
+    // MRA-only subjects use uid === name
     render(<Component groupId="ops-team" />)
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { level: 1, name: 'ops-team' })).toBeInTheDocument()
     })
+    expect(mockGetResource).not.toHaveBeenCalled()
   })
 
   test('should fall back to an MRA group when Search lookup fails', async () => {
@@ -228,6 +225,7 @@ describe('GroupPage', () => {
   })
 
   test('should hide YAML and Users tabs when isDirectAuthenticationEnabled', async () => {
+    mockSearchWithKubevirtAdmins()
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === groupsAtom) throw new Error('groupsState should not be read')
       if (atom === usersAtom) return mockUsers

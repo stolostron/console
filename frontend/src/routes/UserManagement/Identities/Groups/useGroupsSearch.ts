@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { SortByDirection } from '@patternfly/react-table'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { useFleetSearch, type SearchFilter, type SearchInput } from '@stolostron/multicluster-sdk'
+// Avoid the package barrel: it also loads fleetK8s* → @console/shared (breaks npm start).
+import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSearch'
+import type { SearchFilter, SearchInput } from '@stolostron/multicluster-sdk'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { IRequestListView, IResultListView } from '../../../../lib/useAggregates'
 import { IResource } from '../../../../resources/resource'
@@ -11,6 +13,9 @@ import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '../../../../ui-components/
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument, useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
+
+/** Bound for uid→name scans; Search returns `_uid` on items but often cannot filter by it. */
+const GROUP_UID_LOOKUP_LIMIT = 10000
 
 export type GroupSortField = 'name' | 'created' | 'userCount'
 
@@ -300,16 +305,25 @@ export function useGroupsSearch(options: {
   const refetchLookupRef = useRef(refetchLookup)
   const refetchCountRef = useRef(countQuery.refetch)
   const refetchRanksRef = useRef(rankQuery.refetch)
+  const lookupNamesLengthRef = useRef(lookupNames.length)
+  const extrasLengthRef = useRef(extras.length)
   refetchPageRef.current = refetchPage
   refetchLookupRef.current = refetchLookup
   refetchCountRef.current = countQuery.refetch
   refetchRanksRef.current = rankQuery.refetch
+  lookupNamesLengthRef.current = lookupNames.length
+  extrasLengthRef.current = extras.length
 
   const refetch = useCallback(() => {
-    void refetchLookupRef.current()
+    // Lookup/rank queries are skipped when empty; refetching them POSTs empty Search variables.
+    if (lookupNamesLengthRef.current > 0) {
+      void refetchLookupRef.current()
+    }
     void refetchPageRef.current()
     void refetchCountRef.current()
-    void refetchRanksRef.current()
+    if (extrasLengthRef.current > 0) {
+      void refetchRanksRef.current()
+    }
   }, [])
 
   const additionalKey = (additionalGroups ?? []).map((group) => group.metadata.name ?? '').join('\n')
@@ -391,22 +405,28 @@ export function useGroupIdentity(name: string | undefined): Group | undefined {
   }, [found, loaded, mraGroups, name])
 }
 
-export async function findIndexedGroupName(id: string, hubName: string): Promise<string | undefined> {
-  const byName = await queryGroupName(hubName, { property: 'name', values: [id] })
-  if (byName) return byName
-  return queryGroupName(hubName, { property: '_uid', values: [`${hubName}/${id}`] })
-}
-
-async function queryGroupName(
-  hubName: string,
-  filter: { property: string; values: string[] }
-): Promise<string | undefined> {
+/**
+ * Resolve a Group CR name from a Kubernetes uid.
+ * Search returns `_uid` on items but rejects it as a filter, so load hub Groups once and match.
+ */
+export async function findIndexedGroupName(uid: string, hubName: string): Promise<string | undefined> {
   const result = await searchClient.query({
     query: SearchResultItemsDocument,
     variables: {
-      input: [{ filters: [...hubGroupFilters(hubName), filter], limit: 1 }],
+      input: [
+        {
+          filters: [...hubGroupFilters(hubName)],
+          limit: GROUP_UID_LOOKUP_LIMIT,
+        },
+      ],
     },
   })
-  const name = result.data?.searchResult?.[0]?.items?.[0]?.name
-  return typeof name === 'string' ? name : undefined
+  const items = result.data?.searchResult?.[0]?.items ?? []
+  const prefixed = `${hubName}/${uid}`
+  for (const item of items) {
+    if (typeof item?.name !== 'string') continue
+    const itemUid = typeof item._uid === 'string' ? item._uid : ''
+    if (itemUid === uid || itemUid === prefixed || itemUid.endsWith(`/${uid}`)) return item.name
+  }
+  return undefined
 }

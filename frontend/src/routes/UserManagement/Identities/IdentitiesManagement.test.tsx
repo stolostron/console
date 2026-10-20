@@ -63,15 +63,11 @@ function setupGroupDetails() {
     }
     return { promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)) }
   })
-  mockSearchQuery.mockImplementation(
-    ({ variables }: { variables: { input: { filters: { property: string; values: string[] }[] }[] } }) => {
-      const uid = variables.input[0].filters.find((filter) => filter.property === '_uid')
-      if (uid?.values[0] === 'local-cluster/test-group-uid') {
-        return Promise.resolve({ data: { searchResult: [{ items: [{ name: 'test-group' }] }] } })
-      }
-      return Promise.resolve({ data: { searchResult: [{ items: [] }] } })
-    }
-  )
+  mockSearchQuery.mockResolvedValue({
+    data: {
+      searchResult: [{ items: [{ name: 'test-group', _uid: 'local-cluster/test-group-uid' }] }],
+    },
+  })
 }
 
 const mockUser: User = {

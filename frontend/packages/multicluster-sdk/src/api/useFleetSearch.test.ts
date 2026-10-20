@@ -153,7 +153,24 @@ describe('useFleetSearch', () => {
 
       renderHook(() => useFleetSearch(undefined))
 
-      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(expect.objectContaining({ skip: true }))
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: true, variables: undefined })
+      )
+    })
+
+    it('should skip the query when input is null and not send input:[null]', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearch(null as unknown as undefined))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: true, variables: undefined })
+      )
     })
 
     it('should pass the correct variables to the query', () => {
