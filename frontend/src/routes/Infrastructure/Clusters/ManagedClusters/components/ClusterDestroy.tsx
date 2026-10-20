@@ -79,7 +79,9 @@ export function ClusterDestroy({
       successTitle={successTitle}
       successMessage={
         <Trans
-          i18nKey={`${cluster?.status}.success.message`}
+          i18nKey={
+            cluster.status === ClusterStatus.detaching ? 'detaching.success.message' : 'destroying.success.message'
+          }
           values={{ clusterName: cluster?.displayName }}
           components={{ bold: <strong /> }}
         />
