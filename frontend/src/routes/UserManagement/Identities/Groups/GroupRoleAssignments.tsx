@@ -3,7 +3,7 @@ import { PageSection } from '@patternfly/react-core'
 import { GroupKind } from '../../../../resources'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 const GroupRoleAssignments = () => {
   const { group } = useGroupDetailsContext()

@@ -5,11 +5,11 @@ import { Group } from '../../../../resources/rbac'
 import { GroupRoleAssignments } from './GroupRoleAssignments'
 import { render, screen } from '@testing-library/react'
 import { useSharedValue } from '../../../../shared-atoms'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
 
-jest.mock('./GroupPage', () => ({
+jest.mock('./useGroupDetailsContext', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 
