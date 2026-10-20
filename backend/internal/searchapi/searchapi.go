@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -118,8 +119,8 @@ func (c *Client) post(ctx context.Context, timeout time.Duration, body any) (*Re
 		return nil, err
 	}
 	req.Header.Set("Authorization", "Bearer "+c.Token)
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	resp, err := c.httpClient(timeout).Do(req)
 	if err != nil {
 		return nil, err

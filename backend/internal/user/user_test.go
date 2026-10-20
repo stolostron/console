@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -225,6 +226,166 @@ func TestUserPreferenceGet_APIError500(t *testing.T) {
 	}
 	if rec.Body.String() != "null" {
 		t.Fatalf("body %q", rec.Body.String())
+	}
+}
+
+func TestWrongMethods404(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{RESTConfig: base, Reviewer: stubReviewer{}})
+	for _, tc := range []struct {
+		method, path string
+	}{
+		{http.MethodPost, "/authenticated"},
+		{http.MethodPost, "/username"},
+		{http.MethodDelete, "/userpreference"},
+		{http.MethodGet, "/missing"},
+	} {
+		req := httptest.NewRequest(tc.method, tc.path, nil)
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		if rec.Code != http.StatusNotFound {
+			t.Fatalf("%s %s status %d", tc.method, tc.path, rec.Code)
+		}
+	}
+}
+
+func TestAuthenticated_ProbeError500(t *testing.T) {
+	ts := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		panic("unreachable")
+	}))
+	t.Cleanup(ts.Close)
+	base := &rest.Config{Host: "://bad-host", TLSClientConfig: rest.TLSClientConfig{Insecure: true}}
+	h := user.New(user.Options{RESTConfig: base, Reviewer: stubReviewer{}})
+	req := httptest.NewRequest(http.MethodGet, "/authenticated", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestUsername_ReviewError500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer:   stubReviewer{err: fmt.Errorf("review failed")},
+	})
+	req := httptest.NewRequest(http.MethodGet, "/username", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestUsername_UnauthenticatedEmpty(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer:   stubReviewer{result: auth.TokenReviewResult{Authenticated: false}},
+	})
+	req := httptest.NewRequest(http.MethodGet, "/username", nil)
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d", rec.Code)
+	}
+	var payload map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &payload); err != nil {
+		t.Fatal(err)
+	}
+	body := payload["body"].(map[string]interface{})
+	if body["username"] != "" {
+		t.Fatalf("username %v", body["username"])
+	}
+}
+
+func TestUserPreferencePost_Success(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: userPrefClient(),
+	})
+	req := httptest.NewRequest(http.MethodPost, "/userpreference", strings.NewReader(`[{"name":"saved"}]`))
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestUserPreferencePost_InvalidJSON500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: userPrefClient(),
+	})
+	req := httptest.NewRequest(http.MethodPost, "/userpreference", strings.NewReader(`not-json`))
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d", rec.Code)
+	}
+}
+
+func TestUserPreferencePatch_Success(t *testing.T) {
+	_, base := apiProbeServer(t)
+	obj := &unstructured.Unstructured{Object: map[string]interface{}{
+		"apiVersion": "console.open-cluster-management.io/v1",
+		"kind":       "UserPreference",
+		"metadata":   map[string]interface{}{"name": "kube-admin"},
+	}}
+	client := userPrefClient(obj)
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: client,
+	})
+	req := httptest.NewRequest(http.MethodPatch, "/userpreference", strings.NewReader(`[]`))
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestUserPreferencePatch_Error500(t *testing.T) {
+	_, base := apiProbeServer(t)
+	client := userPrefClient()
+	client.PrependReactor("patch", "userpreferences", func(ktesting.Action) (bool, runtime.Object, error) {
+		return true, nil, fmt.Errorf("patch denied")
+	})
+	h := user.New(user.Options{
+		RESTConfig: base,
+		Reviewer: stubReviewer{result: auth.TokenReviewResult{
+			Authenticated: true,
+			Username:      "kube:admin",
+		}},
+		Dynamic: client,
+	})
+	req := httptest.NewRequest(http.MethodPatch, "/userpreference", strings.NewReader(`[]`))
+	req.Header.Set("Authorization", "Bearer good")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	if rec.Code != http.StatusInternalServerError || rec.Body.String() != "null" {
+		t.Fatalf("status %d body %q", rec.Code, rec.Body.String())
 	}
 }
 

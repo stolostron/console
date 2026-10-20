@@ -4,6 +4,7 @@ package placementdebug
 
 import (
 	"encoding/json"
+	"github.com/stolostron/console/backend/internal/httpx"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -65,7 +66,7 @@ func TestProxiesUpstream(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/placement-debug", strings.NewReader(`{"placement":"test"}`))
 	req.Header.Set("Authorization", "Bearer user-token")
 	req.Header.Set("Cookie", "session=secret")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	rec := httptest.NewRecorder()
 	h.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {
@@ -77,13 +78,13 @@ func TestProxiesUpstream(t *testing.T) {
 	if gotCookie != "" {
 		t.Fatalf("cookie forwarded %q", gotCookie)
 	}
-	if gotCT != "application/json" {
+	if gotCT != httpx.MIMEJSON {
 		t.Fatalf("content-type %q", gotCT)
 	}
 	if string(gotBody) != `{"placement":"test"}` {
 		t.Fatalf("body %s", gotBody)
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatalf("resp ct %q", rec.Header().Get("Content-Type"))
 	}
 	if rec.Header().Get("X-Secret") != "" {

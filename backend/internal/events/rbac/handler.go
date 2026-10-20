@@ -11,45 +11,25 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	"k8s.io/client-go/rest"
 
-	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/events/sse"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 const keepAlive = 10 * time.Second
 
 // Authenticator validates a user token (GET /api, same as Node /events).
-type Authenticator interface {
-	Authenticate(ctx context.Context, token string) (bool, error)
-}
+type Authenticator = sse.Authenticator
 
 // APIAuth validates the browser token with GET /api using the user Bearer token.
-type APIAuth struct {
-	base *rest.Config
-}
+type APIAuth = sse.APIAuth
 
+// NewAPIAuth returns an Authenticator backed by ValidateUserToken.
 func NewAPIAuth(base *rest.Config) *APIAuth {
-	return &APIAuth{base: base}
-}
-
-func (a *APIAuth) Authenticate(ctx context.Context, token string) (bool, error) {
-	if a == nil || a.base == nil {
-		return false, nil
-	}
-	err := auth.ValidateUserToken(ctx, a.base, token)
-	if err != nil {
-		return false, err
-	}
-	return true, nil
+	return sse.NewAPIAuth(base)
 }
 
 // StaticAuth is for tests.
-type StaticAuth struct {
-	OK bool
-}
-
-func (s StaticAuth) Authenticate(context.Context, string) (bool, error) {
-	return s.OK, nil
-}
+type StaticAuth = sse.StaticAuth
 
 type watchPayload struct {
 	Type   string              `json:"type"`
@@ -67,27 +47,14 @@ type Handler struct {
 func NewHandler(store *Store, authn Authenticator, access AccessChecker) *Handler {
 	h := &Handler{store: store, authn: authn, access: access}
 	if a, ok := authn.(*APIAuth); ok {
-		h.base = a.base
+		h.base = a.Base
 	}
 	return h
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	token := auth.TokenFromRequest(r)
-	if token == "" {
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-	ok, err := h.authn.Authenticate(r.Context(), token)
-	if err != nil || !ok {
-		applog.Logger().Warn("rbac events unauthorized", "error", err)
-		w.WriteHeader(http.StatusUnauthorized)
-		return
-	}
-
-	flusher, ok := w.(http.Flusher)
+	token, flusher, ok := sse.Begin(w, r, h.authn, "rbac events unauthorized")
 	if !ok {
-		http.Error(w, "streaming unsupported", http.StatusInternalServerError)
 		return
 	}
 
@@ -97,6 +64,11 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
 	flusher.Flush()
+
+	if tracker, ok := h.access.(StreamTracker); ok {
+		tracker.BeginStream(token)
+		defer tracker.EndStream(token)
+	}
 
 	ch := h.store.Subscribe()
 	defer h.store.Unsubscribe(ch)
@@ -139,11 +111,9 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			if !ok {
 				return
 			}
-			if ev.Type != "DELETED" {
-				allowed, err := h.access.CanSee(r.Context(), token, ev.Role)
-				if err != nil || !allowed {
-					continue
-				}
+			allowed, err := h.see(r.Context(), token, ev)
+			if err != nil || !allowed {
+				continue
 			}
 			if err := writeSSE(w, flusher, watchPayload{Type: ev.Type, Object: ev.Role}); err != nil {
 				return
@@ -153,6 +123,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+func (h *Handler) see(ctx context.Context, token string, ev Event) (bool, error) {
+	if ev.Type == "DELETED" {
+		return h.access.CanSeeDeleted(ctx, token, ev.Role)
+	}
+	return h.access.CanSee(ctx, token, ev.Role)
 }
 
 func writeSSE(w http.ResponseWriter, flusher http.Flusher, payload watchPayload) error {

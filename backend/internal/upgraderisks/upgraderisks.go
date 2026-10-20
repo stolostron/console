@@ -17,6 +17,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
@@ -126,7 +127,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	chunks := chunkIDs(body.ClusterIDs, chunkSize)
 	if len(chunks) == 0 {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte("[]\n"))
 		return
 	}
@@ -147,7 +148,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}(i, ids)
 	}
 	wg.Wait()
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	enc := json.NewEncoder(w)
 	enc.SetEscapeHTML(false)
 	_ = enc.Encode(results)
@@ -206,8 +207,8 @@ func (h *Handler) postChunk(ctx context.Context, crcToken string, ids []string) 
 	if err != nil {
 		return postResult{}, err
 	}
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
+	req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	req.Header.Set("User-Agent", userAgent)
 	if crcToken != "" {
 		req.Header.Set("Authorization", "Bearer "+crcToken)

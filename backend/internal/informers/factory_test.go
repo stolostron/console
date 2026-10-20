@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stolostron/console/backend/internal/httpx"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -305,7 +306,7 @@ func TestSnapshotHandlerJSON(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
 	}
-	if rec.Header().Get("Content-Type") != "application/json" {
+	if rec.Header().Get(httpx.HeaderContentType) != httpx.MIMEJSON {
 		t.Fatal(rec.Header().Get("Content-Type"))
 	}
 	if !strings.Contains(rec.Body.String(), `"kind":"Namespace"`) ||
@@ -400,6 +401,53 @@ func TestUnavailableCRDDoesNotInvalidateCache(t *testing.T) {
 	}
 }
 
+func TestAcquireStartSlotCanceled(t *testing.T) {
+	orig := startConcurrency
+	startConcurrency = 1
+	resetStartSem()
+	t.Cleanup(func() {
+		startConcurrency = orig
+		resetStartSem()
+	})
+	startSem <- struct{}{}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if acquireStartSlot(ctx) {
+		t.Fatal("expected false when context canceled")
+	}
+	releaseStartSlot()
+}
+
+func TestLogHeapAndMemoryWhenReady(t *testing.T) {
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Version: "v1", Resource: "namespaces"}
+	listKinds := map[schema.GroupVersionResource]string{gvr: "NamespaceList"}
+	ns := uObj("v1", "Namespace", "", "default", "uid-ns", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, ns)
+	mapper := mapperFor("v1", metav1.APIResource{Name: "namespaces", Kind: "Namespace", Verbs: []string{"list", "watch"}})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, client, mapper, []WatchSpec{watch("Namespace", "v1")})
+	waitSynced(t, c)
+	c.logHeap("test heap")
+	go c.logMemoryWhenReady(ctx)
+	time.Sleep(100 * time.Millisecond)
+}
+
+func TestStartCacheCancelDuringRun(t *testing.T) {
+	mapper := mapperFor("v1", metav1.APIResource{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}})
+	scheme := runtime.NewScheme()
+	gvr := schema.GroupVersionResource{Version: "v1", Resource: "configmaps"}
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, map[schema.GroupVersionResource]string{
+		gvr: "ConfigMapList",
+	})
+	ctx, cancel := context.WithCancel(context.Background())
+	c := New([]WatchSpec{watch("ConfigMap", "v1")})
+	StartCache(ctx, c, client, mapper)
+	cancel()
+	time.Sleep(50 * time.Millisecond)
+}
+
 func TestStartConcurrencyLimitsLists(t *testing.T) {
 	orig := startConcurrency
 	startConcurrency = 2
@@ -434,7 +482,9 @@ func TestStartConcurrencyLimitsLists(t *testing.T) {
 		return false, nil, nil
 	})
 
-	mapper := mapperFor("v1", metav1.APIResource{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}})
+	mapper := mapperFor("v1", metav1.APIResource{
+		Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"},
+	})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	c := StartSpecs(ctx, client, mapper, []WatchSpec{

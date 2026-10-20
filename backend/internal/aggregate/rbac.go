@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"sort"
 	"sync"
 	"time"
 
@@ -16,6 +15,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/stolostron/console/backend/internal/auth"
+	"github.com/stolostron/console/backend/internal/ssarcache"
 )
 
 const (
@@ -256,55 +256,21 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any,
 }
 
 // StartCleanup expires SSAR cache entries.
-func (a *SSARAccess) StartCleanup(ctx context.Context) {
-	if a == nil {
-		return
-	}
-	go func() {
-		tick := time.NewTicker(accessCleanupEvery)
-		defer tick.Stop()
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-tick.C:
-				a.cleanup(time.Now())
-			}
-		}
-	}()
+// The returned channel is closed when the cleanup goroutine exits.
+func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
+	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	for th, st := range a.byToken {
-		for k, e := range st.entries {
-			if !e.expiry.After(now) {
-				delete(st.entries, k)
-			}
-		}
-		// Keep in-flight client creation so waiters stay single-flight.
-		if len(st.entries) == 0 && st.clientWait == nil {
-			delete(a.byToken, th)
-		}
-	}
-	if len(a.byToken) <= accessCacheMaxTokens {
-		return
-	}
-	type pair struct {
-		hash string
-		last time.Time
-	}
-	all := make([]pair, 0, len(a.byToken))
-	for h, st := range a.byToken {
-		all = append(all, pair{h, st.last})
-	}
-	sort.Slice(all, func(i, j int) bool { return all[i].last.Before(all[j].last) })
-	for i := 0; i < len(all) && len(a.byToken) > accessCacheMaxTokens; i++ {
-		st := a.byToken[all[i].hash]
-		if st != nil && st.clientWait != nil {
-			continue
-		}
-		delete(a.byToken, all[i].hash)
-	}
+	ssarcache.Sweep(a.byToken, accessCacheMaxTokens,
+		func(st *tokenState) time.Time { return st.last },
+		func(st *tokenState) bool {
+			ssarcache.ExpireIf(st.entries, func(e cacheEntry) bool { return !e.expiry.After(now) })
+			// Keep in-flight client creation so waiters stay single-flight.
+			return len(st.entries) == 0 && st.clientWait == nil
+		},
+		func(st *tokenState) bool { return st.clientWait != nil },
+	)
 }

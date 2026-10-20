@@ -1,11 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
 import i18next from 'i18next'
+import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
-import { AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
-import { clickElement } from '~/lib/test-util'
+import {
+  AcmDataFormDetails,
+  AcmDataFormInput,
+  AcmDataFormPage,
+  generalValidationMessage,
+  requiredValidationMessage,
+} from './AcmDataForm'
+import { clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
 
@@ -64,6 +71,92 @@ describe('ACMDataForm', () => {
     })
   })
 
+  describe('masked secret inputs', () => {
+    function SecretInput(props: { type: 'Text' | 'TextArea'; initialValue: string }) {
+      const [value, setValue] = useState(props.initialValue)
+      return (
+        <AcmDataFormInput
+          isReadOnly={false}
+          input={{
+            id: 'secret',
+            type: props.type,
+            label: 'Secret',
+            placeholder: 'Enter token',
+            value,
+            onChange: setValue,
+            isSecret: true,
+          }}
+        />
+      )
+    }
+
+    test('opens an empty secret revealed so it can be filled in', async () => {
+      render(<SecretInput type="Text" initialValue="" />)
+
+      const input = screen.getByPlaceholderText('Enter token')
+      expect(input).toHaveAttribute('type', 'text')
+      expect(input).toBeEnabled()
+
+      await typeElement(input, 'token')
+
+      expect(input).toHaveValue('token')
+      expect(input).toBeEnabled()
+    })
+
+    test('opens an existing secret masked and read-only until it is revealed', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      const input = screen.getByDisplayValue('ansibleToken')
+      expect(input).toHaveAttribute('type', 'password')
+      expect(input).toBeDisabled()
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+
+      expect(input).toHaveAttribute('type', 'text')
+      expect(input).toBeEnabled()
+    })
+
+    test('locks a revealed secret again when it is hidden', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+      await clickElement(screen.getByRole('button', { name: 'Hide credentials' }))
+
+      expect(screen.getByDisplayValue('ansibleToken')).toBeDisabled()
+    })
+
+    test('reopens the field when an existing secret is cleared', async () => {
+      render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      await clickElement(screen.getByRole('button', { name: 'Clear' }))
+
+      const input = screen.getByPlaceholderText('Enter token')
+      expect(input).toBeEnabled()
+      await typeElement(input, 'newToken')
+      expect(input).toHaveValue('newToken')
+    })
+
+    test('masks a multiline secret with a length-proportional mask and expands it on reveal', async () => {
+      render(<SecretInput type="TextArea" initialValue="secret value" />)
+
+      const masked = screen.getByDisplayValue('••••••••••••')
+      expect(masked).toBeDisabled()
+      expect(masked.tagName).toBe('INPUT')
+
+      await clickElement(screen.getByRole('button', { name: 'Reveal credentials' }))
+
+      const revealed = screen.getByDisplayValue('secret value')
+      expect(revealed.tagName).toBe('TEXTAREA')
+      expect(revealed).toBeEnabled()
+    })
+
+    test('has no accessibility violations while masked', async () => {
+      const { container } = render(<SecretInput type="Text" initialValue="ansibleToken" />)
+
+      expect(await axe(container)).toHaveNoViolations()
+    })
+  })
+
   describe('form-mode validation banner (ACM-45137)', () => {
     test('shows required-field banner in a PageSection without paddingTop override', async () => {
       render(<TestFormPage />)
@@ -89,6 +182,62 @@ describe('ACMDataForm', () => {
       // Banner sits between header and form content (not inside the drawer form section only)
       const header = screen.getByRole('heading', { name: 'Test form' })
       expect(header.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+  })
+
+  describe('details-mode secret values (ACM-48319)', () => {
+    const longSecret = `{"auths":{"registry.redhat.io":{"auth":"${'E2OFJJNjdZWUY2ODZmQWhjNW9mMUM3TDNESHdDU'.repeat(20)}"}}}`
+    const multilineSecret = ['-----BEGIN CERTIFICATE-----', 'A'.repeat(600), '', 'A'.repeat(600), ''].join('\n')
+
+    function detailsFormData(value: string): FormData {
+      return {
+        title: 'Credential',
+        sections: [
+          {
+            type: 'Section',
+            title: 'Pull secret',
+            inputs: [
+              {
+                id: 'pullSecret',
+                type: 'TextArea',
+                label: 'Pull secret',
+                value,
+                onChange: () => undefined,
+                isSecret: true,
+              },
+            ],
+          },
+        ],
+        submit: () => undefined,
+        cancel: () => undefined,
+        submitText: 'Submit',
+        submittingText: 'Submitting',
+        reviewTitle: 'Review',
+        reviewDescription: 'Review',
+        cancelLabel: 'Cancel',
+        nextLabel: 'Next',
+        backLabel: 'Back',
+        stateToData: () => [{}],
+      }
+    }
+
+    test.each([
+      ['a long single-line secret', longSecret],
+      ['a multiline secret', multilineSecret],
+    ])('revealing %s keeps the value wrappable instead of widening the page', async (_name, value) => {
+      const { container } = render(<AcmDataFormDetails formData={detailsFormData(value)} />)
+
+      expect(screen.getByText('****************')).toBeInTheDocument()
+
+      await clickElement(screen.getByRole('button', { name: /reveal credentials/i }))
+
+      const valueCell = container.querySelector('.pf-v6-l-split__item.pf-m-fill') as HTMLElement
+      expect(valueCell).toBeInTheDocument()
+      expect(valueCell).toHaveStyle({ whiteSpace: 'pre-wrap' })
+      expect(valueCell).toHaveStyle({ overflowWrap: 'anywhere' })
+
+      const revealButton = screen.getByRole('button', { name: /hide credentials/i })
+      expect(valueCell.contains(revealButton)).toBe(false)
     })
   })
 })

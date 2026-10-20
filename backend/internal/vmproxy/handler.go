@@ -18,6 +18,7 @@ import (
 
 	"github.com/stolostron/console/backend/internal/auth"
 	"github.com/stolostron/console/backend/internal/clusterproxy"
+	"github.com/stolostron/console/backend/internal/httpx"
 	applog "github.com/stolostron/console/backend/internal/log"
 	"github.com/stolostron/console/backend/internal/outbound"
 	"github.com/stolostron/console/backend/internal/server"
@@ -162,8 +163,8 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path str
 		req.Header.Set("Authorization", "Bearer "+token)
 	}
 	if !isSubresourceAction(path) {
-		req.Header.Set("Accept", "application/json")
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set(httpx.HeaderAccept, httpx.MIMEJSON)
+		req.Header.Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	}
 	resp, err := h.addonClient.Do(req)
 	if err != nil {
@@ -185,7 +186,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	parts := strings.Split(path, "/")
 	// /virtualmachines/get/<cluster>/<name>/<namespace>
 	if len(parts) < 6 {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte("null"))
 		return
 	}
@@ -207,7 +208,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	resp, err := h.addonClient.Do(req)
 	if err != nil {
 		applog.Logger().Error("Error getting VM resource (fine grained RBAC)", "error", err)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte("null"))
 		return
 	}
@@ -215,11 +216,11 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	decoded, err := decodeJSONBody(resp)
 	if err != nil {
 		applog.Logger().Error("Error getting VM resource (fine grained RBAC)", "error", err)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte("null"))
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	enc, _ := json.Marshal(decoded)
 	_, _ = w.Write(enc)
 }
@@ -228,7 +229,7 @@ func writeProxiedBody(w http.ResponseWriter, resp *http.Response) {
 	body, _ := io.ReadAll(resp.Body)
 	ct := resp.Header.Get("Content-Type")
 	var payload any
-	if strings.Contains(ct, "application/json") {
+	if strings.Contains(ct, httpx.MIMEJSON) {
 		if err := json.Unmarshal(body, &payload); err != nil {
 			payload = string(body)
 		}
@@ -239,7 +240,7 @@ func writeProxiedBody(w http.ResponseWriter, resp *http.Response) {
 	if _, isString := payload.(string); isString {
 		w.Header().Set("Content-Type", "text/plain")
 	} else {
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	}
 	status := resp.StatusCode
 	if status == 0 {

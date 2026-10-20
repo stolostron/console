@@ -15,22 +15,6 @@ import (
 	"github.com/stolostron/console/backend/internal/server"
 )
 
-var requestHeaders = []string{
-	"Accept",
-	"Accept-Encoding",
-	"Content-Encoding",
-	"Content-Length",
-	"Content-Type",
-}
-
-var responseHeaders = []string{
-	"Cache-Control",
-	"Content-Type",
-	"Content-Length",
-	"Content-Encoding",
-	"Etag",
-}
-
 const (
 	DefaultPrometheusURL    = "https://prometheus-k8s.openshift-monitoring.svc.cluster.local:9091"
 	DefaultObservabilityURL = "https://rbac-query-proxy.open-cluster-management-observability.svc.cluster.local:8443"
@@ -49,17 +33,12 @@ func New(target *url.URL, tlsConfig *tls.Config, prefix string) http.Handler {
 			pr.Out.URL.RawQuery = pr.In.URL.RawQuery
 			pr.Out.Host = target.Host
 			pr.Out.Header = http.Header{}
-			for _, name := range requestHeaders {
-				if v := pr.In.Header.Get(name); v != "" {
-					pr.Out.Header.Set(name, v)
-				}
-			}
-			pr.Out.Header.Set("Authorization", "Bearer "+token)
+			outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
 		},
-		ModifyResponse: filterResponseHeaders,
-		ErrorHandler: func(w http.ResponseWriter, _ *http.Request, _ error) {
-			w.WriteHeader(http.StatusBadGateway)
+		ModifyResponse: func(resp *http.Response) error {
+			return outbound.FilterResponseHeaders(resp, outbound.ProxyResponseHeaders)
 		},
+		ErrorHandler:  outbound.BadGateway,
 		Transport:     transport,
 		FlushInterval: -1 * time.Millisecond,
 	}
@@ -69,17 +48,6 @@ func New(target *url.URL, tlsConfig *tls.Config, prefix string) http.Handler {
 		}
 		rp.ServeHTTP(w, r)
 	})
-}
-
-func filterResponseHeaders(resp *http.Response) error {
-	filtered := http.Header{}
-	for _, name := range responseHeaders {
-		for _, v := range resp.Header.Values(name) {
-			filtered.Add(name, v)
-		}
-	}
-	resp.Header = filtered
-	return nil
 }
 
 // ParseTarget uses override when set, otherwise the in-cluster default.
