@@ -4,7 +4,7 @@ import { generatePath, Outlet, useLocation, useOutletContext, useParams } from '
 import { ErrorPage } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group, User } from '../../../../resources/rbac'
+import { User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
@@ -22,7 +22,6 @@ export const useCurrentUser = (): User | undefined => {
 
 export type UserDetailsContext = {
   readonly user?: User
-  readonly groups?: Group[]
 }
 
 const UserPage = () => {
@@ -31,16 +30,14 @@ const UserPage = () => {
   const location = useLocation()
 
   const user = useCurrentUser()
-  const { groupsState, isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const groups = useSharedValue(groupsState)
+  const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
 
   const userDetailsContext = useMemo<UserDetailsContext>(
     () => ({
       user,
-      groups,
     }),
-    [user, groups]
+    [user]
   )
 
   const isDetailsActive = location.pathname === generatePath(NavigationPath.identitiesUsersDetails, { id: id ?? '' })

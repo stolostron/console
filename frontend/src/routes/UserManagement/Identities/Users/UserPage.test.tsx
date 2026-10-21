@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import IdentitiesManagement from '../IdentitiesManagement'
-import { User, Group } from '../../../../resources/rbac'
+import { User } from '../../../../resources/rbac'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -39,18 +39,6 @@ const mockUser: User = {
   fullName: 'Test User',
 }
 
-const mockGroups: Group[] = [
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'Group',
-    metadata: {
-      name: 'developers',
-      creationTimestamp: '2025-01-24T16:00:00Z',
-    },
-    users: ['test-user'],
-  },
-]
-
 function Component({ userId = 'test-user' }: { userId?: string }) {
   return (
     <StateProvider>
@@ -68,7 +56,6 @@ describe('UserPage', () => {
 
     mockUseSharedAtoms.mockReturnValue({
       usersState: {} as any,
-      groupsState: {} as any,
       multiclusterRoleAssignmentState: {} as any,
       isDirectAuthenticationEnabledState: {} as any,
     } as any)
@@ -88,7 +75,6 @@ describe('UserPage', () => {
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
       .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component />)
@@ -110,7 +96,6 @@ describe('UserPage', () => {
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([userWithoutFullName]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
       .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component />)
@@ -124,7 +109,6 @@ describe('UserPage', () => {
       .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
       .mockReturnValueOnce(false) // UserPage: isDirectAuth
 
     render(<Component userId="test-user-uid" />)
@@ -137,7 +121,6 @@ describe('UserPage', () => {
       .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
       .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
       .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
       .mockReturnValueOnce(true) // UserPage: isDirectAuth
 
     render(<Component />)
