@@ -76,6 +76,9 @@ export function eventMatchesQueryClusterFilter(
   if (!clusters?.length) return true
   const uid = event.uid
   if (!uid) return true
+  // Search Event.uid is the Kubernetes resource UID (no cluster prefix). Accept those;
+  // only slash-delimited `<cluster>/<uid>` values are cluster-scoped.
+  if (!uid.includes('/')) return true
   const prefix = uid.split('/')[0]
   return clusters.includes(prefix)
 }

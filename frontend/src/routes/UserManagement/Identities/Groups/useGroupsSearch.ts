@@ -14,9 +14,6 @@ import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument, useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
 
-/** Bound for uid→name scans; Search returns `_uid` on items but often cannot filter by it. */
-const GROUP_UID_LOOKUP_LIMIT = 10000
-
 export type GroupSortField = 'name' | 'created' | 'userCount'
 
 type SortColumn = {
@@ -512,7 +509,8 @@ export async function findIndexedGroupName(id: string, hubName: string): Promise
       input: [
         {
           filters: [...hubGroupFilters(hubName)],
-          limit: GROUP_UID_LOOKUP_LIMIT,
+          // Search rejects `_uid` as a filter; scan all hub Groups (same as export).
+          limit: -1,
         },
       ],
     },

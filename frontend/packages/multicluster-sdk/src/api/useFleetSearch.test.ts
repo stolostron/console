@@ -107,6 +107,18 @@ describe('eventMatchesQueryClusterFilter', () => {
     }
     expect(eventMatchesQueryClusterFilter(makeEvent('INSERT', 'remote-cluster/uid-1', {}), input)).toBe(false)
   })
+
+  it('accepts bare Kubernetes resource UIDs when the query filters by cluster', () => {
+    const input: SearchInput = {
+      filters: [
+        { property: 'kind', values: ['Group'] },
+        { property: 'cluster', values: ['local-cluster'] },
+      ],
+    }
+    expect(
+      eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {}), input)
+    ).toBe(true)
+  })
 })
 
 describe('useFleetSearch', () => {
