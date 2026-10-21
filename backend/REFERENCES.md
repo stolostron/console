@@ -7,6 +7,9 @@ This document outlines the architecture of the `backend/internal` directory.
 | Paths | Handler |
 |-------|---------|
 | `POST /aggregate/*` | [aggregate/handler.go](internal/aggregate/handler.go) |
+| `POST /aggregate/applications` | [aggregate/pagination.go](internal/aggregate/pagination.go) |
+| `POST /aggregate/statuses` | [aggregate/appset.go](internal/aggregate/appset.go) |
+| `POST /aggregate/appSetData` | [aggregate/appset.go](internal/aggregate/appset.go) |
 | `ALL /api`, `ALL /api/*`, `ALL /apis`, `ALL /apis/*`, `GET /version` | [k8sproxy.go](internal/k8sproxy/k8sproxy.go) |
 | `POST /ansibletower` | [ansibletower.go](internal/ansibletower/ansibletower.go) |
 | `GET /authenticated`, `GET /username`, `ALL /userpreference` | [user.go](internal/user/user.go) |

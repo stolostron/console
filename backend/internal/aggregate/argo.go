@@ -8,6 +8,7 @@ import (
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
 
+// relatedKinds converts Search API Related entries to the internal mapKind type.
 func relatedKinds(related []searchapi.Related) []mapKind {
 	out := make([]mapKind, 0, len(related))
 	for _, r := range related {
@@ -16,6 +17,8 @@ func relatedKinds(related []searchapi.Related) []mapKind {
 	return out
 }
 
+// addArgoQueryInputs appends Search filters for remote Argo CD Applications,
+// optionally scoped to a page chunk of app names.
 func (e *Engine) addArgoQueryInputs(q *searchapi.Query) {
 	e.lastArgoChunk = e.nextAppPageChunk(&e.argoPageChunks, cacheRemoteArgo)
 	chunk := e.lastArgoChunk
@@ -33,6 +36,9 @@ func (e *Engine) addArgoQueryInputs(q *searchapi.Query) {
 	})
 }
 
+// cacheArgoApplications processes the Argo Search bucket: builds status maps,
+// merges push-model pod statuses, re-transforms local Argo and AppSet caches,
+// and caches remote Argo apps. Returns the OCP/Argo dedup filter.
 func (e *Engine) cacheArgoApplications(search searchapi.ResultBucket, pushResult *searchapi.ResultBucket, pushMap map[string]pushEntry) map[string]struct{} {
 	hub := e.hubClusterName()
 	clusters := e.clusters()
@@ -75,6 +81,9 @@ func (e *Engine) cacheArgoApplications(search searchapi.ResultBucket, pushResult
 	return e.ocpArgoFilter
 }
 
+// filterArgoApps separates standalone Argo apps from ApplicationSet children.
+// Children are grouped into appSetApps by owner; standalone apps are returned.
+// It also populates the ocpArgoFilter to prevent OCP duplicates.
 func filterArgoApps(items []map[string]any, clusters []Cluster, ocpFilter map[string]struct{}, appSetApps map[string][]map[string]any, hub string) []map[string]any {
 	var out []map[string]any
 	for _, app := range items {
@@ -127,6 +136,7 @@ func filterArgoApps(items []map[string]any, clusters []Cluster, ocpFilter map[st
 	return out
 }
 
+// simpleDest resolves an Argo destination to a cluster name for the OCP dedup key.
 func simpleDest(dest map[string]any, clusters []Cluster, hub string) string {
 	if dest == nil {
 		return "unknown"
@@ -153,6 +163,8 @@ func simpleDest(dest map[string]any, clusters []Cluster, hub string) string {
 	return name
 }
 
+// remoteArgoApps converts remote Search items into synthetic Argo Application
+// objects. AppSet-hosted items are tracked in tempPulled instead of returned.
 func (e *Engine) remoteArgoApps(remote []map[string]any) []map[string]any {
 	if len(e.argoPageChunks) == 0 {
 		e.pulledAppSetMap = e.tempPulled
@@ -213,6 +225,7 @@ func (e *Engine) remoteArgoApps(remote []map[string]any) []map[string]any {
 	return apps
 }
 
+// splitSlash splits a string by "/" without allocating intermediate slices.
 func splitSlash(s string) []string {
 	var out []string
 	start := 0
@@ -225,6 +238,8 @@ func splitSlash(s string) []string {
 	return out
 }
 
+// appSetPlacementData returns [placementName, sharingAppSetNames] for the
+// given ApplicationSet, used by the UIData enrichment.
 func (e *Engine) appSetPlacementData(appSet map[string]any, applicationSets []App) []any {
 	current := placementFromAppSet(appSet)
 	if current == "" {
@@ -247,6 +262,8 @@ func (e *Engine) appSetPlacementData(appSet map[string]any, applicationSets []Ap
 	return []any{current, sharing}
 }
 
+// placementFromAppSet extracts the Placement name from an ApplicationSet's
+// spec.generators or top-level spec via clusterDecisionResource matchLabels.
 func placementFromAppSet(obj map[string]any) string {
 	spec, _ := obj["spec"].(map[string]any)
 	gens := nestedSlice(obj, "spec", "generators")
@@ -259,6 +276,9 @@ func placementFromAppSet(obj map[string]any) string {
 	return ""
 }
 
+// createArgoStatusMap builds the per-app × per-cluster StatusMap from Argo
+// Search results, computing health/sync/deployed statuses and tracking
+// per-AppSet child health for the appStatusByName topology map.
 func (e *Engine) createArgoStatusMap(search searchapi.ResultBucket, clusters []Cluster) map[string]StatusMap {
 	e.appStatusByName = map[string]map[string]AppHealthSync{}
 	out := map[string]StatusMap{}
@@ -343,15 +363,21 @@ func (e *Engine) createArgoStatusMap(search searchapi.ResultBucket, clusters []C
 	return out
 }
 
+// containsLabel checks whether the semicolon-delimited label string contains needle.
 func containsLabel(label, needle string) bool {
 	return strings.Contains(label, needle)
 }
 
+// pushEntry links a workload (Deployment/StatefulSet) on a remote cluster
+// back to its parent ApplicationSet key for push-model pod status merging.
 type pushEntry struct {
 	appSetKey     string
 	targetCluster string
 }
 
+// mergePushModelPodStatuses folds push-model pod statuses into the existing
+// Argo status maps for ApplicationSets whose child apps have no Search-level
+// pod data.
 func mergePushModelPodStatuses(search searchapi.ResultBucket, pushMap map[string]pushEntry, argo map[string]StatusMap) {
 	if len(search.Items) == 0 {
 		return
@@ -419,6 +445,7 @@ func mergePushModelPodStatuses(search searchapi.ResultBucket, pushMap map[string
 	}
 }
 
+// splitOnce splits s at the first occurrence of sep into exactly two parts.
 func splitOnce(s, sep string) []string {
 	for i := 0; i+len(sep) <= len(s); i++ {
 		if s[i:i+len(sep)] == sep {

@@ -76,6 +76,7 @@ func NewEngine(lister Lister, search *searchapi.Client, dyn dynamic.Interface) *
 	}
 }
 
+// searchLimit returns the per-chunk Search GraphQL limit (APP_SEARCH_LIMIT or appSearchLimitDefault).
 func (e *Engine) searchLimit() int {
 	if v := os.Getenv("APP_SEARCH_LIMIT"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
@@ -85,6 +86,7 @@ func (e *Engine) searchLimit() int {
 	return appSearchLimitDefault
 }
 
+// searchInterval returns the interval between search-loop passes (APP_SEARCH_INTERVAL or 60s).
 func (e *Engine) searchInterval() time.Duration {
 	if v := os.Getenv("APP_SEARCH_INTERVAL"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
@@ -94,6 +96,8 @@ func (e *Engine) searchInterval() time.Duration {
 	return time.Duration(appSearchIntervalDefault) * time.Second
 }
 
+// preprocessLimit returns the item count threshold that triggers server-side
+// pre-processing (filter/sort/paginate). Tests can override via PreLimit.
 func (e *Engine) preprocessLimit() int {
 	if e.PreLimit != nil {
 		return *e.PreLimit
@@ -107,6 +111,9 @@ func (e *Engine) Start(ctx context.Context) {
 	go e.searchLoop(ctx)
 }
 
+// discoverPrefixes resolves system-namespace prefixes (MCH + MCE target
+// namespaces) so that OCP workloads in those namespaces are classified as
+// openshift-default instead of openshift.
 func (e *Engine) discoverPrefixes(ctx context.Context) {
 	prefixes := []string{"openshift", "hive", "open-cluster-management"}
 	if e.Dynamic != nil {
@@ -132,6 +139,7 @@ func (e *Engine) discoverPrefixes(ctx context.Context) {
 	e.mu.Unlock()
 }
 
+// retryWaitOrDefault returns the retry delay when MCH or Search API is absent (default 5m).
 func (e *Engine) retryWaitOrDefault() time.Duration {
 	if e.retryWait > 0 {
 		return e.retryWait
@@ -139,6 +147,7 @@ func (e *Engine) retryWaitOrDefault() time.Duration {
 	return 5 * time.Minute
 }
 
+// wait blocks for d or until ctx is cancelled. Returns false if cancelled.
 func (e *Engine) wait(ctx context.Context, d time.Duration) bool {
 	select {
 	case <-ctx.Done():
@@ -148,6 +157,10 @@ func (e *Engine) wait(ctx context.Context, d time.Duration) bool {
 	}
 }
 
+// searchLoop runs continuously until ctx is done. Each pass checks for MCH
+// and Search API availability, then calls aggregateRemote to refresh remote
+// app caches from Search. The first three passes use 15s intervals; later
+// passes use searchInterval.
 func (e *Engine) searchLoop(ctx context.Context) {
 	pass := 1
 	searchAPIMissing := false
@@ -215,6 +228,7 @@ func (e *Engine) searchLoop(ctx context.Context) {
 	}
 }
 
+// applications returns all cached App rows merged from every cache bucket.
 func (e *Engine) applications() []App {
 	e.mu.RLock()
 	defer e.mu.RUnlock()
@@ -225,12 +239,15 @@ func (e *Engine) applications() []App {
 	return items
 }
 
+// withListCache enables the per-rebuild listKind cache for the duration of fn,
+// so repeated listKind calls within one rebuild do not re-list from informers.
 func (e *Engine) withListCache(fn func()) {
 	e.listCache = map[string][]map[string]any{}
 	defer func() { e.listCache = nil }()
 	fn()
 }
 
+// rebuildSubscriptionLocked re-transforms ACM Subscription apps from the informer cache.
 func (e *Engine) rebuildSubscriptionLocked() {
 	subs := e.listKind("app.k8s.io/v1beta1", "Application")
 	e.cache[cacheSubscription].Resources = e.transform(subs, map[string]StatusMap{}, false, nil, nil, nil)
@@ -238,6 +255,8 @@ func (e *Engine) rebuildSubscriptionLocked() {
 	e.cache[cacheSubscription].ResourceMap = nil
 }
 
+// rebuildLocalLocked rebuilds all local (hub informer) cache buckets:
+// subscriptions, Argo CD Applications, and ApplicationSets. Must hold e.mu.
 func (e *Engine) rebuildLocalLocked() {
 	e.withListCache(func() {
 		e.rebuildSubscriptionLocked()
@@ -272,6 +291,9 @@ func (e *Engine) rebuildLocalLocked() {
 	})
 }
 
+// aggregateRemote issues Search GraphQL queries for Argo, OCP, and system
+// applications on remote clusters, then caches the results. System queries
+// run every 5th pass after pass 60 to reduce load.
 func (e *Engine) aggregateRemote(ctx context.Context, pass int) error {
 	querySystem := pass < 60 || pass%5 == 0
 	q := searchapi.NewQuery()
