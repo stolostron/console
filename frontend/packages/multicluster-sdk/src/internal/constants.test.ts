@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 describe('constants', () => {
   const originalBackendPath = process.env.REACT_APP_BACKEND_PATH

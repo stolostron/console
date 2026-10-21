@@ -88,7 +88,11 @@ function wrapper(groupId: string) {
   }
 }
 
-function searchEvent(operation: 'UPDATE' | 'DELETE', name: string, uid = 'local-cluster/kubevirt-admins-uid') {
+function searchEvent(
+  operation: 'INSERT' | 'UPDATE' | 'DELETE',
+  name: string,
+  uid = 'local-cluster/kubevirt-admins-uid'
+) {
   return {
     operation,
     uid,
