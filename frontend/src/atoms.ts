@@ -34,7 +34,6 @@ import {
   DiscoveredCluster,
   DiscoveryConfig,
   GitOpsCluster,
-  Group,
   HelmRelease,
   IResource,
   MachinePool,
@@ -99,7 +98,6 @@ export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
-export const groupsState = AtomArray<Group>()
 export const helmReleaseState = AtomArray<HelmRelease>()
 export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
