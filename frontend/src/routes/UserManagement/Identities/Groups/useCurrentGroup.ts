@@ -60,7 +60,18 @@ export const useCurrentGroup = (): CurrentGroup => {
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState<Error>()
 
-  const watchedName = fetched?.metadata?.name
+  // Watch by identity name even when only an MRA stub exists (no Group CR yet), so INSERT
+  // of the CR upgrades YAML/Users without leaving the page.
+  const mraIdentity = useMemo(
+    () =>
+      id
+        ? groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
+            (candidate) => candidate.metadata.uid === id || candidate.metadata.name === id
+          )
+        : undefined,
+    [id, mras]
+  )
+  const watchedName = fetched?.metadata?.name ?? mraIdentity?.metadata?.name
   const watchInput = useMemo(
     () => (watchedName ? { filters: hubGroupWatchFilters(watchedName) } : undefined),
     [watchedName]
@@ -133,6 +144,7 @@ export const useCurrentGroup = (): CurrentGroup => {
     handledEventKey.current = key
 
     if (latestEvent.operation === 'DELETE') {
+      // Match by Group name: the route id may still be the CR uid while the MRA subject is the name.
       const roleAssignmentGroup = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
         (candidate) => candidate.metadata.name === watchedName
       )
@@ -169,19 +181,11 @@ export const useCurrentGroup = (): CurrentGroup => {
         setFetched(resolved)
       })
       .catch(() => {
-        // Keep the CR already on screen if the background refresh fails.
+        // Keep whatever is on screen (CR or MRA stub) if the background refresh fails.
       })
   }, [fetched?.metadata?.uid, id, latestEvent, mras, navigate, t, toast, watchedName])
 
-  const synthetic = useMemo(
-    () =>
-      id && loaded && !fetched && !error
-        ? groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
-            (candidate) => candidate.metadata.uid === id || candidate.metadata.name === id
-          )
-        : undefined,
-    [error, fetched, id, loaded, mras]
-  )
+  const synthetic = loaded && !fetched && !error ? mraIdentity : undefined
 
   return { group: fetched ?? synthetic, loaded, error }
 }

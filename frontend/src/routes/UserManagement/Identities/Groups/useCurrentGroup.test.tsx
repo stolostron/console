@@ -182,6 +182,15 @@ describe('useCurrentGroup', () => {
       expect(result.current.group?.metadata.name).toBe('ops-team')
     })
     expect(mockGetResource).not.toHaveBeenCalled()
+    // Still watch by name so a later Group CR INSERT upgrades the page.
+    expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith({
+      filters: [
+        { property: 'kind', values: ['Group'] },
+        { property: 'apigroup', values: ['user.openshift.io'] },
+        { property: '_hubClusterResource', values: ['true'] },
+        { property: 'name', values: ['ops-team'] },
+      ],
+    })
   })
 
   test('falls back to an MRA-only group when Search fails', async () => {
@@ -197,7 +206,48 @@ describe('useCurrentGroup', () => {
       expect(result.current.loaded).toBe(true)
       expect(result.current.group?.metadata.name).toBe('ops-team')
     })
-    expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith(undefined)
+    expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith({
+      filters: expect.arrayContaining([{ property: 'name', values: ['ops-team'] }]),
+    })
+  })
+
+  test('loads the Group CR when Search INSERTs while viewing an MRA-only identity', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [opsMra]
+      return undefined
+    })
+    const created: Group = {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: { name: 'ops-team', uid: 'ops-team-uid', creationTimestamp: '2026-10-21T10:00:00Z' },
+      users: ['ops-user'],
+    }
+    mockGetResource.mockImplementation((resource: Group) => {
+      if (resource.metadata.name === 'ops-team') {
+        return { promise: Promise.resolve(created) }
+      }
+      return { promise: notFound() }
+    })
+
+    const { result, rerender } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('ops-team') })
+    await waitFor(() => {
+      expect(result.current.group?.metadata.uid).toBe('ops-team')
+      expect(result.current.group?.users).toEqual([])
+    })
+
+    mockUseFleetSearchSubscription.mockReturnValue([
+      searchEvent('INSERT', 'ops-team', 'weekly/ops-team-uid'),
+      false,
+      undefined,
+    ])
+    rerender()
+
+    await waitFor(() => {
+      expect(result.current.group?.metadata.uid).toBe('ops-team-uid')
+      expect(result.current.group?.users).toEqual(['ops-user'])
+    })
+    expect(result.current.loaded).toBe(true)
+    expect(mockGetResource).toHaveBeenCalled()
   })
 
   test('refetches the Group CR on a Search UPDATE without unloading the page', async () => {
