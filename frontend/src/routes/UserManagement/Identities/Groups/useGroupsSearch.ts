@@ -368,14 +368,20 @@ export function useGroupsSearch(options: {
     }
     return names
   }, [pageGroups])
+  // Search can surface a Group on the page before lookup drops it from extras; hold the
+  // stitched page and count until that overlap is reconciled (lookup refetch below).
+  const hasUnresolvedOverlap = useMemo(
+    () => extras.some((group) => searchNamesOnPage.has(group.metadata.name ?? '')),
+    [extras, searchNamesOnPage]
+  )
   const extrasNotOnSearchPage = useMemo(
     () => extras.filter((group) => !searchNamesOnPage.has(group.metadata.name ?? '')),
     [extras, searchNamesOnPage]
   )
-  const processedItemCount = searchCount + extrasNotOnSearchPage.length
+  const processedItemCount = hasUnresolvedOverlap ? 0 : searchCount + extrasNotOnSearchPage.length
 
   const pageReady = !canQueryPage || pageLoaded
-  const ready = extrasReady && ranksReady && pageReady && !countQuery.loading
+  const ready = extrasReady && ranksReady && pageReady && !countQuery.loading && !hasUnresolvedOverlap
   const groups = useMemo(() => {
     if (!ready) return []
     return preferSearchBackedGroups(stitchGroupPage((pageGroups ?? []).map(toGroup), extrasOnPage, start, perPage))
@@ -409,14 +415,12 @@ export function useGroupsSearch(options: {
   // When Search live-adds a Group that was still listed as an MRA extra, refresh lookup
   // and count so the stub drops out of extras (and pagination stays consistent).
   useEffect(() => {
-    if (!extras.length || searchNamesOnPage.size === 0) return
-    const overlap = extras.some((group) => searchNamesOnPage.has(group.metadata.name ?? ''))
-    if (!overlap) return
+    if (!hasUnresolvedOverlap) return
     if (lookupNamesLengthRef.current > 0) {
       void refetchLookupRef.current()
     }
     void refetchCountRef.current()
-  }, [extras, searchNamesOnPage])
+  }, [hasUnresolvedOverlap])
 
   const additionalKey = (additionalGroups ?? []).map((group) => group.metadata.name ?? '').join('\n')
   const skipAdditionalRefetch = useRef(true)
@@ -517,11 +521,14 @@ export async function findIndexedGroupName(id: string, hubName: string): Promise
   })
   const items = result.data?.searchResult?.[0]?.items ?? []
   const prefixed = `${hubName}/${id}`
+  // Prefer `_uid` matches so a route id that is a uid is not resolved via another Group's name.
   for (const item of items) {
     if (typeof item?.name !== 'string') continue
-    if (item.name === id) return item.name
     const itemUid = typeof item._uid === 'string' ? item._uid : ''
     if (itemUid === id || itemUid === prefixed || itemUid.endsWith(`/${id}`)) return item.name
+  }
+  for (const item of items) {
+    if (typeof item?.name === 'string' && item.name === id) return item.name
   }
   return undefined
 }

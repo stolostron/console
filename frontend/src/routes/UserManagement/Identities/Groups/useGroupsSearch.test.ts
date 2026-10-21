@@ -8,7 +8,13 @@ import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-r
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
-import { preferSearchBackedGroups, useGroupsSearch, useGroupIdentity, useHasHubGroups } from './useGroupsSearch'
+import {
+  findIndexedGroupName,
+  preferSearchBackedGroups,
+  useGroupsSearch,
+  useGroupIdentity,
+  useHasHubGroups,
+} from './useGroupsSearch'
 
 jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
   useFleetSearch: jest.fn(),
@@ -186,7 +192,7 @@ describe('useGroupsSearch', () => {
     expect(result.current.processedItemCount).toBe(2)
   })
 
-  test('prefers the Search-backed Group when an MRA stub and CR appear on the same page', () => {
+  test('holds the page and count while an MRA extra overlaps a Search row pending lookup', () => {
     const e2eFromSearch: Group = {
       apiVersion: 'user.openshift.io/v1',
       kind: 'Group',
@@ -204,7 +210,7 @@ describe('useGroupsSearch', () => {
       metadata: { name: 'mra-e2e', creationTimestamp: '2026-10-21T09:10:00Z' },
       spec: { subject: { kind: 'Group', name: 'e2e-cluster-group' }, roleAssignments: [] },
     }
-    // Lookup still empty (stale): MRA would otherwise stay as an extra beside the live Search row.
+    // Lookup still empty (stale): MRA remains an extra that overlaps the live Search row.
     setupAtoms([e2eMra])
     mockSearch([e2eFromSearch, developers], [], [0])
 
@@ -215,8 +221,41 @@ describe('useGroupsSearch', () => {
       })
     )
 
+    expect(result.current.loading).toBe(true)
+    expect(result.current.groups).toEqual([])
+    expect(result.current.processedItemCount).toBe(0)
+  })
+
+  test('shows the Search-backed Group once lookup reconciles the overlapping MRA extra', () => {
+    const e2eFromSearch: Group = {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: {
+        name: 'e2e-cluster-group',
+        uid: 'c2064147-9207-4dba-bfeb-3f18fdae53de',
+        creationTimestamp: '2026-10-21T09:11:00Z',
+      },
+      users: [],
+      userCount: 1,
+    }
+    const e2eMra: MulticlusterRoleAssignment = {
+      apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+      kind: 'MulticlusterRoleAssignment',
+      metadata: { name: 'mra-e2e', creationTimestamp: '2026-10-21T09:10:00Z' },
+      spec: { subject: { kind: 'Group', name: 'e2e-cluster-group' }, roleAssignments: [] },
+    }
+    setupAtoms([e2eMra])
+    mockSearch([e2eFromSearch, developers], [e2eFromSearch], [])
+
+    const { result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    expect(result.current.loading).toBe(false)
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['e2e-cluster-group', 'developers'])
-    expect(result.current.groups.filter((group) => group.metadata.name === 'e2e-cluster-group')).toHaveLength(1)
     expect(result.current.groups.find((group) => group.metadata.name === 'e2e-cluster-group')?.userCount).toBe(1)
     expect(result.current.processedItemCount).toBe(2)
   })
@@ -332,6 +371,45 @@ describe('useGroupsSearch', () => {
       })
     )
     expect(exported?.items.map((item) => item.metadata?.name)).toEqual(['developers', 'ops-team'])
+  })
+})
+
+describe('findIndexedGroupName', () => {
+  beforeEach(() => {
+    mockSearchQuery.mockReset()
+  })
+
+  test('resolves a uid match before a colliding name match', async () => {
+    mockSearchQuery.mockResolvedValue({
+      data: {
+        searchResult: [
+          {
+            items: [
+              { name: 'c2064147-9207-4dba-bfeb-3f18fdae53de', _uid: 'local-cluster/other-uid' },
+              { name: 'developers', _uid: 'local-cluster/c2064147-9207-4dba-bfeb-3f18fdae53de' },
+            ],
+          },
+        ],
+      },
+    })
+
+    await expect(findIndexedGroupName('c2064147-9207-4dba-bfeb-3f18fdae53de', 'local-cluster')).resolves.toBe(
+      'developers'
+    )
+  })
+
+  test('falls back to an exact name match when no uid matches', async () => {
+    mockSearchQuery.mockResolvedValue({
+      data: {
+        searchResult: [
+          {
+            items: [{ name: 'developers', _uid: 'local-cluster/other-uid' }],
+          },
+        ],
+      },
+    })
+
+    await expect(findIndexedGroupName('developers', 'local-cluster')).resolves.toBe('developers')
   })
 })
 
