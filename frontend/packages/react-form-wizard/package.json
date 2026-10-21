@@ -43,9 +43,9 @@
     "react-router": "^7"
   },
   "dependencies": {
-    "@patternfly/react-core": "^6.6.1",
-    "@patternfly/react-icons": "^6.6.1",
-    "@patternfly/react-table": "^6.6.1",
+    "@patternfly/react-core": "^6.7.0",
+    "@patternfly/react-icons": "^6.7.0",
+    "@patternfly/react-table": "^6.7.0",
     "@react-hook/resize-observer": "^2.0.2",
     "get-value": "3.0.1",
     "klona": "2.0.6",

@@ -36,14 +36,14 @@ exports[`renders with Global Search alert & no message 1`] = `
                       >
                         <div
                           class="pf-v6-c-content"
-                          data-ouia-component-id="OUIA-Generated-Content-:r6:"
+                          data-ouia-component-id="OUIA-Generated-Content-:r7:"
                           data-ouia-component-type="PF6/Content"
                           data-ouia-safe="true"
                           data-pf-content="true"
                         >
                           <h1
                             class="pf-v6-c-title pf-m-h1"
-                            data-ouia-component-id="OUIA-Generated-Title-:r7:"
+                            data-ouia-component-id="OUIA-Generated-Title-:r8:"
                             data-ouia-component-type="PF6/Title"
                             data-ouia-safe="true"
                           >
@@ -53,7 +53,7 @@ exports[`renders with Global Search alert & no message 1`] = `
                             >
                               <button
                                 class="pf-v6-c-button pf-m-plain"
-                                data-ouia-component-id="OUIA-Generated-Button-plain-:r9:"
+                                data-ouia-component-id="OUIA-Generated-Button-plain-:rb:"
                                 data-ouia-component-type="PF6/Button"
                                 data-ouia-safe="true"
                                 style="padding: 0px; margin-left: 8px; vertical-align: middle;"
