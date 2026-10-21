@@ -111,6 +111,13 @@ const parseListString = (listString: string): string[] | undefined => {
     .filter(Boolean)
 }
 
+/** Search stores counts as strings. `0` is a real count and must be kept. */
+const parseCount = (value: unknown): number | undefined => {
+  if (value === undefined || value === null || value === '') return undefined
+  const count = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(count) ? count : undefined
+}
+
 /**
  * Gets the UUID from a search UUID string.
  * @param searchUUID - The search UUID string
@@ -163,6 +170,13 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
   const resourceKey = getResourceKey(item.kind as string, item.apigroup)
   // See https://github.com/stolostron/search-collector/blob/main/pkg/transforms/genericResourceConfig.go
   switch (resourceKey) {
+    case 'Group.user.openshift.io': {
+      // Membership stays off the list item. userCount is the Users column.
+      const userCount = parseCount(item.userCount)
+      setIfDefined(resource, 'userCount', userCount)
+      break
+    }
+
     case 'ClusterServiceVersion.operators.coreos.com':
       setIfDefined(resource, 'spec.version', item.version)
       setIfDefined(resource, 'spec.displayName', item.display)
@@ -313,13 +327,13 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       const volumes =
         dataVolumeNamesList || pvcClaimNamesList
           ? [
-              ...(dataVolumeNamesList || []).map((name) => ({
-                dataVolume: { name },
-              })),
-              ...(pvcClaimNamesList || []).map((claimName) => ({
-                persistentVolumeClaim: { claimName },
-              })),
-            ]
+            ...(dataVolumeNamesList || []).map((name) => ({
+              dataVolume: { name },
+            })),
+            ...(pvcClaimNamesList || []).map((claimName) => ({
+              persistentVolumeClaim: { claimName },
+            })),
+          ]
           : undefined
       setIfDefined(resource, 'spec.template.spec.volumes', volumes)
       setIfDefined(resource, 'status.printableStatus', item.status)
