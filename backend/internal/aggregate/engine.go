@@ -147,7 +147,7 @@ func (e *Engine) retryWaitOrDefault() time.Duration {
 	return 5 * time.Minute
 }
 
-// wait blocks for d or until ctx is cancelled. Returns false if cancelled.
+// wait blocks for d or until ctx is canceled. Returns false if canceled.
 func (e *Engine) wait(ctx context.Context, d time.Duration) bool {
 	select {
 	case <-ctx.Done():

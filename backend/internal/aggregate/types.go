@@ -51,25 +51,25 @@ const (
 
 // Application type identifiers stored in Transform.Type and used for filtering.
 const (
-	kindSubscriptionApp  = "subscription"     // ACM Subscription-based application
-	kindArgo             = "argo"             // standalone Argo CD Application
-	kindAppSet           = "appset"           // Argo CD ApplicationSet
-	kindFlux             = "flux"             // Flux CD application (kustomize or helm)
-	kindOpenShift        = "openshift"        // OpenShift workload (Deployment with owner labels)
+	kindSubscriptionApp  = "subscription"      // ACM Subscription-based application
+	kindArgo             = "argo"              // standalone Argo CD Application
+	kindAppSet           = "appset"            // Argo CD ApplicationSet
+	kindFlux             = "flux"              // Flux CD application (kustomize or helm)
+	kindOpenShift        = "openshift"         // OpenShift workload (Deployment with owner labels)
 	kindOpenShiftDefault = "openshift-default" // OpenShift workload in a system namespace
 )
 
 // Cache bucket keys for Engine.cache. Each bucket holds a different category
 // of application, split into local (hub informer) and remote (Search API) sources.
 const (
-	cacheSubscription = "subscription"  // ACM Subscription apps (local informer only)
-	cacheAppSet       = "appset"        // Argo CD ApplicationSets (local informer only)
-	cacheLocalArgo    = "localArgoApps" // Argo CD Applications discovered from hub informer
+	cacheSubscription = "subscription"   // ACM Subscription apps (local informer only)
+	cacheAppSet       = "appset"         // Argo CD ApplicationSets (local informer only)
+	cacheLocalArgo    = "localArgoApps"  // Argo CD Applications discovered from hub informer
 	cacheRemoteArgo   = "remoteArgoApps" // Argo CD Applications discovered from Search
-	cacheLocalOCP     = "localOCPApps"  // OCP workloads on the hub cluster (from Search)
-	cacheRemoteOCP    = "remoteOCPApps" // OCP workloads on managed clusters (from Search)
-	cacheLocalSys     = "localSysApps"  // system-namespace OCP workloads on the hub (from Search)
-	cacheRemoteSys    = "remoteSysApps" // system-namespace OCP workloads on managed clusters (from Search)
+	cacheLocalOCP     = "localOCPApps"   // OCP workloads on the hub cluster (from Search)
+	cacheRemoteOCP    = "remoteOCPApps"  // OCP workloads on managed clusters (from Search)
+	cacheLocalSys     = "localSysApps"   // system-namespace OCP workloads on the hub (from Search)
+	cacheRemoteSys    = "remoteSysApps"  // system-namespace OCP workloads on managed clusters (from Search)
 )
 
 // cacheKeys lists every cache bucket in the order they are merged when
