@@ -23,11 +23,7 @@ function groupUsersFromEventData(data: unknown): string[] {
 }
 
 /** True when the watch event adds, removes, or deletes a group for this user. */
-export function groupEventAffectsUser(
-  event: GroupMembershipEvent,
-  userName: string,
-  listedUids: Set<string>
-): boolean {
+export function groupEventAffectsUser(event: GroupMembershipEvent, userName: string, listedUids: Set<string>): boolean {
   if (groupUsersFromEventData(event.oldData).includes(userName)) return true
   if (groupUsersFromEventData(event.newData).includes(userName)) return true
   // DELETE (or sparse payloads) may omit groupUsers — refresh if we already listed this uid.

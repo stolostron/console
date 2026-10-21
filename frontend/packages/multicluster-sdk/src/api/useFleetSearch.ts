@@ -68,10 +68,7 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
  * `_hubClusterResource` because Search drops Group events for `cluster`), ignore
  * subscription events whose uid cluster prefix is outside the query filter.
  */
-export function eventMatchesQueryClusterFilter(
-  event: FleetSearchEvent,
-  input: SearchInput | undefined
-): boolean {
+export function eventMatchesQueryClusterFilter(event: FleetSearchEvent, input: SearchInput | undefined): boolean {
   const clusters = input?.filters?.find((filter) => filter?.property === 'cluster')?.values
   if (!clusters?.length) return true
   const uid = event.uid

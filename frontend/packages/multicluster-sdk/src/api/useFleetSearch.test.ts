@@ -115,9 +115,9 @@ describe('eventMatchesQueryClusterFilter', () => {
         { property: 'cluster', values: ['local-cluster'] },
       ],
     }
-    expect(
-      eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {}), input)
-    ).toBe(true)
+    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {}), input)).toBe(
+      true
+    )
   })
 })
 

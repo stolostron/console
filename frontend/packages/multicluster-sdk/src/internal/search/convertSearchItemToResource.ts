@@ -327,13 +327,13 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       const volumes =
         dataVolumeNamesList || pvcClaimNamesList
           ? [
-            ...(dataVolumeNamesList || []).map((name) => ({
-              dataVolume: { name },
-            })),
-            ...(pvcClaimNamesList || []).map((claimName) => ({
-              persistentVolumeClaim: { claimName },
-            })),
-          ]
+              ...(dataVolumeNamesList || []).map((name) => ({
+                dataVolume: { name },
+              })),
+              ...(pvcClaimNamesList || []).map((claimName) => ({
+                persistentVolumeClaim: { claimName },
+              })),
+            ]
           : undefined
       setIfDefined(resource, 'spec.template.spec.volumes', volumes)
       setIfDefined(resource, 'status.printableStatus', item.status)

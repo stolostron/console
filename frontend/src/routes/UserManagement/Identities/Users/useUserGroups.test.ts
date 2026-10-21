@@ -67,9 +67,9 @@ describe('groupEventAffectsUser', () => {
   })
 
   it('matches listed uid when groupUsers is absent (sparse DELETE)', () => {
-    expect(groupEventAffectsUser({ uid: 'local-cluster/group-uid', oldData: {}, newData: null }, 'test-user', listed)).toBe(
-      true
-    )
+    expect(
+      groupEventAffectsUser({ uid: 'local-cluster/group-uid', oldData: {}, newData: null }, 'test-user', listed)
+    ).toBe(true)
   })
 
   it('ignores unrelated group updates', () => {

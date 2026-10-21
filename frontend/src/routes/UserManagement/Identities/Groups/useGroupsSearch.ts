@@ -39,7 +39,7 @@ export function hubGroupFilters(hubName: string): SearchFilter[] {
 /**
  * Filters for a Group GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
  * and drops Group events when `cluster` is set. Hub scope uses `_hubClusterResource`.
- * 
+ *
  */
 export function hubGroupWatchFilters(name?: string): SearchFilter[] {
   return [
