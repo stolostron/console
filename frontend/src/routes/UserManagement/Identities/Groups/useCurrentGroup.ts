@@ -131,7 +131,9 @@ export const useCurrentGroup = (): CurrentGroup => {
 
   const handledEventKey = useRef<string>()
   const watchedNameRef = useRef(watchedName)
-  watchedNameRef.current = watchedName
+  useEffect(() => {
+    watchedNameRef.current = watchedName
+  }, [watchedName])
 
   useEffect(() => {
     if (!latestEvent || !watchedName) return
