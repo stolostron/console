@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitForElementToBeRemoved } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { DOC_VERSION } from '../lib/doc-util'
 import { AcmFeedbackModal } from './AcmFeedbackModal'
@@ -19,7 +19,7 @@ describe('AcmFeedbackModal', () => {
 
     //close Feedback Modal
     await clickElement(screen.getByRole('button', { name: /cancel/i }))
-    expect(queryByText('Tell us about your experience')).toBeNull()
+    await waitForElementToBeRemoved(() => queryByText('Tell us about your experience'))
   })
 
   it('opens share feedback and support case links', async () => {
