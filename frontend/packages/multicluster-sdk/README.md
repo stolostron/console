@@ -458,7 +458,7 @@ Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
 | ---------- | ---------- |
 | `toWatchInput` | `(input: SearchInput) => SearchInput` |
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L211)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L249)
 
 ### :gear: useFleetAccessReview
 
@@ -981,7 +981,7 @@ const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L292)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L330)
 
 ### :gear: useFleetSearchPoll
 
@@ -1459,7 +1459,7 @@ type UseFleetSearchOptions = {
 }
 ```
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L199)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L237)
 
 
 <!-- TSDOC_END -->

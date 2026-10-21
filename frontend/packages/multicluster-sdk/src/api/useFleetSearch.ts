@@ -80,6 +80,41 @@ export function eventMatchesQueryClusterFilter(event: FleetSearchEvent, input: S
   return clusters.includes(prefix)
 }
 
+function clusterFromEventData(data: unknown): string | undefined {
+  if (!data || typeof data !== 'object') return undefined
+  const cluster = (data as Record<string, unknown>).cluster
+  return typeof cluster === 'string' && cluster ? cluster : undefined
+}
+
+/**
+ * Resolve a trustworthy cluster for a Search event.
+ * Prefer payload `cluster`, then a `<cluster>/<uid>` prefix, then a sole query `cluster` filter.
+ */
+function resolveEventCluster(event: FleetSearchEvent, input: SearchInput | undefined): string | undefined {
+  const fromPayload = clusterFromEventData(event.newData) ?? clusterFromEventData(event.oldData)
+  if (fromPayload) return fromPayload
+  const uid = event.uid
+  if (uid?.includes('/')) return uid.split('/')[0]
+  const clusters = input?.filters
+    ?.find((filter) => filter?.property === 'cluster')
+    ?.values?.filter((value): value is string => typeof value === 'string' && value.length > 0)
+  if (clusters?.length === 1) return clusters[0]
+  return undefined
+}
+
+function eventSearchUid(event: FleetSearchEvent, cluster: string | undefined): string | undefined {
+  const uid = event.uid
+  if (!uid) return undefined
+  if (uid.includes('/')) return uid
+  return cluster ? `${cluster}/${uid}` : undefined
+}
+
+function itemMatchesEventUid(itemUid: unknown, eventUid: string | undefined, searchUid: string | undefined): boolean {
+  if (typeof itemUid !== 'string' || !eventUid) return false
+  if (itemUid === eventUid || (searchUid != null && itemUid === searchUid)) return true
+  return itemUid.endsWith(`/${eventUid}`)
+}
+
 /**
  * Decide whether a subscription event requires a full refetch rather than a
  * local patch, given the current page contents and search mode.
@@ -108,6 +143,13 @@ function wouldTriggerRefetch(
   mode: SearchMode,
   input: SearchInput | undefined
 ): boolean {
+  const cluster = resolveEventCluster(event, input)
+  const searchUid = eventSearchUid(event, cluster)
+  // Bare UID INSERT/UPDATE without a resolvable cluster would corrupt local `cluster`/`_uid`.
+  if ((event.operation === 'INSERT' || event.operation === 'UPDATE') && !cluster) {
+    return true
+  }
+
   if (mode === 'unbounded') return false
 
   if (mode === 'paginated-unordered') {
@@ -121,8 +163,7 @@ function wouldTriggerRefetch(
   if (event.operation === 'INSERT') {
     if (!event.newData) return false
     if (current.length === 0) return true // empty page — cannot determine position → refetch
-    const cluster = event.uid.split('/')[0]
-    const newVal = String(({ ...event.newData, cluster, _uid: event.uid } as SearchItem)[field] ?? '')
+    const newVal = String(({ ...event.newData, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
     const firstVal = String(current[0][field] ?? '')
     const lastVal = String(current[current.length - 1][field] ?? '')
     const cmpFirst = sortCmp(newVal, firstVal, descending)
@@ -135,12 +176,11 @@ function wouldTriggerRefetch(
 
   if (event.operation === 'DELETE') {
     if (current.length === 0) return false
-    if (current.some((item) => item._uid === event.uid)) return true // on this page → gap → refetch
+    if (current.some((item) => itemMatchesEventUid(item._uid, event.uid, searchUid))) return true
     // Not on this page. Check position using oldData.
     const oldRaw = event.oldData
     if (oldRaw) {
-      const cluster = event.uid.split('/')[0]
-      const oldVal = String(({ ...oldRaw, cluster, _uid: event.uid } as SearchItem)[field] ?? '')
+      const oldVal = String(({ ...oldRaw, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
       const lastVal = String(current[current.length - 1][field] ?? '')
       // ≤ last → was on an earlier page; its removal shifts our window → refetch
       return sortCmp(oldVal, lastVal, descending) <= 0
@@ -161,11 +201,13 @@ function applyEvent(
   mode: SearchMode,
   input: SearchInput | undefined
 ): SearchItem[] {
+  const cluster = resolveEventCluster(event, input)
+  const searchUid = eventSearchUid(event, cluster)
+
   switch (event.operation) {
     case 'INSERT': {
-      if (!event.newData) return current
-      const cluster = event.uid.split('/')[0]
-      const patchedItem: SearchItem = { ...event.newData, cluster, _uid: event.uid }
+      if (!event.newData || !cluster || !searchUid) return current
+      const patchedItem: SearchItem = { ...event.newData, cluster, _uid: searchUid }
       if (current.some((item) => item._uid === patchedItem._uid)) return current // dedup
       if (mode === 'unbounded') {
         return insertSorted(current, patchedItem, input?.orderBy)
@@ -177,15 +219,14 @@ function applyEvent(
       return inserted
     }
     case 'UPDATE': {
-      if (!event.newData) return current
-      const cluster = event.uid.split('/')[0]
-      const patchedItem: SearchItem = { ...event.newData, cluster, _uid: event.uid }
+      if (!event.newData || !cluster || !searchUid) return current
+      const patchedItem: SearchItem = { ...event.newData, cluster, _uid: searchUid }
       // Update in place. No re-sort: K8s names are immutable, and re-sorting a paginated
       // result would cause items to jump across page boundaries unpredictably.
-      return current.map((item) => (item._uid === patchedItem._uid ? patchedItem : item))
+      return current.map((item) => (itemMatchesEventUid(item._uid, event.uid, searchUid) ? patchedItem : item))
     }
     case 'DELETE': {
-      return current.filter((item) => item._uid !== event.uid)
+      return current.filter((item) => !itemMatchesEventUid(item._uid, event.uid, searchUid))
     }
     default:
       return current

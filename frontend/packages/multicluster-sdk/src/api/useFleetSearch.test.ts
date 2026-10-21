@@ -386,6 +386,121 @@ describe('useFleetSearch', () => {
       expect(result.current[0]!.map((r) => r.metadata?.name).sort()).toEqual(['hub-group', 'new-hub-group'])
     })
 
+    it('should resolve cluster from newData for bare-UID INSERT instead of using the UID as cluster', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {
+          kind: 'Group',
+          name: 'bare-uid-group',
+          cluster: 'local-cluster',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(result.current[0]).toHaveLength(2)
+      const added = result.current[0]!.find((r) => r.metadata?.name === 'bare-uid-group')
+      expect(added?.cluster).toBe('local-cluster')
+      expect(added?.metadata?.uid).toBe('d55b07ae-137f-4b39-8a85-8fd053f8e5e7')
+    })
+
+    it('should resolve bare-UID cluster from the sole query cluster filter when payload omits cluster', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', {
+          kind: 'Group',
+          name: 'filter-cluster-group',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      const added = result.current[0]!.find((r) => r.metadata?.name === 'filter-cluster-group')
+      expect(added?.cluster).toBe('local-cluster')
+      expect(added?.metadata?.uid).toBe('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
+    })
+
+    it('should refetch on bare-UID INSERT when cluster cannot be resolved', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      // No cluster filter on the query and no cluster on the event payload.
+      const pageInput: SearchInput = {
+        filters: [{ property: 'kind', values: ['Group'] }],
+      }
+      const mockRefetch = pendingRefetch()
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', {
+          kind: 'Group',
+          name: 'unknown-cluster-group',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(mockRefetch).toHaveBeenCalled()
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.name).toBe('hub-group')
+    })
+
+    it('should UPDATE and DELETE by bare UID against prefixed local _uid values', () => {
+      const hubItem = {
+        ...mockSearchItem,
+        name: 'hub-group',
+        _uid: 'local-cluster/d55b07ae-137f-4b39-8a85-8fd053f8e5e7',
+        cluster: 'local-cluster',
+      }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent(
+          'UPDATE',
+          'd55b07ae-137f-4b39-8a85-8fd053f8e5e7',
+          { kind: 'Group', name: 'hub-group', cluster: 'local-cluster', label: 'updated=true' },
+          hubItem
+        ),
+        false,
+        undefined,
+      ])
+
+      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true))
+      expect(result.current[0]![0].metadata?.labels).toEqual({ updated: 'true' })
+
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', null, hubItem),
+        false,
+        undefined,
+      ])
+      act(() => {
+        rerender()
+      })
+      expect(result.current[0]).toHaveLength(0)
+    })
+
     it('should drop off-cluster events from the refetch queue before settleRefetch applies them', async () => {
       const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
       const pageInput: SearchInput = {
