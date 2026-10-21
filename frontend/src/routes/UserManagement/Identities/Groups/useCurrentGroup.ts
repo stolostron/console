@@ -1,12 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { generatePath, useNavigate, useParams } from 'react-router'
+import { useFleetSearchSubscription } from '@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
+import { useTranslation } from '../../../../lib/acm-i18next'
+import { NavigationPath } from '../../../../NavigationPath'
 import { Group, GroupKind, UserApiVersion } from '../../../../resources/rbac'
 import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
+import { AcmToastContext } from '../../../../ui-components'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
-import { findIndexedGroupName } from './useGroupsSearch'
+import { findIndexedGroupName, hubGroupWatchFilters } from './useGroupsSearch'
 
 export type CurrentGroup = {
   group?: Group
@@ -29,14 +33,39 @@ async function readGroup(name: string): Promise<Group | undefined> {
   }
 }
 
+function eventName(data: { name?: unknown } | null | undefined): string | undefined {
+  return typeof data?.name === 'string' ? data.name : undefined
+}
+
+function eventMatchesGroup(
+  uid: string,
+  name: string | undefined,
+  groupUid: string | undefined,
+  groupName: string | undefined
+): boolean {
+  if (groupName && name === groupName) return true
+  if (!groupUid || !uid) return false
+  return uid === groupUid || uid.endsWith(`/${groupUid}`)
+}
+
 export const useCurrentGroup = (): CurrentGroup => {
+  const { t } = useTranslation()
   const { id } = useParams()
+  const navigate = useNavigate()
+  const toast = useContext(AcmToastContext)
   const hubName = useLocalHubName()
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const mras = useSharedValue(multiclusterRoleAssignmentState)
   const [fetched, setFetched] = useState<Group>()
   const [loaded, setLoaded] = useState(false)
   const [error, setError] = useState<Error>()
+
+  const watchedName = fetched?.metadata?.name
+  const watchInput = useMemo(
+    () => (watchedName ? { filters: hubGroupWatchFilters(watchedName) } : undefined),
+    [watchedName]
+  )
+  const [latestEvent] = useFleetSearchSubscription(watchInput)
 
   useEffect(() => {
     if (!id) {
@@ -88,6 +117,61 @@ export const useCurrentGroup = (): CurrentGroup => {
       cancelled = true
     }
   }, [hubName, id])
+
+  const handledEventKey = useRef<string>()
+  const watchedNameRef = useRef(watchedName)
+  watchedNameRef.current = watchedName
+
+  useEffect(() => {
+    if (!latestEvent || !watchedName) return
+    const key = `${latestEvent.operation}:${latestEvent.uid}:${String(latestEvent.timestamp)}`
+    if (handledEventKey.current === key) return
+
+    const groupUid = fetched?.metadata?.uid
+    const dataName = eventName(latestEvent.newData) ?? eventName(latestEvent.oldData)
+    if (!eventMatchesGroup(latestEvent.uid, dataName, groupUid, watchedName)) return
+    handledEventKey.current = key
+
+    if (latestEvent.operation === 'DELETE') {
+      const roleAssignmentGroup = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
+        (candidate) => candidate.metadata.name === watchedName
+      )
+      if (roleAssignmentGroup) {
+        toast.addAlert({
+          type: 'warning',
+          title: t('Group {{name}} was deleted. Showing the identity from the role assignment.', {
+            name: watchedName,
+          }),
+          autoClose: true,
+        })
+        if (id !== watchedName) {
+          navigate(generatePath(NavigationPath.identitiesGroupsDetails, { id: watchedName }), { replace: true })
+        } else {
+          setFetched(undefined)
+        }
+        return
+      }
+      toast.addAlert({
+        type: 'warning',
+        title: t('Group {{name}} was deleted.', { name: watchedName }),
+        autoClose: true,
+      })
+      navigate(NavigationPath.identitiesGroups, { replace: true })
+      return
+    }
+
+    if (latestEvent.operation !== 'UPDATE' && latestEvent.operation !== 'INSERT') return
+
+    const name = watchedName
+    void readGroup(name)
+      .then((resolved) => {
+        if (watchedNameRef.current !== name || !resolved) return
+        setFetched(resolved)
+      })
+      .catch(() => {
+        // Keep the CR already on screen if the background refresh fails.
+      })
+  }, [fetched?.metadata?.uid, id, latestEvent, mras, navigate, t, toast, watchedName])
 
   const synthetic = useMemo(
     () =>

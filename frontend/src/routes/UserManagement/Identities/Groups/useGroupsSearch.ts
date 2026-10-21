@@ -38,6 +38,19 @@ export function hubGroupFilters(hubName: string): SearchFilter[] {
   ]
 }
 
+/**
+ * Filters for a Group GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
+ * and drops Group events when `cluster` is set. Hub scope uses `_hubClusterResource`.
+ */
+export function hubGroupWatchFilters(name?: string): SearchFilter[] {
+  return [
+    { property: 'kind', values: ['Group'] },
+    { property: 'apigroup', values: ['user.openshift.io'] },
+    { property: '_hubClusterResource', values: ['true'] },
+    ...(name ? [{ property: 'name', values: [name] }] : []),
+  ]
+}
+
 export function keywordsFromSearch(search?: string): string[] | undefined {
   const keywords = (search ?? '').trim().split(/\s+/).filter(Boolean)
   return keywords.length > 0 ? keywords : undefined
@@ -277,14 +290,11 @@ export function useGroupsSearch(options: {
       orderBy,
     }
   }, [baseFilters, canQueryPage, keywords, orderBy, searchLimit, searchOffset])
-  // Search watch does not support limit/offset/orderBy, and drops Group events when
-  // `cluster` is in the subscription filters. Query keeps hub filters + pagination.
+  // Query keeps hub `cluster` + pagination. The watch uses `_hubClusterResource` instead of
+  // `cluster` (Search drops Group events for that property) and omits limit/offset/orderBy.
   const watchInput = useMemo<SearchInput>(
     () => ({
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'apigroup', values: ['user.openshift.io'] },
-      ],
+      filters: hubGroupWatchFilters(),
       ...(keywords ? { keywords } : {}),
     }),
     [keywords]
@@ -364,7 +374,7 @@ export function useGroupsSearch(options: {
     return {
       page: 1,
       loading: false,
-      refresh: () => { },
+      refresh: () => {},
       items: merged as IResource[],
       emptyResult: merged.length === 0,
       processedItemCount: merged.length,

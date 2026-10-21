@@ -1,13 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
 import { ReactNode } from 'react'
+import { generatePath, MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { useFleetSearchSubscription } from '@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription'
+import { NavigationPath } from '../../../../NavigationPath'
 import { MulticlusterRoleAssignment } from '../../../../resources/multicluster-role-assignment'
 import { Group } from '../../../../resources/rbac'
 import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
+import { AcmToastContext } from '../../../../ui-components'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { useCurrentGroup } from './useCurrentGroup'
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription', () => ({
+  useFleetSearchSubscription: jest.fn(),
+}))
 
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
@@ -34,6 +41,14 @@ const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useShare
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockGetResource = getResource as jest.Mock
 const mockSearchQuery = searchClient.query as jest.Mock
+const mockUseFleetSearchSubscription = useFleetSearchSubscription as jest.Mock
+const addAlert = jest.fn()
+const pathnameRef = { current: '' }
+
+function LocationProbe() {
+  pathnameRef.current = useLocation().pathname
+  return null
+}
 
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
 
@@ -61,12 +76,25 @@ const opsMra: MulticlusterRoleAssignment = {
 function wrapper(groupId: string) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <MemoryRouter initialEntries={[`/groups/${groupId}`]}>
-        <Routes>
-          <Route path="/groups/:id" element={children} />
-        </Routes>
-      </MemoryRouter>
+      <AcmToastContext.Provider value={{ addAlert } as never}>
+        <MemoryRouter initialEntries={[generatePath(NavigationPath.identitiesGroupsDetails, { id: groupId })]}>
+          <LocationProbe />
+          <Routes>
+            <Route path={NavigationPath.identitiesGroupsDetails} element={children} />
+          </Routes>
+        </MemoryRouter>
+      </AcmToastContext.Provider>
     )
+  }
+}
+
+function searchEvent(operation: 'UPDATE' | 'DELETE', name: string, uid = 'local-cluster/kubevirt-admins-uid') {
+  return {
+    operation,
+    uid,
+    timestamp: `${operation}-${name}`,
+    newData: operation === 'DELETE' ? null : { name },
+    oldData: { name },
   }
 }
 
@@ -98,6 +126,8 @@ describe('useCurrentGroup', () => {
       return { promise: notFound() }
     })
     mockSearchQuery.mockResolvedValue({ data: { searchResult: [{ items: [] }] } })
+    mockUseFleetSearchSubscription.mockReturnValue([undefined, false, undefined])
+    addAlert.mockClear()
   })
 
   test('resolves uid via Search then loads the Group CR', async () => {
@@ -167,5 +197,93 @@ describe('useCurrentGroup', () => {
       expect(result.current.loaded).toBe(true)
       expect(result.current.group?.metadata.name).toBe('ops-team')
     })
+    expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith(undefined)
+  })
+
+  test('refetches the Group CR on a Search UPDATE without unloading the page', async () => {
+    mockSearchWithKubevirtAdmins()
+    mockGetResource.mockImplementation(() => {
+      const users = mockGetResource.mock.calls.length > 1 ? ['admin1', 'admin2'] : ['admin1']
+      return { promise: Promise.resolve({ ...kubevirtAdmins, users }) }
+    })
+
+    const { result, rerender } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins-uid') })
+
+    await waitFor(() => {
+      expect(result.current.group?.users).toEqual(['admin1'])
+    })
+    expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith({
+      filters: [
+        { property: 'kind', values: ['Group'] },
+        { property: 'apigroup', values: ['user.openshift.io'] },
+        { property: '_hubClusterResource', values: ['true'] },
+        { property: 'name', values: ['kubevirt-admins'] },
+      ],
+    })
+
+    mockUseFleetSearchSubscription.mockReturnValue([searchEvent('UPDATE', 'kubevirt-admins'), false, undefined])
+    rerender()
+
+    expect(result.current.loaded).toBe(true)
+    await waitFor(() => {
+      expect(result.current.group?.users).toEqual(['admin1', 'admin2'])
+    })
+    expect(result.current.loaded).toBe(true)
+    expect(mockGetResource).toHaveBeenCalledTimes(2)
+  })
+
+  test('navigates to the role-assignment identity when the Group CR is deleted', async () => {
+    mockSearchWithKubevirtAdmins()
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) {
+        return [
+          {
+            ...opsMra,
+            spec: { subject: { kind: 'Group', name: 'kubevirt-admins' }, roleAssignments: [] },
+          },
+        ]
+      }
+      return undefined
+    })
+
+    const { result, rerender } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins-uid') })
+    await waitFor(() => {
+      expect(result.current.group?.metadata.uid).toBe('kubevirt-admins-uid')
+    })
+
+    mockUseFleetSearchSubscription.mockReturnValue([searchEvent('DELETE', 'kubevirt-admins'), false, undefined])
+    rerender()
+
+    await waitFor(() => {
+      expect(pathnameRef.current).toBe(generatePath(NavigationPath.identitiesGroupsDetails, { id: 'kubevirt-admins' }))
+    })
+    expect(addAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'warning',
+        title: expect.stringContaining('kubevirt-admins'),
+      })
+    )
+    expect(String(addAlert.mock.calls[0][0].title)).toMatch(/role assignment/i)
+  })
+
+  test('returns to the group list when a deleted Group has no role assignment', async () => {
+    mockSearchWithKubevirtAdmins()
+    const { result, rerender } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins-uid') })
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+    })
+
+    mockUseFleetSearchSubscription.mockReturnValue([searchEvent('DELETE', 'kubevirt-admins'), false, undefined])
+    rerender()
+
+    await waitFor(() => {
+      expect(pathnameRef.current).toBe(NavigationPath.identitiesGroups)
+    })
+    expect(addAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'warning',
+        title: expect.stringContaining('kubevirt-admins'),
+      })
+    )
   })
 })

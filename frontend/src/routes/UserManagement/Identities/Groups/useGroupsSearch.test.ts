@@ -155,7 +155,17 @@ describe('useGroupsSearch', () => {
           { property: 'cluster', values: ['local-cluster'] },
         ]),
       }),
-      true
+      true,
+      {
+        watchInput: {
+          filters: [
+            { property: 'kind', values: ['Group'] },
+            { property: 'apigroup', values: ['user.openshift.io'] },
+            { property: '_hubClusterResource', values: ['true'] },
+          ],
+          keywords: ['Ops', 'Team'],
+        },
+      }
     )
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
     expect(result.current.processedItemCount).toBe(1)
@@ -194,7 +204,16 @@ describe('useGroupsSearch', () => {
     )
 
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
-    expect(mockUseFleetSearch).toHaveBeenCalledWith(expect.objectContaining({ keywords: ['dev'] }), true)
+    expect(mockUseFleetSearch).toHaveBeenCalledWith(
+      expect.objectContaining({ keywords: ['dev'] }),
+      true,
+      expect.objectContaining({
+        watchInput: expect.objectContaining({
+          keywords: ['dev'],
+          filters: expect.arrayContaining([{ property: '_hubClusterResource', values: ['true'] }]),
+        }),
+      })
+    )
   })
 
   test('refetches after additionalGroups changes so a created group fills the index gap', async () => {
