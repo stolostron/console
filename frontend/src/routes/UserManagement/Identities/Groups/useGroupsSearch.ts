@@ -113,6 +113,51 @@ function uniqueGroups(groups: Group[]): Group[] {
   return unique
 }
 
+/** MRA-only subjects use `uid === name`; Search-backed Groups use a real uid. */
+export function isSearchBackedGroup(group: Group): boolean {
+  const name = group.metadata.name
+  const uid = group.metadata.uid
+  if (group.userCount !== undefined) return true
+  return Boolean(uid && name && uid !== name)
+}
+
+/**
+ * Collapse duplicate names after stitching MRA extras with Search rows.
+ * Prefer the Search-backed Group (real CR / userCount) over an MRA-only stub.
+ */
+export function preferSearchBackedGroups(groups: Group[]): Group[] {
+  const preferred = new Map<string, Group>()
+  for (const group of groups) {
+    const name = group.metadata.name
+    if (!name) continue
+    const existing = preferred.get(name)
+    if (!existing) {
+      preferred.set(name, group)
+      continue
+    }
+    const existingIndexed = isSearchBackedGroup(existing)
+    const nextIndexed = isSearchBackedGroup(group)
+    if (nextIndexed && !existingIndexed) {
+      preferred.set(name, group)
+      continue
+    }
+    if (existingIndexed === nextIndexed) {
+      const existingCount = existing.userCount ?? existing.users?.length ?? 0
+      const nextCount = group.userCount ?? group.users?.length ?? 0
+      if (nextCount > existingCount) preferred.set(name, group)
+    }
+  }
+  const seen = new Set<string>()
+  const unique: Group[] = []
+  for (const group of groups) {
+    const name = group.metadata.name
+    if (!name || seen.has(name)) continue
+    seen.add(name)
+    unique.push(preferred.get(name) ?? group)
+  }
+  return unique
+}
+
 function toGroup(group: Group): Group {
   return {
     ...group,
@@ -314,13 +359,26 @@ export function useGroupsSearch(options: {
     variables: { input: [countInput] },
   })
   const searchCount = countQuery.data?.searchResult?.[0]?.count ?? 0
-  const processedItemCount = searchCount + extras.length
+  // Search subscription can add a Group to the page before the lookup query sees it;
+  // do not double-count that name as an MRA extra.
+  const searchNamesOnPage = useMemo(() => {
+    const names = new Set<string>()
+    for (const group of pageGroups ?? []) {
+      if (group.metadata?.name) names.add(group.metadata.name)
+    }
+    return names
+  }, [pageGroups])
+  const extrasNotOnSearchPage = useMemo(
+    () => extras.filter((group) => !searchNamesOnPage.has(group.metadata.name ?? '')),
+    [extras, searchNamesOnPage]
+  )
+  const processedItemCount = searchCount + extrasNotOnSearchPage.length
 
   const pageReady = !canQueryPage || pageLoaded
   const ready = extrasReady && ranksReady && pageReady && !countQuery.loading
   const groups = useMemo(() => {
     if (!ready) return []
-    return stitchGroupPage((pageGroups ?? []).map(toGroup), extrasOnPage, start, perPage)
+    return preferSearchBackedGroups(stitchGroupPage((pageGroups ?? []).map(toGroup), extrasOnPage, start, perPage))
   }, [extrasOnPage, pageGroups, perPage, ready, start])
 
   const refetchPageRef = useRef(refetchPage)
@@ -347,6 +405,18 @@ export function useGroupsSearch(options: {
       void refetchRanksRef.current()
     }
   }, [])
+
+  // When Search live-adds a Group that was still listed as an MRA extra, refresh lookup
+  // and count so the stub drops out of extras (and pagination stays consistent).
+  useEffect(() => {
+    if (!extras.length || searchNamesOnPage.size === 0) return
+    const overlap = extras.some((group) => searchNamesOnPage.has(group.metadata.name ?? ''))
+    if (!overlap) return
+    if (lookupNamesLengthRef.current > 0) {
+      void refetchLookupRef.current()
+    }
+    void refetchCountRef.current()
+  }, [extras, searchNamesOnPage])
 
   const additionalKey = (additionalGroups ?? []).map((group) => group.metadata.name ?? '').join('\n')
   const skipAdditionalRefetch = useRef(true)
