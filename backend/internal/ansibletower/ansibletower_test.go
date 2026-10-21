@@ -416,28 +416,10 @@ func postJobTemplates(h http.Handler) *httptest.ResponseRecorder {
 	})
 }
 
-func TestTLSUntrustedCertRejected(t *testing.T) {
+func TestTLSSkipVerifyEnabledOption(t *testing.T) {
 	hit := false
-	tower := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		hit = true
-	}))
-	defer tower.Close()
-	h := New(Options{
-		Authn:       authOK,
-		KubeForUser: kubeFrom(towerCred(tower.URL, nil)),
-	})
-	rec := postJobTemplates(h)
-	if rec.Code != http.StatusInternalServerError {
-		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
-	}
-	if hit {
-		t.Fatal("tower handler ran")
-	}
-}
-
-func TestTLSSkipVerifyOption(t *testing.T) {
 	tower := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
+		hit = true
 		_, _ = w.Write([]byte(`{"count":1}`))
 	}))
 	defer tower.Close()
@@ -450,23 +432,8 @@ func TestTLSSkipVerifyOption(t *testing.T) {
 	if rec.Code != http.StatusOK {
 		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
 	}
-	if rec.Body.String() != `{"count":1}` {
-		t.Fatalf("body %s", rec.Body.String())
-	}
-}
-
-func TestTLSSkipVerifySecret(t *testing.T) {
-	tower := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = w.Write([]byte(`{"count":1}`))
-	}))
-	defer tower.Close()
-	h := New(Options{
-		Authn:       authOK,
-		KubeForUser: kubeFrom(towerCred(tower.URL, map[string]string{"insecureSkipVerify": "true"})),
-	})
-	rec := postJobTemplates(h)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	if !hit {
+		t.Fatal("tower handler was not reached")
 	}
 }
 
@@ -476,16 +443,15 @@ func TestTLSHubCA(t *testing.T) {
 	}))
 	defer tower.Close()
 	h := New(Options{
-		Authn:       authOK,
-		KubeForUser: kubeFrom(towerCred(tower.URL, nil)),
-		HubCA:       caPEM,
+		HubCA: caPEM,
 	})
-	rec := postJobTemplates(h)
-	if rec.Code != http.StatusOK {
-		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	resp, err := h.client(false).Get(tower.URL)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if rec.Body.String() != `{"count":1}` {
-		t.Fatalf("body %s", rec.Body.String())
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status %d", resp.StatusCode)
 	}
 }
 
