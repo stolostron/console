@@ -79,6 +79,35 @@ import {
 import ClusterSetDetails from './ClusterSetDetails'
 import Clusters from '../../Clusters'
 
+jest.mock('../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
+  useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
+  useGroupIdentity: jest.fn(() => undefined),
+  useGroupsSearch: jest.fn(() => ({
+    groups: [
+      {
+        kind: 'Group',
+        apiVersion: 'user.openshift.io/v1',
+        metadata: { name: 'mock-group', uid: '98d01b86-7721-4b98-b145-58df2bff2f6e' },
+        users: [],
+      },
+    ],
+    processedItemCount: 1,
+    loading: false,
+    error: undefined,
+    refetch: jest.fn(),
+    fetchExport: jest.fn().mockResolvedValue(undefined),
+    emptyResult: false,
+  })),
+}))
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
+  useFleetSearch: jest.fn(() => [undefined, true, undefined, jest.fn()]),
+}))
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription', () => ({
+  useFleetSearchSubscription: jest.fn(() => [undefined, true, undefined]),
+}))
+
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
 )!
