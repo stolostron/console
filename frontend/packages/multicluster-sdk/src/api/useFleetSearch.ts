@@ -256,8 +256,10 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
     refetch,
   } = useSearchResultItemsQuery({
     client: searchClient,
-    skip: input === undefined,
-    variables: { input: [input!] },
+    // Treat null like undefined. Never send `variables.input: [null]` — JSON turns
+    // `undefined` array slots into null and Search returns "internal system error".
+    skip: input == null,
+    variables: input ? { input: [input] } : undefined,
   })
 
   // Derive the raw item list from the query response — conversion to K8s
@@ -403,9 +405,11 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   // ── Stable refetch callback ────────────────────────────────────────────────
 
   const triggerRefetch = useCallback(() => {
-    if (isRefetchingRef.current) return
+    // Skipped queries have no variables; Apollo refetch() would POST `variables:{}`
+    // and Search returns an empty/error result. No-op until there is an input.
+    if (input == null || isRefetchingRef.current) return
     startRefetch()
-  }, [startRefetch])
+  }, [input, startRefetch])
 
   // ── Return ─────────────────────────────────────────────────────────────────
 
