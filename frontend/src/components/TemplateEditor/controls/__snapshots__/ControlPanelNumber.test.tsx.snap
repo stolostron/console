@@ -8,6 +8,9 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
     <div>
       <div
         class="pf-v6-c-form__group"
+        data-ouia-component-id="OUIA-Generated-FormGroup-:r0:"
+        data-ouia-component-type="PF6/FormGroup"
+        data-ouia-safe="true"
         id="controlId-label"
       >
         <div
@@ -33,7 +36,7 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
               <button
                 aria-label="More info"
                 class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help"
-                data-ouia-component-id="OUIA-Generated-Button-plain-:r2:"
+                data-ouia-component-id="OUIA-Generated-Button-plain-:r4:"
                 data-ouia-component-type="PF6/Button"
                 data-ouia-safe="true"
                 id="controlId-label-help-button"
@@ -75,7 +78,7 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
                 <button
                   aria-label="Minus"
                   class="pf-v6-c-button pf-m-control"
-                  data-ouia-component-id="OUIA-Generated-Button-control-:r3:"
+                  data-ouia-component-id="OUIA-Generated-Button-control-:r5:"
                   data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   data-testid="down-controlId"
@@ -94,24 +97,12 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
                         fill="currentColor"
                         height="1em"
                         role="img"
+                        viewBox="0 0 32 32"
                         width="1em"
                       >
-                        <svg
-                          class="pf-v6-icon-default"
-                          viewBox="0 0 448 512"
-                        >
-                          <path
-                            d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                          />
-                        </svg>
-                        <svg
-                          class="pf-v6-icon-rh-ui"
-                          viewBox="0 0 32 32"
-                        >
-                          <path
-                            d="M29 17H3a1 1 0 0 1 0-2h26a1 1 0 0 1 0 2Z"
-                          />
-                        </svg>
+                        <path
+                          d="M29 17H3a1 1 0 0 1 0-2h26a1 1 0 0 1 0 2Z"
+                        />
                       </svg>
                     </span>
                   </span>
@@ -126,7 +117,7 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
                   <input
                     aria-invalid="false"
                     aria-label="Number input"
-                    data-ouia-component-id="OUIA-Generated-TextInputBase-:r5:"
+                    data-ouia-component-id="OUIA-Generated-TextInputBase-:r7:"
                     data-ouia-component-type="PF6/TextInput"
                     data-ouia-safe="true"
                     data-testid="number-controlId"
@@ -143,7 +134,7 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
                 <button
                   aria-label="Plus"
                   class="pf-v6-c-button pf-m-control"
-                  data-ouia-component-id="OUIA-Generated-Button-control-:r6:"
+                  data-ouia-component-id="OUIA-Generated-Button-control-:r8:"
                   data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   data-testid="up-controlId"
@@ -162,24 +153,12 @@ exports[`ControlPanelNumber component renders as expected 1`] = `
                         fill="currentColor"
                         height="1em"
                         role="img"
+                        viewBox="0 0 32 32"
                         width="1em"
                       >
-                        <svg
-                          class="pf-v6-icon-default"
-                          viewBox="0 0 448 512"
-                        >
-                          <path
-                            d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                          />
-                        </svg>
-                        <svg
-                          class="pf-v6-icon-rh-ui"
-                          viewBox="0 0 32 32"
-                        >
-                          <path
-                            d="M29 15H17V3a1 1 0 0 0-2 0v12H3a1 1 0 0 0 0 2h12v12a1 1 0 0 0 2 0V17h12a1 1 0 0 0 0-2Z"
-                          />
-                        </svg>
+                        <path
+                          d="M29 15H17V3a1 1 0 0 0-2 0v12H3a1 1 0 0 0 0 2h12v12a1 1 0 0 0 2 0V17h12a1 1 0 0 0 0-2Z"
+                        />
                       </svg>
                     </span>
                   </span>
@@ -202,6 +181,9 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
     <div>
       <div
         class="pf-v6-c-form__group"
+        data-ouia-component-id="OUIA-Generated-FormGroup-:r0:"
+        data-ouia-component-type="PF6/FormGroup"
+        data-ouia-safe="true"
         id="controlId-label"
       >
         <div
@@ -227,7 +209,7 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
               <button
                 aria-label="More info"
                 class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help"
-                data-ouia-component-id="OUIA-Generated-Button-plain-:r2:"
+                data-ouia-component-id="OUIA-Generated-Button-plain-:r4:"
                 data-ouia-component-type="PF6/Button"
                 data-ouia-safe="true"
                 id="controlId-label-help-button"
@@ -269,7 +251,7 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
                 <button
                   aria-label="Minus"
                   class="pf-v6-c-button pf-m-control"
-                  data-ouia-component-id="OUIA-Generated-Button-control-:r3:"
+                  data-ouia-component-id="OUIA-Generated-Button-control-:r5:"
                   data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   data-testid="down-controlId"
@@ -288,24 +270,12 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
                         fill="currentColor"
                         height="1em"
                         role="img"
+                        viewBox="0 0 32 32"
                         width="1em"
                       >
-                        <svg
-                          class="pf-v6-icon-default"
-                          viewBox="0 0 448 512"
-                        >
-                          <path
-                            d="M416 208H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h384c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                          />
-                        </svg>
-                        <svg
-                          class="pf-v6-icon-rh-ui"
-                          viewBox="0 0 32 32"
-                        >
-                          <path
-                            d="M29 17H3a1 1 0 0 1 0-2h26a1 1 0 0 1 0 2Z"
-                          />
-                        </svg>
+                        <path
+                          d="M29 17H3a1 1 0 0 1 0-2h26a1 1 0 0 1 0 2Z"
+                        />
                       </svg>
                     </span>
                   </span>
@@ -320,7 +290,7 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
                   <input
                     aria-invalid="false"
                     aria-label="Number input"
-                    data-ouia-component-id="OUIA-Generated-TextInputBase-:r5:"
+                    data-ouia-component-id="OUIA-Generated-TextInputBase-:r7:"
                     data-ouia-component-type="PF6/TextInput"
                     data-ouia-safe="true"
                     data-testid="number-controlId"
@@ -337,7 +307,7 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
                 <button
                   aria-label="Plus"
                   class="pf-v6-c-button pf-m-control"
-                  data-ouia-component-id="OUIA-Generated-Button-control-:r6:"
+                  data-ouia-component-id="OUIA-Generated-Button-control-:r8:"
                   data-ouia-component-type="PF6/Button"
                   data-ouia-safe="true"
                   data-testid="up-controlId"
@@ -356,24 +326,12 @@ exports[`ControlPanelNumber component renders as expected 2`] = `
                         fill="currentColor"
                         height="1em"
                         role="img"
+                        viewBox="0 0 32 32"
                         width="1em"
                       >
-                        <svg
-                          class="pf-v6-icon-default"
-                          viewBox="0 0 448 512"
-                        >
-                          <path
-                            d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z"
-                          />
-                        </svg>
-                        <svg
-                          class="pf-v6-icon-rh-ui"
-                          viewBox="0 0 32 32"
-                        >
-                          <path
-                            d="M29 15H17V3a1 1 0 0 0-2 0v12H3a1 1 0 0 0 0 2h12v12a1 1 0 0 0 2 0V17h12a1 1 0 0 0 0-2Z"
-                          />
-                        </svg>
+                        <path
+                          d="M29 15H17V3a1 1 0 0 0-2 0v12H3a1 1 0 0 0 0 2h12v12a1 1 0 0 0 2 0V17h12a1 1 0 0 0 0-2Z"
+                        />
                       </svg>
                     </span>
                   </span>
