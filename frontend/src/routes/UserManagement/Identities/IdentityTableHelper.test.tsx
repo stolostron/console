@@ -143,6 +143,16 @@ describe('IdentityTableHelper', () => {
         const { getByText } = render(<div>{COLUMN_CELLS.GROUP_USERS(mockGroupWithoutUsers)}</div>)
         expect(getByText('0')).toBeInTheDocument()
       })
+
+      it('should prefer userCount over the users array', () => {
+        const { getByText } = render(<div>{COLUMN_CELLS.GROUP_USERS({ ...mockGroup, userCount: 9 })}</div>)
+        expect(getByText('9')).toBeInTheDocument()
+      })
+
+      it('should render a zero userCount', () => {
+        const { getByText } = render(<div>{COLUMN_CELLS.GROUP_USERS({ ...mockGroup, userCount: 0 })}</div>)
+        expect(getByText('0')).toBeInTheDocument()
+      })
     })
 
     describe('STATUS', () => {
