@@ -339,6 +339,7 @@ export function useGroupsSearch(options: {
   }, [baseFilters, canQueryPage, keywords, orderBy, searchLimit, searchOffset])
   // Query keeps hub `cluster` + pagination. The watch uses `_hubClusterResource` instead of
   // `cluster` (Search drops Group events for that property) and omits limit/offset/orderBy.
+  // useFleetSearch still scopes applied events to pageInput's cluster via uid prefix.
   const watchInput = useMemo<SearchInput>(
     () => ({
       filters: hubGroupWatchFilters(),

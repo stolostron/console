@@ -64,6 +64,23 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
 }
 
 /**
+ * When the query filters by `cluster` but `watchInput` omits it (e.g. Groups use
+ * `_hubClusterResource` because Search drops Group events for `cluster`), ignore
+ * subscription events whose uid cluster prefix is outside the query filter.
+ */
+export function eventMatchesQueryClusterFilter(
+  event: FleetSearchEvent,
+  input: SearchInput | undefined
+): boolean {
+  const clusters = input?.filters?.find((filter) => filter?.property === 'cluster')?.values
+  if (!clusters?.length) return true
+  const uid = event.uid
+  if (!uid) return true
+  const prefix = uid.split('/')[0]
+  return clusters.includes(prefix)
+}
+
+/**
  * Decide whether a subscription event requires a full refetch rather than a
  * local patch, given the current page contents and search mode.
  *
@@ -331,10 +348,11 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   // permanently stale.
   const settleRefetch = useCallback(
     (freshData: SearchItem[]) => {
-      const queue = eventQueueRef.current
-      eventQueueRef.current = []
       const currentInput = inputRef.current
       const mode = getSearchMode(currentInput)
+      // Drop events outside the query's cluster filter (watch may be broader).
+      const queue = eventQueueRef.current.filter((e) => eventMatchesQueryClusterFilter(e, currentInput))
+      eventQueueRef.current = []
 
       // If any queued event would require yet another refetch, chain into it
       // and discard the queue — the next fresh result will settle the state.
@@ -411,13 +429,17 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   useEffect(() => {
     if (!latestEvent) return
 
+    const currentInput = inputRef.current
+    // watchInput may omit `cluster` (Search drops Group events for that filter);
+    // keep query results scoped by ignoring events from other clusters.
+    if (!eventMatchesQueryClusterFilter(latestEvent, currentInput)) return
+
     // While a refetch is in flight, queue events for later processing.
     if (isRefetchingRef.current) {
       eventQueueRef.current = [...eventQueueRef.current, latestEvent]
       return
     }
 
-    const currentInput = inputRef.current
     const mode = getSearchMode(currentInput)
     const current = localDataRef.current
 
