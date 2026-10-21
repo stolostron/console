@@ -223,7 +223,8 @@ describe('GroupsTable', () => {
           { property: 'cluster', values: ['local-cluster'] },
         ]),
       }),
-      true
+      true,
+      expect.objectContaining({ watchInput: expect.any(Object) })
     )
   })
 
