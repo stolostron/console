@@ -230,7 +230,7 @@ type cacheBucket struct {
 	ResourceUIDMap map[string]App
 }
 
-// emptyCache initialises a cache map with an empty bucket for every cacheKey.
+// emptyCache initializes a cache map with an empty bucket for every cacheKey.
 func emptyCache() map[string]*cacheBucket {
 	out := make(map[string]*cacheBucket, len(cacheKeys))
 	for _, k := range cacheKeys {
