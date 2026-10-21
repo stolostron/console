@@ -44,7 +44,6 @@ const mockUseSharedValue = useSharedValue as jest.Mock
 const mockUseSharedAtoms = useSharedAtoms as jest.Mock
 const mockSearchQuery = searchClient.query as jest.Mock
 
-const groupsAtom = Symbol('groupsState')
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
 
 const developers: Group = {
@@ -119,11 +118,9 @@ function mockSearch(pageGroups: Group[], indexed: Group[] = pageGroups, ranks: n
 
 function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
   mockUseSharedAtoms.mockReturnValue({
-    groupsState: groupsAtom,
     multiclusterRoleAssignmentState: mraAtom,
-  })
+  } as any)
   mockUseSharedValue.mockImplementation((atom: unknown) => {
-    if (atom === groupsAtom) throw new Error('groupsState should not be read')
     if (atom === mraAtom) return mras
     return []
   })

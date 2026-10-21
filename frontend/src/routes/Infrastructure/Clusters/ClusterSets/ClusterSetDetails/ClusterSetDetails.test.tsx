@@ -9,7 +9,6 @@ import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
   clusterPoolsState,
-  groupsState,
   managedClusterAddonsState,
   managedClusterInfosState,
   managedClusterSetsState,
@@ -1533,7 +1532,6 @@ const Component = (props: { isGlobal?: boolean }) => (
       store.set(clusterPoolsState, [])
       store.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
       store.set(usersState, [mockUser])
-      store.set(groupsState, [mockGroup])
     }}
   >
     <MemoryRouter

@@ -33,7 +33,6 @@ jest.mock('../../../../lib/acm-i18next', () => ({
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
-    groupsState: 'groupsState',
     placementsState: 'placementsState',
     placementDecisionsState: 'placementDecisionsState',
   })),

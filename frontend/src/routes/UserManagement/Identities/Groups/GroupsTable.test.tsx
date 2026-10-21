@@ -58,7 +58,6 @@ type FleetSearchInput = {
   filters?: { property: string; values?: Array<string | null> }[]
 }
 
-const groupsAtom = Symbol('groupsState')
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
 
 const mockGroups: Group[] = [
@@ -174,12 +173,10 @@ function mockSearch(groups: Group[]) {
 
 function setupMocks(groups: Group[] = mockGroups, mras: MulticlusterRoleAssignment[] = mockMras) {
   mockUseSharedAtoms.mockReturnValue({
-    groupsState: groupsAtom,
     multiclusterRoleAssignmentState: mraAtom,
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: any) => {
-    if (atom === groupsAtom) throw new Error('groupsState should not be read')
     if (atom === mraAtom) return mras
     return []
   })
@@ -358,7 +355,7 @@ describe('GroupsTable', () => {
     })
   })
 
-  test('should show MRA-derived group not already in groupsState', async () => {
+  test('should show MRA-derived group not already returned by Search', async () => {
     render(<Component />)
 
     await waitFor(() => {
@@ -369,7 +366,7 @@ describe('GroupsTable', () => {
     })
   })
 
-  test('should not duplicate group that exists in both groupsState and MRA', async () => {
+  test('should not duplicate group that exists in both Search and MRA', async () => {
     render(<Component />)
 
     await waitFor(() => {

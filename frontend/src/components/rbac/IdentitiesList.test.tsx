@@ -65,19 +65,16 @@ const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useShare
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 
 const usersAtom = Symbol('usersState')
-const groupsAtom = Symbol('groupsState')
 const isDirectAuthAtom = Symbol('isDirectAuthenticationEnabledState')
 
 function setupMocks(isDirectAuthenticationEnabled = false) {
   mockUseSharedAtoms.mockReturnValue({
     usersState: usersAtom,
-    groupsState: groupsAtom,
     isDirectAuthenticationEnabledState: isDirectAuthAtom,
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: unknown) => {
     if (atom === usersAtom) return []
-    if (atom === groupsAtom) return []
     if (atom === isDirectAuthAtom) return isDirectAuthenticationEnabled
     return undefined
   })
