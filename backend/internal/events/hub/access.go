@@ -10,6 +10,7 @@ import (
 	"time"
 
 	authzv1 "k8s.io/api/authorization/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/kubernetes"
@@ -37,6 +38,13 @@ type AccessChecker interface {
 	Prefetch(ctx context.Context, token string, events []Event)
 }
 
+// StreamTracker is optional: SSARAccess implements it so remembered DELETED allows
+// are cleared when the last SSE stream for a token closes.
+type StreamTracker interface {
+	BeginStream(token string)
+	EndStream(token string)
+}
+
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
@@ -48,6 +56,12 @@ func (AllowAllAccess) Prefetch(context.Context, string, []Event) {}
 
 type ssarKey struct {
 	verb, group, kind, namespace, name string
+}
+
+// seenKey is one object a token was allowed to see via a namespaced review.
+// Cluster-scoped list allows are not stored: that check still works after the object is gone.
+type seenKey struct {
+	group, resource, namespace, name string
 }
 
 type cacheEntry struct {
@@ -62,15 +76,19 @@ type inflight struct {
 }
 
 type tokenState struct {
-	last        time.Time
-	entries     map[ssarKey]cacheEntry
-	flight      map[ssarKey]*inflight
-	rules       map[string]timedRules
-	rulesFlight map[string]*rulesInflight
-	kindAccess  map[kindAccessKey]timedKindAccess
-	client      kubernetes.Interface
-	clientErr   error
-	clientWait  chan struct{}
+	last           time.Time
+	streams        int
+	entries        map[ssarKey]cacheEntry
+	flight         map[ssarKey]*inflight
+	rules          map[string]timedRules
+	rulesFlight    map[string]*rulesInflight
+	kindAccess     map[kindAccessKey]timedKindAccess
+	allowedObjects map[seenKey]struct{}
+	// deleteAcks is remaining streams that may still use a remembered allow for a key.
+	deleteAcks map[seenKey]int
+	client     kubernetes.Interface
+	clientErr  error
+	clientWait chan struct{}
 }
 
 type prefetchJob struct {
@@ -147,14 +165,164 @@ func (a *SSARAccess) Allow(ctx context.Context, token string, ev Event) (bool, e
 	switch ev.Type {
 	case TypeStart, TypeEOP, TypeLoaded, TypeSettings:
 		return true, nil
-	case TypeDeleted:
-		// Bug-compatible with Node: DELETED is sent to every client without SSAR.
-		// Namespace deletes make a follow-up access check fail. Track for a later fix.
-		return true, nil
-	case TypeModified, "ADDED":
-		return a.canSee(ctx, token, ev)
+	case TypeDeleted, TypeModified, "ADDED":
+		return a.allowObject(ctx, token, ev, ev.Type == TypeDeleted)
 	default:
 		return false, nil
+	}
+}
+
+// allowObject applies the same list/get cascade as MODIFIED.
+// A namespaced allow is remembered per object. On DELETED, a completed deny or a NotFound
+// from that cascade falls back to the remembered allow: once the namespace is gone, the
+// apiserver no longer reports the RoleBinding that justified the earlier allow.
+func (a *SSARAccess) allowObject(ctx context.Context, token string, ev Event, deleted bool) (bool, error) {
+	kind, apiVersion, name, namespace := objectMeta(ev)
+	resource := resourceName(ev)
+	if resource == "" {
+		return false, nil
+	}
+	group := apiGroup(apiVersion)
+	key, keyed := objectSeenKey(group, resource, namespace, name)
+
+	allowed, err := a.ssarListCluster(ctx, token, group, resource, kind)
+	if err != nil {
+		return false, err
+	}
+	if allowed {
+		return true, nil
+	}
+
+	allowed, err = a.canGetResource(ctx, token, group, resource, kind, name, namespace)
+	if err != nil {
+		if deleted && keyed && apierrors.IsNotFound(err) && a.takeDeletedAllow(token, key) {
+			return true, nil
+		}
+		return false, err
+	}
+	if !keyed {
+		return allowed, nil
+	}
+	if allowed {
+		if deleted {
+			// Live allow still works for every stream; drop the remembered key.
+			a.forgetAllowed(token, key)
+		} else {
+			a.rememberAllowed(token, key)
+		}
+		return true, nil
+	}
+	if deleted && a.takeDeletedAllow(token, key) {
+		return true, nil
+	}
+	a.forgetAllowed(token, key)
+	return false, nil
+}
+
+func objectSeenKey(group, resource, namespace, name string) (seenKey, bool) {
+	if resource == "" || name == "" {
+		return seenKey{}, false
+	}
+	return seenKey{group: group, resource: resource, namespace: namespace, name: name}, true
+}
+
+func (a *SSARAccess) rememberAllowed(token string, key seenKey) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.ensureTokenLocked(hashToken(token))
+	st.allowedObjects[key] = struct{}{}
+	delete(st.deleteAcks, key)
+	st.last = time.Now()
+}
+
+func (a *SSARAccess) forgetAllowed(token string, key seenKey) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[hashToken(token)]
+	if st == nil {
+		return
+	}
+	delete(st.allowedObjects, key)
+	delete(st.deleteAcks, key)
+	st.last = time.Now()
+}
+
+func (a *SSARAccess) wasAllowed(token string, key seenKey) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[hashToken(token)]
+	if st == nil {
+		return false
+	}
+	_, ok := st.allowedObjects[key]
+	return ok
+}
+
+// takeDeletedAllow lets each active stream use a remembered allow once for a DELETED
+// fallback. The key stays until every stream has taken it (or EndStream clears state).
+func (a *SSARAccess) takeDeletedAllow(token string, key seenKey) bool {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[hashToken(token)]
+	if st == nil {
+		return false
+	}
+	if _, ok := st.allowedObjects[key]; !ok {
+		return false
+	}
+	if st.deleteAcks == nil {
+		st.deleteAcks = map[seenKey]int{}
+	}
+	remaining, tracking := st.deleteAcks[key]
+	if !tracking {
+		remaining = st.streams
+		if remaining < 1 {
+			remaining = 1
+		}
+	}
+	remaining--
+	st.last = time.Now()
+	if remaining <= 0 {
+		delete(st.allowedObjects, key)
+		delete(st.deleteAcks, key)
+		return true
+	}
+	st.deleteAcks[key] = remaining
+	return true
+}
+
+func (a *SSARAccess) BeginStream(token string) {
+	if a == nil || token == "" {
+		return
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.ensureTokenLocked(hashToken(token))
+	st.streams++
+	st.last = time.Now()
+}
+
+func (a *SSARAccess) EndStream(token string) {
+	if a == nil || token == "" {
+		return
+	}
+	th := hashToken(token)
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	st := a.byToken[th]
+	if st == nil {
+		return
+	}
+	if st.streams > 0 {
+		st.streams--
+	}
+	st.last = time.Now()
+	if st.streams == 0 {
+		clear(st.allowedObjects)
+		clear(st.deleteAcks)
+	}
+	if st.empty() {
+		delete(a.byToken, th)
 	}
 }
 
@@ -206,24 +374,6 @@ func (a *SSARAccess) Prefetch(ctx context.Context, token string, events []Event)
 	wg.Wait()
 }
 
-func (a *SSARAccess) canSee(ctx context.Context, token string, ev Event) (bool, error) {
-	kind, apiVersion, name, namespace := objectMeta(ev)
-	resource := resourceName(ev)
-	if resource == "" {
-		return false, nil
-	}
-	group := apiGroup(apiVersion)
-
-	allowed, err := a.ssarListCluster(ctx, token, group, resource, kind)
-	if err != nil {
-		return false, err
-	}
-	if allowed {
-		return true, nil
-	}
-	return a.canGetResource(ctx, token, group, resource, kind, name, namespace)
-}
-
 func ssarNamespace(kind, name, namespace string) string {
 	if kind == "Namespace" {
 		return name
@@ -264,11 +414,13 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	st := a.byToken[th]
 	if st == nil {
 		st = &tokenState{
-			entries:     map[ssarKey]cacheEntry{},
-			flight:      map[ssarKey]*inflight{},
-			rules:       map[string]timedRules{},
-			rulesFlight: map[string]*rulesInflight{},
-			kindAccess:  map[kindAccessKey]timedKindAccess{},
+			entries:        map[ssarKey]cacheEntry{},
+			flight:         map[ssarKey]*inflight{},
+			rules:          map[string]timedRules{},
+			rulesFlight:    map[string]*rulesInflight{},
+			kindAccess:     map[kindAccessKey]timedKindAccess{},
+			allowedObjects: map[seenKey]struct{}{},
+			deleteAcks:     map[seenKey]int{},
 		}
 		a.byToken[th] = st
 	}
@@ -286,6 +438,12 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	}
 	if st.kindAccess == nil {
 		st.kindAccess = map[kindAccessKey]timedKindAccess{}
+	}
+	if st.allowedObjects == nil {
+		st.allowedObjects = map[seenKey]struct{}{}
+	}
+	if st.deleteAcks == nil {
+		st.deleteAcks = map[seenKey]int{}
 	}
 	return st
 }
@@ -403,8 +561,12 @@ func (st *tokenState) enforceEntryCap() {
 }
 
 func (st *tokenState) empty() bool {
-	return len(st.entries) == 0 && len(st.flight) == 0 &&
-		len(st.rules) == 0 && len(st.rulesFlight) == 0 && len(st.kindAccess) == 0
+	if st.streams != 0 {
+		return false
+	}
+	return len(st.entries)+len(st.flight)+len(st.rules)+
+		len(st.rulesFlight)+len(st.kindAccess)+
+		len(st.allowedObjects)+len(st.deleteAcks) == 0
 }
 
 // StartCleanup expires SSAR cache entries periodically.
@@ -425,7 +587,7 @@ func (a *SSARAccess) cleanup(now time.Time) {
 			ssarcache.ExpireIf(st.kindAccess, func(e timedKindAccess) bool { return !e.expiry.After(now) })
 			return st.empty()
 		},
-		nil,
+		func(st *tokenState) bool { return st.streams > 0 },
 	)
 }
 

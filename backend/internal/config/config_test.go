@@ -116,6 +116,19 @@ func TestLoad_OAuthEnv(t *testing.T) {
 	}
 }
 
+func TestLoad_AnsibleInsecureSkipVerify(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))
+	t.Setenv("ANSIBLE_INSECURE_SKIP_VERIFY", "true")
+	if !config.Load().AnsibleInsecureSkipVerify {
+		t.Fatal("expected skip verify")
+	}
+	t.Setenv("ANSIBLE_INSECURE_SKIP_VERIFY", "false")
+	if config.Load().AnsibleInsecureSkipVerify {
+		t.Fatal("only the exact value true enables skip verify")
+	}
+}
+
 func TestLoad_ProxyEnvVars(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("ENV_FILE", filepath.Join(dir, ".env"))

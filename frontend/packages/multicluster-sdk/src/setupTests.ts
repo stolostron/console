@@ -99,6 +99,7 @@ i18n.use(initReactI18next).init({
       translation: {},
     },
   },
+  showSupportNotice: false,
 })
 
 window.matchMedia =

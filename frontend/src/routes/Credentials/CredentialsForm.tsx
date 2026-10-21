@@ -1577,6 +1577,7 @@ export function CredentialsForm(
       editorTitle={t('Credentials YAML')}
       schema={schema}
       mode={isViewing ? 'details' : isEditing ? 'form' : 'wizard'}
+      editLabel={t('Edit credential')}
       hideYaml={hideYaml}
       secrets={[
         '*.stringData.credentials',

@@ -42,6 +42,7 @@ import { ReviewStepToolbar, useReviewExpandCollapseHandlers, type ReviewToolbarA
 import { horizontalTermWidthModifierForInputRun, REVIEW_ERROR_TEXT_COLOR } from './utils'
 import { Step } from '../Step'
 import './ReviewStep.css'
+import '../common/wrapValue.css'
 
 export type { ReviewEditIntent, OnReviewEditHandler } from './ReviewStepNavigation'
 
@@ -1016,7 +1017,7 @@ function renderReviewInputRows(nodes: readonly WizardInputDomNode[], ctx: Review
             ) : (
               <>
                 <DescriptionListTerm>{termContent}</DescriptionListTerm>
-                <DescriptionListDescription id={inputNode.id ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+                <DescriptionListDescription id={inputNode.id ?? ''} className="wiz-wrap-value">
                   {inputNode.secret && !inputNode.error ? (
                     valueContent
                   ) : (
