@@ -130,11 +130,12 @@ spec:
 EOF
   SEARCH_API_URL=https://$(oc get route search-api -n $INSTALLATION_NAMESPACE -o="jsonpath={.status.ingress[0].host}")
   echo SEARCH_API_URL=$SEARCH_API_URL >> ./backend/.env
-fi
 
-# Create NetworkPolicy to allow access to the search-api service.
-if [[ -n "$INSTALLATION_NAMESPACE" ]]; then
-  oc apply -f - << EOF
+  # Allow ingress router traffic to search-api for local development when the search
+  # operator's default NetworkPolicy is present (ACM/MCE 5.0+). On older hubs, applying
+  # this policy breaks search; remove any stale copy left by a previous setup run.
+  if oc get networkpolicy search-api-network-policy -n "$INSTALLATION_NAMESPACE" &>/dev/null; then
+    oc apply -f - << EOF
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -155,6 +156,9 @@ spec:
       - port: 4010
         protocol: TCP
 EOF
+  else
+    oc delete networkpolicy search-api-localdev-route-access -n "$INSTALLATION_NAMESPACE" --ignore-not-found &>/dev/null
+  fi
 fi
 
 # Create route to the placement debug service for local development.
