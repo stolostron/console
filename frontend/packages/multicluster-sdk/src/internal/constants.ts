@@ -13,11 +13,22 @@ export const DEFAULT_PROMETHEUS_TIMESPAN = 1000 * 60 * 60
 
 /**
  * Console backend base path.
- * Prefer `REACT_APP_BACKEND_PATH` when the host app defines it (standalone and this
- * monorepo's plugin webpack both use `/multicloud`). Fall back to the OpenShift
- * Console dynamic-plugin proxy path for external consumers of the published SDK.
+ * Prefer `REACT_APP_BACKEND_PATH` when the host app defines it (standalone uses
+ * `/multicloud`). In OpenShift Console plugin mode, prefix with `PLUGIN_PROXY_PATH`
+ * so requests hit `/api/proxy/plugin/{acm|mce}/console/multicloud/...` (BRIDGE_PLUGIN_PROXY),
+ * not bare `/multicloud/...` which the console serves as HTML. Fall back to the MCE
+ * plugin proxy path for external consumers of the published SDK.
  */
-export const BACKEND_URL = process.env.REACT_APP_BACKEND_PATH || '/api/proxy/plugin/mce/console/multicloud'
+export const BACKEND_URL = (() => {
+  const backendPath = process.env.REACT_APP_BACKEND_PATH || '/api/proxy/plugin/mce/console/multicloud'
+  if (process.env.MODE === 'plugin') {
+    const proxyPath = process.env.PLUGIN_PROXY_PATH
+    if (proxyPath && process.env.REACT_APP_BACKEND_PATH) {
+      return `${proxyPath}${process.env.REACT_APP_BACKEND_PATH}`
+    }
+  }
+  return backendPath
+})()
 
 export const BASE_K8S_API_PATH = '/api/kubernetes'
 export const BASE_FLEET_SEARCH_PATH = '/multicloud/search/resources'

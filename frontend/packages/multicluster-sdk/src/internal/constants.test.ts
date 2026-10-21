@@ -2,25 +2,43 @@
 
 describe('constants', () => {
   const originalBackendPath = process.env.REACT_APP_BACKEND_PATH
+  const originalMode = process.env.MODE
+  const originalPluginProxyPath = process.env.PLUGIN_PROXY_PATH
   const originalServerFlags = window.SERVER_FLAGS
 
   afterEach(() => {
     process.env.REACT_APP_BACKEND_PATH = originalBackendPath
+    process.env.MODE = originalMode
+    process.env.PLUGIN_PROXY_PATH = originalPluginProxyPath
     window.SERVER_FLAGS = originalServerFlags
     jest.resetModules()
   })
 
   describe('BACKEND_URL', () => {
-    it('uses REACT_APP_BACKEND_PATH when set', () => {
+    it('uses REACT_APP_BACKEND_PATH when set in standalone mode', () => {
       process.env.REACT_APP_BACKEND_PATH = '/multicloud'
+      delete process.env.MODE
+      delete process.env.PLUGIN_PROXY_PATH
       jest.resetModules()
 
       const { BACKEND_URL } = require('./constants')
       expect(BACKEND_URL).toBe('/multicloud')
     })
 
+    it('prefixes PLUGIN_PROXY_PATH in OpenShift Console plugin mode', () => {
+      process.env.REACT_APP_BACKEND_PATH = '/multicloud'
+      process.env.MODE = 'plugin'
+      process.env.PLUGIN_PROXY_PATH = '/api/proxy/plugin/acm/console'
+      jest.resetModules()
+
+      const { BACKEND_URL } = require('./constants')
+      expect(BACKEND_URL).toBe('/api/proxy/plugin/acm/console/multicloud')
+    })
+
     it('falls back to the OpenShift Console plugin proxy path when unset', () => {
       delete process.env.REACT_APP_BACKEND_PATH
+      delete process.env.MODE
+      delete process.env.PLUGIN_PROXY_PATH
       jest.resetModules()
 
       const { BACKEND_URL } = require('./constants')
@@ -29,6 +47,8 @@ describe('constants', () => {
 
     it('falls back when REACT_APP_BACKEND_PATH is empty', () => {
       process.env.REACT_APP_BACKEND_PATH = ''
+      delete process.env.MODE
+      delete process.env.PLUGIN_PROXY_PATH
       jest.resetModules()
 
       const { BACKEND_URL } = require('./constants')
