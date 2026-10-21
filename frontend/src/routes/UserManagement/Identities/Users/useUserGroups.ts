@@ -58,8 +58,8 @@ export const useUserGroups = () => {
 
   const [fleet, loaded, , refetch] = useFleetSearch<Group>(queryInput, false)
   const [latestEvent] = useFleetSearchSubscription(watchInput)
-  const userGroups = fleet ?? []
-  const handledEventKey = useRef<string>()
+  const userGroups = useMemo(() => fleet ?? [], [fleet])
+  const handledEventKey = useRef<string | undefined>(undefined)
 
   const listedUids = useMemo(() => {
     const uids = new Set<string>()

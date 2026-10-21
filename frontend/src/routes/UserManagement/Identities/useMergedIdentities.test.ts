@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { Group, User } from '../../../resources/rbac'
+import { User } from '../../../resources/rbac'
 import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import {
   groupsFromMulticlusterRoleAssignments,

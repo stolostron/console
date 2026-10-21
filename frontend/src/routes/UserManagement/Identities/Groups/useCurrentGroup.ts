@@ -129,7 +129,7 @@ export const useCurrentGroup = (): CurrentGroup => {
     }
   }, [hubName, id])
 
-  const handledEventKey = useRef<string>()
+  const handledEventKey = useRef<string | undefined>(undefined)
   const watchedNameRef = useRef(watchedName)
   useEffect(() => {
     watchedNameRef.current = watchedName
