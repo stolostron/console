@@ -16,6 +16,38 @@ import { isPosthookLinkDisabled, isPrehookLinkDisabled, jobPodsStillAvailable, l
 import { LogsDownloadButton } from '@openshift-assisted/ui-lib/cim'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
 
+const CLUSTER_STATUS_MESSAGE_I18N_KEYS: Record<ClusterStatus, string> = {
+  pending: 'status.pending.message',
+  destroying: 'status.destroying.message',
+  creating: 'status.creating.message',
+  notstarted: 'status.notstarted.message',
+  provisionfailed: 'status.provisionfailed.message',
+  deprovisionfailed: 'status.deprovisionfailed.message',
+  failed: 'status.failed.message',
+  detached: 'status.detached.message',
+  detaching: 'status.detaching.message',
+  notaccepted: 'status.notaccepted.message',
+  needsapproval: 'status.needsapproval.message',
+  pendingimport: 'status.pendingimport.message',
+  importing: 'status.importing.message',
+  ready: 'status.ready.message',
+  offline: 'status.offline.message',
+  hibernating: 'status.hibernating.message',
+  stopping: 'status.stopping.message',
+  resuming: 'status.resuming.message',
+  degraded: 'status.degraded.message',
+  unknown: 'status.unknown.message',
+  prehookjob: 'status.prehookjob.message',
+  prehookfailed: 'status.prehookfailed.message',
+  posthookjob: 'status.posthookjob.message',
+  posthookfailed: 'status.posthookfailed.message',
+  importfailed: 'status.importfailed.message',
+  draft: 'status.draft.message',
+  running: 'status.running.message',
+  upgradefailed: 'status.upgradefailed.message',
+  unreachable: 'status.unreachable.message',
+}
+
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
@@ -250,7 +282,7 @@ export function StatusField(props: { cluster: Cluster }) {
         maxWidth: '448px',
         bodyContent: (
           <>
-            <Trans i18nKey={`status.${props.cluster?.status}.message`} components={{ bold: <strong /> }} />
+            <Trans i18nKey={CLUSTER_STATUS_MESSAGE_I18N_KEYS[props.cluster.status]} components={{ bold: <strong /> }} />
             <ClusterStatusMessageAlert cluster={props.cluster!} padTop />
           </>
         ),

@@ -12,6 +12,7 @@ import { EyeIcon, EyeSlashIcon } from '@patternfly/react-icons'
 import { Fragment, ReactNode, useState } from 'react'
 import { Indented } from '../components/Indented'
 import { useInputHidden, useValue } from './Input'
+import '../common/wrapValue.css'
 
 export function WizTextDetail(props: {
   id?: string
@@ -52,7 +53,7 @@ export function WizTextDetail(props: {
     <Stack>
       <DescriptionListGroup>
         <DescriptionListTerm>{props.label}</DescriptionListTerm>
-        <DescriptionListDescription id={props.id} style={{ whiteSpace: 'pre-wrap' }}>
+        <DescriptionListDescription id={props.id} className="wiz-wrap-value">
           <Split>
             <SplitItem isFilled>{props.secret && !showSecrets ? '****************' : stringValue}</SplitItem>
             {props.secret && (

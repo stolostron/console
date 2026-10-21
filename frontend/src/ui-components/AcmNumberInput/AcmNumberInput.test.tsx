@@ -5,8 +5,6 @@ import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { AcmForm, AcmSubmit } from '../AcmForm/AcmForm'
 import { AcmNumberInput } from './AcmNumberInput'
-import { I18nextProvider } from 'react-i18next'
-import i18n from '../../lib/i18n'
 import { clickElement } from '~/lib/test-util'
 
 describe('AcmNumberInput', () => {
@@ -79,16 +77,14 @@ describe('AcmNumberInput', () => {
 
   it('renders the help icon with tooltip when labelHelp is provided', async () => {
     render(
-      <I18nextProvider i18n={i18n}>
-        <AcmNumberInput
-          id="test-id"
-          label="Test Label"
-          labelHelp="This is a tooltip"
-          required
-          value={1}
-          onChange={() => {}}
-        />
-      </I18nextProvider>
+      <AcmNumberInput
+        id="test-id"
+        label="Test Label"
+        labelHelp="This is a tooltip"
+        required
+        value={1}
+        onChange={() => {}}
+      />
     )
 
     // Checking if the help icon is rendered
@@ -104,11 +100,7 @@ describe('AcmNumberInput', () => {
   })
 
   it('does not render the help icon when labelHelp is not provided', () => {
-    render(
-      <I18nextProvider i18n={i18n}>
-        <AcmNumberInput id="test-id" label="Test Label" required value={1} onChange={() => {}} />
-      </I18nextProvider>
-    )
+    render(<AcmNumberInput id="test-id" label="Test Label" required value={1} onChange={() => {}} />)
 
     // Checking if the help icon is not rendered
     const helpButton = screen.queryByRole('button', { name: 'More info' })

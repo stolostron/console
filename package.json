@@ -61,7 +61,6 @@
     "podman:run": "npm run podman:build && podman run --arch amd64 --rm --name console -p 3000:3000 -e PORT=3000 -v $PWD/backend/certs:/app/certs -v $PWD/backend/config:/app/config --env-file=backend/.env console",
     "podman:deploy": "npm run podman:build && podman tag console quay.io/$USER/console:latest && podman push quay.io/$USER/console:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console",
     "podman:deploy:mce": "npm run podman:build:mce && podman tag console-mce quay.io/$USER/console-mce:latest && podman push quay.io/$USER/console-mce:latest && ./scripts/patch-deployment.sh latest quay.io/$USER/console-mce",
-    "playwright:sanity": "npx playwright test --config e2e-template/playwright-sanity.config.ts",
     "ensure-certs": "./scripts/generate-backend-certs.sh --if-missing",
     "generate-certs": "./scripts/generate-backend-certs.sh",
     "setup": "./setup.sh",
@@ -69,9 +68,8 @@
     "prepare": "husky install"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@types/node": "^24.19.1",
-    "concurrently": "9.2.4",
+    "concurrently": "9.2.5",
     "dotenv": "^17.4.2",
     "husky": "7.0.4",
     "lint-staged": "^13.3.0",

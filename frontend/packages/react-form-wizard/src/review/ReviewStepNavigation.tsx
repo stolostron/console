@@ -14,6 +14,7 @@ import { useHighlightEditorPath } from './ReviewStepContexts'
 import { InputReviewMeta, type WizardDomTreeNode } from './ReviewStepContexts'
 import { useItem } from '../contexts/ItemContext'
 import { getItemValue } from './utils'
+import '../common/wrapValue.css'
 
 /** Pen / row click: go to step and scroll; arrow: set YAML editor highlight path only. */
 export type ReviewEditIntent = 'navigate' | 'highlight'
@@ -508,7 +509,7 @@ export function ReviewPenHoverZone({
       onKeyDown={zoneClickable ? onZoneKeyDown : undefined}
     >
       <DescriptionListTerm>{descriptionListTerm}</DescriptionListTerm>
-      <DescriptionListDescription id={descriptionListDescriptionId ?? ''} style={{ whiteSpace: 'pre-wrap' }}>
+      <DescriptionListDescription id={descriptionListDescriptionId ?? ''} className="wiz-wrap-value">
         <span className="wizard-review-inline-value wizard-review-dl-pen-inline-row">
           <span className="wizard-review-dl-pen-value">{children}</span>
           <span className="wizard-review-pen-controls wizard-review-pen-controls--dl-inline">

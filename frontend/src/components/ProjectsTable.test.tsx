@@ -1,8 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
-import i18next from 'i18next'
-import { I18nextProvider } from 'react-i18next'
 import { ProjectsTable, ProjectTableData } from './ProjectsTable'
 import type { RoleAssignmentHookType } from '../routes/UserManagement/RoleAssignments/hook/RoleAssignmentDataHook'
 import { PluginContext, defaultPlugin } from '../lib/PluginContext'
@@ -44,25 +42,16 @@ const sampleProjects: ProjectTableData[] = [
   },
 ]
 
-const i18n = i18next.createInstance()
-i18n.init({
-  lng: 'en',
-  fallbackLng: 'en',
-  resources: { en: { translation: {} } },
-})
-
 const renderProjectsTable = (props: React.ComponentProps<typeof ProjectsTable>) =>
   render(
     <MemoryRouter>
-      <I18nextProvider i18n={i18n}>
-        <PluginContext.Provider value={defaultPlugin}>
-          <PluginDataContext.Provider value={{ ...pluginDataDefaultContext, loadStarted: true, loadCompleted: true }}>
-            <AcmTableStateProvider localStorageKey="test-table">
-              <ProjectsTable {...props} />
-            </AcmTableStateProvider>
-          </PluginDataContext.Provider>
-        </PluginContext.Provider>
-      </I18nextProvider>
+      <PluginContext.Provider value={defaultPlugin}>
+        <PluginDataContext.Provider value={{ ...pluginDataDefaultContext, loadStarted: true, loadCompleted: true }}>
+          <AcmTableStateProvider localStorageKey="test-table">
+            <ProjectsTable {...props} />
+          </AcmTableStateProvider>
+        </PluginDataContext.Provider>
+      </PluginContext.Provider>
     </MemoryRouter>
   )
 
