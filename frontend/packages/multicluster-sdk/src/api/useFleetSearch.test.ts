@@ -6,7 +6,7 @@ import {
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
 import { SearchInput } from '../types/search'
-import { useFleetSearch } from './useFleetSearch'
+import { toWatchInput, useFleetSearch } from './useFleetSearch'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
 // Mock the base query hook
@@ -240,7 +240,7 @@ describe('useFleetSearch', () => {
   })
 
   describe('subscription enabled', () => {
-    it('should pass input to useFleetSearchSubscription when subscriptionEnabled is true', () => {
+    it('should pass a watch input (no limit/offset/orderBy) when subscriptionEnabled is true', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: false,
@@ -248,9 +248,34 @@ describe('useFleetSearch', () => {
         refetch: jest.fn(),
       } as any)
 
-      renderHook(() => useFleetSearch(mockInput, true))
+      const paginated: SearchInput = {
+        ...mockInput,
+        limit: 10,
+        offset: 5,
+        orderBy: 'name asc',
+      }
+      renderHook(() => useFleetSearch(paginated, true))
 
-      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(mockInput)
+      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(toWatchInput(paginated))
+    })
+
+    it('should pass options.watchInput to useFleetSearchSubscription when provided', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      const watchInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'apigroup', values: ['user.openshift.io'] },
+        ],
+      }
+      renderHook(() => useFleetSearch(mockInput, true, { watchInput }))
+
+      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(watchInput)
     })
 
     it('should surface a subscription error via the error return value', () => {

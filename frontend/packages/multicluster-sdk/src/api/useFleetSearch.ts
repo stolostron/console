@@ -241,11 +241,35 @@ function applyEvent(
  *   },
  *   true,
  * )
+ *
+ * // Optional watchInput: query stays paginated; watch uses a different filter set.
+ * // Needed when Search drops events for some query filters (e.g. `cluster` on Groups).
+ * const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
+ *   watchInput: { filters: [{ property: 'kind', values: ['Group'] }] },
+ * })
  * ```
  */
+export type UseFleetSearchOptions = {
+  /**
+   * Input for the GraphQL `watch` subscription. When omitted, the subscription
+   * uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy).
+   */
+  watchInput?: SearchInput
+}
+
+/**
+ * Build a Search watch input from a query input.
+ * Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
+ */
+export function toWatchInput(input: SearchInput): SearchInput {
+  const { limit: _limit, offset: _offset, orderBy: _orderBy, relatedKinds: _related, ...watch } = input
+  return watch
+}
+
 export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   input: SearchInput | undefined,
-  subscriptionEnabled?: boolean
+  subscriptionEnabled?: boolean,
+  options?: UseFleetSearchOptions
 ): [Fleet<T>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
@@ -374,9 +398,14 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
 
   // ── Subscription layer ─────────────────────────────────────────────────────
 
-  // Pass undefined as input when subscription is disabled so the inner hook
-  // skips the WebSocket connection entirely.
-  const [latestEvent, , subscriptionError] = useFleetSearchSubscription(subscriptionEnabled ? input : undefined)
+  // Prefer an explicit watchInput (callers can omit filters Search mishandles on
+  // watch, e.g. `cluster` for Group). Otherwise strip query-only pagination fields.
+  const subscriptionInput = useMemo<SearchInput | undefined>(() => {
+    if (!subscriptionEnabled || input == null) return undefined
+    return options?.watchInput ?? toWatchInput(input)
+  }, [subscriptionEnabled, input, options?.watchInput])
+
+  const [latestEvent, , subscriptionError] = useFleetSearchSubscription(subscriptionInput)
 
   // Route each incoming subscription event based on the current search mode.
   useEffect(() => {
