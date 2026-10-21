@@ -4,6 +4,8 @@ package aggregate
 
 import "strings"
 
+// extractMessages appends status and condition messages from a Search item to a
+// StatusEntry. Condition keys start with "_" and contain "condition" or "missing".
 func extractMessages(entry *StatusEntry, item map[string]any, status string) {
 	if status != "" {
 		entry.Messages = append(entry.Messages, map[string]string{"key": "Status", "value": status})
@@ -24,6 +26,8 @@ func extractMessages(entry *StatusEntry, item map[string]any, status string) {
 	}
 }
 
+// computeAppHealthStatus increments the health severity count for one Argo
+// Application Search item (Healthy, Degraded, Progressing, Unknown, or other).
 func computeAppHealthStatus(health *StatusEntry, app map[string]any) {
 	switch searchStr(app, "healthStatus") {
 	case "Healthy":
@@ -43,6 +47,8 @@ func computeAppHealthStatus(health *StatusEntry, app map[string]any) {
 	}
 }
 
+// computeAppSyncStatus increments the sync severity count for one Argo
+// Application Search item (Synced, OutOfSync, Unknown, or other).
 func computeAppSyncStatus(synced *StatusEntry, app map[string]any) {
 	switch searchStr(app, "syncStatus") {
 	case "Synced":
@@ -58,6 +64,8 @@ func computeAppSyncStatus(synced *StatusEntry, app map[string]any) {
 	}
 }
 
+// computePodStatus classifies each pod into danger/warning/healthy based on
+// resErrorStates and resWarningStates, skipping terminating pods.
 func computePodStatus(deployed *StatusEntry, pods []map[string]any) {
 	for _, pod := range pods {
 		status := lower(searchStr(pod, "status"))
@@ -76,17 +84,22 @@ func computePodStatus(deployed *StatusEntry, pods []map[string]any) {
 	}
 }
 
+// relatedMaps holds Search "related" resources indexed by owner-label name
+// and by _relatedUids for fast lookup during deployed-status computation.
 type relatedMaps struct {
 	byName map[string][]map[string]any
 	byUID  map[string][]map[string]any
 }
 
+// statusIDs tracks the application name, deployment objects, and UIDs used to
+// correlate Search items with their Pods/ReplicaSets during status computation.
 type statusIDs struct {
 	appName     string
 	deployments []map[string]any
 	uids        []string
 }
 
+// relatedKindItems returns the items slice for the given kind from the related list.
 func relatedKindItems(related []mapKind, kind string) []map[string]any {
 	for _, r := range related {
 		if r.Kind == kind {
@@ -96,6 +109,8 @@ func relatedKindItems(related []mapKind, kind string) []map[string]any {
 	return nil
 }
 
+// createResourceMap indexes the given related kind by owner-label name
+// ("cluster/namespace/appName") and by _relatedUids for UID-based fallback.
 func createResourceMap(related []mapKind, kind string) relatedMaps {
 	byName := map[string][]map[string]any{}
 	byUID := map[string][]map[string]any{}
@@ -115,6 +130,8 @@ func createResourceMap(related []mapKind, kind string) relatedMaps {
 	return relatedMaps{byName: byName, byUID: byUID}
 }
 
+// collectRelatedResources gathers related items (e.g. Pods for a Deployment)
+// by name or UID fallback, then deduplicates by _uid.
 func collectRelatedResources(cluster string, m relatedMaps, ids statusIDs) []map[string]any {
 	var items []map[string]any
 	if len(ids.deployments) > 1 {
@@ -147,15 +164,21 @@ func collectRelatedResources(cluster string, m relatedMaps, ids statusIDs) []map
 	return out
 }
 
+// mapKind pairs a Kubernetes kind name with its Search result items.
 type mapKind struct {
 	Kind  string
 	Items []map[string]any
 }
 
+// statusIDKey builds a unique key for the statusIDs map by joining the app
+// key and cluster name with a NUL separator.
 func statusIDKey(appKey, cluster string) string {
 	return appKey + "\x00" + cluster
 }
 
+// computeDeployedPodStatuses computes the deployed (pod) column for every
+// app × cluster. It resolves Pods through Deployments and ReplicaSets and
+// fills in missing counts when current pods < desired replicas.
 func computeDeployedPodStatuses(related []mapKind, appStatusesMap map[string]StatusMap, ids map[string]*statusIDs, ignoreHealthCheck bool) {
 	deploymentMap := createResourceMap(related, "Deployment")
 	replicaSetMap := createResourceMap(related, "ReplicaSet")
