@@ -218,9 +218,7 @@ func run() error {
 			Client:     auth.HTTPClient(nil, 0),
 		})),
 		server.WithAnsibleTower(ansibletower.New(ansibletower.Options{
-			RESTConfig:         restCfg,
-			HubCA:              sa.CACert,
-			InsecureSkipVerify: cfg.AnsibleInsecureSkipVerify,
+			RESTConfig: restCfg,
 		})),
 		server.WithPlacementDebug(placementdebug.New(placementdebug.Options{
 			RESTConfig: restCfg,
