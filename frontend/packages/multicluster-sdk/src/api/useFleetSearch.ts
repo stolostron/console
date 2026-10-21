@@ -195,6 +195,24 @@ function applyEvent(
   }
 }
 
+/** Optional third argument to {@link useFleetSearch}. */
+export type UseFleetSearchOptions = {
+  /**
+   * Input for the GraphQL `watch` subscription. When omitted, the subscription
+   * uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy).
+   */
+  watchInput?: SearchInput
+}
+
+/**
+ * Build a Search watch input from a query input.
+ * Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
+ */
+export function toWatchInput(input: SearchInput): SearchInput {
+  const { limit: _limit, offset: _offset, orderBy: _orderBy, relatedKinds: _related, ...watch } = input
+  return watch
+}
+
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API,
  * with optional real-time updates via a GraphQL WebSocket subscription.
@@ -213,6 +231,8 @@ function applyEvent(
  * @param subscriptionEnabled - When `true`, a WebSocket subscription is opened
  *   and the local result set is kept current via incremental event patches.
  *   Defaults to `false`.
+ * @param options - Optional {@link UseFleetSearchOptions}, including `watchInput`
+ *   when the subscription must use different filters than the query.
  *
  * @returns A tuple of:
  * - `data` — The current search results mapped through
@@ -269,23 +289,6 @@ function applyEvent(
  * })
  * ```
  */
-export type UseFleetSearchOptions = {
-  /**
-   * Input for the GraphQL `watch` subscription. When omitted, the subscription
-   * uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy).
-   */
-  watchInput?: SearchInput
-}
-
-/**
- * Build a Search watch input from a query input.
- * Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
- */
-export function toWatchInput(input: SearchInput): SearchInput {
-  const { limit: _limit, offset: _offset, orderBy: _orderBy, relatedKinds: _related, ...watch } = input
-  return watch
-}
-
 export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   input: SearchInput | undefined,
   subscriptionEnabled?: boolean,
