@@ -26,26 +26,30 @@ export function getToken(req: Http2ServerRequest): string | undefined {
   return token
 }
 
-export async function isAuthenticated(token: string) {
-  return fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
+// GET /api returns the core API group (~200 bytes) — unlike /apis which grows
+// with every installed CRD. The response body is drained so the socket returns
+// to the keepAlive pool immediately and native memory does not accumulate.
+export async function isAuthenticated(token: string): Promise<number> {
+  const response = await fetchRetry(process.env.CLUSTER_API_URL + '/api', {
     headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${token}` },
   })
+  response.body?.on('error', () => undefined).resume()
+  return response.status
 }
 
 export async function getAuthenticatedToken(req: Http2ServerRequest, res: Http2ServerResponse): Promise<string> {
   const token = getToken(req)
   if (token) {
-    const authResponse = await isAuthenticated(token)
+    const status = await isAuthenticated(token)
     /* istanbul ignore if */
-    if (authResponse.status === constants.HTTP_STATUS_OK) {
+    if (status === constants.HTTP_STATUS_OK) {
       if (process.env.NODE_ENV === 'development') {
         const localStorage = new LocalStorage(LOCAL_STORAGE)
         localStorage.setItem(ADMIN_TOKEN, token)
       }
       return token
     } else {
-      res.writeHead(authResponse.status).end()
-      void authResponse.blob()
+      res.writeHead(status).end()
     }
   } else {
     unauthorized(req, res)
