@@ -437,6 +437,26 @@ func TestTLSSkipVerifyEnabledOption(t *testing.T) {
 	}
 }
 
+func TestTLSUntrustedCertRejectedWhenSkipVerifyDisabled(t *testing.T) {
+	hit := false
+	tower := httptest.NewTLSServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
+		hit = true
+	}))
+	defer tower.Close()
+	h := New(Options{
+		Authn:              authOK,
+		KubeForUser:        kubeFrom(towerCred(tower.URL, nil)),
+		InsecureSkipVerify: false,
+	})
+	rec := postJobTemplates(h)
+	if rec.Code != http.StatusInternalServerError {
+		t.Fatalf("status %d body %s", rec.Code, rec.Body.String())
+	}
+	if hit {
+		t.Fatal("tower handler ran with an untrusted certificate")
+	}
+}
+
 func TestTLSHubCA(t *testing.T) {
 	caPEM, tower := hubSignedServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write([]byte(`{"count":1}`))
