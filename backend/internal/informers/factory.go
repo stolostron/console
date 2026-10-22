@@ -42,7 +42,7 @@ func resetStartSem() {
 }
 
 // acquireStartSlot blocks until a concurrent list/watch start slot is free, or
-// ctx is cancelled. Returns false when cancelled so the caller can exit.
+// ctx is canceled. Returns false when canceled so the caller can exit.
 func acquireStartSlot(ctx context.Context) bool {
 	select {
 	case startSem <- struct{}{}:
@@ -96,7 +96,7 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 }
 
 // runSpec resolves the GVR, starts a SharedIndexInformer for one WatchSpec, and
-// retries on discovery/sync failure until ctx is cancelled. Startup concurrency
+// retries on discovery/sync failure until ctx is canceled. Startup concurrency
 // is capped by acquireStartSlot so many specs do not list at once.
 func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapper ResourceMapper, st *specRuntime) {
 	for {

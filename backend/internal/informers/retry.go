@@ -21,7 +21,7 @@ func retryDelay() time.Duration {
 	return retryBase + time.Duration(rand.IntN(int(retryJitter/time.Second)))*time.Second
 }
 
-// waitRetry sleeps retryDelay or returns false immediately when ctx is cancelled.
+// waitRetry sleeps retryDelay or returns false immediately when ctx is canceled.
 func waitRetry(ctx context.Context) bool {
 	t := time.NewTimer(retryDelay())
 	defer t.Stop()
