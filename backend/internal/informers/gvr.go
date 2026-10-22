@@ -44,6 +44,9 @@ func ResolveGVR(mapper ResourceMapper, apiVersion, kind string) (schema.GroupVer
 	return schema.GroupVersionResource{}, fmt.Errorf("%w: %s %s", errKindNotFound, apiVersion, kind)
 }
 
+// isUnavailable reports discovery/API errors that mean the CRD or resource is
+// missing or forbidden, so the informer should keep retrying without treating
+// the failure as a permanent config bug.
 func isUnavailable(err error) bool {
 	if err == nil {
 		return false

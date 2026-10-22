@@ -43,6 +43,7 @@ func StartInformer(ctx context.Context, client kubernetes.Interface, store *Stor
 	return nil
 }
 
+// clusterRoleHandlers forwards informer add/update/delete into the Store.
 func clusterRoleHandlers(store *Store) cache.ResourceEventHandlerFuncs {
 	return cache.ResourceEventHandlerFuncs{
 		AddFunc: func(obj any) {

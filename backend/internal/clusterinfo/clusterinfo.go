@@ -59,9 +59,13 @@ var (
 type SupportedOperator string
 
 const (
-	OperatorAnsible  SupportedOperator = "ansible-automation-platform-operator"
-	OperatorGitOps   SupportedOperator = "openshift-gitops-operator"
-	OperatorACM      SupportedOperator = "advanced-cluster-management"
+	// OperatorAnsible is the Ansible Automation Platform operator package name.
+	OperatorAnsible SupportedOperator = "ansible-automation-platform-operator"
+	// OperatorGitOps is the OpenShift GitOps operator package name.
+	OperatorGitOps SupportedOperator = "openshift-gitops-operator"
+	// OperatorACM is the Advanced Cluster Management operator package name.
+	OperatorACM SupportedOperator = "advanced-cluster-management"
+	// OperatorKubeVirt is the OpenShift Virtualization (KubeVirt) operator package name.
 	OperatorKubeVirt SupportedOperator = "kubevirt-hyperconverged"
 )
 
@@ -78,6 +82,8 @@ type Options struct {
 	Cache      *informers.InformerCache
 }
 
+// hubFlags is the GET /hub payload plus ok, which is false when a live fetch
+// failed so callers can avoid caching a partial result.
 type hubFlags struct {
 	isGlobalHub              bool
 	localHubName             string
@@ -113,6 +119,8 @@ func New(opts Options) *Handler {
 	}
 }
 
+// ServeHTTP dispatches cluster-info routes (/hub, /cluster-version, hypershift,
+// MCH/MCE components, /operatorCheck, /apiPaths).
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	switch {
@@ -135,6 +143,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// hub serves GET /hub with global-hub, local-cluster, observability, and auth flags.
 func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -151,6 +160,8 @@ func (h *Handler) hub(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
+// hubFlags returns cached hubFlags when fresh, otherwise loads and stores them
+// for hubFlagsCacheTTL when the load succeeded (ok).
 func (h *Handler) hubFlags(ctx context.Context) hubFlags {
 	now := time.Now()
 	h.hubFlagsMu.RLock()
@@ -172,6 +183,7 @@ func (h *Handler) hubFlags(ctx context.Context) hubFlags {
 	return flags
 }
 
+// loadHubFlags prefers the informer cache, then falls back to live API reads.
 func (h *Handler) loadHubFlags(ctx context.Context) hubFlags {
 	if flags, ok := h.hubFlagsFromCache(ctx); ok {
 		return flags
@@ -179,6 +191,8 @@ func (h *Handler) loadHubFlags(ctx context.Context) hubFlags {
 	return h.hubFlagsLive(ctx)
 }
 
+// hubFlagsFromCache builds hubFlags from InformerCache when synced. The second
+// return is false when the cache is unavailable or global-hub lookup cannot be trusted.
 func (h *Handler) hubFlagsFromCache(ctx context.Context) (hubFlags, bool) {
 	if h.cache == nil || !h.cache.HasSynced() {
 		return hubFlags{}, false
@@ -227,6 +241,8 @@ func (h *Handler) hubFlagsFromCache(ctx context.Context) (hubFlags, bool) {
 	}, true
 }
 
+// hubFlagsLive fetches ManagedCluster, Authentication, and global-hub CRD in
+// parallel, then lists observability addons for the local hub namespace.
 func (h *Handler) hubFlagsLive(ctx context.Context) hubFlags {
 	var (
 		isGlobalHub              bool
@@ -355,6 +371,8 @@ func (h *Handler) isGlobalHubCached(ctx context.Context) (bool, bool) {
 	return isGlobalHub, true
 }
 
+// buildAuthentication maps an OpenShift Authentication CR into the /hub
+// authentication object (OIDC direct-auth flag and claimMappings).
 func buildAuthentication(obj map[string]interface{}) map[string]interface{} {
 	if obj == nil {
 		return map[string]interface{}{
@@ -408,6 +426,7 @@ func buildAuthentication(obj map[string]interface{}) map[string]interface{} {
 	return result
 }
 
+// clusterVersion serves GET /cluster-version with the hub ClusterVersion desired version.
 func (h *Handler) clusterVersion(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -428,6 +447,7 @@ func (h *Handler) clusterVersion(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(clusterVersionPayload(obj))
 }
 
+// clusterVersionFromCache returns the "version" ClusterVersion from the informer cache.
 func (h *Handler) clusterVersionFromCache() (*unstructured.Unstructured, bool) {
 	if h.cache == nil || !h.cache.HasSynced() {
 		return nil, false
@@ -442,6 +462,7 @@ func (h *Handler) clusterVersionFromCache() (*unstructured.Unstructured, bool) {
 	return nil, false
 }
 
+// clusterVersionPayload extracts status.desired.version for the JSON response.
 func clusterVersionPayload(obj *unstructured.Unstructured) map[string]interface{} {
 	payload := map[string]interface{}{}
 	if obj == nil {
@@ -454,6 +475,7 @@ func clusterVersionPayload(obj *unstructured.Unstructured) map[string]interface{
 	return payload
 }
 
+// hypershiftStatus serves GET /hypershift-status (MCE hypershift components + addon health).
 func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -492,6 +514,7 @@ func (h *Handler) hypershiftStatus(w http.ResponseWriter, r *http.Request) {
 	writeHypershiftStatus(w, processHypershiftStatus(components, addon))
 }
 
+// writeHypershiftStatus writes the Node-compatible {statusCode, body.isHypershiftEnabled} envelope.
 func writeHypershiftStatus(w http.ResponseWriter, enabled bool) {
 	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	_ = json.NewEncoder(w).Encode(map[string]interface{}{
@@ -502,6 +525,7 @@ func writeHypershiftStatus(w http.ResponseWriter, enabled bool) {
 	})
 }
 
+// hypershiftFromCache returns MCE components and the hypershift-addon for hubName from cache.
 func (h *Handler) hypershiftFromCache(hubName string) ([]hubresources.Component, *unstructured.Unstructured, bool) {
 	if h.cache == nil || !h.cache.HasSynced() {
 		return nil, nil, false
@@ -526,6 +550,8 @@ func (h *Handler) hypershiftFromCache(hubName string) ([]hubresources.Component,
 	return components, addon, true
 }
 
+// processHypershiftStatus is true only when MCE hypershift and hypershift-local-hosting
+// are enabled and the hypershift-addon lease condition is healthy.
 func processHypershiftStatus(components []hubresources.Component, addon *unstructured.Unstructured) bool {
 	if len(components) == 0 {
 		return false
@@ -548,6 +574,8 @@ func processHypershiftStatus(components []hubresources.Component, addon *unstruc
 	return isAddOnHealthy(addon)
 }
 
+// findManagedClusterAddOn lists ManagedClusterAddOns in namespace and returns the named one.
+// Missing addons return nil, nil (not an error).
 func findManagedClusterAddOn(ctx context.Context, client dynamic.Interface, namespace, name string) (*unstructured.Unstructured, error) {
 	list, err := client.Resource(managedClusterAddOnGVR).Namespace(namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -561,6 +589,7 @@ func findManagedClusterAddOn(ctx context.Context, client dynamic.Interface, name
 	return nil, nil
 }
 
+// isAddOnHealthy is true when status has ManagedClusterAddOnLeaseUpdated=True.
 func isAddOnHealthy(addon *unstructured.Unstructured) bool {
 	conditions, found, _ := unstructured.NestedSlice(addon.Object, "status", "conditions")
 	if !found {
@@ -580,6 +609,7 @@ func isAddOnHealthy(addon *unstructured.Unstructured) bool {
 	return false
 }
 
+// mchComponents serves GET /multiclusterhub/components from cache or a live MCH list.
 func (h *Handler) mchComponents(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -601,6 +631,7 @@ func (h *Handler) mchComponents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, components)
 }
 
+// mchComponentsFromCache parses MulticlusterHub overrides from the informer cache.
 func (h *Handler) mchComponentsFromCache() ([]hubresources.Component, bool) {
 	if h.cache == nil || !h.cache.HasSynced() {
 		return nil, false
@@ -616,6 +647,7 @@ func (h *Handler) mchComponentsFromCache() ([]hubresources.Component, bool) {
 	return components, true
 }
 
+// mceComponents serves GET /multiclusterengine/components from cache or a live MCE list.
 func (h *Handler) mceComponents(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -637,6 +669,7 @@ func (h *Handler) mceComponents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, components)
 }
 
+// mceComponentsFromCache parses MultiClusterEngine overrides from the informer cache.
 func (h *Handler) mceComponentsFromCache() ([]hubresources.Component, bool) {
 	if h.cache == nil || !h.cache.HasSynced() {
 		return nil, false
@@ -652,16 +685,19 @@ func (h *Handler) mceComponentsFromCache() ([]hubresources.Component, bool) {
 	return components, true
 }
 
+// operatorCheckRequest is the POST /operatorCheck body.
 type operatorCheckRequest struct {
 	Operator SupportedOperator `json:"operator"`
 }
 
+// operatorCheckResponse is the POST /operatorCheck JSON result.
 type operatorCheckResponse struct {
 	Operator  SupportedOperator `json:"operator"`
 	Installed bool              `json:"installed"`
 	Version   string            `json:"version,omitempty"`
 }
 
+// operatorCheck serves POST /operatorCheck: whether a supported operator is installed.
 func (h *Handler) operatorCheck(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -687,6 +723,7 @@ func (h *Handler) operatorCheck(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
+// isSupportedOperator reports whether op is one of the operatorCheck allowlist values.
 func isSupportedOperator(op SupportedOperator) bool {
 	switch op {
 	case OperatorAnsible, OperatorGitOps, OperatorACM, OperatorKubeVirt:
@@ -696,6 +733,7 @@ func isSupportedOperator(op SupportedOperator) bool {
 	}
 }
 
+// resolveOperatorInstall looks up Subscriptions first, then ClusterExtensions (OLM v1).
 func resolveOperatorInstall(ctx context.Context, client dynamic.Interface, operator SupportedOperator) (operatorCheckResponse, error) {
 	subGVR := schema.GroupVersionResource{
 		Group:    "operators.coreos.com",
@@ -725,6 +763,7 @@ func resolveOperatorInstall(ctx context.Context, client dynamic.Interface, opera
 	return operatorCheckResponse{Operator: operator, Installed: installed, Version: version}, nil
 }
 
+// subscriptionInstall reports an OLM Subscription as installed when CatalogSourcesUnhealthy=False.
 func subscriptionInstall(items []unstructured.Unstructured, operator SupportedOperator) (bool, string) {
 	for _, item := range items {
 		specName, _, _ := unstructured.NestedString(item.Object, "spec", "name")
@@ -740,6 +779,7 @@ func subscriptionInstall(items []unstructured.Unstructured, operator SupportedOp
 	return false, ""
 }
 
+// clusterExtensionInstall reports an OLM ClusterExtension as installed when Installed=True.
 func clusterExtensionInstall(items []unstructured.Unstructured, operator SupportedOperator) (bool, string) {
 	for _, item := range items {
 		pkg, _, _ := unstructured.NestedString(item.Object, "spec", "source", "catalog", "packageName")
@@ -755,6 +795,7 @@ func clusterExtensionInstall(items []unstructured.Unstructured, operator Support
 	return false, ""
 }
 
+// hasCondition is true when status.conditions contains type/status.
 func hasCondition(obj map[string]interface{}, condType, status string) bool {
 	conditions, found, _ := unstructured.NestedSlice(obj, "status", "conditions")
 	if !found {
@@ -774,10 +815,12 @@ func hasCondition(obj map[string]interface{}, condType, status string) bool {
 	return false
 }
 
+// apiResourceMeta is one kind entry under an apiVersion in GET /apiPaths.
 type apiResourceMeta struct {
 	PluralName string `json:"pluralName"`
 }
 
+// apiPaths serves GET /apiPaths: discovery map of groupVersion → kind → pluralName.
 func (h *Handler) apiPaths(w http.ResponseWriter, r *http.Request) {
 	if _, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r); !ok {
 		return
@@ -813,6 +856,7 @@ func (h *Handler) apiPaths(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(result)
 }
 
+// writeJSON encodes v as application/json, writing the literal null for a nil value.
 func writeJSON(w http.ResponseWriter, v interface{}) {
 	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if v == nil {
@@ -822,6 +866,7 @@ func writeJSON(w http.ResponseWriter, v interface{}) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 
+// isMissingAPI treats NoMatch and NotFound as "CRD/API not installed" for soft failures.
 func isMissingAPI(err error) bool {
 	return meta.IsNoMatchError(err) || apierrors.IsNotFound(err)
 }

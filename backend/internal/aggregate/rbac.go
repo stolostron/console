@@ -35,6 +35,7 @@ type Access interface {
 // AllowAll is for tests.
 type AllowAll struct{}
 
+// Authorized returns items[start:stop] without SSAR (tests).
 func (AllowAll) Authorized(_ context.Context, _ string, items []App, start, stop int) []App {
 	if start < 0 {
 		start = 0

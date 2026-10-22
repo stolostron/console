@@ -6,6 +6,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
+// SSE event type strings for GET /events (matches the Node ServerSideEvents framing).
 const (
 	TypeStart    = "START"
 	TypeSettings = "SETTINGS"

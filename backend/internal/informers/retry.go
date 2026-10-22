@@ -16,10 +16,12 @@ const (
 	syncGiveUpAfter = 45 * time.Second
 )
 
+// retryDelay returns the base GVR/sync retry wait plus up to retryJitter seconds.
 func retryDelay() time.Duration {
 	return retryBase + time.Duration(rand.IntN(int(retryJitter/time.Second)))*time.Second
 }
 
+// waitRetry sleeps retryDelay or returns false immediately when ctx is cancelled.
 func waitRetry(ctx context.Context) bool {
 	t := time.NewTimer(retryDelay())
 	defer t.Stop()

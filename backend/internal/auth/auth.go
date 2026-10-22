@@ -51,6 +51,7 @@ type StatusError struct {
 	Status int
 }
 
+// Error implements the error interface for hub token-validation HTTP statuses.
 func (e *StatusError) Error() string {
 	if e == nil {
 		return "status error"
@@ -79,6 +80,7 @@ func LoadServiceAccount(cfg *config.Config) (ServiceAccount, bool) {
 	return ServiceAccount{Token: token, CACert: ca, ServiceCACert: serviceCA}, true
 }
 
+// readCertFileOrEnv reads a PEM file, or base64-decodes base64Env when the file is missing.
 func readCertFileOrEnv(path, base64Env string) []byte {
 	data, err := os.ReadFile(path)
 	if err == nil && len(data) > 0 {
@@ -94,6 +96,7 @@ func readCertFileOrEnv(path, base64Env string) []byte {
 	return decoded
 }
 
+// readFileOrDefault returns the file contents, or fallback when the file cannot be read.
 func readFileOrDefault(path, fallback string) string {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -168,6 +171,7 @@ var (
 	tokenClient     *http.Client
 )
 
+// tokenValidationClient returns a cached HTTP client for GET /api token probes against host.
 func tokenValidationClient(base *rest.Config) (*http.Client, string, error) {
 	tokenClientMu.Lock()
 	defer tokenClientMu.Unlock()
@@ -264,6 +268,7 @@ func NewTokenReviewer(cfg *config.Config, sa ServiceAccount) (TokenReviewer, err
 	return &kubeReviewer{client: client}, nil
 }
 
+// Review creates a TokenReview and returns authentication status and username.
 func (k *kubeReviewer) Review(ctx context.Context, token string) (TokenReviewResult, error) {
 	tr, err := k.client.AuthenticationV1().TokenReviews().Create(ctx, &authv1.TokenReview{
 		Spec: authv1.TokenReviewSpec{Token: token},

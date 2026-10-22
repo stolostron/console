@@ -13,6 +13,7 @@ import (
 	"github.com/stolostron/console/backend/internal/auth"
 )
 
+// listVMClusterRolesForToken lists vm-clusterroles ClusterRoles with the user's token (SSE fallback).
 func listVMClusterRolesForToken(ctx context.Context, base *rest.Config, token string) ([]*rbacv1.ClusterRole, error) {
 	client, err := kubernetes.NewForConfig(auth.UserRESTConfig(base, token))
 	if err != nil {
@@ -21,6 +22,7 @@ func listVMClusterRolesForToken(ctx context.Context, base *rest.Config, token st
 	return listVMClusterRoles(ctx, client)
 }
 
+// listVMClusterRoles returns DeepCopied ClusterRoles matching the vm-clusterroles label selector.
 func listVMClusterRoles(ctx context.Context, client kubernetes.Interface) ([]*rbacv1.ClusterRole, error) {
 	list, err := client.RbacV1().ClusterRoles().List(ctx, metav1.ListOptions{LabelSelector: VMClusterRolesSelector})
 	if err != nil {

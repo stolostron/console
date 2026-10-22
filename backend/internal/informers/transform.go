@@ -8,6 +8,8 @@ import (
 	"k8s.io/client-go/tools/cache"
 )
 
+// asUnstructured coerces informer store objects (including DeletedFinalStateUnknown)
+// into *unstructured.Unstructured for event handling and listing.
 func asUnstructured(obj any) (*unstructured.Unstructured, bool) {
 	switch t := obj.(type) {
 	case *unstructured.Unstructured:
@@ -25,6 +27,8 @@ func asUnstructured(obj any) (*unstructured.Unstructured, bool) {
 	}
 }
 
+// transformFor stamps apiVersion/kind from the WatchSpec and drops managedFields
+// for every kind except Policy (Policy flap detection needs them).
 func transformFor(spec WatchSpec) cache.TransformFunc {
 	return func(obj any) (any, error) {
 		u, ok := asUnstructured(obj)
@@ -42,6 +46,7 @@ func transformFor(spec WatchSpec) cache.TransformFunc {
 	}
 }
 
+// managedFieldsOf reads metadata.managedFields without requiring typed conversion.
 func managedFieldsOf(u *unstructured.Unstructured) []any {
 	mf, found, _ := unstructured.NestedSlice(u.Object, "metadata", "managedFields")
 	if !found {

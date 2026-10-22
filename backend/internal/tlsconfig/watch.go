@@ -36,6 +36,7 @@ const (
 // Callers should relist immediately without the error backoff.
 var errWatchClosed = errors.New("TLS profile watch closed")
 
+// retryDelay returns the list/watch error backoff with jitter.
 func retryDelay() time.Duration {
 	return retryBase + time.Duration(rand.IntN(int(retryJitter/time.Second)))*time.Second
 }
@@ -51,10 +52,12 @@ type dynamicSource struct {
 	client dynamic.Interface
 }
 
+// List returns the cluster APIServer object used for tlsSecurityProfile.
 func (s dynamicSource) List(ctx context.Context) (*unstructured.UnstructuredList, error) {
 	return s.client.Resource(apiServerGVR).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
 }
 
+// Watch opens a watch on the cluster APIServer starting at resourceVersion.
 func (s dynamicSource) Watch(ctx context.Context, resourceVersion string) (k8swatch.Interface, error) {
 	return s.client.Resource(apiServerGVR).Watch(ctx, metav1.ListOptions{
 		FieldSelector:       fieldSelector,
@@ -72,6 +75,7 @@ func WatchAPIServer(ctx context.Context, dyn dynamic.Interface, r *Reloader) {
 	runWatch(ctx, dynamicSource{client: dyn}, r)
 }
 
+// runWatch repeatedly lists and watches until ctx is canceled, applying profile updates.
 func runWatch(ctx context.Context, src listerWatcher, r *Reloader) {
 	for {
 		if ctx.Err() != nil {
@@ -98,6 +102,7 @@ func runWatch(ctx context.Context, src listerWatcher, r *Reloader) {
 	}
 }
 
+// listAndApply lists the APIServer, applies its profile, and returns the list resourceVersion.
 func listAndApply(ctx context.Context, src listerWatcher, r *Reloader) (string, error) {
 	list, err := src.List(ctx)
 	if err != nil {
@@ -112,6 +117,7 @@ func listAndApply(ctx context.Context, src listerWatcher, r *Reloader) (string, 
 	return list.GetResourceVersion(), nil
 }
 
+// watchUntil applies profile changes until the watch ends or ctx is canceled.
 func watchUntil(ctx context.Context, src listerWatcher, r *Reloader, resourceVersion string) error {
 	w, err := src.Watch(ctx, resourceVersion)
 	if err != nil {
@@ -143,6 +149,7 @@ func watchUntil(ctx context.Context, src listerWatcher, r *Reloader, resourceVer
 	}
 }
 
+// watchErrorEvent converts a watch Error event into a retryable error.
 func watchErrorEvent(ev k8swatch.Event) error {
 	if ev.Object != nil {
 		if err := apierrors.FromObject(ev.Object); !apierrors.IsUnexpectedObjectError(err) {
@@ -155,6 +162,7 @@ func watchErrorEvent(ev k8swatch.Event) error {
 	return errors.New("TLS profile watch error event")
 }
 
+// handleWatchError logs err, waits for backoff, and reports whether the loop should continue.
 func handleWatchError(ctx context.Context, err error) bool {
 	switch {
 	case apierrors.IsForbidden(err):
@@ -174,6 +182,7 @@ func handleWatchError(ctx context.Context, err error) bool {
 	}
 }
 
+// isImmediateRetry reports watch closures and stale resourceVersion errors that should relist without backoff.
 func isImmediateRetry(err error) bool {
 	if err == nil {
 		return false
@@ -188,6 +197,8 @@ func isImmediateRetry(err error) bool {
 		apierrors.IsGone(err)
 }
 
+// profileFromUnstructured extracts tlsSecurityProfile from an APIServer object.
+// A missing field yields an empty profile (OpenShift Intermediate default).
 func profileFromUnstructured(obj *unstructured.Unstructured) (SecurityProfile, bool) {
 	if obj == nil {
 		return SecurityProfile{}, false
