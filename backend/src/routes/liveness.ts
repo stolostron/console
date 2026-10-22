@@ -29,15 +29,15 @@ export function setDead(): void {
 export async function apiServerPing(): Promise<void> {
   const msg = 'kube api server ping failed'
   try {
-    const response = await fetchRetry(process.env.CLUSTER_API_URL + '/apis', {
+    const response = await fetchRetry(process.env.CLUSTER_API_URL + '/api', {
       headers: { [HTTP2_HEADER_AUTHORIZATION]: `Bearer ${getServiceAccountToken()}` },
     })
+    response.body?.on('error', () => undefined).resume()
     if (response.status !== 200) {
       const { status } = response
       logger.error({ msg, response: { status } })
       setDead()
     }
-    void response.blob()
   } catch (err) {
     if (err instanceof FetchError) {
       logger.error({ msg, error: err.message })
