@@ -163,7 +163,7 @@ function wouldTriggerRefetch(
     const newItem = { ...event.newData, cluster, _uid: searchUid } as SearchItem
     const newVal = sortableFieldText(newItem[field])
     const firstVal = sortableFieldText(current[0][field])
-    const lastVal = sortableFieldText(current[current.length - 1][field])
+    const lastVal = sortableFieldText(current.at(-1)?.[field])
     const cmpFirst = sortCmp(newVal, firstVal, descending)
     const cmpLast = sortCmp(newVal, lastVal, descending)
     if (cmpFirst <= 0) return true // ≤ first → page has shifted → refetch
@@ -180,7 +180,7 @@ function wouldTriggerRefetch(
     if (oldRaw) {
       const oldItem = { ...oldRaw, cluster, _uid: searchUid } as SearchItem
       const oldVal = sortableFieldText(oldItem[field])
-      const lastVal = sortableFieldText(current[current.length - 1][field])
+      const lastVal = sortableFieldText(current.at(-1)?.[field])
       // ≤ last → was on an earlier page; its removal shifts our window → refetch
       return sortCmp(oldVal, lastVal, descending) <= 0
     }
