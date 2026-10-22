@@ -275,6 +275,19 @@ describe('useGroupsSearch', () => {
     expect(preferSearchBackedGroups([indexed, stub])).toEqual([indexed])
   })
 
+  test('preferSearchBackedGroups keeps the larger member count when both rows are search-backed', () => {
+    const smaller: Group = {
+      apiVersion: 'user.openshift.io/v1',
+      kind: 'Group',
+      metadata: { name: 'developers', uid: 'developers-uid' },
+      users: ['a'],
+      userCount: 1,
+    }
+    const larger: Group = { ...smaller, users: ['a', 'b'], userCount: 2 }
+    expect(preferSearchBackedGroups([smaller, larger])).toEqual([larger])
+    expect(preferSearchBackedGroups([larger, smaller])).toEqual([larger])
+  })
+
   test('drops an MRA group that does not match the toolbar keywords', () => {
     setupAtoms([opsMra])
     mockSearch([developers], [developers], [])

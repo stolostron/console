@@ -49,6 +49,19 @@ function sortCmp(a: string, b: string, descending: boolean): number {
   return descending ? b.localeCompare(a) : a.localeCompare(b)
 }
 
+/** Primitive sort keys only. Objects have no stable ordering text. */
+function sortableFieldText(value: unknown): string {
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+      return String(value)
+    default:
+      return ''
+  }
+}
+
 /**
  * Insert `newItem` into `items` at the position dictated by `orderBy`, or
  * append it at the end when `orderBy` is absent.
@@ -57,8 +70,8 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
   if (!orderBy) return [...items, newItem]
   const [field, dir] = orderBy.trim().split(/\s+/)
   const descending = dir?.toLowerCase() === 'desc'
-  const newVal = String(newItem[field] ?? '')
-  const insertIdx = items.findIndex((item) => sortCmp(newVal, String(item[field] ?? ''), descending) < 0)
+  const newVal = sortableFieldText(newItem[field])
+  const insertIdx = items.findIndex((item) => sortCmp(newVal, sortableFieldText(item[field]), descending) < 0)
   if (insertIdx === -1) return [...items, newItem]
   return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
 }
@@ -163,9 +176,10 @@ function wouldTriggerRefetch(
   if (event.operation === 'INSERT') {
     if (!event.newData) return false
     if (current.length === 0) return true // empty page — cannot determine position → refetch
-    const newVal = String(({ ...event.newData, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
-    const firstVal = String(current[0][field] ?? '')
-    const lastVal = String(current[current.length - 1][field] ?? '')
+    const newItem = { ...event.newData, cluster, _uid: searchUid } as SearchItem
+    const newVal = sortableFieldText(newItem[field])
+    const firstVal = sortableFieldText(current[0][field])
+    const lastVal = sortableFieldText(current[current.length - 1][field])
     const cmpFirst = sortCmp(newVal, firstVal, descending)
     const cmpLast = sortCmp(newVal, lastVal, descending)
     if (cmpFirst <= 0) return true // ≤ first → page has shifted → refetch
@@ -180,8 +194,9 @@ function wouldTriggerRefetch(
     // Not on this page. Check position using oldData.
     const oldRaw = event.oldData
     if (oldRaw) {
-      const oldVal = String(({ ...oldRaw, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
-      const lastVal = String(current[current.length - 1][field] ?? '')
+      const oldItem = { ...oldRaw, cluster, _uid: searchUid } as SearchItem
+      const oldVal = sortableFieldText(oldItem[field])
+      const lastVal = sortableFieldText(current[current.length - 1][field])
       // ≤ last → was on an earlier page; its removal shifts our window → refetch
       return sortCmp(oldVal, lastVal, descending) <= 0
     }

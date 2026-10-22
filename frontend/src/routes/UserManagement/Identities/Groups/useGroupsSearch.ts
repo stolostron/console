@@ -120,6 +120,18 @@ export function isSearchBackedGroup(group: Group): boolean {
   return Boolean(uid && name && uid !== name)
 }
 
+function groupMemberCount(group: Group): number {
+  return group.userCount ?? group.users?.length ?? 0
+}
+
+/** Search-backed rows win over MRA stubs. Equal backing keeps the larger member count. */
+function preferredGroup(existing: Group, next: Group): Group {
+  const existingIndexed = isSearchBackedGroup(existing)
+  const nextIndexed = isSearchBackedGroup(next)
+  if (nextIndexed !== existingIndexed) return nextIndexed ? next : existing
+  return groupMemberCount(next) > groupMemberCount(existing) ? next : existing
+}
+
 /**
  * Collapse duplicate names after stitching MRA extras with Search rows.
  * Prefer the Search-backed Group (real CR / userCount) over an MRA-only stub.
@@ -130,31 +142,9 @@ export function preferSearchBackedGroups(groups: Group[]): Group[] {
     const name = group.metadata.name
     if (!name) continue
     const existing = preferred.get(name)
-    if (!existing) {
-      preferred.set(name, group)
-      continue
-    }
-    const existingIndexed = isSearchBackedGroup(existing)
-    const nextIndexed = isSearchBackedGroup(group)
-    if (nextIndexed && !existingIndexed) {
-      preferred.set(name, group)
-      continue
-    }
-    if (existingIndexed === nextIndexed) {
-      const existingCount = existing.userCount ?? existing.users?.length ?? 0
-      const nextCount = group.userCount ?? group.users?.length ?? 0
-      if (nextCount > existingCount) preferred.set(name, group)
-    }
+    preferred.set(name, existing ? preferredGroup(existing, group) : group)
   }
-  const seen = new Set<string>()
-  const unique: Group[] = []
-  for (const group of groups) {
-    const name = group.metadata.name
-    if (!name || seen.has(name)) continue
-    seen.add(name)
-    unique.push(preferred.get(name) ?? group)
-  }
-  return unique
+  return uniqueGroups(groups.map((group) => preferred.get(group.metadata.name ?? '') ?? group))
 }
 
 function toGroup(group: Group): Group {
@@ -402,10 +392,11 @@ export function useGroupsSearch(options: {
 
   const refetch = useCallback(() => {
     // Lookup/rank queries are skipped when empty; refetching them POSTs empty Search variables.
+    // useFleetSearch refetch returns void. Apollo refetch returns a Promise, so those stay ignored.
     if (lookupNamesLengthRef.current > 0) {
-      void refetchLookupRef.current()
+      refetchLookupRef.current()
     }
-    void refetchPageRef.current()
+    refetchPageRef.current()
     void refetchCountRef.current()
     if (extrasLengthRef.current > 0) {
       void refetchRanksRef.current()
@@ -417,7 +408,7 @@ export function useGroupsSearch(options: {
   useEffect(() => {
     if (!hasUnresolvedOverlap) return
     if (lookupNamesLengthRef.current > 0) {
-      void refetchLookupRef.current()
+      refetchLookupRef.current()
     }
     void refetchCountRef.current()
   }, [hasUnresolvedOverlap])

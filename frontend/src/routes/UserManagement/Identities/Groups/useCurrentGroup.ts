@@ -48,6 +48,13 @@ function eventMatchesGroup(
   return uid === groupUid || uid.endsWith(`/${groupUid}`)
 }
 
+/** useNavigate returns void in declarative mode and a Promise in data routers. */
+function settleNavigation(navigation: void | Promise<void>) {
+  Promise.resolve(navigation).catch(() => {
+    // The toast already explains the deletion; a failed redirect should not surface again.
+  })
+}
+
 export const useCurrentGroup = (): CurrentGroup => {
   const { t } = useTranslation()
   const { id } = useParams()
@@ -147,10 +154,10 @@ export const useCurrentGroup = (): CurrentGroup => {
 
     if (latestEvent.operation === 'DELETE') {
       // Match by Group name: the route id may still be the CR uid while the MRA subject is the name.
-      const roleAssignmentGroup = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).find(
+      const hasRoleAssignment = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).some(
         (candidate) => candidate.metadata.name === watchedName
       )
-      if (roleAssignmentGroup) {
+      if (hasRoleAssignment) {
         toast.addAlert({
           type: 'warning',
           title: t('Group {{name}} was deleted. Showing the identity from the role assignment.', {
@@ -159,7 +166,9 @@ export const useCurrentGroup = (): CurrentGroup => {
           autoClose: true,
         })
         if (id !== watchedName) {
-          navigate(generatePath(NavigationPath.identitiesGroupsDetails, { id: watchedName }), { replace: true })
+          settleNavigation(
+            navigate(generatePath(NavigationPath.identitiesGroupsDetails, { id: watchedName }), { replace: true })
+          )
         } else {
           setFetched(undefined)
         }
@@ -170,7 +179,7 @@ export const useCurrentGroup = (): CurrentGroup => {
         title: t('Group {{name}} was deleted.', { name: watchedName }),
         autoClose: true,
       })
-      navigate(NavigationPath.identitiesGroups, { replace: true })
+      settleNavigation(navigate(NavigationPath.identitiesGroups, { replace: true }))
       return
     }
 
