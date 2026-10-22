@@ -95,9 +95,11 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 	go c.logMemoryWhenReady(ctx)
 }
 
-// runSpec resolves the GVR, starts a SharedIndexInformer for one WatchSpec, and
-// retries on discovery/sync failure until ctx is canceled. Startup concurrency
-// is capped by acquireStartSlot so many specs do not list at once.
+// runSpec resolves the GVR and starts a SharedIndexInformer for one WatchSpec.
+// GVR resolution failures retry until ctx is canceled. After the informer
+// starts, an initial cache-sync timeout waits for that same informer to sync
+// (or for ctx to end) and then returns — it does not start another informer.
+// Startup concurrency is capped by acquireStartSlot so many specs do not list at once.
 func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapper ResourceMapper, st *specRuntime) {
 	for {
 		if ctx.Err() != nil {

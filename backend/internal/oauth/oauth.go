@@ -116,7 +116,8 @@ func (t acceptJSON) RoundTrip(req *http.Request) (*http.Response, error) {
 	return base.RoundTrip(r)
 }
 
-// withAcceptJSON returns a shallow client copy whose transport always sends Accept JSON.
+// withAcceptJSON returns a shallow client copy whose transport defaults to
+// Accept: application/json when the request does not already set Accept.
 func withAcceptJSON(c *http.Client) *http.Client {
 	cp := *c
 	cp.Transport = acceptJSON{base: c.Transport}

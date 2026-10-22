@@ -52,7 +52,7 @@ type dynamicSource struct {
 	client dynamic.Interface
 }
 
-// List returns the cluster APIServer object used for tlsSecurityProfile.
+// List returns APIServer objects matching metadata.name=cluster (tlsSecurityProfile source).
 func (s dynamicSource) List(ctx context.Context) (*unstructured.UnstructuredList, error) {
 	return s.client.Resource(apiServerGVR).List(ctx, metav1.ListOptions{FieldSelector: fieldSelector})
 }
