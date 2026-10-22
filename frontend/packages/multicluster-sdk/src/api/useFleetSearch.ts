@@ -8,6 +8,7 @@ import {
   SearchResultItemsQuery,
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
+import { eventMatchesQueryClusterFilter, toWatchInput } from '../internal/search/watchInput'
 import { Fleet } from '../types/fleet'
 import { SearchInput } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
@@ -74,23 +75,6 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
   const insertIdx = items.findIndex((item) => sortCmp(newVal, sortableFieldText(item[field]), descending) < 0)
   if (insertIdx === -1) return [...items, newItem]
   return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
-}
-
-/**
- * When the query filters by `cluster` but `watchInput` omits it (e.g. Groups use
- * `_hubClusterResource` because Search drops Group events for `cluster`), ignore
- * subscription events whose uid cluster prefix is outside the query filter.
- */
-export function eventMatchesQueryClusterFilter(event: FleetSearchEvent, input: SearchInput | undefined): boolean {
-  const clusters = input?.filters?.find((filter) => filter?.property === 'cluster')?.values
-  if (!clusters?.length) return true
-  const uid = event.uid
-  if (!uid) return true
-  // Search Event.uid is the Kubernetes resource UID (no cluster prefix). Accept those;
-  // only slash-delimited `<cluster>/<uid>` values are cluster-scoped.
-  if (!uid.includes('/')) return true
-  const prefix = uid.split('/')[0]
-  return clusters.includes(prefix)
 }
 
 function clusterFromEventData(data: unknown): string | undefined {
@@ -252,18 +236,10 @@ function applyEvent(
 export type UseFleetSearchOptions = {
   /**
    * Input for the GraphQL `watch` subscription. When omitted, the subscription
-   * uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy).
+   * uses the query `input` with `limit` / `offset` / `orderBy` stripped
+   * (Search subscriptions do not support those query-only fields).
    */
   watchInput?: SearchInput
-}
-
-/**
- * Build a Search watch input from a query input.
- * Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
- */
-export function toWatchInput(input: SearchInput): SearchInput {
-  const { limit: _limit, offset: _offset, orderBy: _orderBy, relatedKinds: _related, ...watch } = input
-  return watch
 }
 
 /**

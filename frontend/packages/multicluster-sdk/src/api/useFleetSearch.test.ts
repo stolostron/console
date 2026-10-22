@@ -5,8 +5,9 @@ import {
   SearchResultItemsQueryVariables,
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
+import { toWatchInput } from '../internal/search/watchInput'
 import { SearchInput } from '../types/search'
-import { eventMatchesQueryClusterFilter, toWatchInput, useFleetSearch } from './useFleetSearch'
+import { useFleetSearch } from './useFleetSearch'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
 // Mock the base query hook
@@ -82,44 +83,6 @@ function makeEvent(
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
-
-describe('eventMatchesQueryClusterFilter', () => {
-  it('accepts all events when the query has no cluster filter', () => {
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'other/uid', {}), mockInput)).toBe(true)
-  })
-
-  it('accepts events whose uid cluster prefix is in the query cluster filter', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'local-cluster/uid-1', {}), input)).toBe(true)
-  })
-
-  it('rejects events whose uid cluster prefix is outside the query cluster filter', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('INSERT', 'remote-cluster/uid-1', {}), input)).toBe(false)
-  })
-
-  it('accepts bare Kubernetes resource UIDs when the query filters by cluster', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {}), input)).toBe(
-      true
-    )
-  })
-})
 
 describe('useFleetSearch', () => {
   beforeEach(() => {
