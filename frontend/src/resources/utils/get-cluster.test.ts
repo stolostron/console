@@ -5,6 +5,7 @@ import { ClusterCurator, ClusterCuratorApiVersion, ClusterCuratorKind } from '..
 import { ClusterDeployment, ClusterDeploymentApiVersion, ClusterDeploymentKind } from '../cluster-deployment'
 import {
   ClusterStatus,
+  getCluster,
   getClusterStatus,
   getDistributionInfo,
   getHCUpgradePercent,
@@ -1025,6 +1026,22 @@ const mockClusterCuratorPosthookFailed: ClusterCurator = {
     ],
   },
 }
+
+describe('getCluster', () => {
+  it('should handle a hosted cluster without an SSH key', () => {
+    const { sshKey: _sshKey, ...spec } = mockHostedCluster.spec
+    const hostedCluster = { ...mockHostedCluster, spec } as HostedClusterK8sResource
+
+    const cluster = getCluster({
+      hostedCluster,
+      managedClusterAddOns: [],
+      clusterManagementAddOns: {},
+      nodePools: [],
+    })
+
+    expect(cluster.hypershift?.secretNames).toEqual(['psecret'])
+  })
+})
 
 describe('getDistributionInfo', () => {
   it('should have correct available updates and available channels', () => {
