@@ -51,7 +51,7 @@ describe(`aggregator Route`, function () {
   })
 
   it(`should page Unfiltered Applications`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events - cache sequentially to ensure deterministic order
     for (const resource of resources) {
@@ -98,7 +98,7 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseNoFilter)
   })
   it(`should page Filtered Applications`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events - cache sequentially to ensure deterministic order
     for (const resource of resources) {
@@ -129,7 +129,7 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseFiltered)
   })
   it(`should return application  counts`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events - cache sequentially to ensure deterministic order
     for (const resource of resources) {
@@ -153,7 +153,7 @@ describe(`aggregator Route`, function () {
     expect(await parseResponseJsonBody(res)).toEqual(responseCount)
   })
   it(`should return appset data`, async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200)
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
 
     // initialize events - cache sequentially to ensure deterministic order
     for (const resource of resources) {
