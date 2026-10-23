@@ -10,7 +10,7 @@ import { getResource, ResourceError, ResourceErrorCode } from '../../../../resou
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { AcmToastContext } from '../../../../ui-components'
 import { usersFromMulticlusterRoleAssignments } from '../useMergedIdentities'
-import { findIndexedUserName, hubUserFilters } from './useUsersSearch'
+import { findIndexedUserName, hubUserWatchFilters } from './useUsersSearch'
 
 export type CurrentUser = {
   user?: User
@@ -77,11 +77,10 @@ export const useCurrentUser = (): CurrentUser => {
     [id, mras]
   )
   const watchedName = fetched?.metadata?.name ?? mraIdentity?.metadata?.name
-  // Do not filter the watch by `name`: Search delivers User events on the broad hub
-  // watch (same as the Users list) but often sends none when `name` is set — Details/YAML
-  // would stay stale while the list still updated. Match the watched user client-side.
+  // Name-scoped hub User watch (Search User items currently omit groups / group counts;
+  // membership live-updates need Search indexer support — track separately).
   const watchInput = useMemo(
-    () => (watchedName ? { filters: hubUserFilters() } : undefined),
+    () => (watchedName ? { filters: hubUserWatchFilters(watchedName) } : undefined),
     [watchedName]
   )
   const [latestEvent] = useFleetSearchSubscription(watchInput)

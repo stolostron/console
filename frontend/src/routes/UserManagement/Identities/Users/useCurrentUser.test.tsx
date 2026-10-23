@@ -172,6 +172,7 @@ describe('useCurrentUser', () => {
         { property: 'kind', values: ['User'] },
         { property: 'apigroup', values: ['user.openshift.io'] },
         { property: '_hubClusterResource', values: ['*'] },
+        { property: 'name', values: ['charlie'] },
       ],
     })
   })

@@ -42,6 +42,15 @@ export function hubUserFilters(): SearchFilter[] {
   ]
 }
 
+/**
+ * Filters for a User GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
+ * and drops User events when `cluster` is set. Same hub scope as {@link hubUserFilters}.
+ * Prefer including `name` when watching a single User on details.
+ */
+export function hubUserWatchFilters(name?: string): SearchFilter[] {
+  return [...hubUserFilters(), ...(name ? [{ property: 'name', values: [name] }] : [])]
+}
+
 export function userOrderBy(
   columns: SortColumn[],
   sortBy: { index?: number; direction?: string } | undefined
