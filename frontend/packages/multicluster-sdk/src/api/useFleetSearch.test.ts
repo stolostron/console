@@ -5,8 +5,9 @@ import {
   SearchResultItemsQueryVariables,
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
+import { toWatchInput } from '../internal/search/watchInput'
 import { SearchInput } from '../types/search'
-import { eventMatchesQueryClusterFilter, toWatchInput, useFleetSearch } from './useFleetSearch'
+import { useFleetSearch } from './useFleetSearch'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
 
 // Mock the base query hook
@@ -82,44 +83,6 @@ function makeEvent(
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
-
-describe('eventMatchesQueryClusterFilter', () => {
-  it('accepts all events when the query has no cluster filter', () => {
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'other/uid', {}), mockInput)).toBe(true)
-  })
-
-  it('accepts events whose uid cluster prefix is in the query cluster filter', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'local-cluster/uid-1', {}), input)).toBe(true)
-  })
-
-  it('rejects events whose uid cluster prefix is outside the query cluster filter', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('INSERT', 'remote-cluster/uid-1', {}), input)).toBe(false)
-  })
-
-  it('accepts bare Kubernetes resource UIDs when the query filters by cluster', () => {
-    const input: SearchInput = {
-      filters: [
-        { property: 'kind', values: ['Group'] },
-        { property: 'cluster', values: ['local-cluster'] },
-      ],
-    }
-    expect(eventMatchesQueryClusterFilter(makeEvent('UPDATE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {}), input)).toBe(
-      true
-    )
-  })
-})
 
 describe('useFleetSearch', () => {
   beforeEach(() => {
@@ -297,26 +260,7 @@ describe('useFleetSearch', () => {
       expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(toWatchInput(paginated))
     })
 
-    it('should pass options.watchInput to useFleetSearchSubscription when provided', () => {
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: undefined,
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: 'apigroup', values: ['user.openshift.io'] },
-        ],
-      }
-      renderHook(() => useFleetSearch(mockInput, true, { watchInput }))
-
-      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(watchInput)
-    })
-
-    it('should ignore subscription events outside the query cluster filter when watchInput omits cluster', () => {
+    it('should ignore subscription events outside the query cluster filter', () => {
       const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
       const pageInput: SearchInput = {
         filters: [
@@ -325,12 +269,6 @@ describe('useFleetSearch', () => {
         ],
         limit: -1,
         orderBy: 'name asc',
-      }
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: '_hubClusterResource', values: ['true'] },
-        ],
       }
       const mockRefetch = pendingRefetch()
       mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
@@ -345,14 +283,14 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
 
       expect(mockRefetch).not.toHaveBeenCalled()
       expect(result.current[0]).toHaveLength(1)
       expect(result.current[0]![0].metadata?.name).toBe('hub-group')
     })
 
-    it('should apply matching-cluster events when watchInput omits cluster', () => {
+    it('should apply matching-cluster events when the query filters by cluster', () => {
       const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
       const pageInput: SearchInput = {
         filters: [
@@ -361,12 +299,6 @@ describe('useFleetSearch', () => {
         ],
         limit: -1,
         orderBy: 'name asc',
-      }
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: '_hubClusterResource', values: ['true'] },
-        ],
       }
       mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
       mockUseFleetSearchSubscription.mockReturnValue([
@@ -380,7 +312,7 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
 
       expect(result.current[0]).toHaveLength(2)
       expect(result.current[0]!.map((r) => r.metadata?.name).sort()).toEqual(['hub-group', 'new-hub-group'])
@@ -510,9 +442,6 @@ describe('useFleetSearch', () => {
         ],
         limit: 10,
       }
-      const watchInput: SearchInput = {
-        filters: [{ property: 'kind', values: ['Group'] }],
-      }
 
       let resolveRefetch: (value: RefetchResult) => void = () => {}
       const mockRefetch: RefetchMock = jest.fn(
@@ -535,7 +464,7 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true))
       expect(mockRefetch).toHaveBeenCalledTimes(1)
 
       // Off-cluster INSERT while refetching must not be applied after settle

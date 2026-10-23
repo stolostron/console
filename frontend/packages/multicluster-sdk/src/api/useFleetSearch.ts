@@ -8,6 +8,7 @@ import {
   SearchResultItemsQuery,
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
+import { eventMatchesQueryClusterFilter, toWatchInput } from '../internal/search/watchInput'
 import { Fleet } from '../types/fleet'
 import { SearchInput } from '../types/search'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
@@ -49,6 +50,19 @@ function sortCmp(a: string, b: string, descending: boolean): number {
   return descending ? b.localeCompare(a) : a.localeCompare(b)
 }
 
+/** Primitive sort keys only. Objects have no stable ordering text. */
+function sortableFieldText(value: unknown): string {
+  switch (typeof value) {
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'bigint':
+      return String(value)
+    default:
+      return ''
+  }
+}
+
 /**
  * Insert `newItem` into `items` at the position dictated by `orderBy`, or
  * append it at the end when `orderBy` is absent.
@@ -57,27 +71,10 @@ function insertSorted(items: SearchItem[], newItem: SearchItem, orderBy: string 
   if (!orderBy) return [...items, newItem]
   const [field, dir] = orderBy.trim().split(/\s+/)
   const descending = dir?.toLowerCase() === 'desc'
-  const newVal = String(newItem[field] ?? '')
-  const insertIdx = items.findIndex((item) => sortCmp(newVal, String(item[field] ?? ''), descending) < 0)
+  const newVal = sortableFieldText(newItem[field])
+  const insertIdx = items.findIndex((item) => sortCmp(newVal, sortableFieldText(item[field]), descending) < 0)
   if (insertIdx === -1) return [...items, newItem]
   return [...items.slice(0, insertIdx), newItem, ...items.slice(insertIdx)]
-}
-
-/**
- * When the query filters by `cluster` but `watchInput` omits it (e.g. Groups use
- * `_hubClusterResource` because Search drops Group events for `cluster`), ignore
- * subscription events whose uid cluster prefix is outside the query filter.
- */
-export function eventMatchesQueryClusterFilter(event: FleetSearchEvent, input: SearchInput | undefined): boolean {
-  const clusters = input?.filters?.find((filter) => filter?.property === 'cluster')?.values
-  if (!clusters?.length) return true
-  const uid = event.uid
-  if (!uid) return true
-  // Search Event.uid is the Kubernetes resource UID (no cluster prefix). Accept those;
-  // only slash-delimited `<cluster>/<uid>` values are cluster-scoped.
-  if (!uid.includes('/')) return true
-  const prefix = uid.split('/')[0]
-  return clusters.includes(prefix)
 }
 
 function clusterFromEventData(data: unknown): string | undefined {
@@ -163,9 +160,10 @@ function wouldTriggerRefetch(
   if (event.operation === 'INSERT') {
     if (!event.newData) return false
     if (current.length === 0) return true // empty page — cannot determine position → refetch
-    const newVal = String(({ ...event.newData, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
-    const firstVal = String(current[0][field] ?? '')
-    const lastVal = String(current[current.length - 1][field] ?? '')
+    const newItem = { ...event.newData, cluster, _uid: searchUid } as SearchItem
+    const newVal = sortableFieldText(newItem[field])
+    const firstVal = sortableFieldText(current[0][field])
+    const lastVal = sortableFieldText(current.at(-1)?.[field])
     const cmpFirst = sortCmp(newVal, firstVal, descending)
     const cmpLast = sortCmp(newVal, lastVal, descending)
     if (cmpFirst <= 0) return true // ≤ first → page has shifted → refetch
@@ -180,8 +178,9 @@ function wouldTriggerRefetch(
     // Not on this page. Check position using oldData.
     const oldRaw = event.oldData
     if (oldRaw) {
-      const oldVal = String(({ ...oldRaw, cluster, _uid: searchUid } as SearchItem)[field] ?? '')
-      const lastVal = String(current[current.length - 1][field] ?? '')
+      const oldItem = { ...oldRaw, cluster, _uid: searchUid } as SearchItem
+      const oldVal = sortableFieldText(oldItem[field])
+      const lastVal = sortableFieldText(current.at(-1)?.[field])
       // ≤ last → was on an earlier page; its removal shifts our window → refetch
       return sortCmp(oldVal, lastVal, descending) <= 0
     }
@@ -233,24 +232,6 @@ function applyEvent(
   }
 }
 
-/** Optional third argument to {@link useFleetSearch}. */
-export type UseFleetSearchOptions = {
-  /**
-   * Input for the GraphQL `watch` subscription. When omitted, the subscription
-   * uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy).
-   */
-  watchInput?: SearchInput
-}
-
-/**
- * Build a Search watch input from a query input.
- * Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
- */
-export function toWatchInput(input: SearchInput): SearchInput {
-  const { limit: _limit, offset: _offset, orderBy: _orderBy, relatedKinds: _related, ...watch } = input
-  return watch
-}
-
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API,
  * with optional real-time updates via a GraphQL WebSocket subscription.
@@ -262,15 +243,15 @@ export function toWatchInput(input: SearchInput): SearchInput {
  * up to date without polling.
  *
  * Pagination is supported by setting `limit` and `offset` on the `SearchInput`
- * object. The caller is responsible for constructing those values.
+ * object. The caller is responsible for constructing those values. When the
+ * subscription is enabled, `limit` / `offset` / `orderBy` are stripped from
+ * `input` for the GraphQL `watch` (those fields are query-only).
  *
  * @param input - The search input object (filters, keywords, limit, offset, etc.).
  *   Pass `undefined` to skip the query entirely.
  * @param subscriptionEnabled - When `true`, a WebSocket subscription is opened
  *   and the local result set is kept current via incremental event patches.
  *   Defaults to `false`.
- * @param options - Optional {@link UseFleetSearchOptions}, including `watchInput`
- *   when the subscription must use different filters than the query.
  *
  * @returns A tuple of:
  * - `data` — The current search results mapped through
@@ -319,18 +300,11 @@ export function toWatchInput(input: SearchInput): SearchInput {
  *   },
  *   true,
  * )
- *
- * // Optional watchInput: query stays paginated; watch uses a different filter set.
- * // Needed when Search drops events for some query filters (e.g. `cluster` on Groups).
- * const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
- *   watchInput: { filters: [{ property: 'kind', values: ['Group'] }] },
- * })
  * ```
  */
 export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   input: SearchInput | undefined,
-  subscriptionEnabled?: boolean,
-  options?: UseFleetSearchOptions
+  subscriptionEnabled?: boolean
 ): [Fleet<T>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
@@ -460,12 +434,11 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
 
   // ── Subscription layer ─────────────────────────────────────────────────────
 
-  // Prefer an explicit watchInput (callers can omit filters Search mishandles on
-  // watch, e.g. `cluster` for Group). Otherwise strip query-only pagination fields.
+  // Strip query-only pagination/sort fields for the GraphQL watch subscription.
   const subscriptionInput = useMemo<SearchInput | undefined>(() => {
     if (!subscriptionEnabled || input == null) return undefined
-    return options?.watchInput ?? toWatchInput(input)
-  }, [subscriptionEnabled, input, options?.watchInput])
+    return toWatchInput(input)
+  }, [subscriptionEnabled, input])
 
   const [latestEvent, , subscriptionError] = useFleetSearchSubscription(subscriptionInput)
 
@@ -474,8 +447,7 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
     if (!latestEvent) return
 
     const currentInput = inputRef.current
-    // watchInput may omit `cluster` (Search drops Group events for that filter);
-    // keep query results scoped by ignoring events from other clusters.
+    // When the query filters by `cluster`, ignore watch events from other clusters.
     if (!eventMatchesQueryClusterFilter(latestEvent, currentInput)) return
 
     // While a refetch is in flight, queue events for later processing.

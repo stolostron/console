@@ -191,7 +191,7 @@ describe('useCurrentGroup', () => {
       filters: [
         { property: 'kind', values: ['Group'] },
         { property: 'apigroup', values: ['user.openshift.io'] },
-        { property: '_hubClusterResource', values: ['true'] },
+        { property: '_hubClusterResource', values: ['*'] },
         { property: 'name', values: ['ops-team'] },
       ],
     })
@@ -270,7 +270,7 @@ describe('useCurrentGroup', () => {
       filters: [
         { property: 'kind', values: ['Group'] },
         { property: 'apigroup', values: ['user.openshift.io'] },
-        { property: '_hubClusterResource', values: ['true'] },
+        { property: '_hubClusterResource', values: ['*'] },
         { property: 'name', values: ['kubevirt-admins'] },
       ],
     })

@@ -46,7 +46,6 @@ Setup depends on your usage scenarios.
 
 ## :toolbox: Functions
 
-- [eventMatchesQueryClusterFilter](#gear-eventmatchesqueryclusterfilter)
 - [fleetK8sCreate](#gear-fleetk8screate)
 - [fleetK8sDelete](#gear-fleetk8sdelete)
 - [fleetK8sGet](#gear-fleetk8sget)
@@ -57,7 +56,6 @@ Setup depends on your usage scenarios.
 - [FleetResourceEventStream](#gear-fleetresourceeventstream)
 - [FleetResourceLink](#gear-fleetresourcelink)
 - [getFleetK8sAPIPath](#gear-getfleetk8sapipath)
-- [toWatchInput](#gear-towatchinput)
 - [useFleetAccessReview](#gear-usefleetaccessreview)
 - [useFleetClusterNames](#gear-usefleetclusternames)
 - [useFleetClusterSetNames](#gear-usefleetclustersetnames)
@@ -71,18 +69,6 @@ Setup depends on your usage scenarios.
 - [useHubClusterName](#gear-usehubclustername)
 - [useIsFleetAvailable](#gear-useisfleetavailable)
 - [useIsFleetObservabilityInstalled](#gear-useisfleetobservabilityinstalled)
-
-### :gear: eventMatchesQueryClusterFilter
-
-When the query filters by `cluster` but `watchInput` omits it (e.g. Groups use
-`_hubClusterResource` because Search drops Group events for `cluster`), ignore
-subscription events whose uid cluster prefix is outside the query filter.
-
-| Function | Type |
-| ---------- | ---------- |
-| `eventMatchesQueryClusterFilter` | `(event: Event, input: SearchInput or undefined) => boolean` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L71)
 
 ### :gear: fleetK8sCreate
 
@@ -448,17 +434,6 @@ Returns:
 The k8s API path for the fleet.
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/getFleetK8sAPIPath.ts#L13)
-
-### :gear: toWatchInput
-
-Build a Search watch input from a query input.
-Search subscriptions do not support `limit` / `offset` / `orderBy` (query-only).
-
-| Function | Type |
-| ---------- | ---------- |
-| `toWatchInput` | `(input: SearchInput) => SearchInput` |
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L249)
 
 ### :gear: useFleetAccessReview
 
@@ -906,11 +881,13 @@ results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
 up to date without polling.
 
 Pagination is supported by setting `limit` and `offset` on the `SearchInput`
-object. The caller is responsible for constructing those values.
+object. The caller is responsible for constructing those values. When the
+subscription is enabled, `limit` / `offset` / `orderBy` are stripped from
+`input` for the GraphQL `watch` (those fields are query-only).
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined, options?: UseFleetSearchOptions or undefined) => [...]` |
+| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
@@ -919,7 +896,6 @@ Pass `undefined` to skip the query entirely.
 * `subscriptionEnabled`: - When `true`, a WebSocket subscription is opened
 and the local result set is kept current via incremental event patches.
 Defaults to `false`.
-* `options`: - Optional 
 
 
 Returns:
@@ -972,16 +948,10 @@ const [resources, loaded, error, refetch] = useFleetSearch(
   },
   true,
 )
-
-// Optional watchInput: query stays paginated; watch uses a different filter set.
-// Needed when Search drops events for some query filters (e.g. `cluster` on Groups).
-const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
-  watchInput: { filters: [{ property: 'kind', values: ['Group'] }] },
-})
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L330)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L305)
 
 ### :gear: useFleetSearchPoll
 
@@ -1176,7 +1146,6 @@ if (error) {
 - [SearchFilter](#gear-searchfilter)
 - [SearchInput](#gear-searchinput)
 - [SearchResult](#gear-searchresult)
-- [UseFleetSearchOptions](#gear-usefleetsearchoptions)
 
 ### :gear: AdvancedSearchFilter
 
@@ -1447,19 +1416,6 @@ type SearchInput = {
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L83)
-
-### :gear: UseFleetSearchOptions
-
-Optional third argument to {@link useFleetSearch}.
-
-```typescript
-type UseFleetSearchOptions = {
-  /** Input for the GraphQL `watch` subscription. When omitted, the subscription uses {@link toWatchInput} on `input` (filters/keywords only — no limit/offset/orderBy). */
-  watchInput?: SearchInput
-}
-```
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L237)
 
 
 <!-- TSDOC_END -->
