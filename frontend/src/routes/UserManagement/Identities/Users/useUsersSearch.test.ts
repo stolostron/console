@@ -82,14 +82,16 @@ function isComparator(input: SearchInput): boolean {
   )
 }
 
+const refetchPage = jest.fn()
+const refetchLookup = jest.fn()
+
 function mockSearch(pageUsers: User[], indexed: User[] = pageUsers, ranks: number[] = []) {
-  const refetchPage = jest.fn()
   mockUseFleetSearch.mockImplementation((input, subscriptionEnabled) => {
     if (!input) return [undefined, true, undefined, jest.fn()]
     if (input.orderBy) return [pageUsers, true, undefined, refetchPage]
     if (subscriptionEnabled) return [pageUsers, true, undefined, refetchPage]
     const names = new Set(input.filters?.find((filter) => filter?.property === 'name')?.values ?? [])
-    return [indexed.filter((user) => names.has(user.metadata.name ?? '')), true, undefined, jest.fn()]
+    return [indexed.filter((user) => names.has(user.metadata.name ?? '')), true, undefined, refetchLookup]
   })
 
   mockUseSearchResultCountQuery.mockImplementation(
@@ -112,7 +114,7 @@ function mockSearch(pageUsers: User[], indexed: User[] = pageUsers, ranks: numbe
       }
     }
   )
-  return { refetchPage }
+  return { refetchPage, refetchLookup }
 }
 
 function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
@@ -127,6 +129,8 @@ function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
 
 describe('useUsersSearch', () => {
   beforeEach(() => {
+    refetchPage.mockClear()
+    refetchLookup.mockClear()
     setupAtoms()
     mockSearch([alice])
   })
@@ -176,6 +180,40 @@ describe('useUsersSearch', () => {
 
     expect(result.current.users.map((user) => user.metadata.name)).toEqual(['charlie', 'alice'])
     expect(result.current.processedItemCount).toBe(2)
+  })
+
+  test('refetches lookup when Search deletes an indexed MRA candidate from the page', async () => {
+    // Alice is Search-backed and also an MRA subject. After DELETE, the page drops alice
+    // while lookup is still stale (indexed) — refresh lookup so the MRA stub can return.
+    setupAtoms([aliceMra])
+    const { refetchLookup } = mockSearch([alice], [alice], [])
+
+    const { rerender, result } = renderHook(() =>
+      useUsersSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    expect(result.current.users.map((user) => user.metadata.name)).toEqual(['alice'])
+    expect(refetchLookup).not.toHaveBeenCalled()
+
+    // Simulate subscription DELETE: page empty, lookup still returns alice.
+    mockSearch([], [alice], [0])
+    rerender()
+
+    await waitFor(() => {
+      expect(refetchLookup).toHaveBeenCalled()
+    })
+
+    // After lookup catches up, alice is MRA-only again.
+    mockSearch([], [], [0])
+    rerender()
+
+    await waitFor(() => {
+      expect(result.current.users.map((user) => user.metadata.name)).toEqual(['alice'])
+      expect(result.current.users[0]?.metadata.uid).toBe('alice')
+    })
   })
 
   test('holds the page and count while an MRA extra overlaps a Search row pending lookup', () => {
