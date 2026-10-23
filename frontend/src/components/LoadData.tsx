@@ -697,13 +697,13 @@ export function LoadData(props: { children?: ReactNode }) {
               if (process.env.NODE_ENV === 'development' && res.status === 504) {
                 window.location.reload()
               } else {
-                tokenExpired()
+                void tokenExpired()
               }
               break
           }
         })
         .catch(() => {
-          tokenExpired()
+          void tokenExpired()
         })
         .finally(() => {
           setTimeout(checkLoggedIn, 30 * 1000)
