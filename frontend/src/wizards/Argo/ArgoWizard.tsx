@@ -150,10 +150,6 @@ export interface ArgoWizardProps {
   isModal?: boolean
 }
 
-function onlyUnique(value: any, index: any, self: string | any[]) {
-  return self.indexOf(value) === index
-}
-
 export function ArgoWizard(props: ArgoWizardProps) {
   const { resources, isPullModel = false } = props
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
@@ -190,7 +186,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       }
     })
 
-    return [...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
+    return [...new Set([...(sourceGitChannels ?? []), ...(gitArgoAppSetRepoURLs ?? [])])]
   }, [props.applicationSets, sourceGitChannels])
 
   const gitSourceCache = useMemo(() => buildGitSourceCache(props.applicationSets), [props.applicationSets])
@@ -262,7 +258,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
       }
     })
 
-    return [...sourceHelmChannels, ...(helmArgoAppSetRepoURLs ?? [])].filter(onlyUnique)
+    return [...new Set([...sourceHelmChannels, ...(helmArgoAppSetRepoURLs ?? [])])]
   }, [props.applicationSets, sourceHelmChannels])
 
   const [filteredClusterSets, setFilteredClusterSets] = useState<IResource[]>([])
