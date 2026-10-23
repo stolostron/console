@@ -27,9 +27,7 @@ export const getTheme = () => {
     return 'console-dark'
   }
   // else only give them what user wants
-  const isDark =
-    document.documentElement.classList.contains('pf-v5-theme-dark') ||
-    document.documentElement.classList.contains('pf-v6-theme-dark')
+  const isDark = document.documentElement.classList.contains('pf-v6-theme-dark')
   return isDark ? 'console-dark' : 'console-light'
 }
 /**
