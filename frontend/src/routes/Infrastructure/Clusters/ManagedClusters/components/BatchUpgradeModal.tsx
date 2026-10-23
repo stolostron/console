@@ -153,7 +153,7 @@ export function BatchUpgradeModal(props: {
 
   useEffect(() => {
     if (open && managedClusterIds.length > 0) {
-      getUpgradeRiskPredictions(managedClusterIds).then((res) => {
+      void getUpgradeRiskPredictions(managedClusterIds).then((res) => {
         const reducedUpgradeRiskPredictions = res.reduce((acc: any[], curr: any) => {
           if (curr.body && curr.body.predictions) {
             return [...acc, ...curr.body.predictions]

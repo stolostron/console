@@ -628,7 +628,7 @@ export function handlePolicyAutomationSubmit(
       })
     }
     submitForm()
-    navigate(destination)
+    void navigate(destination)
   })
 }
 

@@ -16,9 +16,9 @@ export function EditApplicationSetPage() {
 
   const handleCancel = useCallback(() => {
     if (searchParams.get('context') === 'applicationsets') {
-      navigate(NavigationPath.applications)
+      void navigate(NavigationPath.applications)
     } else {
-      navigate({
+      void navigate({
         pathname: generatePath(NavigationPath.applicationDetails, { name, namespace }),
         search: argoAppSetQueryString,
       })
@@ -28,9 +28,9 @@ export function EditApplicationSetPage() {
   const handleSubmitSuccess = useCallback(
     (applicationSet: ApplicationSet) => {
       if (searchParams.get('context') === 'applicationsets') {
-        navigate(NavigationPath.applications)
+        void navigate(NavigationPath.applications)
       } else {
-        navigate({
+        void navigate({
           pathname: generatePath(NavigationPath.applicationDetails, {
             namespace: applicationSet.metadata?.namespace ?? '',
             name: applicationSet.metadata?.name ?? '',
@@ -43,7 +43,7 @@ export function EditApplicationSetPage() {
   )
 
   const handleApplicationSetNotFound = useCallback(() => {
-    navigate(NavigationPath.applications)
+    void navigate(NavigationPath.applications)
   }, [navigate])
 
   return (

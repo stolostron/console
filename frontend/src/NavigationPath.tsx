@@ -238,7 +238,7 @@ export function getBackCancelLocationLinkProps(location: To | Location): Pick<Li
 
 export function navigateToBackCancelLocation(navigate: NavigateFunction, location: To | Location): void {
   const { to, state } = getBackCancelLocationLinkProps(location)
-  navigate(to, { state })
+  void navigate(to, { state })
 }
 
 export function useBackCancelNavigation(): {
@@ -257,7 +257,7 @@ export function useBackCancelNavigation(): {
           maxBackSteps: state?.maxBackSteps ? state.maxBackSteps + 1 : 1, // when starting at an intermediate step, back can navigate to this point
           cancelSteps: state?.cancelSteps ? state.cancelSteps + 1 : 0, // when starting at an intermediate step, cancel should go to default
         }
-        navigate(newLocation, {
+        void navigate(newLocation, {
           state: {
             ...(state ?? {}),
             ...(typeof newLocation !== 'string' && 'state' in newLocation ? newLocation.state : {}),
@@ -268,17 +268,17 @@ export function useBackCancelNavigation(): {
       back: (defaultLocation) => () => {
         cancelForm()
         if (state?.maxBackSteps) {
-          navigate(-1)
+          void navigate(-1)
         } else {
-          navigate(defaultLocation)
+          void navigate(defaultLocation)
         }
       },
       cancel: (defaultLocation) => () => {
         cancelForm()
         if (state?.cancelSteps) {
-          navigate(-state.cancelSteps)
+          void navigate(-state.cancelSteps)
         } else {
-          navigate(defaultLocation)
+          void navigate(defaultLocation)
         }
       },
     }),

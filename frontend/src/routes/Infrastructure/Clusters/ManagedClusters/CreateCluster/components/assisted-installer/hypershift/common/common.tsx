@@ -9,7 +9,7 @@ export function Actions(code: string, id: string) {
   const [copied, setCopied] = useState(false)
 
   const onClick = (text: string) => {
-    navigator.clipboard.writeText(text.toString())
+    void navigator.clipboard.writeText(text.toString())
     setCopied(true)
   }
 

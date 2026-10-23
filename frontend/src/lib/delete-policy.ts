@@ -25,7 +25,7 @@ export function deletePolicy(
 
   return {
     promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
+      void deleteResourcesResult.promise.then((promisesSettledResult) => {
         if (promisesSettledResult[0]?.status === 'rejected') {
           const error = promisesSettledResult[0].reason
           if (error instanceof ResourceError) {

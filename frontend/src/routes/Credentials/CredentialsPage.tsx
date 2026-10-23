@@ -247,7 +247,7 @@ export function CredentialsTable(props: {
                   text: t('Edit credential'),
                   isAriaDisabled: true,
                   click: (secret: Secret) => {
-                    navigate(
+                    void navigate(
                       generatePath(NavigationPath.editCredentials, {
                         namespace: secret.metadata.namespace!,
                         name: secret.metadata.name!,

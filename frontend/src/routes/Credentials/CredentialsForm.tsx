@@ -1511,7 +1511,7 @@ export function CredentialsForm(
               autoClose: true,
             })
             submitForm()
-            navigate(NavigationPath.credentials)
+            void navigate(NavigationPath.credentials)
           })
           .catch((err) => {
             toastContext.addAlert({
@@ -1542,7 +1542,7 @@ export function CredentialsForm(
             if (handleModalToggle) {
               handleModalToggle()
             } else {
-              navigate(NavigationPath.credentials)
+              void navigate(NavigationPath.credentials)
             }
           })
           .catch((err) => {
@@ -1609,7 +1609,7 @@ export function CredentialsForm(
       }
       edit={() => {
         if (providerConnection) {
-          navigate(
+          void navigate(
             generatePath(NavigationPath.editCredentials, {
               namespace: providerConnection.metadata.namespace!,
               name: providerConnection.metadata.name!,

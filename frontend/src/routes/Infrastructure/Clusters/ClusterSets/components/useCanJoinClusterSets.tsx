@@ -23,7 +23,7 @@ export function useCanJoinClusterSets() {
         return setCanJoinClusterSets([])
       }
       const adminAccessCheck = checkAdminAccess()
-      adminAccessCheck.then((adminAccess) => {
+      void adminAccessCheck.then((adminAccess) => {
         if (adminAccess.status!.allowed) {
           setCanJoinGlobalClusterSet(managedClusterSets.some(isGlobalClusterSet))
           return setCanJoinClusterSets(
@@ -35,7 +35,7 @@ export function useCanJoinClusterSets() {
               return canUser('create', mcs, undefined, mcs.metadata.name, 'join').promise
             })
           )
-          requests.then((results) => {
+          void requests.then((results) => {
             const authorizedClusterSetNames: string[] = []
             results.forEach((res) => {
               if (res.status !== 'rejected' && res.value.status?.allowed) {
