@@ -144,13 +144,20 @@ describe('UserGroups', () => {
     expect(screen.getByText('admins')).toBeInTheDocument()
   })
 
-  it('does not show groups that Search did not return for the user', () => {
+  it('does not show groups absent from the User CR groups field', () => {
     setCtx(mockUser)
     setFleetGroups(mockUserGroups)
     renderWithCtx()
     expect(screen.getByText('developers')).toBeInTheDocument()
     expect(screen.getByText('admins')).toBeInTheDocument()
     expect(screen.queryByText('viewers')).not.toBeInTheDocument()
+  })
+
+  it('stubs a Group name from the User CR until Search returns metadata', () => {
+    setCtx(createUser({ groups: ['pending-group'] }))
+    setFleetGroups([])
+    renderWithCtx()
+    expect(screen.getByText('pending-group')).toBeInTheDocument()
   })
 
   it('handles user with undefined groups array', () => {
@@ -214,7 +221,7 @@ describe('UserGroups', () => {
     expect(screen.getByText('developers')).toBeInTheDocument()
   })
 
-  it('queries Search with groupUsers filter for the current user', () => {
+  it('queries Search by Group name from the User CR with a narrow subscription', () => {
     setCtx(mockUser)
     setFleetGroups(mockUserGroups)
     renderWithCtx()
@@ -225,12 +232,12 @@ describe('UserGroups', () => {
           { property: 'kind', values: ['Group'] },
           { property: 'apigroup', values: ['user.openshift.io'] },
           { property: '_hubClusterResource', values: ['*'] },
-          { property: 'groupUsers', values: ['test-user'] },
+          { property: 'name', values: ['developers', 'admins'] },
         ]),
-        limit: -1,
-        orderBy: 'name asc',
+        limit: 2,
       }),
-      false
+      true
     )
   })
 })
+
