@@ -287,7 +287,7 @@ export default function DetailsOverviewPage() {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              void navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -316,7 +316,7 @@ export default function DetailsOverviewPage() {
             isInline
             icon={<SearchIcon />}
             onClick={() => {
-              navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
+              void navigate(`${NavigationPath.search}?filters={"textsearch":"${searchParams}"}`)
             }}
             variant="link"
           >
@@ -407,7 +407,7 @@ export default function DetailsOverviewPage() {
                       type="button"
                       isInline
                       onClick={() => {
-                        navigate(
+                        void navigate(
                           `${NavigationPath.resources}?cluster=${cluster}&kind=Namespace&apiversion=v1&name=${resource.metadata?.namespace}`
                         )
                       }}
