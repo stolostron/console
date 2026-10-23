@@ -1793,6 +1793,8 @@
   "Grant the GitOps controller service account RBAC access to the target namespace": "Grant the GitOps controller service account RBAC access to the target namespace",
   "grc.gatekeeper.mutation.no.resources": "You don't have any mutated resources or {{flag}} flag might need to be added",
   "Group": "Group",
+  "Group {{name}} was deleted.": "Group {{name}} was deleted.",
+  "Group {{name}} was deleted. Showing the identity from the role assignment.": "Group {{name}} was deleted. Showing the identity from the role assignment.",
   "Group identifier": "Group identifier",
   "Group identifier is required": "Group identifier is required",
   "Group name": "Group name",

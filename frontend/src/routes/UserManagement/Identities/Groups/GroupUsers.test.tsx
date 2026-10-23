@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { GroupUsers } from './GroupUsers'
 import { User, Group } from '../../../../resources/rbac'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: () => ({ t: (s: string) => s }),
@@ -15,8 +15,7 @@ jest.mock('../../../../lib/AcmTimestamp', () => ({
   default: ({ timestamp }: { timestamp: string }) => <span>{timestamp}</span>,
 }))
 
-jest.mock('./GroupPage', () => ({
-  ...jest.requireActual('./GroupPage'),
+jest.mock('./useGroupDetailsContext', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 

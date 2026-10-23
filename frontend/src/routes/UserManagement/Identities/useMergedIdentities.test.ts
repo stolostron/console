@@ -1,11 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook } from '@testing-library/react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
-import { Group, User } from '../../../resources/rbac'
+import { User } from '../../../resources/rbac'
 import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import {
   groupsFromMulticlusterRoleAssignments,
-  useMergedGroups,
   useMergedUsers,
   usersFromMulticlusterRoleAssignments,
 } from './useMergedIdentities'
@@ -19,7 +18,6 @@ const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useShare
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 
 const usersAtom = Symbol('usersState')
-const groupsAtom = Symbol('groupsState')
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
 
 const mockUsers: User[] = [
@@ -32,21 +30,6 @@ const mockUsers: User[] = [
     apiVersion: 'user.openshift.io/v1',
     kind: 'User',
     metadata: { name: 'alice', uid: 'alice-uid', creationTimestamp: '2025-01-02T00:00:00Z' },
-  },
-]
-
-const mockGroups: Group[] = [
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'Group',
-    metadata: { name: 'devs', uid: 'devs-uid', creationTimestamp: '2025-01-01T00:00:00Z' },
-    users: ['bob'],
-  },
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'Group',
-    metadata: { name: 'admins', uid: 'admins-uid', creationTimestamp: '2025-01-02T00:00:00Z' },
-    users: ['alice'],
   },
 ]
 
@@ -267,83 +250,6 @@ describe('useMergedIdentities', () => {
 
       const { result } = renderHook(() => useMergedUsers())
       expect(result.current.every((u) => u.kind === 'User')).toBe(true)
-    })
-  })
-
-  describe('useMergedGroups', () => {
-    beforeEach(() => {
-      mockUseSharedAtoms.mockReturnValue({
-        groupsState: groupsAtom,
-        multiclusterRoleAssignmentState: mraAtom,
-      } as any)
-    })
-
-    afterEach(() => jest.clearAllMocks())
-
-    it('should return RBAC groups merged with MRA-derived groups sorted by name', () => {
-      mockUseSharedValue.mockImplementation((atom: any) => {
-        if (atom === groupsAtom) return mockGroups
-        if (atom === mraAtom) return mockMras
-        return []
-      })
-
-      const { result } = renderHook(() => useMergedGroups())
-      const names = result.current.map((g) => g.metadata.name)
-      expect(names).toEqual(['admins', 'devs', 'ops'])
-    })
-
-    it('should not duplicate groups that exist in both RBAC and MRA', () => {
-      mockUseSharedValue.mockImplementation((atom: any) => {
-        if (atom === groupsAtom) return mockGroups
-        if (atom === mraAtom) return mockMras
-        return []
-      })
-
-      const { result } = renderHook(() => useMergedGroups())
-      const devsEntries = result.current.filter((g) => g.metadata.name === 'devs')
-      expect(devsEntries).toHaveLength(1)
-    })
-
-    it('should return only RBAC groups when no MRAs exist', () => {
-      mockUseSharedValue.mockImplementation((atom: any) => {
-        if (atom === groupsAtom) return mockGroups
-        if (atom === mraAtom) return []
-        return []
-      })
-
-      const { result } = renderHook(() => useMergedGroups())
-      expect(result.current).toHaveLength(2)
-      expect(result.current.map((g) => g.metadata.name)).toEqual(['admins', 'devs'])
-    })
-
-    it('should return only MRA-derived groups when no RBAC groups exist', () => {
-      mockUseSharedValue.mockImplementation((atom: any) => {
-        if (atom === groupsAtom) return []
-        if (atom === mraAtom) return mockMras
-        return []
-      })
-
-      const { result } = renderHook(() => useMergedGroups())
-      const names = result.current.map((g) => g.metadata.name)
-      expect(names).toEqual(['devs', 'ops'])
-    })
-
-    it('should return empty array when both sources are empty', () => {
-      mockUseSharedValue.mockImplementation(() => [])
-
-      const { result } = renderHook(() => useMergedGroups())
-      expect(result.current).toEqual([])
-    })
-
-    it('should exclude User MRAs from groups list', () => {
-      mockUseSharedValue.mockImplementation((atom: any) => {
-        if (atom === groupsAtom) return []
-        if (atom === mraAtom) return mockMras
-        return []
-      })
-
-      const { result } = renderHook(() => useMergedGroups())
-      expect(result.current.every((g) => g.kind === 'Group')).toBe(true)
     })
   })
 })

@@ -96,6 +96,8 @@ export interface Group {
   kind: GroupKindType
   metadata: Metadata
   users: string[]
+  /** Present on Search list items. Full membership stays on the Group CR. */
+  userCount?: number
 }
 
 export interface ClusterRole {

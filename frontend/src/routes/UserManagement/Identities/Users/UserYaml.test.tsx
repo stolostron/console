@@ -12,6 +12,18 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
+  useFleetSearch: jest.fn().mockReturnValue([[], true, undefined, jest.fn()]),
+}))
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription', () => ({
+  useFleetSearchSubscription: jest.fn().mockReturnValue([undefined, false, undefined]),
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
 jest.mock('./UserPage', () => ({
   ...jest.requireActual('./UserPage'),
   useUserDetailsContext: jest.fn(),
@@ -37,7 +49,6 @@ describe('UserYaml', () => {
   test('should render user not found message', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: undefined,
-      groups: [],
     })
 
     render(<Component />)
@@ -60,7 +71,6 @@ describe('UserYaml', () => {
 
     mockUseUserDetailsContext.mockReturnValue({
       user: mockUser,
-      groups: [],
     })
 
     render(<Component />)

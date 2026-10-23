@@ -7,7 +7,7 @@ import { AcmTable, compareStrings, IAcmTableColumn, AcmEmptyState } from '../../
 import { cellWidth } from '@patternfly/react-table'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getISOStringTimestamp } from '../../../../resources/utils'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Link, generatePath } from 'react-router'
 import { useFilters } from '../IdentityTableHelper'

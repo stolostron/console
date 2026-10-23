@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { GroupYaml } from './GroupYaml'
 import { Group, UserApiVersion, GroupKind } from '../../../../resources/rbac'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -12,8 +12,7 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-jest.mock('./GroupPage', () => ({
-  ...jest.requireActual('./GroupPage'),
+jest.mock('./useGroupDetailsContext', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 

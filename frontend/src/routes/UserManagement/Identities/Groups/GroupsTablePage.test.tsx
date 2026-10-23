@@ -27,7 +27,7 @@ jest.mock('../../../../ui-components', () => ({
 
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(() => []),
-  useSharedAtoms: jest.fn(() => ({ groupsState: {} })),
+  useSharedAtoms: jest.fn(() => ({})),
 }))
 
 function Component() {
