@@ -128,7 +128,7 @@ export function CreatePushApplicationSet() {
         setLoadingAppSets(false)
       }
     }
-    fetchAppSets()
+    void fetchAppSets()
   }, [])
 
   return loadingAppSets ? (
@@ -154,7 +154,7 @@ export function CreatePushApplicationSet() {
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.applications)
+        void navigate(NavigationPath.applications)
       }}
       onSubmit={(data) =>
         createArgoResources({

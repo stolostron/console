@@ -931,7 +931,7 @@ export default function ApplicationsOverview() {
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: subscriptionAppQueryString,
             })
@@ -941,7 +941,7 @@ export default function ApplicationsOverview() {
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.editApplicationSubscription, { name, namespace }),
               search: '?context=applications',
             })
@@ -954,7 +954,7 @@ export default function ApplicationsOverview() {
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: argoAppSetQueryString,
             })
@@ -964,7 +964,7 @@ export default function ApplicationsOverview() {
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.editApplicationArgo, { name, namespace }),
               search: '?context=applicationsets',
             })
@@ -979,7 +979,7 @@ export default function ApplicationsOverview() {
             id: 'viewApplication',
             title: t('View application'),
             click: () => {
-              navigate({
+              void navigate({
                 pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
                 search: '?apiVersion=application.argoproj.io',
               })
@@ -1017,7 +1017,7 @@ export default function ApplicationsOverview() {
                   cluster: resource.status?.cluster ? resource.status?.cluster : localCluster,
                 },
               })
-          navigate(searchLink)
+          void navigate(searchLink)
         },
       })
 
@@ -1028,7 +1028,7 @@ export default function ApplicationsOverview() {
           click: () => {
             const isFlux = isFluxApplication(resource.label)
             const resourceType = isFlux ? 'flux' : 'ocp'
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: `?apiVersion=${resourceType}&cluster=${resource.status?.cluster}`,
             })
@@ -1130,11 +1130,11 @@ export default function ApplicationsOverview() {
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
-            navigate(NavigationPath.createApplicationArgo)
+            void navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
-            navigate(NavigationPath.createApplicationArgoPullModel)
+            void navigate(NavigationPath.createApplicationArgoPullModel)
           } else {
-            navigate(NavigationPath.createApplicationSubscription)
+            void navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}

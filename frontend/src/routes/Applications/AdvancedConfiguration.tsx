@@ -279,7 +279,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
           },
         }
         const editLink = getEditLink(searchParams)
-        navigate(editLink)
+        void navigate(editLink)
       },
     })
 
@@ -298,7 +298,7 @@ export default function AdvancedConfiguration(props: AdvancedConfigurationPagePr
             apiversion,
           },
         })
-        navigate(searchLink)
+        void navigate(searchLink)
       },
       isDisabled: false, // implement when we use search for remote Argo apps
     })
