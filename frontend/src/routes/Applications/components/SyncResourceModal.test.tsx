@@ -1,8 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import i18next from 'i18next'
 import { Subscription, SubscriptionApiVersion, SubscriptionKind } from '../../../resources'
+import { AcmToastContext } from '../../../ui-components'
 import { SyncResourceModal, ISyncResourceModalProps } from './SyncResourceModal'
+
+const mockReconcileResources = jest.fn()
+jest.mock('../../../resources/utils', () => ({
+  ...jest.requireActual('../../../resources/utils'),
+  reconcileResources: (...args: unknown[]) => mockReconcileResources(...args),
+}))
 
 //////////////// Set up /////////////////
 
@@ -56,10 +64,60 @@ const modalProps: ISyncResourceModalProps = {
 
 //////////////// Test /////////////////
 
+function renderModal(mockAddAlert: jest.Mock) {
+  render(
+    <AcmToastContext.Provider
+      value={{
+        activeAlerts: [],
+        alertInfos: [],
+        addAlert: mockAddAlert,
+        removeAlert: () => {},
+        removeVisibleAlert: () => {},
+        clearAlerts: () => {},
+        modifyAlert: () => ({ id: '', title: '' }),
+      }}
+    >
+      <SyncResourceModal {...modalProps} close={() => {}} />
+    </AcmToastContext.Provider>
+  )
+}
+
 describe('Sync Resource Modal', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('should render Argo app Helm', async () => {
     const { getByText } = render(<SyncResourceModal {...modalProps} />)
     expect(getByText('Sync application')).toBeTruthy()
     expect(getByText('Synchronize application resources with the source repository.')).toBeTruthy()
+  })
+
+  it('shows a success toast when reconciliation succeeds', async () => {
+    mockReconcileResources.mockResolvedValue(undefined)
+    const mockAddAlert = jest.fn()
+    renderModal(mockAddAlert)
+
+    await userEvent.click(screen.getByText('Synchronize'))
+
+    await waitFor(() =>
+      expect(mockAddAlert).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'Subscription updated', type: 'success' })
+      )
+    )
+  })
+
+  it('shows a danger toast when reconciliation fails', async () => {
+    mockReconcileResources.mockRejectedValue(new Error('sync failed'))
+    const mockAddAlert = jest.fn()
+    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {})
+    renderModal(mockAddAlert)
+
+    await userEvent.click(screen.getByText('Synchronize'))
+
+    await waitFor(() =>
+      expect(mockAddAlert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Failed to sync', type: 'danger' }))
+    )
+    consoleError.mockRestore()
   })
 })
