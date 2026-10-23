@@ -4,17 +4,25 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { Group, User } from '../../resources/rbac'
-import { useMergedGroups, useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { useGroupIdentity, useHasHubGroups } from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
+import { useHasHubUsers, useUserIdentity } from '../../routes/UserManagement/Identities/Users/useUsersSearch'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { IdentitiesList } from './IdentitiesList'
 
-jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
-  useMergedUsers: jest.fn(),
-  useMergedGroups: jest.fn(),
+jest.mock('../../routes/UserManagement/Identities/Users/useUsersSearch', () => ({
+  useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
+  useUserIdentity: jest.fn(),
 }))
 
-const mockUseMergedUsers = useMergedUsers as jest.MockedFunction<typeof useMergedUsers>
-const mockUseMergedGroups = useMergedGroups as jest.MockedFunction<typeof useMergedGroups>
+jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () => ({
+  useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
+  useGroupIdentity: jest.fn(),
+}))
+
+const mockUseHasHubUsers = useHasHubUsers as jest.Mock
+const mockUseUserIdentity = useUserIdentity as jest.Mock
+const mockUseHasHubGroups = useHasHubGroups as jest.Mock
+const mockUseGroupIdentity = useGroupIdentity as jest.Mock
 
 const mockUsers: User[] = [
   {
@@ -58,20 +66,14 @@ jest.mock('../../shared-atoms', () => ({
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 
-const usersAtom = Symbol('usersState')
-const groupsAtom = Symbol('groupsState')
 const isDirectAuthAtom = Symbol('isDirectAuthenticationEnabledState')
 
 function setupMocks(isDirectAuthenticationEnabled = false) {
   mockUseSharedAtoms.mockReturnValue({
-    usersState: usersAtom,
-    groupsState: groupsAtom,
     isDirectAuthenticationEnabledState: isDirectAuthAtom,
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: unknown) => {
-    if (atom === usersAtom) return []
-    if (atom === groupsAtom) return []
     if (atom === isDirectAuthAtom) return isDirectAuthenticationEnabled
     return undefined
   })
@@ -186,8 +188,10 @@ describe('IdentitiesList', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     setupMocks(false)
-    mockUseMergedUsers.mockReturnValue(mockUsers)
-    mockUseMergedGroups.mockReturnValue(mockGroups)
+    mockUseHasHubUsers.mockReturnValue({ hasUsers: true, loaded: true })
+    mockUseUserIdentity.mockImplementation((name?: string) => mockUsers.find((user) => user.metadata.name === name))
+    mockUseHasHubGroups.mockReturnValue({ hasGroups: true, loaded: true })
+    mockUseGroupIdentity.mockImplementation((name?: string) => mockGroups.find((group) => group.metadata.name === name))
   })
 
   test('should render title and tableActionButtons for users', () => {
@@ -553,9 +557,11 @@ describe('IdentitiesList', () => {
     })
   })
 
-  test('should render without errors when useMergedUsers returns empty', () => {
-    mockUseMergedUsers.mockReturnValue([])
-    mockUseMergedGroups.mockReturnValue([])
+  test('should render without errors when useHasHubUsers returns empty', () => {
+    mockUseHasHubUsers.mockReturnValue({ hasUsers: false, loaded: true })
+    mockUseUserIdentity.mockReturnValue(undefined)
+    mockUseHasHubGroups.mockReturnValue({ hasGroups: false, loaded: true })
+    mockUseGroupIdentity.mockReturnValue(undefined)
 
     render(<Component />)
     expect(screen.getByText('Identities')).toBeInTheDocument()

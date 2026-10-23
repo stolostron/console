@@ -3,8 +3,9 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import IdentitiesManagement from '../IdentitiesManagement'
-import { User, Group } from '../../../../resources/rbac'
+import { User } from '../../../../resources/rbac'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
+import { useCurrentUser } from './useCurrentUser'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: jest.fn().mockReturnValue({
@@ -23,8 +24,13 @@ jest.mock('../../../../shared-atoms', () => ({
   useSharedAtoms: jest.fn(),
 }))
 
+jest.mock('./useCurrentUser', () => ({
+  useCurrentUser: jest.fn(),
+}))
+
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>
 
 const mockUser: User = {
   apiVersion: 'user.openshift.io/v1',
@@ -38,18 +44,6 @@ const mockUser: User = {
   groups: ['developers'],
   fullName: 'Test User',
 }
-
-const mockGroups: Group[] = [
-  {
-    apiVersion: 'user.openshift.io/v1',
-    kind: 'Group',
-    metadata: {
-      name: 'developers',
-      creationTimestamp: '2025-01-24T16:00:00Z',
-    },
-    users: ['test-user'],
-  },
-]
 
 function Component({ userId = 'test-user' }: { userId?: string }) {
   return (
@@ -65,17 +59,17 @@ describe('UserPage', () => {
   beforeEach(() => {
     mockUseSharedValue.mockClear()
     mockUseSharedAtoms.mockClear()
+    mockUseCurrentUser.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({
-      usersState: {} as any,
-      groupsState: {} as any,
-      multiclusterRoleAssignmentState: {} as any,
       isDirectAuthenticationEnabledState: {} as any,
     } as any)
+    mockUseSharedValue.mockReturnValue(false)
+    mockUseCurrentUser.mockReturnValue({ user: mockUser, loaded: true })
   })
 
   test('should render user not found error', () => {
-    mockUseSharedValue.mockReturnValue([])
+    mockUseCurrentUser.mockReturnValue({ user: undefined, loaded: true })
 
     render(<Component userId="non-existent-user" />)
 
@@ -84,13 +78,6 @@ describe('UserPage', () => {
   })
 
   test('should render user page with navigation tabs', () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
-      .mockReturnValueOnce(false) // UserPage: isDirectAuth
-
     render(<Component />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
@@ -102,16 +89,10 @@ describe('UserPage', () => {
   })
 
   test('should render user page with unknown user name', () => {
-    const userWithoutFullName = {
-      ...mockUser,
-      fullName: undefined,
-    }
-    mockUseSharedValue
-      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([userWithoutFullName]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
-      .mockReturnValueOnce(false) // UserPage: isDirectAuth
+    mockUseCurrentUser.mockReturnValue({
+      user: { ...mockUser, fullName: undefined },
+      loaded: true,
+    })
 
     render(<Component />)
 
@@ -120,25 +101,13 @@ describe('UserPage', () => {
   })
 
   test('should find user by UID', () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(false) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
-      .mockReturnValueOnce(false) // UserPage: isDirectAuth
-
     render(<Component userId="test-user-uid" />)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Test User' })).toBeInTheDocument()
   })
 
   test('should hide YAML and Groups tabs when isDirectAuthenticationEnabled', () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce(mockGroups) // UserPage: groupsState
-      .mockReturnValueOnce(true) // UserPage: isDirectAuth
+    mockUseSharedValue.mockReturnValue(true)
 
     render(<Component />)
 

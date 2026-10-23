@@ -241,7 +241,6 @@ func DefaultWatchSpecs() []WatchSpec {
 		},
 		{kind: "MulticlusterRoleAssignment", apiVersion: "rbac.open-cluster-management.io/v1beta1"},
 		{kind: "User", apiVersion: "user.openshift.io/v1", cluster: true},
-		{kind: "Group", apiVersion: "user.openshift.io/v1", cluster: true},
 		{
 			kind: "Service", apiVersion: "v1",
 			fields: []string{fieldMetadataName, "cluster-proxy-addon-user", "metadata.namespace", "multicluster-engine"},

@@ -9,7 +9,6 @@ import {
   certificateSigningRequestsState,
   clusterDeploymentsState,
   clusterPoolsState,
-  groupsState,
   managedClusterAddonsState,
   managedClusterInfosState,
   managedClusterSetsState,
@@ -79,6 +78,58 @@ import {
 } from '../../ManagedClusters/ManagedClusters.sharedmocks'
 import ClusterSetDetails from './ClusterSetDetails'
 import Clusters from '../../Clusters'
+
+jest.mock('../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
+  useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
+  useGroupIdentity: jest.fn(() => undefined),
+  useGroupsSearch: jest.fn(() => ({
+    groups: [
+      {
+        kind: 'Group',
+        apiVersion: 'user.openshift.io/v1',
+        metadata: { name: 'mock-group', uid: '98d01b86-7721-4b98-b145-58df2bff2f6e' },
+        users: [],
+      },
+    ],
+    processedItemCount: 1,
+    loading: false,
+    error: undefined,
+    refetch: jest.fn(),
+    fetchExport: jest.fn().mockResolvedValue(undefined),
+    emptyResult: false,
+  })),
+}))
+
+jest.mock('../../../../UserManagement/Identities/Users/useUsersSearch', () => ({
+  useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
+  useUserIdentity: jest.fn(() => undefined),
+  useUsersByNames: jest.fn(() => ({ users: [], loaded: true })),
+  useUsersSearch: jest.fn(() => ({
+    users: [
+      {
+        kind: 'User',
+        apiVersion: 'user.openshift.io/v1',
+        metadata: { name: 'mock-user2', uid: 'e3d73187-dcf4-49a2-b0fb-d2805c5dd584' },
+        identities: ['myuser:mock-user2'],
+        groups: [],
+      },
+    ],
+    processedItemCount: 1,
+    loading: false,
+    error: undefined,
+    refetch: jest.fn(),
+    fetchExport: jest.fn().mockResolvedValue(undefined),
+    emptyResult: false,
+  })),
+}))
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
+  useFleetSearch: jest.fn(() => [undefined, true, undefined, jest.fn()]),
+}))
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription', () => ({
+  useFleetSearchSubscription: jest.fn(() => [undefined, true, undefined]),
+}))
 
 const clusterSetCluster: ManagedCluster = mockManagedClusters.find(
   (mc: ManagedCluster) => mc.metadata.labels?.[managedClusterSetLabel] === mockManagedClusterSet.metadata.name!
@@ -1533,7 +1584,6 @@ const Component = (props: { isGlobal?: boolean }) => (
       store.set(clusterPoolsState, [])
       store.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
       store.set(usersState, [mockUser])
-      store.set(groupsState, [mockGroup])
     }}
   >
     <MemoryRouter

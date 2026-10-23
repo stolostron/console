@@ -43,7 +43,7 @@ const getSearchParams = ({ endpoint, endTime, timespan, samples, ...params }: Pr
 
 export const getFleetPrometheusURL = (
   props: PrometheusURLProps,
-  basePath: string = props.namespace ? PROMETHEUS_TENANCY_BASE_PATH : PROMETHEUS_BASE_PATH
+  basePath: string = (props.namespace ? PROMETHEUS_TENANCY_BASE_PATH : PROMETHEUS_BASE_PATH) ?? ''
 ): string => {
   if (props.endpoint !== PrometheusEndpoint.RULES && !props.query) {
     return ''

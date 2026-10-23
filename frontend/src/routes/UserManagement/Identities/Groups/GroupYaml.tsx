@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 import { RBACResourceYaml } from '../../../../components/RBACResourceYaml'
 
 const GroupYaml = () => {

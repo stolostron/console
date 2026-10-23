@@ -114,7 +114,7 @@ describe('useFleetSearchSubscription', () => {
   })
 
   describe('skip behavior', () => {
-    it('should pass skip: true to useSearchSubscription when input is undefined', () => {
+    it('should skip and omit variables when input is undefined', () => {
       mockUseSearchSubscription.mockReturnValue({
         data: undefined,
         loading: false,
@@ -123,15 +123,30 @@ describe('useFleetSearchSubscription', () => {
 
       renderHook(() => useFleetSearchSubscription(undefined))
 
-      expect(mockUseSearchSubscription).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skip: true,
-          client: 'mock-search-client',
-        })
-      )
+      expect(mockUseSearchSubscription).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        variables: undefined,
+        skip: true,
+      })
     })
 
-    it('should pass skip: false to useSearchSubscription when input is defined', () => {
+    it('should skip and omit variables when input is null', () => {
+      mockUseSearchSubscription.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+      } as any)
+
+      renderHook(() => useFleetSearchSubscription(null as unknown as undefined))
+
+      expect(mockUseSearchSubscription).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        variables: undefined,
+        skip: true,
+      })
+    })
+
+    it('should pass skip: false and variables when input is defined', () => {
       mockUseSearchSubscription.mockReturnValue({
         data: undefined,
         loading: false,
@@ -140,13 +155,11 @@ describe('useFleetSearchSubscription', () => {
 
       renderHook(() => useFleetSearchSubscription(mockInput))
 
-      expect(mockUseSearchSubscription).toHaveBeenCalledWith(
-        expect.objectContaining({
-          skip: false,
-          client: 'mock-search-client',
-          variables: { input: mockInput },
-        })
-      )
+      expect(mockUseSearchSubscription).toHaveBeenCalledWith({
+        client: 'mock-search-client',
+        variables: { input: mockInput },
+        skip: false,
+      })
     })
 
     it('should return [undefined, false, undefined] when input is undefined', () => {

@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { GroupDetails } from './GroupDetails'
 import { Group } from '../../../../resources/rbac'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 const mockGroup: Group = {
   apiVersion: 'user.openshift.io/v1',
@@ -17,8 +17,7 @@ const mockGroup: Group = {
   users: ['test-user', 'other-user'],
 }
 
-jest.mock('./GroupPage', () => ({
-  ...jest.requireActual('./GroupPage'),
+jest.mock('./useGroupDetailsContext', () => ({
   useGroupDetailsContext: jest.fn(),
 }))
 

@@ -49,8 +49,10 @@ const COLUMN_CELLS = {
   ),
   USER_IDENTITY_PROVIDER: (user: User) =>
     user.identities ? <span style={{ whiteSpace: 'nowrap' }}>{user.identities}</span> : '-',
-  GROUP_USERS: (group: Group) =>
-    group.users ? <span style={{ whiteSpace: 'nowrap' }}>{group.users.length}</span> : '-',
+  GROUP_USERS: (group: Group) => {
+    const count = group.userCount ?? group.users?.length
+    return count !== undefined ? <span style={{ whiteSpace: 'nowrap' }}>{count}</span> : '-'
+  },
   STATUS: (identity: IdentityItem) => <IdentityStatus identity={identity} />,
   CREATED: (identity: IdentityItem) => {
     return identity.metadata.creationTimestamp ? (
