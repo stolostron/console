@@ -163,7 +163,7 @@
   margin: 0 6px;
   width: 16px;
   height: 16px;
-  fill: var(--pf-v5-global--Color--100);
+  fill: var(--pf-t--global--text--color--regular);
   transition: all 100ms;
   transform: rotate(90deg);
 }
@@ -715,15 +715,15 @@
 .temptifly-controls .creation-view-group-container,
 .creation-view-controls .creation-view-group-container {
   position: relative;
-  border: 1px solid var(--pf-v5-global--BorderColor--300);
-  background-color: var(--pf-v5-global--BackgroundColor--light-200);
+  border: 1px solid var(--pf-t--global--border--color--subtle);
+  background-color: var(--pf-t--global--background--color--secondary--default);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   padding: 10px;
   margin: 10px 0;
 }
 .creation-view-controls .creation-view-group-subcontainer {
-  border: 1px solid var(--pf-v5-global--BorderColor--300);
-  background-color: var(--pf-v5-global--BackgroundColor--light-100);
+  border: 1px solid var(--pf-t--global--border--color--subtle);
+  background-color: var(--pf-t--global--background--color--primary--default);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
   padding: 10px;
   margin-bottom: 3px;
@@ -818,11 +818,8 @@
   margin-left: 0px;
 }
 
-.temptifly .pf-v6-c-wizard .pf-v6-c-tile {
-  --pf-v5-c-tile--TranslateY: none;
-  --pf-v5-c-tile--Transition: none;
-}
-
+/* PatternFly 6 dropped the tile lift animation, so there is no TranslateY/Transition variable
+   left to neutralize. The ::after reset below already covers what remains. */
 .temptifly .pf-v6-c-wizard .pf-v6-c-tile::after {
   transition: none;
   transform: none;

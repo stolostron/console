@@ -318,7 +318,7 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
                 placeholder={t('access.select.role')}
                 value={role}
                 onChange={(role) => setRole(role)}
-                style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}
+                style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}
               >
                 {clusterSet &&
                   getUserRoles().map((userRole) => (
