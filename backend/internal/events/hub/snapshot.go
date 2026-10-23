@@ -62,7 +62,7 @@ func packetize(objs []informers.ForwardedObject) []Event {
 			infos = append(infos, o)
 		case "ManagedClusterAddOn":
 			addons = append(addons, o)
-		case "MulticlusterRoleAssignment", "User":
+		case "MulticlusterRoleAssignment":
 			rbac = append(rbac, o)
 		case "Search", "Secret":
 			other = append(other, o)
