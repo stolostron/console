@@ -156,7 +156,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
   useEffect(() => {
     if (isInsightsSectionOpen && managedClusterIds.length > 0) {
-      getUpgradeRiskPredictions(managedClusterIds).then((res) => setUpgradeRiskPredictions(res))
+      void getUpgradeRiskPredictions(managedClusterIds).then((res) => setUpgradeRiskPredictions(res))
     }
   }, [isInsightsSectionOpen, managedClusterIds])
 
@@ -245,7 +245,7 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
 
   useEffect(() => {
     if (isCustomizationSectionOpen) {
-      getUserPreference().then((resp) => {
+      void getUserPreference().then((resp) => {
         setIsUserPreferenceLoading(false)
         setUserPreference(resp)
       })
