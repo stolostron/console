@@ -170,7 +170,7 @@ All routes are also registered under `/multicloud` prefix.
   - [placementdebug.go](internal/placementdebug/placementdebug.go) - Reverse proxy to the OCM placement service; returns 503 when the CA is unavailable.
   - [ca.go](internal/placementdebug/ca.go) - Watches the `open-cluster-management-hub/ca-bundle-configmap` ConfigMap and exposes the latest CA bundle for TLS verification.
 - **ansibletower/** - `POST /ansibletower`: user-token Secret GET and AAP proxying.
-  - [ansibletower.go](internal/ansibletower/ansibletower.go) - Reads credential Secrets with the user token, enforces a pathname allowlist matching the frontend, and proxies to AAP with `InsecureSkipVerify`.
+  - [ansibletower.go](internal/ansibletower/ansibletower.go) - Reads credential Secrets with the user token, enforces a pathname allowlist matching the frontend, and proxies to AAP with TLS verification disabled.
 - **upgraderisks/** - `POST /upgrade-risks-prediction`: Insights POST chunks and pull-secret extraction.
   - [upgraderisks.go](internal/upgraderisks/upgraderisks.go) - Lists `pull-secret` in `openshift-config` with the SA, extracts `cloud.openshift.com` auth, and POSTs cluster IDs to Insights in chunks of 100.
 - **config/** - Runtime settings and process configuration from env and files.

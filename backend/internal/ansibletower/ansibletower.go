@@ -82,7 +82,7 @@ func New(opts Options) *Handler {
 		h.verify = towerClient(auth.TLSConfigFromCA(opts.HubCA, true))
 		h.skip = towerClient(&tls.Config{
 			MinVersion:         tls.VersionTLS12,
-			InsecureSkipVerify: true, //nolint:gosec // ANSIBLE_INSECURE_SKIP_VERIFY or Secret insecureSkipVerify
+			InsecureSkipVerify: true, //nolint:gosec // AAP TLS verification is currently disabled
 		})
 	}
 	return h
@@ -140,7 +140,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	host, towerToken, secretSkip, err := h.credential(r.Context(), token, body.SecretNamespace, body.SecretName)
+	host, towerToken, err := h.credential(r.Context(), token, body.SecretNamespace, body.SecretName)
 	if err != nil || host == "" || towerToken == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -177,7 +177,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+towerToken)
-	resp, err := h.client(h.insecureSkipVerify || secretSkip).Do(req)
+	resp, err := h.client(h.insecureSkipVerify).Do(req)
 	if err != nil {
 		applog.Logger().Error("ansibletower upstream", "error", err)
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
@@ -198,20 +198,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, resp.Body)
 }
 
-func (h *Handler) credential(ctx context.Context, userToken, ns, name string) (string, string, bool, error) {
+func (h *Handler) credential(ctx context.Context, userToken, ns, name string) (string, string, error) {
 	if h.KubeForUser == nil {
-		return "", "", false, errNoKube
+		return "", "", errNoKube
 	}
 	kube, err := h.KubeForUser(userToken)
 	if err != nil {
-		return "", "", false, err
+		return "", "", err
 	}
 	secret, err := kube.CoreV1().Secrets(ns).Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		return "", "", false, err
+		return "", "", err
 	}
-	skip := string(secret.Data["insecureSkipVerify"]) == "true"
-	return string(secret.Data["host"]), string(secret.Data["token"]), skip, nil
+	return string(secret.Data["host"]), string(secret.Data["token"]), nil
 }
 
 var (
