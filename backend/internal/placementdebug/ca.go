@@ -45,6 +45,7 @@ func (c *CAWatch) Get() []byte {
 	return out
 }
 
+// set stores a copy of the CA PEM under the watch lock.
 func (c *CAWatch) set(ca []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -59,6 +60,7 @@ func (c *CAWatch) Start(ctx context.Context) {
 	go c.loop(ctx)
 }
 
+// loop repeatedly lists and watches the CA ConfigMap until ctx is canceled.
 func (c *CAWatch) loop(ctx context.Context) {
 	for ctx.Err() == nil {
 		rv, err := c.list(ctx)
@@ -72,6 +74,7 @@ func (c *CAWatch) loop(ctx context.Context) {
 	}
 }
 
+// list loads the CA bundle from the ConfigMap and returns the list resourceVersion.
 func (c *CAWatch) list(ctx context.Context) (string, error) {
 	list, err := c.Kube.CoreV1().ConfigMaps(hubNamespace).List(ctx, metav1.ListOptions{
 		FieldSelector: "metadata.name=" + configMapName,
@@ -99,6 +102,7 @@ func (c *CAWatch) list(ctx context.Context) (string, error) {
 	return list.ResourceVersion, nil
 }
 
+// watch applies ConfigMap add/modify/delete events until the watch ends or ctx cancels.
 func (c *CAWatch) watch(ctx context.Context, resourceVersion string) error {
 	w, err := c.Kube.CoreV1().ConfigMaps(hubNamespace).Watch(ctx, metav1.ListOptions{
 		FieldSelector:   "metadata.name=" + configMapName,
@@ -147,6 +151,7 @@ func (c *CAWatch) watch(ctx context.Context, resourceVersion string) error {
 
 var errWatch = errors.New("placement debug CA watch error event")
 
+// handleErr logs a watch error and sleeps with jitter before the next list.
 func (c *CAWatch) handleErr(ctx context.Context, err error) {
 	applog.Logger().Error("placement debug CA watch", "error", err)
 	timer := time.NewTimer(60*time.Second + time.Duration(time.Now().UnixNano()%10_000)*time.Millisecond)

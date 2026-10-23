@@ -102,6 +102,7 @@ var builtin = map[string]builtinSpec{
 	},
 }
 
+// tlsVersion maps an OpenShift VersionTLS* string to a crypto/tls version constant.
 func tlsVersion(name string) uint16 {
 	switch name {
 	case "VersionTLS10":
@@ -128,6 +129,7 @@ func FromProfile(p SecurityProfile) Settings {
 	return fromProfile(p, fips140.Enabled())
 }
 
+// fromProfile converts a security profile to Settings, applying FIPS curve filtering.
 func fromProfile(p SecurityProfile, fips bool) Settings {
 	spec, minName := resolveSpec(p)
 	min := tlsVersion(minName)
@@ -157,6 +159,7 @@ func fromProfile(p SecurityProfile, fips bool) Settings {
 	return s
 }
 
+// resolveSpec selects the cipher/group lists and min TLS version for a profile type.
 func resolveSpec(p SecurityProfile) (builtinSpec, string) {
 	if p.Type == "Custom" && p.Custom != nil {
 		minName := p.Custom.MinTLSVersion
@@ -176,6 +179,7 @@ func resolveSpec(p SecurityProfile) (builtinSpec, string) {
 	return spec, spec.minTLSVersion
 }
 
+// clone returns a deep copy so callers can mutate slices without racing the reloader.
 func (s Settings) clone() Settings {
 	out := s
 	out.CipherSuites = slices.Clone(s.CipherSuites)
@@ -184,6 +188,7 @@ func (s Settings) clone() Settings {
 	return out
 }
 
+// settingsEqual reports whether two Settings are identical for Apply short-circuiting.
 func settingsEqual(a, b Settings) bool {
 	return a.MinVersion == b.MinVersion &&
 		a.MaxVersion == b.MaxVersion &&

@@ -77,15 +77,18 @@ func New(opts Options) *Handler {
 	return h
 }
 
+// transport builds the outbound RoundTripper with the handler TLS config.
 func (h *Handler) transport() http.RoundTripper {
 	return outbound.Transport(h.TLSConfig, false)
 }
 
+// proxyError logs reverse-proxy failures and responds 502.
 func proxyError(w http.ResponseWriter, _ *http.Request, err error) {
 	applog.Logger().Error("search proxy", "error", err)
 	w.WriteHeader(http.StatusBadGateway)
 }
 
+// rewrite points the proxy at the Search endpoint and copies the allow-listed headers plus user Bearer.
 func (h *Handler) rewrite(pr *httputil.ProxyRequest) {
 	token, _ := pr.In.Context().Value(tokenCtxKey{}).(string)
 	if token == "" {
@@ -108,6 +111,7 @@ func (h *Handler) rewrite(pr *httputil.ProxyRequest) {
 	outbound.CopyRequestHeaders(pr.Out.Header, pr.In.Header, token, outbound.ProxyRequestHeaders)
 }
 
+// authenticate validates the user token via Authn, or writes 401 when Authn is unset.
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, bool) {
 	if h.Authn != nil {
 		return h.Authn(w, r)
@@ -134,6 +138,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.proxy.ServeHTTP(w, r)
 }
 
+// httpToWebSocketURL converts an http(s) Search URL to ws(s) for the graphql-ws dial.
 func httpToWebSocketURL(endpoint string) string {
 	switch {
 	case strings.HasPrefix(endpoint, "https://"):

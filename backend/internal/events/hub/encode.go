@@ -13,6 +13,7 @@ import (
 	"github.com/stolostron/console/backend/internal/acceptenc"
 )
 
+// streamEncoder writes SSE frames, optionally through gzip or deflate.
 type streamEncoder struct {
 	w       http.ResponseWriter
 	flusher http.Flusher
@@ -21,6 +22,7 @@ type streamEncoder struct {
 	closer  io.Closer
 }
 
+// negotiateEncoding picks gzip, deflate, or identity from Accept-Encoding (gzip preferred on ties).
 func negotiateEncoding(accept string, disabled bool) string {
 	if disabled {
 		return "identity"
@@ -72,10 +74,12 @@ func codingQ(set bool, q, star int) (int, bool) {
 	return 0, false
 }
 
+// streamCompressionDisabled is true when DISABLE_STREAM_COMPRESSION=true (force identity).
 func streamCompressionDisabled() bool {
 	return os.Getenv("DISABLE_STREAM_COMPRESSION") == "true"
 }
 
+// newStreamEncoder wraps w with gzip/deflate writers when encoding requests compression.
 func newStreamEncoder(w http.ResponseWriter, flusher http.Flusher, encoding string) *streamEncoder {
 	enc := &streamEncoder{w: w, flusher: flusher}
 	switch encoding {
@@ -91,6 +95,7 @@ func newStreamEncoder(w http.ResponseWriter, flusher http.Flusher, encoding stri
 	return enc
 }
 
+// Write sends p through the active compressor, or directly to the response when identity.
 func (s *streamEncoder) Write(p []byte) (int, error) {
 	if s.gz != nil {
 		return s.gz.Write(p)
@@ -101,6 +106,7 @@ func (s *streamEncoder) Write(p []byte) (int, error) {
 	return s.w.Write(p)
 }
 
+// Flush flushes the compressor (if any) then the HTTP flusher so SSE frames leave the buffer.
 func (s *streamEncoder) Flush() error {
 	if s.gz != nil {
 		if err := s.gz.Flush(); err != nil {
@@ -116,6 +122,7 @@ func (s *streamEncoder) Flush() error {
 	return nil
 }
 
+// Close closes the gzip/deflate writer; safe when encoding is identity.
 func (s *streamEncoder) Close() {
 	if s.closer != nil {
 		_ = s.closer.Close()

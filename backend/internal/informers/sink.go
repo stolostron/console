@@ -8,8 +8,10 @@ import (
 )
 
 const (
+	// EventModified is the SSE type for creates and updates (Node pushEvent).
 	EventModified = "MODIFIED"
-	EventDeleted  = "DELETED"
+	// EventDeleted is the SSE type for deletes.
+	EventDeleted = "DELETED"
 )
 
 // ResourceEvent is a cache change for GET /events (Node cacheResource / deleteResource).
@@ -24,16 +26,20 @@ type ResourceSink interface {
 	OnResource(ev ResourceEvent)
 }
 
+// resourceHandler adapts cache.ResourceEventHandler to ResourceSink, emitting
+// MODIFIED for add/update and DELETED for delete (creates are not ADDED).
 type resourceHandler struct {
 	spec WatchSpec
 	gvr  schema.GroupVersionResource
 	sink ResourceSink
 }
 
+// OnAdd forwards a create as EventModified.
 func (h resourceHandler) OnAdd(obj any, _ bool) {
 	h.emitModified(obj)
 }
 
+// OnUpdate forwards an update as EventModified unless resourceVersion is unchanged.
 func (h resourceHandler) OnUpdate(oldObj, newObj any) {
 	oldU, oldOK := asUnstructured(oldObj)
 	newU, newOK := asUnstructured(newObj)
@@ -43,6 +49,7 @@ func (h resourceHandler) OnUpdate(oldObj, newObj any) {
 	h.emitModified(newObj)
 }
 
+// OnDelete forwards a delete as EventDeleted with identity-only metadata.
 func (h resourceHandler) OnDelete(obj any) {
 	if h.sink == nil {
 		return
@@ -65,6 +72,8 @@ func (h resourceHandler) OnDelete(obj any) {
 	})
 }
 
+// emitModified deep-copies the object, stamps apiVersion/kind from the WatchSpec,
+// and notifies the sink as EventModified.
 func (h resourceHandler) emitModified(obj any) {
 	if h.sink == nil {
 		return

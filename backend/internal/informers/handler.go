@@ -31,6 +31,7 @@ func NewSnapshotHandler(c *InformerCache, base *rest.Config) *SnapshotHandler {
 	return &SnapshotHandler{Cache: c, Base: base}
 }
 
+// ServeHTTP writes a JSON dump of the informer cache after validating the user token.
 func (h *SnapshotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, ok := auth.RequireToken(w, r)
 	if !ok {
@@ -59,6 +60,8 @@ func (h *SnapshotHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// excludePolled drops ResourceKeys whose WatchSpec is Polled so the debug
+// snapshot can match GET /events (polled kinds are not forwarded live).
 func excludePolled(items []ResourceKey, c *InformerCache) []ResourceKey {
 	if c == nil {
 		return items

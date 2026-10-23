@@ -45,10 +45,12 @@ type StreamTracker interface {
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
+// CanSee always returns true so tests can skip RBAC.
 func (AllowAllAccess) CanSee(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
 	return true, nil
 }
 
+// CanSeeDeleted always returns true so tests can skip RBAC on DELETED events.
 func (AllowAllAccess) CanSeeDeleted(context.Context, string, *rbacv1.ClusterRole) (bool, error) {
 	return true, nil
 }
@@ -78,12 +80,14 @@ type SSARAccess struct {
 	activeStreams map[string]int
 }
 
+// NewSSARAccess builds an AccessChecker that impersonates each user token for ClusterRole SSAR.
 func NewSSARAccess(base *rest.Config) *SSARAccess {
 	return NewSSARAccessWithClient(func(userToken string) (kubernetes.Interface, error) {
 		return kubernetes.NewForConfig(auth.UserRESTConfig(base, userToken))
 	})
 }
 
+// NewSSARAccessWithClient is like NewSSARAccess but injects the Kubernetes client factory (tests).
 func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interface, error)) *SSARAccess {
 	return &SSARAccess{
 		cache:         map[cacheKey]cacheEntry{},
@@ -94,14 +98,17 @@ func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interf
 	}
 }
 
+// CanSee reports whether the user may see the ClusterRole (list, else get).
 func (a *SSARAccess) CanSee(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error) {
 	return a.decide(ctx, userToken, role, false)
 }
 
+// CanSeeDeleted is CanSee for DELETED events, reusing a remembered get-allow when the role is gone.
 func (a *SSARAccess) CanSeeDeleted(ctx context.Context, userToken string, role *rbacv1.ClusterRole) (bool, error) {
 	return a.decide(ctx, userToken, role, true)
 }
 
+// decide runs list SSAR then get SSAR; when deleted, falls back to a remembered allow.
 func (a *SSARAccess) decide(
 	ctx context.Context, userToken string, role *rbacv1.ClusterRole, deleted bool,
 ) (bool, error) {
@@ -137,6 +144,7 @@ func (a *SSARAccess) decide(
 	return false, nil
 }
 
+// rememberRole records a get-allow so a later DELETED can still pass when the role is gone.
 func (a *SSARAccess) rememberRole(userToken, name string) {
 	th := hashToken(userToken)
 	a.mu.Lock()
@@ -158,6 +166,7 @@ func (a *SSARAccess) rememberRole(userToken, name string) {
 	}
 }
 
+// forgetRole drops a remembered get-allow and any in-flight DELETED ack for the role.
 func (a *SSARAccess) forgetRole(userToken, name string) {
 	th := hashToken(userToken)
 	a.mu.Lock()
@@ -177,6 +186,7 @@ func (a *SSARAccess) forgetRole(userToken, name string) {
 	}
 }
 
+// roleWasAllowed reports whether a get-allow was remembered for this token and role name.
 func (a *SSARAccess) roleWasAllowed(userToken, name string) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -228,6 +238,7 @@ func (a *SSARAccess) takeDeletedRole(userToken, name string) bool {
 	return true
 }
 
+// BeginStream records an open SSE stream so DELETED allow acks know how many clients remain.
 func (a *SSARAccess) BeginStream(userToken string) {
 	if a == nil || userToken == "" {
 		return
@@ -241,6 +252,7 @@ func (a *SSARAccess) BeginStream(userToken string) {
 	a.activeStreams[th]++
 }
 
+// EndStream decrements the stream count and clears remembered allows when the last stream closes.
 func (a *SSARAccess) EndStream(userToken string) {
 	if a == nil || userToken == "" {
 		return
@@ -258,11 +270,13 @@ func (a *SSARAccess) EndStream(userToken string) {
 	a.activeStreams[th] = n - 1
 }
 
+// hashToken maps a bearer token to a stable cache key so raw tokens are not stored as map keys.
 func hashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }
 
+// ssar runs a cached SelfSubjectAccessReview for clusterroles with the given verb and optional name.
 func (a *SSARAccess) ssar(ctx context.Context, userToken, verb, name string) (bool, error) {
 	key := cacheKey{token: hashToken(userToken), verb: verb, name: name}
 	now := time.Now()
@@ -303,6 +317,7 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
 	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
+// cleanup expires SSAR cache entries and evicts oldest keys when the cache exceeds accessCacheMaxSize.
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()

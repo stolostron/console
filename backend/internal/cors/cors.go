@@ -40,6 +40,7 @@ func Middleware(production bool) func(http.Handler) http.Handler {
 	}
 }
 
+// allowedDevOrigin permits standalone/plugin local origins (ports 3000–3002).
 func allowedDevOrigin(origin string) bool {
 	switch origin {
 	case "http://localhost:3000", "https://localhost:3000",

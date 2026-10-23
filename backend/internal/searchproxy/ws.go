@@ -17,6 +17,7 @@ import (
 	"github.com/stolostron/console/backend/internal/outbound"
 )
 
+// serveWebSocket dials upstream Search over WebSocket, upgrades the client, and relays frames.
 func (h *Handler) serveWebSocket(w http.ResponseWriter, r *http.Request, token string) {
 	checkOrigin := h.originChecker()
 	if !checkOrigin(r) {
@@ -67,6 +68,7 @@ func (h *Handler) serveWebSocket(w http.ResponseWriter, r *http.Request, token s
 	relay(client, upstream, token)
 }
 
+// websocketDialer returns the configured dialer or a default with TLS, timeout, and subprotocols.
 func (h *Handler) websocketDialer(r *http.Request) *websocket.Dialer {
 	if h.Dialer != nil {
 		cp := *h.Dialer
@@ -87,11 +89,13 @@ func (h *Handler) websocketDialer(r *http.Request) *websocket.Dialer {
 	}
 }
 
+// failBeforeUpgrade writes status and closes the connection before a WebSocket upgrade.
 func failBeforeUpgrade(w http.ResponseWriter, status int) {
 	w.Header().Set("Connection", "close")
 	w.WriteHeader(status)
 }
 
+// originChecker selects CheckOrigin, allow-all in non-production, or same-origin in production.
 func (h *Handler) originChecker() func(*http.Request) bool {
 	if h.CheckOrigin != nil {
 		return h.CheckOrigin
@@ -134,6 +138,7 @@ func requestScheme(r *http.Request) string {
 	return "http"
 }
 
+// subprotocolsForUpstream forwards the client Sec-WebSocket-Protocol list, defaulting to graphql-transport-ws.
 func subprotocolsForUpstream(r *http.Request) []string {
 	raw := r.Header.Get("Sec-WebSocket-Protocol")
 	if raw == "" {
@@ -152,6 +157,7 @@ func subprotocolsForUpstream(r *http.Request) []string {
 	return list
 }
 
+// relay bidirectionally copies frames and injects Authorization into the first connection_init.
 func relay(client, upstream *websocket.Conn, token string) {
 	var (
 		once sync.Once
@@ -204,6 +210,7 @@ func relay(client, upstream *websocket.Conn, token string) {
 	wg.Wait()
 }
 
+// messageType peeks the graphql-ws JSON "type" field without fully decoding the payload.
 func messageType(data []byte) string {
 	var peek struct {
 		Type string `json:"type"`

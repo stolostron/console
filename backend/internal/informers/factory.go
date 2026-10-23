@@ -31,14 +31,18 @@ var (
 	startSem         chan struct{}
 )
 
+// init sizes the concurrent list/watch start semaphore.
 func init() {
 	resetStartSem()
 }
 
+// resetStartSem recreates the start semaphore (tests and package init).
 func resetStartSem() {
 	startSem = make(chan struct{}, startConcurrency)
 }
 
+// acquireStartSlot blocks until a concurrent list/watch start slot is free, or
+// ctx is canceled. Returns false when canceled so the caller can exit.
 func acquireStartSlot(ctx context.Context) bool {
 	select {
 	case startSem <- struct{}{}:
@@ -48,6 +52,7 @@ func acquireStartSlot(ctx context.Context) bool {
 	}
 }
 
+// releaseStartSlot frees one concurrent list/watch start slot.
 func releaseStartSlot() {
 	<-startSem
 }
@@ -90,6 +95,11 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 	go c.logMemoryWhenReady(ctx)
 }
 
+// runSpec resolves the GVR and starts a SharedIndexInformer for one WatchSpec.
+// GVR resolution failures retry until ctx is canceled. After the informer
+// starts, an initial cache-sync timeout waits for that same informer to sync
+// (or for ctx to end) and then returns — it does not start another informer.
+// Startup concurrency is capped by acquireStartSlot so many specs do not list at once.
 func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapper ResourceMapper, st *specRuntime) {
 	for {
 		if ctx.Err() != nil {
@@ -170,6 +180,8 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 	}
 }
 
+// newListWatch builds a cluster-wide ListWatch that applies the spec's label and
+// field selectors on every list and watch call.
 func newListWatch(dyn dynamic.Interface, gvr schema.GroupVersionResource, spec WatchSpec) *cache.ListWatch {
 	ns := metav1.NamespaceAll
 	return &cache.ListWatch{
@@ -184,6 +196,7 @@ func newListWatch(dyn dynamic.Interface, gvr schema.GroupVersionResource, spec W
 	}
 }
 
+// applySelectors copies label and field selectors from spec onto list/watch options.
 func applySelectors(spec WatchSpec, options *metav1.ListOptions) {
 	if s := SelectorQuery(spec.LabelSelector); s != "" {
 		options.LabelSelector = s
@@ -193,6 +206,8 @@ func applySelectors(spec WatchSpec, options *metav1.ListOptions) {
 	}
 }
 
+// logMemoryWhenReady waits until HasSynced (or 2m) then logs heap stats once so
+// operators can see informer memory after startup without polling forever.
 func (c *InformerCache) logMemoryWhenReady(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
@@ -214,6 +229,7 @@ func (c *InformerCache) logMemoryWhenReady(ctx context.Context) {
 	}
 }
 
+// logHeap logs heapAlloc, heapInuse, and cached item count for informer memory diagnostics.
 func (c *InformerCache) logHeap(msg string) {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)
