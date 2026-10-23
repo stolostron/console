@@ -8,8 +8,8 @@ import (
 
 func TestDefaultWatchSpecsCount(t *testing.T) {
 	specs := DefaultWatchSpecs()
-	if len(specs) != 69 {
-		t.Fatalf("got %d specs, want 69", len(specs))
+	if len(specs) != 67 {
+		t.Fatalf("got %d specs, want 67", len(specs))
 	}
 	var polled, cacheOnly, withSel int
 	for _, s := range specs {
@@ -96,8 +96,8 @@ func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
 			skip++
 		}
 	}
-	if forward != 65 {
-		t.Fatalf("forward=%d want 65", forward)
+	if forward != 63 {
+		t.Fatalf("forward=%d want 63", forward)
 	}
 	if skip != 4 {
 		t.Fatalf("skip=%d want 4 (2 polled + 2 cacheOnly)", skip)
@@ -124,11 +124,11 @@ func TestClusterScopedKindsMatchNode(t *testing.T) {
 			n++
 		}
 	}
-	if n != 16 {
-		t.Fatalf("cluster-scoped specs=%d want 16", n)
+	if n != 14 {
+		t.Fatalf("cluster-scoped specs=%d want 14", n)
 	}
 	for _, kind := range []string{
-		"ManagedCluster", "Namespace", "StorageClass", "User", "Group",
+		"ManagedCluster", "Namespace", "StorageClass",
 		"ClusterManagementAddOn", "AgentServiceConfig", "Authentication",
 		"Infrastructure", "CertificateSigningRequest", "ManagedClusterSet",
 		"ClusterExtension", "ClusterImageSet", "MultiClusterEngine", "ClusterVersion",

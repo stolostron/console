@@ -1,39 +1,26 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useMemo } from 'react'
-import { generatePath, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
+import { generatePath, Outlet, useLocation, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { LoadingPage } from '../../../../components/LoadingPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
-import { Group, User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
-import { useMergedGroups } from '../useMergedIdentities'
-
-export const useCurrentGroup = (): Group | undefined => {
-  const { id } = useParams()
-  const groups = useMergedGroups()
-
-  return useMemo(
-    () => (!groups || !id ? undefined : groups.find((g) => g.metadata.uid === id || g.metadata.name === id)),
-    [groups, id]
-  )
-}
-
-export type GroupDetailsContext = {
-  readonly group?: Group
-  readonly users?: User[]
-}
+import { useUsersByNames } from '../Users/useUsersSearch'
+import { useCurrentGroup } from './useCurrentGroup'
+import { GroupDetailsContext } from './useGroupDetailsContext'
 
 const GroupPage = () => {
   const { t } = useTranslation()
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const group = useCurrentGroup()
-  const { usersState, isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const users = useSharedValue(usersState)
+  const { group, loaded, error } = useCurrentGroup()
+  const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
+  const { users, loaded: usersLoaded } = useUsersByNames(group?.users)
 
   const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({
@@ -48,19 +35,18 @@ const GroupPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isUsersActive = location.pathname.includes('/users')
 
+  const backToGroups = (
+    <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
+      {t('button.backToGroups')}
+    </AcmButton>
+  )
+
+  if (!loaded || (group && !usersLoaded)) {
+    return <LoadingPage />
+  }
+
   if (!group) {
-    return (
-      <>
-        <ErrorPage
-          error={new ResourceError(ResourceErrorCode.NotFound)}
-          actions={
-            <AcmButton component="a" href={NavigationPath.identitiesGroups} style={{ marginRight: '10px' }}>
-              {t('button.backToGroups')}
-            </AcmButton>
-          }
-        />
-      </>
-    )
+    return <ErrorPage error={error ?? new ResourceError(ResourceErrorCode.NotFound)} actions={backToGroups} />
   }
 
   return (
@@ -122,7 +108,3 @@ const GroupPage = () => {
 }
 
 export { GroupPage }
-
-export function useGroupDetailsContext() {
-  return useOutletContext<GroupDetailsContext>()
-}

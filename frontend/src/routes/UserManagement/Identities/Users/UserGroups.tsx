@@ -33,7 +33,7 @@ const renderGroupCreatedCell = (group: Group) => {
 
 const UserGroups = () => {
   const { t } = useTranslation()
-  const { userGroups } = useUserGroups()
+  const { userGroups, loading } = useUserGroups()
   const filters = useFilters('group', userGroups)
 
   const columns: IAcmTableColumn<Group>[] = [
@@ -66,14 +66,14 @@ const UserGroups = () => {
         columns={columns}
         filters={filters}
         keyFn={keyFn}
-        items={userGroups}
+        items={loading ? undefined : userGroups}
         resultView={{
           page: 1,
-          loading: false,
+          loading,
           refresh: () => {},
           items: [],
           emptyResult: false,
-          processedItemCount: 0,
+          processedItemCount: userGroups.length,
           isPreProcessed: false,
         }}
         emptyState={

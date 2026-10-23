@@ -7,10 +7,25 @@ import { nockIgnoreRBAC } from '../../../lib/nock-util'
 import IdentitiesManagement from './IdentitiesManagement'
 import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
 import { User, Group } from '../../../resources/rbac'
+import { useCurrentGroup } from './Groups/useCurrentGroup'
+import { useCurrentUser } from './Users/useCurrentUser'
+import { useUsersByNames } from './Users/useUsersSearch'
 
 jest.mock('../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(),
+}))
+
+jest.mock('./Groups/useCurrentGroup', () => ({
+  useCurrentGroup: jest.fn(),
+}))
+
+jest.mock('./Users/useCurrentUser', () => ({
+  useCurrentUser: jest.fn(),
+}))
+
+jest.mock('./Users/useUsersSearch', () => ({
+  useUsersByNames: jest.fn(),
 }))
 
 jest.mock('../../../lib/acm-i18next', () => ({
@@ -21,6 +36,9 @@ jest.mock('../../../lib/acm-i18next', () => ({
 
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockUseCurrentGroup = useCurrentGroup as jest.MockedFunction<typeof useCurrentGroup>
+const mockUseCurrentUser = useCurrentUser as jest.MockedFunction<typeof useCurrentUser>
+const mockUseUsersByNames = useUsersByNames as jest.MockedFunction<typeof useUsersByNames>
 
 const mockUser: User = {
   apiVersion: 'user.openshift.io/v1',
@@ -49,13 +67,16 @@ describe('IdentitiesManagement Router', () => {
     nockIgnoreRBAC()
     mockUseSharedValue.mockClear()
     mockUseSharedAtoms.mockClear()
+    mockUseCurrentGroup.mockClear()
+    mockUseCurrentUser.mockClear()
+    mockUseUsersByNames.mockClear()
 
     mockUseSharedAtoms.mockReturnValue({
-      usersState: {} as any,
-      groupsState: {} as any,
-      multiclusterRoleAssignmentState: {} as any,
       isDirectAuthenticationEnabledState: {} as any,
     } as any)
+    mockUseCurrentGroup.mockReturnValue({ group: mockGroup, loaded: true })
+    mockUseCurrentUser.mockReturnValue({ user: mockUser, loaded: true })
+    mockUseUsersByNames.mockReturnValue({ users: [], loaded: true })
   })
 
   test('should render without errors', () => {
@@ -73,12 +94,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect UserYaml route to UserDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce([]) // UserPage: groupsState
-      .mockReturnValueOnce(true) // UserPage: isDirectAuth
+    mockUseSharedValue.mockReturnValue(true)
 
     render(
       <StateProvider>
@@ -95,12 +111,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect UserGroups route to UserDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockUser]) // useMergedUsers: usersState
-      .mockReturnValueOnce([]) // useMergedUsers: mraState
-      .mockReturnValueOnce([]) // UserPage: groupsState
-      .mockReturnValueOnce(true) // UserPage: isDirectAuth
+    mockUseSharedValue.mockReturnValue(true)
 
     render(
       <StateProvider>
@@ -117,12 +128,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect GroupYaml route to GroupDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockGroup]) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce([]) // GroupPage: usersState
-      .mockReturnValueOnce(true) // GroupPage: isDirectAuth
+    mockUseSharedValue.mockReturnValue(true)
 
     render(
       <StateProvider>
@@ -139,12 +145,7 @@ describe('IdentitiesManagement Router', () => {
   })
 
   test('should redirect GroupUsers route to GroupDetails when isDirectAuthenticationEnabled', async () => {
-    mockUseSharedValue
-      .mockReturnValueOnce(true) // IdentitiesManagement: isDirectAuth
-      .mockReturnValueOnce([mockGroup]) // useMergedGroups: groupsState
-      .mockReturnValueOnce([]) // useMergedGroups: mraState
-      .mockReturnValueOnce([]) // GroupPage: usersState
-      .mockReturnValueOnce(true) // GroupPage: isDirectAuth
+    mockUseSharedValue.mockReturnValue(true)
 
     render(
       <StateProvider>

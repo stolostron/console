@@ -49,7 +49,6 @@ import {
   DiscoveryConfigKind,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  GroupKind,
   HelmReleaseApiVersion,
   HelmReleaseKind,
   HostedClusterApiVersion,
@@ -112,8 +111,6 @@ import {
   ClusterExtensionKind,
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
-  UserApiVersion,
-  UserKind,
   ServiceApiVersion,
   ServiceKind,
 } from '../resources'
@@ -144,7 +141,6 @@ import {
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
-  groupsState,
   helmReleaseState,
   hostedClustersState,
   infraEnvironmentsState,
@@ -185,7 +181,6 @@ import {
   clusterExtensionsState,
   subscriptionReportsState,
   subscriptionsState,
-  usersState,
   vmClusterRolesState,
   WatchEvent,
 } from '../atoms'
@@ -236,7 +231,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setDiscoveredClusters = useSetAtom(discoveredClusterState)
   const setDiscoveryConfigs = useSetAtom(discoveryConfigState)
   const setGitOpsClustersState = useSetAtom(gitOpsClustersState)
-  const setGroups = useSetAtom(groupsState)
   const setHelmReleases = useSetAtom(helmReleaseState)
   const setHostedClustersState = useSetAtom(hostedClustersState)
   const setInfraEnvironments = useSetAtom(infraEnvironmentsState)
@@ -275,7 +269,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setClusterExtensionsState = useSetAtom(clusterExtensionsState)
   const setSubscriptionReportsState = useSetAtom(subscriptionReportsState)
   const setSubscriptionsState = useSetAtom(subscriptionsState)
-  const setUsers = useSetAtom(usersState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, StateSetter<any[]>>> = {}
@@ -366,8 +359,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(ClusterExtensionApiVersion, ClusterExtensionKind, setClusterExtensionsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
-    addSetter(UserApiVersion, GroupKind, setGroups)
-    addSetter(UserApiVersion, UserKind, setUsers)
 
     return { setters, mappers, caches }
   }, [
@@ -395,7 +386,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setDiscoveredClusters,
     setDiscoveryConfigs,
     setGitOpsClustersState,
-    setGroups,
     setHelmReleases,
     setHostedClustersState,
     setInfraEnvironments,
@@ -427,7 +417,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setClusterExtensionsState,
     setSubscriptionReportsState,
     setSubscriptionsState,
-    setUsers,
   ])
 
   const stopStream = useCallback(() => {

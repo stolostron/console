@@ -13,7 +13,7 @@ import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { AcmButton } from '../../../../ui-components'
-import { useGroupDetailsContext } from './GroupPage'
+import { useGroupDetailsContext } from './useGroupDetailsContext'
 
 const GroupDetails = () => {
   const { t } = useTranslation()
