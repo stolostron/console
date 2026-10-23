@@ -404,6 +404,37 @@ export function useGroupsSearch(options: {
     void refetchCountRef.current()
   }, [hasUnresolvedOverlap])
 
+  // Inverse of overlap: Search DELETE drops a candidate from the subscribed page while
+  // lookup still treats them as indexed, so they never re-enter extras until refresh.
+  // Ignore pageQueryKey changes (pagination/sort/keywords) — those also change page names.
+  const pageQueryKey = `${keywords?.join('\0') ?? ''}\n${orderBy}\n${searchOffset}\n${searchLimit}`
+  const prevSearchNamesRef = useRef<Set<string>>(new Set())
+  const prevPageQueryKeyRef = useRef(pageQueryKey)
+  const indexedNamesRef = useRef(indexedNames)
+  const candidateNamesRef = useRef(new Set(lookupNames))
+  indexedNamesRef.current = indexedNames
+  candidateNamesRef.current = new Set(lookupNames)
+
+  useEffect(() => {
+    const prevKey = prevPageQueryKeyRef.current
+    const prevNames = prevSearchNamesRef.current
+    prevPageQueryKeyRef.current = pageQueryKey
+    prevSearchNamesRef.current = searchNamesOnPage
+
+    if (prevKey !== pageQueryKey) return
+
+    const removed = [...prevNames].filter((name) => !searchNamesOnPage.has(name))
+    const deletedCandidateStillIndexed = removed.some(
+      (name) => candidateNamesRef.current.has(name) && indexedNamesRef.current.has(name)
+    )
+    if (!deletedCandidateStillIndexed) return
+
+    if (lookupNamesLengthRef.current > 0) {
+      refetchLookupRef.current()
+    }
+    void refetchCountRef.current()
+  }, [pageQueryKey, searchNamesOnPage])
+
   const additionalKey = (additionalGroups ?? []).map((group) => group.metadata.name ?? '').join('\n')
   const skipAdditionalRefetch = useRef(true)
   useEffect(() => {
