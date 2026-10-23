@@ -39,14 +39,23 @@ export function SyncResourceModal(props: ISyncResourceModalProps | { open: false
       existingResources.push(existingSubscription)
     })
 
-    void reconcileResources(props.resources, existingResources).then(() => {
-      toastContext.addAlert({
-        title: t('Subscription updated'),
-        message: t('{{names}} were successfully synced.', { names: subNames.join(', ') }),
-        type: 'success',
-        autoClose: true,
+    reconcileResources(props.resources, existingResources)
+      .then(() => {
+        toastContext.addAlert({
+          title: t('Subscription updated'),
+          message: t('{{names}} were successfully synced.', { names: subNames.join(', ') }),
+          type: 'success',
+          autoClose: true,
+        })
       })
-    })
+      .catch((err) => {
+        console.error('Failed to sync subscriptions:', err)
+        toastContext.addAlert({
+          title: t('Failed to sync'),
+          message: t('{{names}} could not be synced. Please try again.', { names: subNames.join(', ') }),
+          type: 'danger',
+        })
+      })
   }
 
   const modalTitle = t('Sync application')
