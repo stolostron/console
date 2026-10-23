@@ -107,7 +107,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
           type: 'success',
           autoClose: true,
         })
-        navigate(
+        void navigate(
           generatePath(NavigationPath.policyDetails, {
             namespace: foundPolicy.metadata?.namespace ?? '',
             name: foundPolicy.metadata?.name ?? '',
@@ -133,7 +133,7 @@ export function CreatePolicy(props: { initialResources?: IResource[] }) {
       breadcrumb={[{ text: t('Policies'), to: NavigationPath.policies }, { text: t('Create policy') }]}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.policies)
+        void navigate(NavigationPath.policies)
       }}
       onSubmit={(data) => {
         setIsSaving(true)

@@ -274,7 +274,7 @@ export function PolicyActionDropdown(props: {
           if (props.isKebab) {
             path += '?context=policies'
           }
-          navigate(path)
+          void navigate(path)
         },
         rbac: [rbacPatch(PolicyDefinition, item.policy.metadata.namespace)],
       },

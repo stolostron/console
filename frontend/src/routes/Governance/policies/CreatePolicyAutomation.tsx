@@ -111,7 +111,7 @@ export function CreatePolicyAutomation() {
       }}
       onCancel={() => {
         cancelForm()
-        navigate(destination)
+        void navigate(destination)
       }}
       onSubmit={(data: unknown) =>
         handlePolicyAutomationSubmit(submitForm, data, secrets, navigate, destination, toast, t)
