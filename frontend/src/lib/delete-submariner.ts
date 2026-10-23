@@ -13,7 +13,7 @@ export function deleteSubmarinerAddon(managedClusterAddon: ManagedClusterAddOn, 
 
   return {
     promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
+      void deleteResourcesResult.promise.then((promisesSettledResult) => {
         if (promisesSettledResult[0].status === 'rejected') {
           reject(promisesSettledResult[0].reason)
           return
