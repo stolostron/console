@@ -1,5 +1,4 @@
 .topologyDetails {
-  background-color: var(--pf-v5-global--BackgroundColor--400);
   width: 100%;
   height: calc(100% - 29px);
   overflow: auto;
@@ -9,9 +8,9 @@
   position: sticky;
   top: 0px;
   flex-shrink: 0;
-  box-shadow: var(--pf-v5-c-page--section--m-sticky-top--BoxShadow);
-  z-index: var(--pf-v5-c-page--section--m-sticky-top--ZIndex);
-  background-color: var(--pf-v5-global--BackgroundColor--100);
+  box-shadow: var(--pf-t--global--box-shadow--sm--bottom);
+  z-index: var(--pf-t--global--z-index--md);
+  background-color: var(--pf-t--global--background--color--primary--default);
 }
 
 .topologyDetails .detailsHeader .innerDetailsHeader {
@@ -27,7 +26,7 @@
   margin-inline: var(--pf-t--global--spacer--md);
   margin-block-end: 0;
 
-  border: 1px solid var(--pf-v5-global--BorderColor--100);
+  border: 1px solid var(--pf-t--global--border--color--default);
   border-radius: var(--pf-t--global--border--radius--medium, 8px);
   overflow: hidden;
 }
@@ -197,12 +196,8 @@
   outline-width: 0px;
 }
 .topologyDetails .sectionContent .clusterDetails .pf-v6-c-accordion {
-  --pf-v5-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-  --pf-v5-c-accordion__toggle--hover__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--active__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--focus__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-  --pf-v5-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+  --pf-v6-c-accordion__item--m-expanded--before--Opacity: 0;
+  --pf-v6-c-accordion__toggle--m-expanded__toggle-text--FontWeight: var(--pf-t--global--font--weight--body--default);
 }
 .topologyDetails .sectionContent .clusterDetails .pf-v6-c-accordion .clusterDetailItem .pf-v6-c-accordion__toggle {
   padding-left: 0px;
@@ -255,14 +250,6 @@
   .clusterDetails
   .pf-v6-c-accordion
   .clusterDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded {
-  --pf-v5-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
-}
-.topologyDetails
-  .sectionContent
-  .clusterDetails
-  .pf-v6-c-accordion
-  .clusterDetailItem
   .pf-v6-c-accordion__expanded-content.pf-m-expanded
   .pf-v6-c-accordion__expanded-content-body {
   padding-left: 0px;
@@ -305,12 +292,8 @@
   outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion {
-  --pf-v5-c-accordion__toggle--m-expanded--before--BackgroundColor: #fff;
-  --pf-v5-c-accordion__toggle--hover__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--active__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--focus__toggle-text--Color: #000;
-  --pf-v5-c-accordion__toggle--active__toggle-text--FontWeight: normal;
-  --pf-v5-c-accordion__toggle--focus__toggle-text--FontWeight: normal;
+  --pf-v6-c-accordion__item--m-expanded--before--Opacity: 0;
+  --pf-v6-c-accordion__toggle--m-expanded__toggle-text--FontWeight: var(--pf-t--global--font--weight--body--default);
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion .appDetailItem .pf-v6-c-accordion__toggle {
   padding-left: 0px;
@@ -337,14 +320,6 @@
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion .appDetailItem .pf-v6-c-accordion__toggle::after {
   width: 0px;
-}
-.topologyDetails
-  .sectionContent
-  .appDetails
-  .pf-v6-c-accordion
-  .appDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded {
-  --pf-v5-c-accordion__expanded-content-body--before--BackgroundColor: #fff;
 }
 .topologyDetails
   .sectionContent
@@ -384,7 +359,7 @@
   word-break: normal;
 }
 .topologyDetails .ksLabelBackground {
-  background-color: var(--pf-v5-c-label--BackgroundColor);
+  background-color: var(--pf-t--global--color--nonstatus--gray--default);
   border-radius: 35px;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
@@ -397,7 +372,7 @@
   font-family: 'Red Hat Text';
   font-weight: 600;
   font-size: 14px;
-  color: var(--pf-v5-global--link--Color);
+  color: var(--pf-t--global--text--color--link--default);
   cursor: pointer;
   background: none;
   border: none;

@@ -17,7 +17,7 @@
 .pf-topology__node__label {
   user-select: none;
 }
-.pf-v5-c-drawer__body:last-child {
+.pf-v6-c-drawer__body:last-child {
   height: 100%;
 }
 .pf-topology-view__project-toolbar {
