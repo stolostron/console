@@ -23,7 +23,6 @@ import { HostedCard } from '../components/rosahcp/HostedCard/HostedCard'
 import { RosaHCPModal } from '../components/rosahcp/RosaHCPModal/RosaHCPModal'
 import { Secret } from '~/resources'
 import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
-import { DOC_LINKS } from '~/lib/doc-util'
 
 export function CreateAWSControlPlane() {
   const [t] = useTranslation()
