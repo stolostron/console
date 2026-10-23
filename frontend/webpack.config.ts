@@ -217,6 +217,8 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         path: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,
         secure: false,
+        // Allow browser WebSocket upgrades (Search graphql-ws, K8s watches) through the proxy.
+        ws: true,
       })),
       open: openBrowser,
       historyApiFallback: true,
