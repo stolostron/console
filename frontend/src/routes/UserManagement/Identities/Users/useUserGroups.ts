@@ -3,7 +3,6 @@ import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSea
 import { useFleetSearchSubscription } from '@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription'
 import { SearchInput } from '@stolostron/multicluster-sdk/lib/types/search'
 import { useEffect, useMemo, useRef } from 'react'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { Group } from '../../../../resources/rbac'
 import { hubGroupFilters, hubGroupWatchFilters } from '../Groups/useGroupsSearch'
 import { useUserDetailsContext } from './UserPage'
@@ -37,17 +36,16 @@ export function groupEventAffectsUser(event: GroupMembershipEvent, userName: str
 
 export const useUserGroups = () => {
   const { user } = useUserDetailsContext()
-  const hubName = useLocalHubName()
   const userName = user?.metadata?.name
 
   const queryInput = useMemo<SearchInput | undefined>(() => {
     if (!userName) return undefined
     return {
-      filters: [...hubGroupFilters(hubName), { property: 'groupUsers', values: [userName] }],
+      filters: [...hubGroupFilters(), { property: 'groupUsers', values: [userName] }],
       limit: -1,
       orderBy: 'name asc',
     }
-  }, [hubName, userName])
+  }, [userName])
 
   // Do not filter the watch by groupUsers: Search skips events once membership no longer
   // matches (e.g. user removed). Watch all hub Groups and refetch the filtered query.

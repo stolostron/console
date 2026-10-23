@@ -260,26 +260,7 @@ describe('useFleetSearch', () => {
       expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(toWatchInput(paginated))
     })
 
-    it('should pass options.watchInput to useFleetSearchSubscription when provided', () => {
-      mockUseSearchResultItemsQuery.mockReturnValue({
-        data: undefined,
-        loading: false,
-        error: undefined,
-        refetch: jest.fn(),
-      } as any)
-
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: 'apigroup', values: ['user.openshift.io'] },
-        ],
-      }
-      renderHook(() => useFleetSearch(mockInput, true, { watchInput }))
-
-      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(watchInput)
-    })
-
-    it('should ignore subscription events outside the query cluster filter when watchInput omits cluster', () => {
+    it('should ignore subscription events outside the query cluster filter', () => {
       const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
       const pageInput: SearchInput = {
         filters: [
@@ -288,12 +269,6 @@ describe('useFleetSearch', () => {
         ],
         limit: -1,
         orderBy: 'name asc',
-      }
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: '_hubClusterResource', values: ['true'] },
-        ],
       }
       const mockRefetch = pendingRefetch()
       mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
@@ -308,14 +283,14 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
 
       expect(mockRefetch).not.toHaveBeenCalled()
       expect(result.current[0]).toHaveLength(1)
       expect(result.current[0]![0].metadata?.name).toBe('hub-group')
     })
 
-    it('should apply matching-cluster events when watchInput omits cluster', () => {
+    it('should apply matching-cluster events when the query filters by cluster', () => {
       const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
       const pageInput: SearchInput = {
         filters: [
@@ -324,12 +299,6 @@ describe('useFleetSearch', () => {
         ],
         limit: -1,
         orderBy: 'name asc',
-      }
-      const watchInput: SearchInput = {
-        filters: [
-          { property: 'kind', values: ['Group'] },
-          { property: '_hubClusterResource', values: ['true'] },
-        ],
       }
       mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
       mockUseFleetSearchSubscription.mockReturnValue([
@@ -343,7 +312,7 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
 
       expect(result.current[0]).toHaveLength(2)
       expect(result.current[0]!.map((r) => r.metadata?.name).sort()).toEqual(['hub-group', 'new-hub-group'])
@@ -473,9 +442,6 @@ describe('useFleetSearch', () => {
         ],
         limit: 10,
       }
-      const watchInput: SearchInput = {
-        filters: [{ property: 'kind', values: ['Group'] }],
-      }
 
       let resolveRefetch: (value: RefetchResult) => void = () => {}
       const mockRefetch: RefetchMock = jest.fn(
@@ -498,7 +464,7 @@ describe('useFleetSearch', () => {
         undefined,
       ])
 
-      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true, { watchInput }))
+      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true))
       expect(mockRefetch).toHaveBeenCalledTimes(1)
 
       // Off-cluster INSERT while refetching must not be applied after settle

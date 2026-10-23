@@ -155,20 +155,10 @@ describe('useGroupsSearch', () => {
         filters: expect.arrayContaining([
           { property: 'kind', values: ['Group'] },
           { property: 'apigroup', values: ['user.openshift.io'] },
-          { property: 'cluster', values: ['local-cluster'] },
+          { property: '_hubClusterResource', values: ['*'] },
         ]),
       }),
-      true,
-      {
-        watchInput: {
-          filters: [
-            { property: 'kind', values: ['Group'] },
-            { property: 'apigroup', values: ['user.openshift.io'] },
-            { property: '_hubClusterResource', values: ['true'] },
-          ],
-          keywords: ['Ops', 'Team'],
-        },
-      }
+      true
     )
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
     expect(result.current.processedItemCount).toBe(1)
@@ -307,14 +297,11 @@ describe('useGroupsSearch', () => {
 
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
     expect(mockUseFleetSearch).toHaveBeenCalledWith(
-      expect.objectContaining({ keywords: ['dev'] }),
-      true,
       expect.objectContaining({
-        watchInput: expect.objectContaining({
-          keywords: ['dev'],
-          filters: expect.arrayContaining([{ property: '_hubClusterResource', values: ['true'] }]),
-        }),
-      })
+        keywords: ['dev'],
+        filters: expect.arrayContaining([{ property: '_hubClusterResource', values: ['*'] }]),
+      }),
+      true
     )
   })
 
@@ -374,7 +361,7 @@ describe('useGroupsSearch', () => {
             expect.objectContaining({
               limit: -1,
               orderBy: 'name asc',
-              filters: expect.arrayContaining([{ property: 'cluster', values: ['local-cluster'] }]),
+              filters: expect.arrayContaining([{ property: '_hubClusterResource', values: ['*'] }]),
             }),
           ],
         },

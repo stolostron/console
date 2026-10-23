@@ -13,9 +13,8 @@ export function toWatchInput(input: SearchInput): SearchInput {
 }
 
 /**
- * When the query filters by `cluster` but `watchInput` omits it (e.g. Groups use
- * `_hubClusterResource` because Search drops Group events for `cluster`), ignore
- * subscription events whose uid cluster prefix is outside the query filter.
+ * When the query filters by `cluster`, ignore subscription events whose uid
+ * cluster prefix is outside the query filter.
  */
 export function eventMatchesQueryClusterFilter(event: FleetSearchEvent, input: SearchInput | undefined): boolean {
   const clusters = input?.filters?.find((filter) => filter?.property === 'cluster')?.values

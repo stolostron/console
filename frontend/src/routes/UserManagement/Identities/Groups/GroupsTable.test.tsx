@@ -217,11 +217,10 @@ describe('GroupsTable', () => {
         filters: expect.arrayContaining([
           { property: 'kind', values: ['Group'] },
           { property: 'apigroup', values: ['user.openshift.io'] },
-          { property: 'cluster', values: ['local-cluster'] },
+          { property: '_hubClusterResource', values: ['*'] },
         ]),
       }),
-      true,
-      expect.objectContaining({ watchInput: expect.any(Object) })
+      true
     )
   })
 

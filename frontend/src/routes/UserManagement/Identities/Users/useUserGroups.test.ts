@@ -105,7 +105,7 @@ describe('useUserGroups', () => {
     expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith({
       filters: expect.arrayContaining([
         { property: 'kind', values: ['Group'] },
-        { property: '_hubClusterResource', values: ['true'] },
+        { property: '_hubClusterResource', values: ['*'] },
       ]),
     })
     const watchFilters = mockUseFleetSearchSubscription.mock.calls[0][0].filters

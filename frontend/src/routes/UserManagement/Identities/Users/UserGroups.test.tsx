@@ -224,7 +224,7 @@ describe('UserGroups', () => {
         filters: expect.arrayContaining([
           { property: 'kind', values: ['Group'] },
           { property: 'apigroup', values: ['user.openshift.io'] },
-          { property: 'cluster', values: ['local-cluster'] },
+          { property: '_hubClusterResource', values: ['*'] },
           { property: 'groupUsers', values: ['test-user'] },
         ]),
         limit: -1,

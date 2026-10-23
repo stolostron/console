@@ -232,16 +232,6 @@ function applyEvent(
   }
 }
 
-/** Optional third argument to {@link useFleetSearch}. */
-export type UseFleetSearchOptions = {
-  /**
-   * Input for the GraphQL `watch` subscription. When omitted, the subscription
-   * uses the query `input` with `limit` / `offset` / `orderBy` stripped
-   * (Search subscriptions do not support those query-only fields).
-   */
-  watchInput?: SearchInput
-}
-
 /**
  * A React hook that provides fleet-wide search functionality using the ACM search API,
  * with optional real-time updates via a GraphQL WebSocket subscription.
@@ -253,15 +243,15 @@ export type UseFleetSearchOptions = {
  * up to date without polling.
  *
  * Pagination is supported by setting `limit` and `offset` on the `SearchInput`
- * object. The caller is responsible for constructing those values.
+ * object. The caller is responsible for constructing those values. When the
+ * subscription is enabled, `limit` / `offset` / `orderBy` are stripped from
+ * `input` for the GraphQL `watch` (those fields are query-only).
  *
  * @param input - The search input object (filters, keywords, limit, offset, etc.).
  *   Pass `undefined` to skip the query entirely.
  * @param subscriptionEnabled - When `true`, a WebSocket subscription is opened
  *   and the local result set is kept current via incremental event patches.
  *   Defaults to `false`.
- * @param options - Optional {@link UseFleetSearchOptions}, including `watchInput`
- *   when the subscription must use different filters than the query.
  *
  * @returns A tuple of:
  * - `data` — The current search results mapped through
@@ -310,18 +300,11 @@ export type UseFleetSearchOptions = {
  *   },
  *   true,
  * )
- *
- * // Optional watchInput: query stays paginated; watch uses a different filter set.
- * // Needed when Search drops events for some query filters (e.g. `cluster` on Groups).
- * const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
- *   watchInput: { filters: [{ property: 'kind', values: ['Group'] }] },
- * })
  * ```
  */
 export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
   input: SearchInput | undefined,
-  subscriptionEnabled?: boolean,
-  options?: UseFleetSearchOptions
+  subscriptionEnabled?: boolean
 ): [Fleet<T>[] | undefined, boolean, Error | undefined, () => void] {
   // ── Base query ─────────────────────────────────────────────────────────────
 
@@ -451,12 +434,11 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
 
   // ── Subscription layer ─────────────────────────────────────────────────────
 
-  // Prefer an explicit watchInput (callers can omit filters Search mishandles on
-  // watch, e.g. `cluster` for Group). Otherwise strip query-only pagination fields.
+  // Strip query-only pagination/sort fields for the GraphQL watch subscription.
   const subscriptionInput = useMemo<SearchInput | undefined>(() => {
     if (!subscriptionEnabled || input == null) return undefined
-    return options?.watchInput ?? toWatchInput(input)
-  }, [subscriptionEnabled, input, options?.watchInput])
+    return toWatchInput(input)
+  }, [subscriptionEnabled, input])
 
   const [latestEvent, , subscriptionError] = useFleetSearchSubscription(subscriptionInput)
 
@@ -465,8 +447,7 @@ export function useFleetSearch<T extends K8sResourceCommon = K8sResourceCommon>(
     if (!latestEvent) return
 
     const currentInput = inputRef.current
-    // watchInput may omit `cluster` (Search drops Group events for that filter);
-    // keep query results scoped by ignoring events from other clusters.
+    // When the query filters by `cluster`, ignore watch events from other clusters.
     if (!eventMatchesQueryClusterFilter(latestEvent, currentInput)) return
 
     // While a refetch is in flight, queue events for later processing.

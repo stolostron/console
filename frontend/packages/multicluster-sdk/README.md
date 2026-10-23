@@ -881,11 +881,13 @@ results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
 up to date without polling.
 
 Pagination is supported by setting `limit` and `offset` on the `SearchInput`
-object. The caller is responsible for constructing those values.
+object. The caller is responsible for constructing those values. When the
+subscription is enabled, `limit` / `offset` / `orderBy` are stripped from
+`input` for the GraphQL `watch` (those fields are query-only).
 
 | Function | Type |
 | ---------- | ---------- |
-| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined, options?: UseFleetSearchOptions or undefined) => [...]` |
+| `useFleetSearch` | `<T extends K8sResourceCommon = K8sResourceCommon>(input: SearchInput or undefined, subscriptionEnabled?: boolean or undefined) => [Fleet<T>[] or undefined, boolean, Error or undefined, () => void]` |
 
 Parameters:
 
@@ -894,7 +896,6 @@ Pass `undefined` to skip the query entirely.
 * `subscriptionEnabled`: - When `true`, a WebSocket subscription is opened
 and the local result set is kept current via incremental event patches.
 Defaults to `false`.
-* `options`: - Optional 
 
 
 Returns:
@@ -947,16 +948,10 @@ const [resources, loaded, error, refetch] = useFleetSearch(
   },
   true,
 )
-
-// Optional watchInput: query stays paginated; watch uses a different filter set.
-// Needed when Search drops events for some query filters (e.g. `cluster` on Groups).
-const [resources, loaded, error, refetch] = useFleetSearch(pageInput, true, {
-  watchInput: { filters: [{ property: 'kind', values: ['Group'] }] },
-})
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L321)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L305)
 
 ### :gear: useFleetSearchPoll
 
@@ -1151,7 +1146,6 @@ if (error) {
 - [SearchFilter](#gear-searchfilter)
 - [SearchInput](#gear-searchinput)
 - [SearchResult](#gear-searchresult)
-- [UseFleetSearchOptions](#gear-usefleetsearchoptions)
 
 ### :gear: AdvancedSearchFilter
 
@@ -1422,19 +1416,6 @@ type SearchInput = {
 | `SearchResult` | `R extends (infer T)[] ? Fleet<T>[] : Fleet<R>` |
 
 [:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/types/search.ts#L83)
-
-### :gear: UseFleetSearchOptions
-
-Optional third argument to {@link useFleetSearch}.
-
-```typescript
-type UseFleetSearchOptions = {
-  /** Input for the GraphQL `watch` subscription. When omitted, the subscription uses the query `input` with `limit` / `offset` / `orderBy` stripped (Search subscriptions do not support those query-only fields). */
-  watchInput?: SearchInput
-}
-```
-
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L236)
 
 
 <!-- TSDOC_END -->

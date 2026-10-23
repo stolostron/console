@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 // Avoid the package barrel: it also loads fleetK8s* → @console/shared (breaks npm start).
 import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSearch'
 import type { SearchFilter, SearchInput } from '@stolostron/multicluster-sdk'
-import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { IRequestListView, IResultListView } from '../../../../lib/useAggregates'
 import { IResource } from '../../../../resources/resource'
 import { Group, GroupKind, UserApiVersion } from '../../../../resources/rbac'
@@ -27,27 +26,29 @@ const SORT_FIELD_BY_COLUMN: Record<string, GroupSortField> = {
   'metadata.creationTimestamp': 'created',
 }
 
-export function hubGroupFilters(hubName: string): SearchFilter[] {
+/**
+ * Hub-scoped Group filters for Search query and watch.
+ *
+ * Search stores `_hubClusterResource` only on hub resources, but equality on
+ * `values: ['true']` returns 0 hits. `values: ['*']` matches any value and is
+ * the supported workaround (property presence ≈ hub-only). Prefer this over
+ * `cluster: <hubName>`, which drops Group watch events.
+ */
+export function hubGroupFilters(): SearchFilter[] {
   return [
     { property: 'kind', values: ['Group'] },
     { property: 'apigroup', values: ['user.openshift.io'] },
-    { property: 'cluster', values: [hubName] },
+    { property: '_hubClusterResource', values: ['*'] },
   ]
 }
 
 // TODO: remove/adapt filter as a part of the "ACM-48532 Users: migrate list and details to useFleetSearch" effort
 /**
  * Filters for a Group GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
- * and drops Group events when `cluster` is set. Hub scope uses `_hubClusterResource`.
- *
+ * and drops Group events when `cluster` is set. Same hub scope as {@link hubGroupFilters}.
  */
 export function hubGroupWatchFilters(name?: string): SearchFilter[] {
-  return [
-    { property: 'kind', values: ['Group'] },
-    { property: 'apigroup', values: ['user.openshift.io'] },
-    { property: '_hubClusterResource', values: ['true'] },
-    ...(name ? [{ property: 'name', values: [name] }] : []),
-  ]
+  return [...hubGroupFilters(), ...(name ? [{ property: 'name', values: [name] }] : [])]
 }
 
 export function keywordsFromSearch(search?: string): string[] | undefined {
@@ -235,7 +236,6 @@ export function useGroupsSearch(options: {
   additionalGroups?: Group[]
 }): GroupsSearchResult {
   const { request, columns, additionalGroups } = options
-  const hubName = useLocalHubName()
   const mraGroups = useMraGroupSubjects()
   const page = request?.page ?? DEFAULT_PAGE
   const perPage = request?.perPage && request.perPage > 0 ? request.perPage : DEFAULT_ITEMS_PER_PAGE
@@ -244,7 +244,7 @@ export function useGroupsSearch(options: {
     () => groupOrderBy(columns, request?.sortBy),
     [columns, request?.sortBy]
   )
-  const baseFilters = useMemo(() => hubGroupFilters(hubName), [hubName])
+  const baseFilters = useMemo(() => hubGroupFilters(), [])
 
   const candidates = useMemo(
     () => uniqueGroups([...(additionalGroups ?? []), ...mraGroups]),
@@ -324,17 +324,8 @@ export function useGroupsSearch(options: {
       orderBy,
     }
   }, [baseFilters, canQueryPage, keywords, orderBy, searchLimit, searchOffset])
-  // Query keeps hub `cluster` + pagination. The watch uses `_hubClusterResource` instead of
-  // `cluster` (Search drops Group events for that property) and omits limit/offset/orderBy.
-  // useFleetSearch still scopes applied events to pageInput's cluster via uid prefix.
-  const watchInput = useMemo<SearchInput>(
-    () => ({
-      filters: hubGroupWatchFilters(),
-      ...(keywords ? { keywords } : {}),
-    }),
-    [keywords]
-  )
-  const [pageFleet, pageLoaded, pageError, refetchPage] = useFleetSearch(pageInput, true, { watchInput })
+  // Subscription uses toWatchInput(pageInput): same filters, without limit/offset/orderBy.
+  const [pageFleet, pageLoaded, pageError, refetchPage] = useFleetSearch(pageInput, true)
   const pageGroups = pageFleet as Group[] | undefined
 
   const countInput = useMemo<SearchInput>(
@@ -427,7 +418,7 @@ export function useGroupsSearch(options: {
     const result = await searchClient.query({
       query: SearchResultItemsDocument,
       variables: {
-        input: [{ filters: hubGroupFilters(hubName), limit: -1, orderBy: 'name asc' }],
+        input: [{ filters: hubGroupFilters(), limit: -1, orderBy: 'name asc' }],
       },
     })
     const items = ((result.data?.searchResult?.[0]?.items ?? []) as Array<Record<string, unknown> | null>)
@@ -445,7 +436,7 @@ export function useGroupsSearch(options: {
       processedItemCount: merged.length,
       isPreProcessed: true,
     }
-  }, [candidates, hubName])
+  }, [candidates])
 
   const searching = keywords !== undefined
   return {
@@ -460,9 +451,8 @@ export function useGroupsSearch(options: {
 }
 
 export function useHasHubGroups(): { hasGroups: boolean; loaded: boolean } {
-  const hubName = useLocalHubName()
   const mraGroups = useMraGroupSubjects()
-  const filters = useMemo(() => hubGroupFilters(hubName), [hubName])
+  const filters = useMemo(() => hubGroupFilters(), [])
   const { data, loading } = useSearchResultCountQuery({
     client: searchApolloClient(),
     variables: { input: [{ filters }] },
@@ -472,15 +462,14 @@ export function useHasHubGroups(): { hasGroups: boolean; loaded: boolean } {
 }
 
 export function useGroupIdentity(name: string | undefined): Group | undefined {
-  const hubName = useLocalHubName()
   const mraGroups = useMraGroupSubjects()
   const input = useMemo<SearchInput | undefined>(() => {
     if (!name) return undefined
     return {
-      filters: [...hubGroupFilters(hubName), { property: 'name', values: [name] }],
+      filters: [...hubGroupFilters(), { property: 'name', values: [name] }],
       limit: 1,
     }
-  }, [hubName, name])
+  }, [name])
   const [foundFleet, loaded] = useFleetSearch(input, false)
   const found = foundFleet as Group[] | undefined
   return useMemo(() => {
@@ -503,7 +492,7 @@ export async function findIndexedGroupName(id: string, hubName: string): Promise
     variables: {
       input: [
         {
-          filters: [...hubGroupFilters(hubName)],
+          filters: [...hubGroupFilters()],
           // Search rejects `_uid` as a filter; scan all hub Groups (same as export).
           limit: -1,
         },
