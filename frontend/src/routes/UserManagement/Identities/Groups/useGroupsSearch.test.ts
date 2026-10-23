@@ -83,14 +83,16 @@ function isComparator(input: SearchInput): boolean {
   )
 }
 
+const refetchPage = jest.fn()
+const refetchLookup = jest.fn()
+
 function mockSearch(pageGroups: Group[], indexed: Group[] = pageGroups, ranks: number[] = []) {
-  const refetchPage = jest.fn()
   mockUseFleetSearch.mockImplementation((input, subscriptionEnabled) => {
     if (!input) return [undefined, true, undefined, jest.fn()]
     if (input.orderBy) return [pageGroups, true, undefined, refetchPage]
     if (subscriptionEnabled) return [pageGroups, true, undefined, refetchPage]
     const names = new Set(input.filters?.find((filter) => filter?.property === 'name')?.values ?? [])
-    return [indexed.filter((group) => names.has(group.metadata.name ?? '')), true, undefined, jest.fn()]
+    return [indexed.filter((group) => names.has(group.metadata.name ?? '')), true, undefined, refetchLookup]
   })
 
   mockUseSearchResultCountQuery.mockImplementation(
@@ -113,7 +115,7 @@ function mockSearch(pageGroups: Group[], indexed: Group[] = pageGroups, ranks: n
       }
     }
   )
-  return { refetchPage }
+  return { refetchPage, refetchLookup }
 }
 
 function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
@@ -128,6 +130,8 @@ function setupAtoms(mras: MulticlusterRoleAssignment[] = []) {
 
 describe('useGroupsSearch', () => {
   beforeEach(() => {
+    refetchPage.mockClear()
+    refetchLookup.mockClear()
     setupAtoms()
     mockSearch([developers])
   })
@@ -177,6 +181,36 @@ describe('useGroupsSearch', () => {
 
     expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['ops-team', 'developers'])
     expect(result.current.processedItemCount).toBe(2)
+  })
+
+  test('refetches lookup when Search deletes an indexed MRA candidate from the page', async () => {
+    setupAtoms([developersMra])
+    const { refetchLookup } = mockSearch([developers], [developers], [])
+
+    const { rerender, result } = renderHook(() =>
+      useGroupsSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
+    expect(refetchLookup).not.toHaveBeenCalled()
+
+    mockSearch([], [developers], [0])
+    rerender()
+
+    await waitFor(() => {
+      expect(refetchLookup).toHaveBeenCalled()
+    })
+
+    mockSearch([], [], [0])
+    rerender()
+
+    await waitFor(() => {
+      expect(result.current.groups.map((group) => group.metadata.name)).toEqual(['developers'])
+      expect(result.current.groups[0]?.metadata.uid).toBe('developers')
+    })
   })
 
   test('holds the page and count while an MRA extra overlaps a Search row pending lookup', () => {
