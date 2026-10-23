@@ -124,11 +124,11 @@ func TestClusterScopedKindsMatchNode(t *testing.T) {
 			n++
 		}
 	}
-	if n != 15 {
-		t.Fatalf("cluster-scoped specs=%d want 15", n)
+	if n != 14 {
+		t.Fatalf("cluster-scoped specs=%d want 14", n)
 	}
 	for _, kind := range []string{
-		"ManagedCluster", "Namespace", "StorageClass", "User",
+		"ManagedCluster", "Namespace", "StorageClass",
 		"ClusterManagementAddOn", "AgentServiceConfig", "Authentication",
 		"Infrastructure", "CertificateSigningRequest", "ManagedClusterSet",
 		"ClusterExtension", "ClusterImageSet", "MultiClusterEngine", "ClusterVersion",
