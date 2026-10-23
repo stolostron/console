@@ -117,5 +117,4 @@ describe('useMergedIdentities', () => {
       expect(result).toHaveLength(0)
     })
   })
-
 })

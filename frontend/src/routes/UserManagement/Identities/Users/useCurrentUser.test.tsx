@@ -90,11 +90,7 @@ function wrapper(userId: string) {
   }
 }
 
-function searchEvent(
-  operation: 'INSERT' | 'UPDATE' | 'DELETE',
-  name: string,
-  uid = 'local-cluster/test-user-uid'
-) {
+function searchEvent(operation: 'INSERT' | 'UPDATE' | 'DELETE', name: string, uid = 'local-cluster/test-user-uid') {
   return {
     operation,
     uid,

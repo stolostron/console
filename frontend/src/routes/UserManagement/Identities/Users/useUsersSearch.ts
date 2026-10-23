@@ -220,10 +220,7 @@ export function useUsersSearch(options: {
   )
   const baseFilters = useMemo(() => hubUserFilters(), [])
 
-  const candidates = useMemo(
-    () => uniqueUsers([...(additionalUsers ?? []), ...mraUsers]),
-    [additionalUsers, mraUsers]
-  )
+  const candidates = useMemo(() => uniqueUsers([...(additionalUsers ?? []), ...mraUsers]), [additionalUsers, mraUsers])
   const lookupNames = useMemo(
     () => candidates.map((user) => user.metadata.name).filter((name): name is string => Boolean(name)),
     [candidates]
