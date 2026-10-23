@@ -201,7 +201,7 @@ const EditAICluster: React.FC = () => {
               hostActions={hostActions}
               onFinish={async () => {
                 const aci = await onEditFinish(agentClusterInstall, clusterCurator)
-                navigate(generatePath(NavigationPath.clusterDetails, { name, namespace }))
+                void navigate(generatePath(NavigationPath.clusterDetails, { name, namespace }))
                 return aci
               }}
               aiConfigMap={aiConfigMap}

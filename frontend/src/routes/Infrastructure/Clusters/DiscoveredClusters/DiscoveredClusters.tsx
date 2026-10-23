@@ -72,7 +72,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
 
   const onSelect = (credential: string) => {
     sessionStorage.setItem('DiscoveryCredential', credential)
-    navigate(NavigationPath.createDiscovery)
+    void navigate(NavigationPath.createDiscovery)
   }
 
   const action =

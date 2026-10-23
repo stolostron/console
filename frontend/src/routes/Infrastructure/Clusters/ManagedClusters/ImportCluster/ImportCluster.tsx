@@ -608,7 +608,7 @@ export default function ImportClusterPage() {
               autoClose: true,
             })
             setTimeout(() => {
-              navigate(
+              void navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: state.clusterName,
                   namespace: state.clusterName,

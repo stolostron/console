@@ -51,7 +51,7 @@ export const RosaHCPModal = (props: RosaHCPModalProps) => {
   const handleNext = useCallback(() => {
     if (!selectedSecret?.length) return
 
-    navigate(NavigationPath.createROSAHCP, {
+    void navigate(NavigationPath.createROSAHCP, {
       state: {
         ...state,
         selectedSecretName: selectedSecret[0]?.metadata?.name,
