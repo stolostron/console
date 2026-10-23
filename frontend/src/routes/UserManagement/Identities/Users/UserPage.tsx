@@ -2,23 +2,14 @@
 import { useMemo } from 'react'
 import { generatePath, Outlet, useLocation, useOutletContext, useParams } from 'react-router'
 import { ErrorPage } from '../../../../components/ErrorPage'
+import { LoadingPage } from '../../../../components/LoadingPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { NavigationPath } from '../../../../NavigationPath'
 import { User } from '../../../../resources/rbac'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
-import { useMergedUsers } from '../useMergedIdentities'
-
-export const useCurrentUser = (): User | undefined => {
-  const { id } = useParams()
-  const users = useMergedUsers()
-
-  return useMemo(
-    () => (!users || !id ? undefined : users.find((u) => u.metadata.uid === id || u.metadata.name === id)),
-    [users, id]
-  )
-}
+import { useCurrentUser } from './useCurrentUser'
 
 export type UserDetailsContext = {
   readonly user?: User
@@ -29,7 +20,7 @@ const UserPage = () => {
   const { id = undefined } = useParams()
   const location = useLocation()
 
-  const user = useCurrentUser()
+  const { user, loaded, error } = useCurrentUser()
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
 
@@ -45,19 +36,18 @@ const UserPage = () => {
   const isRoleAssignmentsActive = location.pathname.includes('/role-assignments')
   const isGroupsActive = location.pathname.includes('/groups')
 
+  const backToUsers = (
+    <AcmButton component="a" href={NavigationPath.identitiesUsers} style={{ marginRight: '10px' }}>
+      {t('button.backToUsers')}
+    </AcmButton>
+  )
+
+  if (!loaded) {
+    return <LoadingPage />
+  }
+
   if (!user) {
-    return (
-      <>
-        <ErrorPage
-          error={new ResourceError(ResourceErrorCode.NotFound)}
-          actions={
-            <AcmButton component="a" href={NavigationPath.identitiesUsers} style={{ marginRight: '10px' }}>
-              {t('button.backToUsers')}
-            </AcmButton>
-          }
-        />
-      </>
-    )
+    return <ErrorPage error={error ?? new ResourceError(ResourceErrorCode.NotFound)} actions={backToUsers} />
   }
 
   return (

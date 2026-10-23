@@ -1,11 +1,12 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useMemo } from 'react'
-import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableButtonAction } from '~/ui-components'
+import { useCallback, useMemo, useRef, useState } from 'react'
+import { AcmButton, AcmEmptyState, AcmTable, IAcmTableButtonAction } from '~/ui-components'
+import { IRequestListView, IResultStatuses } from '../../../../lib/useAggregates'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { User } from '../../../../resources/rbac'
-import { useFilters, usersTableColumns } from '../IdentityTableHelper'
-import { useMergedUsers } from '../useMergedIdentities'
+import { usersTableColumns } from '../IdentityTableHelper'
+import { useUsersSearch } from './useUsersSearch'
 
 interface UsersTableProps {
   hiddenColumns?: string[]
@@ -31,77 +32,107 @@ const UsersTable = ({
   tableActionButtons,
 }: UsersTableProps) => {
   const { t } = useTranslation()
+  const [request, setRequest] = useState<IRequestListView>()
 
-  const rbacUsers = useMergedUsers()
-  const users = useMemo(() => {
-    const all = [...(rbacUsers ?? []), ...(additionalUsers ?? [])]
-    const unique = all.filter((u, i, arr) => arr.findIndex((x) => x.metadata.name === u.metadata.name) === i)
-    return unique.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-  }, [rbacUsers, additionalUsers])
-
-  const handleRadioSelect = useCallback(
-    (uid: string) => {
-      const user = uid ? users.find((user) => user.metadata.uid === uid) : undefined
-      if (user) {
-        setSelectedUser?.(user)
-      }
-    },
-    [users, setSelectedUser]
+  const columnsForSearch = useMemo(
+    () =>
+      usersTableColumns({
+        t,
+        hiddenColumns,
+        onRadioSelect: () => {},
+        areLinksDisplayed,
+        selectedIdentity: selectedUser,
+      }),
+    [areLinksDisplayed, hiddenColumns, selectedUser, t]
   )
 
-  const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
+  const { users, processedItemCount, loading, error, refetch, fetchExport, emptyResult } = useUsersSearch({
+    request,
+    columns: columnsForSearch,
+    additionalUsers,
+  })
 
-  const filters = useFilters('user', users)
+  const usersRef = useRef(users)
+  usersRef.current = users
+
+  const selectUser = useCallback(
+    (uid: string) => {
+      const user = uid ? usersRef.current.find((item) => item.metadata.uid === uid) : undefined
+      if (user) setSelectedUser?.(user)
+    },
+    [setSelectedUser]
+  )
+
   const columns = useMemo(
     () =>
       usersTableColumns({
         t,
         hiddenColumns,
-        onRadioSelect: setSelectedUser ? handleRadioSelect : () => {},
+        onRadioSelect: setSelectedUser ? selectUser : () => {},
         areLinksDisplayed,
         selectedIdentity: selectedUser,
       }),
-    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedUser, setSelectedUser, t]
+    [areLinksDisplayed, hiddenColumns, selectUser, selectedUser, setSelectedUser, t]
+  )
+
+  const keyFn = useCallback((user: User) => user.metadata.name ?? '', [])
+
+  const resultCounts = useMemo<IResultStatuses>(
+    () => ({
+      itemCount: processedItemCount,
+      filterCounts: undefined,
+      systemAppNSPrefixes: [],
+      loading,
+      refresh: refetch,
+    }),
+    [loading, processedItemCount, refetch]
   )
 
   return (
     <AcmTable<User>
       aria-label={t('Users table')}
       key="users-table"
-      filters={filters}
       columns={columns}
       keyFn={keyFn}
       items={users}
       tableActionButtons={tableActionButtons}
+      setRequestView={setRequest}
+      fetchExport={fetchExport}
+      exportFilePrefix="users"
+      resultCounts={resultCounts}
       resultView={{
-        page: 1,
-        loading: false,
-        refresh: () => {},
+        page: request?.page ?? 1,
+        loading,
+        refresh: refetch,
         items: [],
-        emptyResult: false,
-        processedItemCount: 0,
-        isPreProcessed: false,
+        emptyResult,
+        processedItemCount,
+        isPreProcessed: true,
       }}
       emptyState={
-        <AcmEmptyState
-          title={t(`In order to view Users, add Identity provider`)}
-          message={
-            <Trans
-              i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
-              components={{ bold: <strong /> }}
-            />
-          }
-          action={
-            <div>
-              {isCreateButtonDisplayed && onCreateClick && (
-                <AcmButton variant="primary" onClick={onCreateClick}>
-                  {createButtonText ?? t('Create user')}
-                </AcmButton>
-              )}
-              <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
-            </div>
-          }
-        />
+        error ? (
+          <AcmEmptyState title={t('Error')} message={error.message} />
+        ) : (
+          <AcmEmptyState
+            title={t(`In order to view Users, add Identity provider`)}
+            message={
+              <Trans
+                i18nKey="Once Identity provider is added, Users will appear in the list after they log in."
+                components={{ bold: <strong /> }}
+              />
+            }
+            action={
+              <div>
+                {isCreateButtonDisplayed && onCreateClick && (
+                  <AcmButton variant="primary" onClick={onCreateClick}>
+                    {createButtonText ?? t('Create user')}
+                  </AcmButton>
+                )}
+                <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
+              </div>
+            }
+          />
+        )
       }
     />
   )

@@ -42,7 +42,6 @@ export function hubGroupFilters(): SearchFilter[] {
   ]
 }
 
-// TODO: remove/adapt filter as a part of the "ACM-48532 Users: migrate list and details to useFleetSearch" effort
 /**
  * Filters for a Group GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
  * and drops Group events when `cluster` is set. Same hub scope as {@link hubGroupFilters}.

@@ -5,7 +5,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Group, User } from '../../resources/rbac'
 import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { useGroupIdentity, useHasHubGroups } from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
-import { useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { useHasHubUsers, useUserIdentity } from '../../routes/UserManagement/Identities/Users/useUsersSearch'
 import { UsersTable } from '../../routes/UserManagement/Identities/Users/UsersTable'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
@@ -22,8 +22,10 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
-  const users = useMergedUsers()
+  const { hasUsers } = useHasHubUsers()
   const { hasGroups } = useHasHubGroups()
+  const initialUserName = initialSelectedIdentity?.kind === 'User' ? initialSelectedIdentity.name : undefined
+  const initialUser = useUserIdentity(initialUserName)
   const initialGroupName = initialSelectedIdentity?.kind === 'Group' ? initialSelectedIdentity.name : undefined
   const initialGroup = useGroupIdentity(initialGroupName)
 
@@ -40,13 +42,12 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
   useEffect(() => {
     if (!initialSelectedIdentity) return
 
-    if (initialSelectedIdentity.kind === 'User' && users && !selectedUser) {
-      const user = users.find((u) => u.metadata.name === initialSelectedIdentity.name)
-      if (user) setSelectedUser(user)
+    if (initialSelectedIdentity.kind === 'User' && initialUser && !selectedUser) {
+      setSelectedUser(initialUser)
     } else if (initialGroup && !selectedGroup) {
       setSelectedGroup(initialGroup)
     }
-  }, [initialGroup, initialSelectedIdentity, selectedGroup, selectedUser, users])
+  }, [initialGroup, initialSelectedIdentity, initialUser, selectedGroup, selectedUser])
 
   const handleTabClick = (_event: React.MouseEvent<HTMLElement, MouseEvent>, tabIndex: string | number) => {
     setActiveTabKey(tabIndex)
@@ -105,10 +106,10 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
         id: 'create-pre-authorized-user',
         title: isDirectAuthenticationEnabled ? t('Add user') : t('Create user'),
         click: () => setShowCreatePreAuthorizedUser(true),
-        variant: users.length > 0 ? ButtonVariant.secondary : ButtonVariant.primary,
+        variant: hasUsers || additionalUsers.length > 0 ? ButtonVariant.secondary : ButtonVariant.primary,
       },
     ],
-    [isDirectAuthenticationEnabled, t, users]
+    [additionalUsers.length, hasUsers, isDirectAuthenticationEnabled, t]
   )
 
   const groupTableActionButtons = useMemo<IAcmTableButtonAction[]>(

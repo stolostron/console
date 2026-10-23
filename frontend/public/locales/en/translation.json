@@ -1797,6 +1797,8 @@
   "Group": "Group",
   "Group {{name}} was deleted.": "Group {{name}} was deleted.",
   "Group {{name}} was deleted. Showing the identity from the role assignment.": "Group {{name}} was deleted. Showing the identity from the role assignment.",
+  "User {{name}} was deleted.": "User {{name}} was deleted.",
+  "User {{name}} was deleted. Showing the identity from the role assignment.": "User {{name}} was deleted. Showing the identity from the role assignment.",
   "Group identifier": "Group identifier",
   "Group identifier is required": "Group identifier is required",
   "Group name": "Group name",
