@@ -62,7 +62,7 @@
     "@patternfly/react-log-viewer": "^6.5.0",
     "@patternfly/react-styles": "^6.7.0",
     "@patternfly/react-table": "^6.7.0",
-    "@patternfly/react-topology": "^6.6.0",
+    "@patternfly/react-topology": "^6.7.0",
     "@patternfly/react-user-feedback": "^6.4.0",
     "@react-hook/resize-observer": "^2.0.2",
     "@redhat-cloud-services/nxtcm-rosa-hcp-wizard": "^6.0.1",
