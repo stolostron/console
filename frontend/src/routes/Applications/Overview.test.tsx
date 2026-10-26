@@ -329,7 +329,7 @@ describe('Applications Page', () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
     await clickElement(screen.getByText('Argo CD ApplicationSet - Push model'))
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argo')
+    expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
   test('create dropdown navigates to subscription', async () => {
