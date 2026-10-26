@@ -339,9 +339,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     ? getColumnValues(id)
     : { localSavedCols: [], localSavedColOrder: [] }
   const [colOrderIds, setColOrderIds] = useState<string[]>(
-    localSavedColOrder?.length > 0
-      ? mergeNewColumnIdsIntoOrder(localSavedColOrder, defaultOrderIds)
-      : defaultOrderIds
+    localSavedColOrder?.length > 0 ? mergeNewColumnIdsIntoOrder(localSavedColOrder, defaultOrderIds) : defaultOrderIds
   )
   /** Initial selection merged from localStorage + column definition props */
   const [selectedColIds, setSelectedColIds] = useState<string[]>(() =>
