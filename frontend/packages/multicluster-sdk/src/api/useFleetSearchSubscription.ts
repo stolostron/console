@@ -48,8 +48,8 @@ export function useFleetSearchSubscription(
 ): [FleetSearchEvent | undefined, boolean, Error | undefined] {
   const { data, loading, error } = useSearchSubscription({
     client: searchClient,
-    variables: { input },
-    skip: input === undefined,
+    variables: input ? { input } : undefined,
+    skip: input == null,
   })
 
   return [data?.searchSubscription ?? undefined, loading, error]
