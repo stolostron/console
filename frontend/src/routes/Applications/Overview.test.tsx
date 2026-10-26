@@ -264,58 +264,56 @@ describe('Applications Page', () => {
     expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
   })
 
-  test('row action navigates to view for subscription application', async () => {
+  test.each([
+    {
+      name: 'view for subscription application',
+      appName: 'application-0',
+      action: 'View application',
+      route: '/multicloud/applications/details/namespace-0/application-0/details?apiVersion=application.app.k8s.io',
+    },
+    {
+      name: 'edit for subscription application',
+      appName: 'application-0',
+      action: 'Edit application',
+      route: '/multicloud/applications/edit/subscription/namespace-0/application-0?context=applications',
+    },
+    {
+      name: 'search for subscription application',
+      appName: 'application-0',
+      action: 'Search application',
+      route: '/multicloud/search',
+    },
+    {
+      name: 'view for application set',
+      appName: 'applicationset-0',
+      action: 'View application',
+      route:
+        '/multicloud/applications/details/openshift-gitops/applicationset-0/details?apiVersion=applicationset.argoproj.io',
+    },
+    {
+      name: 'edit for application set',
+      appName: 'applicationset-0',
+      action: 'Edit application',
+      route: '/multicloud/applications/edit/argo/openshift-gitops/applicationset-0?context=applicationsets',
+    },
+    {
+      name: 'view for discovered argo application',
+      appName: 'argoapplication-1',
+      action: 'View application',
+      route:
+        '/multicloud/applications/details/openshift-gitops/argoapplication-1/details?apiVersion=application.argoproj.io',
+    },
+    {
+      name: 'view for OCP application',
+      appName: 'authentication-operator',
+      action: 'View application',
+      route:
+        '/multicloud/applications/details/authentication-operator-ns/authentication-operator/details?apiVersion=ocp&cluster=test-cluster',
+    },
+  ])('row action navigates to $name', async ({ appName, action, route }) => {
     await waitForText('feng-remote-argo8')
-    await openRowAction('application-0', 'View application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/details/namespace-0/application-0/details?apiVersion=application.app.k8s.io'
-    )
-  })
-
-  test('row action navigates to edit for subscription application', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('application-0', 'Edit application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/edit/subscription/namespace-0/application-0?context=applications'
-    )
-  })
-
-  test('row action navigates to search for subscription application', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('application-0', 'Search application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/search')
-  })
-
-  test('row action navigates to view for application set', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('applicationset-0', 'View application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/details/openshift-gitops/applicationset-0/details?apiVersion=applicationset.argoproj.io'
-    )
-  })
-
-  test('row action navigates to edit for application set', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('applicationset-0', 'Edit application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/edit/argo/openshift-gitops/applicationset-0?context=applicationsets'
-    )
-  })
-
-  test('row action navigates to view for discovered argo application', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('argoapplication-1', 'View application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/details/openshift-gitops/argoapplication-1/details?apiVersion=application.argoproj.io'
-    )
-  })
-
-  test('row action navigates to view for OCP application', async () => {
-    await waitForText('feng-remote-argo8')
-    await openRowAction('authentication-operator', 'View application')
-    expect(screen.getByTestId('location-display')).toHaveTextContent(
-      '/multicloud/applications/details/authentication-operator-ns/authentication-operator/details?apiVersion=ocp&cluster=test-cluster'
-    )
+    await openRowAction(appName, action)
+    expect(screen.getByTestId('location-display')).toHaveTextContent(route)
   })
 
   test('create dropdown navigates to argo pull model', async () => {
