@@ -15,7 +15,7 @@ const (
 	searchQueryLimit = 20000
 	// preprocessBreakpoint is the item count above which the backend pre-filters, sorts, and paginates
 	// server-side instead of sending the full list to the frontend (overridden by PREPROCESS_BREAKPOINT).
-	preprocessBreakpoint = 500
+	preprocessBreakpoint = 10
 	// scoreColumnSize is the number of severity buckets in each status column (healthy through unknown).
 	scoreColumnSize = 5
 	// remoteClusterChunks is how many managed clusters are batched into a single Search query for system apps.
@@ -33,10 +33,11 @@ const (
 	colType      = 1 // application type (subscription, argo, appset, flux, openshift)
 	colNamespace = 2 // application namespace
 	colClusters  = 3 // target clusters
-	colHealth    = 4 // health status score
-	colSynced    = 5 // sync status score
-	colDeployed  = 6 // deployed/pod status score
-	colCreated   = 7 // creation timestamp
+	colSources   = 4 // application source paths or chart/package names
+	colHealth    = 5 // health status score
+	colSynced    = 6 // sync status score
+	colDeployed  = 7 // deployed/pod status score
+	colCreated   = 8 // creation timestamp
 )
 
 // Score severity levels ordered from best (0) to worst (4). Each status column
@@ -176,6 +177,7 @@ type Transform struct {
 	Type      string
 	Namespace string
 	Clusters  []string
+	Sources   string
 	Statuses  StatusMap
 	Scores    Scores
 	Created   string

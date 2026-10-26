@@ -221,6 +221,60 @@ func TestApplicationsAndStatuses(t *testing.T) {
 	}
 }
 
+func TestApplicationsAggregateSearchAndSortSources(t *testing.T) {
+	lister := MapLister{
+		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
+		"argoproj.io/v1alpha1|Application": {
+			uObj("argoproj.io/v1alpha1", "Application", "app-zebra", "argocd", map[string]any{
+				"metadata": map[string]any{"name": "app-zebra", "namespace": "argocd", "uid": "zebra"},
+				"spec": map[string]any{
+					"destination": map[string]any{"namespace": "default", "server": "https://kubernetes.default.svc"},
+					"source":      map[string]any{"repoURL": "https://example.com/zebra.git", "path": "zebra"},
+				},
+			}),
+			uObj("argoproj.io/v1alpha1", "Application", "app-apple", "argocd", map[string]any{
+				"metadata": map[string]any{"name": "app-apple", "namespace": "argocd", "uid": "apple"},
+				"spec": map[string]any{
+					"destination": map[string]any{"namespace": "default", "server": "https://kubernetes.default.svc"},
+					"source":      map[string]any{"repoURL": "https://example.com/apple.git", "path": "apple"},
+				},
+			}),
+		},
+	}
+	h := testHandler(t, lister)
+
+	searchResp := postAggregate(t, h, "/aggregate/applications", RequestListView{Page: 1, PerPage: 10, Search: "apple"})
+	defer searchResp.Body.Close()
+	var searched struct {
+		Items              []map[string]any `json:"items"`
+		ProcessedItemCount int              `json:"processedItemCount"`
+		IsPreProcessed     bool             `json:"isPreProcessed"`
+	}
+	if err := json.NewDecoder(searchResp.Body).Decode(&searched); err != nil {
+		t.Fatal(err)
+	}
+	if !searched.IsPreProcessed || searched.ProcessedItemCount != 1 || metaName(searched.Items[0]) != "app-apple" {
+		t.Fatalf("search response %+v", searched)
+	}
+
+	sortIndex := colSources
+	sortResp := postAggregate(t, h, "/aggregate/applications", RequestListView{
+		Page:    1,
+		PerPage: 10,
+		SortBy:  &SortBy{Index: &sortIndex, Direction: "asc"},
+	})
+	defer sortResp.Body.Close()
+	var sorted struct {
+		Items []map[string]any `json:"items"`
+	}
+	if err := json.NewDecoder(sortResp.Body).Decode(&sorted); err != nil {
+		t.Fatal(err)
+	}
+	if len(sorted.Items) != 2 || metaName(sorted.Items[0]) != "app-apple" || metaName(sorted.Items[1]) != "app-zebra" {
+		t.Fatalf("sort response %+v", sorted)
+	}
+}
+
 func TestAppSetDataOK(t *testing.T) {
 	appset := map[string]any{
 		"apiVersion": "argoproj.io/v1alpha1",

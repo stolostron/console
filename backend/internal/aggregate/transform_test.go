@@ -32,8 +32,16 @@ func TestGetApplicationType(t *testing.T) {
 
 func TestFilterAndSortApplications(t *testing.T) {
 	items := []App{
-		{Transform: Transform{Name: "b", Type: kindArgo, Namespace: "ns", Clusters: []string{"c1"}, Scores: Scores{colHealth: 0}}},
-		{Transform: Transform{Name: "a", Type: kindSubscriptionApp, Namespace: "ns", Clusters: []string{"c2"}, Scores: Scores{colHealth: 2000}}},
+		{
+			Transform: Transform{
+				Name: "b", Type: kindArgo, Namespace: "ns", Clusters: []string{"c1"}, Sources: "zebra", Scores: Scores{colHealth: 0},
+			},
+		},
+		{
+			Transform: Transform{
+				Name: "a", Type: kindSubscriptionApp, Namespace: "ns", Clusters: []string{"c2"}, Sources: "apple", Scores: Scores{colHealth: 2000},
+			},
+		},
 	}
 	got := filterApplications(map[string][]string{"type": {kindSubscriptionApp}}, items)
 	if len(got) != 1 || got[0].Transform.Name != "a" {
@@ -50,6 +58,121 @@ func TestFilterAndSortApplications(t *testing.T) {
 	sorted = sortApplications(colHealth, false, items)
 	if sorted[0].Transform.Scores[colHealth] != 2000 {
 		t.Fatal("higher score first")
+	}
+	sorted = sortApplications(colSources, false, items)
+	if sorted[0].Transform.Name != "a" {
+		t.Fatalf("sources asc %s", sorted[0].Transform.Name)
+	}
+}
+
+func TestTruncateSourceName(t *testing.T) {
+	if got := truncateSourceName("helloworld", maxSourceNameLength); got != "helloworld" {
+		t.Fatalf("short source %q", got)
+	}
+	exact := "a1234567890123456789"
+	if got := truncateSourceName(exact, maxSourceNameLength); got != exact {
+		t.Fatalf("exact source %q", got)
+	}
+	if got := truncateSourceName("this-is-a-very-long-source-path", maxSourceNameLength); got != "this-is-a-very-long-\u2026" {
+		t.Fatalf("long source %q", got)
+	}
+}
+
+func TestGetApplicationSources(t *testing.T) {
+	subscriptions := []map[string]any{
+		{
+			"metadata": map[string]any{
+				"name":      "sub",
+				"namespace": "ns",
+				"annotations": map[string]any{
+					gitPathAnnotation: "mortgage",
+				},
+			},
+			"spec": map[string]any{"channel": "ns/chan", "name": "package-name"},
+		},
+	}
+	channels := []map[string]any{
+		{
+			"metadata": map[string]any{"name": "chan", "namespace": "ns"},
+			"spec":     map[string]any{"type": "Git", "pathname": "https://example.com/repo.git"},
+		},
+	}
+	subscription := map[string]any{
+		"apiVersion": "app.k8s.io/v1beta1",
+		"kind":       "Application",
+		"metadata": map[string]any{
+			"name": "subscription", "namespace": "ns",
+			"annotations": map[string]any{
+				"apps.open-cluster-management.io/subscriptions": "ns/sub",
+			},
+		},
+	}
+	if got := getApplicationSources(subscription, kindSubscriptionApp, subscriptions, channels); len(got) != 1 || got[0] != "mortgage" {
+		t.Fatalf("subscription sources %+v", got)
+	}
+
+	argo := map[string]any{
+		"apiVersion": "argoproj.io/v1alpha1",
+		"kind":       "Application",
+		"spec": map[string]any{
+			"source": map[string]any{"repoURL": "https://example.com/repo.git", "path": " helloworld "},
+		},
+	}
+	if got := getApplicationSources(argo, kindArgo, nil, nil); len(got) != 1 || got[0] != "helloworld" {
+		t.Fatalf("argo sources %+v", got)
+	}
+
+	argo = map[string]any{
+		"apiVersion": "argoproj.io/v1alpha1",
+		"kind":       "Application",
+		"spec": map[string]any{
+			"source": map[string]any{"repoURL": "https://charts.example.com", "path": " ", "chart": "fallback-chart"},
+		},
+	}
+	if got := getApplicationSources(argo, kindArgo, nil, nil); len(got) != 1 || got[0] != "fallback-chart" {
+		t.Fatalf("argo chart fallback %+v", got)
+	}
+
+	appSet := map[string]any{
+		"apiVersion": "argoproj.io/v1alpha1",
+		"kind":       "ApplicationSet",
+		"spec": map[string]any{
+			"template": map[string]any{
+				"spec": map[string]any{
+					"sources": []any{
+						map[string]any{"repoURL": "https://example.com/repo.git", "path": "mortgage"},
+						map[string]any{"repoURL": "https://charts.example.com", "chart": "dependency-chart"},
+						map[string]any{"repoURL": "https://example.com/repo.git", "path": "mortgage"},
+					},
+				},
+			},
+		},
+	}
+	got := getApplicationSources(appSet, kindAppSet, nil, nil)
+	if len(got) != 2 || got[0] != "mortgage" || got[1] != "dependency-chart" {
+		t.Fatalf("appset sources %+v", got)
+	}
+}
+
+func TestGetApplicationSourcesSubscriptionHelmPackageFallback(t *testing.T) {
+	subscriptions := []map[string]any{{
+		"metadata": map[string]any{"name": "sub", "namespace": "ns"},
+		"spec":     map[string]any{"channel": "ns/chan", "name": "package-name"},
+	}}
+	channels := []map[string]any{{
+		"metadata": map[string]any{"name": "chan", "namespace": "ns"},
+		"spec":     map[string]any{"type": "HelmRepo"},
+	}}
+	subscription := map[string]any{
+		"metadata": map[string]any{
+			"annotations": map[string]any{
+				"apps.open-cluster-management.io/subscriptions": "ns/sub",
+			},
+		},
+	}
+	got := getApplicationSources(subscription, kindSubscriptionApp, subscriptions, channels)
+	if len(got) != 1 || got[0] != "package-name" {
+		t.Fatalf("subscription helm sources %+v", got)
 	}
 }
 
