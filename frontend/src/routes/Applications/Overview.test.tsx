@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { render, screen, waitFor, within } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
@@ -38,6 +38,17 @@ import { useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 
 jest.mock('../../lib/rbac-util')
 ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
+
+function LocationDisplay() {
+  const location = useLocation()
+  return <div id="location-display">{location.pathname + location.search}</div>
+}
+
+async function openRowAction(appName: string, actionName: string) {
+  const row = screen.getByText(appName).closest('tr')!
+  await clickElement(within(row).getByRole('button', { name: /actions/i }))
+  await clickElement(screen.getByText(actionName))
+}
 
 const applicationAggregate = {
   req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
@@ -120,9 +131,8 @@ describe('Applications Page', () => {
                 acmExtensions: acmExtension,
               }}
             >
-              <Routes>
-                <Route path="*" element={<Overview />} />
-              </Routes>
+              <LocationDisplay />
+              <Overview />
             </PluginContext.Provider>
           </MemoryRouter>
         </AcmToastProvider>
@@ -252,6 +262,81 @@ describe('Applications Page', () => {
     await clickElement(screen.getAllByRole('button', { name: /actions/i })[1])
     await clickElement(screen.getByText(/delete application/i))
     expect(screen.getByText(/permanently delete applicationset applicationset-0\?/i)).toBeTruthy()
+  })
+
+  test('row action navigates to view for subscription application', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('application-0', 'View application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/details/namespace-0/application-0/details?apiVersion=application.app.k8s.io'
+    )
+  })
+
+  test('row action navigates to edit for subscription application', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('application-0', 'Edit application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/edit/subscription/namespace-0/application-0?context=applications'
+    )
+  })
+
+  test('row action navigates to search for subscription application', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('application-0', 'Search application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/search')
+  })
+
+  test('row action navigates to view for application set', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('applicationset-0', 'View application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/details/openshift-gitops/applicationset-0/details?apiVersion=applicationset.argoproj.io'
+    )
+  })
+
+  test('row action navigates to edit for application set', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('applicationset-0', 'Edit application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/edit/argo/openshift-gitops/applicationset-0?context=applicationsets'
+    )
+  })
+
+  test('row action navigates to view for discovered argo application', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('argoapplication-1', 'View application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/details/openshift-gitops/argoapplication-1/details?apiVersion=application.argoproj.io'
+    )
+  })
+
+  test('row action navigates to view for OCP application', async () => {
+    await waitForText('feng-remote-argo8')
+    await openRowAction('authentication-operator', 'View application')
+    expect(screen.getByTestId('location-display')).toHaveTextContent(
+      '/multicloud/applications/details/authentication-operator-ns/authentication-operator/details?apiVersion=ocp&cluster=test-cluster'
+    )
+  })
+
+  test('create dropdown navigates to argo pull model', async () => {
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    await clickElement(screen.getByText('Argo CD ApplicationSet - Pull model'))
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
+  })
+
+  test('create dropdown navigates to argo push model', async () => {
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    await clickElement(screen.getByText('Argo CD ApplicationSet - Push model'))
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argo')
+  })
+
+  test('create dropdown navigates to subscription', async () => {
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    await clickElement(within(screen.getByRole('menu')).getByText('Subscription'))
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/subscription')
   })
 
   test('export button should produce a file for download', async () => {

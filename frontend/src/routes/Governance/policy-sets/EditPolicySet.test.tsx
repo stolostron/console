@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
+import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, generatePath, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
   managedClusterSetBindingsState,
@@ -27,10 +27,16 @@ import {
 } from '../governance.sharedMocks'
 import { waitForNocks, typeElement } from '~/lib/test-util'
 
-function EditPolicySetTest() {
+function LocationDisplay() {
+  const location = useLocation()
+  return <div id="location-display">{`${location.pathname}${location.search}`}</div>
+}
+
+function EditPolicySetTest(props: { nonexistent?: boolean }) {
+  const { nonexistent } = props
   const actualPath = generatePath(NavigationPath.editPolicySet, {
     namespace: mockPolicySets[0].metadata.namespace!,
-    name: mockPolicySets[0].metadata.name!,
+    name: nonexistent ? 'does-not-exist' : mockPolicySets[0].metadata.name!,
   })
   return (
     <StateProvider
@@ -45,6 +51,7 @@ function EditPolicySetTest() {
       }}
     >
       <MemoryRouter initialEntries={[actualPath]}>
+        <LocationDisplay />
         <Routes>
           <Route path={NavigationPath.editPolicySet} element={<EditPolicySet />} />
         </Routes>
@@ -81,5 +88,19 @@ describe('Edit Policy Set Page', () => {
     await clickElement(screen.getByRole('button', { name: 'Submit' }))
 
     await waitForNocks(mockPolicySetUpdate)
+
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policySets))
+  })
+
+  test('navigates to policy sets list when the policy set cannot be found', async () => {
+    render(<EditPolicySetTest nonexistent={true} />)
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policySets))
+  })
+
+  test('navigates to policy sets list on cancel', async () => {
+    render(<EditPolicySetTest />)
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await clickElement(screen.getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policySets))
   })
 })
