@@ -38,6 +38,28 @@ func TestDiscoverPrefixesDefaultsWithoutDynamic(t *testing.T) {
 	}
 }
 
+func TestSearchInterval(t *testing.T) {
+	tests := []struct {
+		name     string
+		interval string
+		want     time.Duration
+	}{
+		{name: "seconds", interval: "60", want: 60 * time.Second},
+		{name: "boundary stays seconds", interval: "1000", want: 1000 * time.Second},
+		{name: "milliseconds", interval: "60000", want: 60 * time.Second},
+	}
+
+	e := NewEngine(nil, nil, nil)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("APP_SEARCH_INTERVAL", tt.interval)
+			if got := e.searchInterval(); got != tt.want {
+				t.Fatalf("searchInterval()=%v want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestDiscoverPrefixesFromHub(t *testing.T) {
 	mch := &unstructured.Unstructured{}
 	mch.SetGroupVersionKind(schema.GroupVersionKind{
