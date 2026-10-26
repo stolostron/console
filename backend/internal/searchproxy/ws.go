@@ -14,6 +14,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	applog "github.com/stolostron/console/backend/internal/log"
+	"github.com/stolostron/console/backend/internal/outbound"
 )
 
 // serveWebSocket dials upstream Search over WebSocket, upgrades the client, and relays frames.
@@ -77,10 +78,11 @@ func (h *Handler) websocketDialer(r *http.Request) *websocket.Dialer {
 		if len(cp.Subprotocols) == 0 {
 			cp.Subprotocols = subprotocolsForUpstream(r)
 		}
+		cp.TLSClientConfig = outbound.ClientTLSConfig(cp.TLSClientConfig, false)
 		return &cp
 	}
 	return &websocket.Dialer{
-		TLSClientConfig:   h.TLSConfig,
+		TLSClientConfig:   outbound.ClientTLSConfig(h.TLSConfig, false),
 		HandshakeTimeout:  h.DialTimeout,
 		EnableCompression: false,
 		Subprotocols:      subprotocolsForUpstream(r),

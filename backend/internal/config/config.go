@@ -33,14 +33,13 @@ type Config struct {
 	ClusterProxyAddonUserRoute string
 	PublicFolder               string
 
-	OAuth2ClientID            string
-	OAuth2ClientSecret        string
-	OAuth2RedirectURL         string
-	OIDCIssuerURL             string
-	FrontendURL               string
-	Production                bool
-	DisableEvents             bool
-	AnsibleInsecureSkipVerify bool
+	OAuth2ClientID     string
+	OAuth2ClientSecret string
+	OAuth2RedirectURL  string
+	OIDCIssuerURL      string
+	FrontendURL        string
+	Production         bool
+	DisableEvents      bool
 
 	mu       sync.RWMutex
 	settings map[string]string
@@ -81,7 +80,6 @@ func Load() *Config {
 		FrontendURL:                os.Getenv("FRONTEND_URL"),
 		Production:                 os.Getenv("NODE_ENV") == "production",
 		DisableEvents:              envOr("DISABLE_EVENTS", "false") == "true",
-		AnsibleInsecureSkipVerify:  os.Getenv("ANSIBLE_INSECURE_SKIP_VERIFY") == "true",
 		settings:                   map[string]string{},
 	}
 	_ = cfg.ReloadSettings()
