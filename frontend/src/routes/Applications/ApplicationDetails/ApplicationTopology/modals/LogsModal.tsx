@@ -379,41 +379,19 @@ function TopologyLogsViewer({
   }
 
   let logsContent: ReactNode
-  if (logsError) {
-    logsContent = (
-      <>
-        <LogsToolbar
-          logs={logs}
-          name={name}
-          container={container}
-          containers={containers}
-          setContainer={setContainer}
-          cluster={cluster}
-          toggleWrapLines={setWrapLines}
-          wrapLines={wrapLines}
-          toggleFullscreen={toggleFullscreen}
-          isFullscreen={isFullscreen}
-          containerHasPreviousLogs={containerHasPreviousLogs}
-          previousLogs={previousLogs}
-          setPreviousLogs={setPreviousLogs}
-        />
-        <AcmAlert
-          noClose={true}
-          variant={'danger'}
-          isInline={true}
-          title={`${t('Error querying resource logs:')} ${name}`}
-          subtitle={logsError}
-        />
-      </>
-    )
-  } else if (isLoadingLogs) {
+  if (isLoadingLogs) {
     logsContent = <AcmLoadingPage />
   } else {
+    // Always render LogsToolbar (which includes LogViewerSearch) inside LogViewer's `toolbar`
+    // slot so it has the LogViewerToolbarContext/LogViewerContext it requires. Those PatternFly
+    // contexts default to null and are only provided inside <LogViewer>, so rendering the
+    // toolbar outside of it (e.g. a separate error-only branch) crashes on destructure
+    // (ACM-48090). The error is surfaced via the `header` slot instead.
     logsContent = (
       <LogViewer
         ref={logViewerRef}
         height={isFullscreen ? '100%' : 'calc(70vh - 200px)'}
-        data={logs}
+        data={logsError ? '' : logs}
         theme="dark"
         isTextWrapped={wrapLines}
         toolbar={
@@ -433,7 +411,19 @@ function TopologyLogsViewer({
             setPreviousLogs={setPreviousLogs}
           />
         }
-        header={<LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />}
+        header={
+          logsError ? (
+            <AcmAlert
+              noClose={true}
+              variant={'danger'}
+              isInline={true}
+              title={`${t('Error querying resource logs:')} ${name}`}
+              subtitle={logsError}
+            />
+          ) : (
+            <LogsHeader cluster={cluster} namespace={namespace} linesLength={linesLength} />
+          )
+        }
         scrollToRow={linesLength}
         onScroll={onScroll}
         footer={
