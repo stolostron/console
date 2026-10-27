@@ -19,8 +19,11 @@ import (
 )
 
 const (
-	accessCacheTTL       = 60 * time.Second
-	accessCleanupEvery   = 90 * time.Second
+	// accessCacheTTL is how long a single SSAR result is cached before re-checking.
+	accessCacheTTL = 60 * time.Second
+	// accessCleanupEvery is the interval between sweeps that evict expired entries and stale tokens.
+	accessCleanupEvery = 90 * time.Second
+	// accessCacheMaxTokens is the maximum number of distinct user tokens tracked before LRU eviction.
 	accessCacheMaxTokens = 1000
 )
 
@@ -45,15 +48,18 @@ func (AllowAll) Authorized(_ context.Context, _ string, items []App, start, stop
 	return items[start:stop]
 }
 
+// ssarKey uniquely identifies a SelfSubjectAccessReview request.
 type ssarKey struct {
 	group, kind, namespace, name, verb string
 }
 
+// cacheEntry stores a cached SSAR result with its expiry time.
 type cacheEntry struct {
 	allowed bool
 	expiry  time.Time
 }
 
+// tokenState holds per-user-token SSAR cache entries and the lazy-init k8s client.
 type tokenState struct {
 	last       time.Time
 	entries    map[ssarKey]cacheEntry
@@ -81,11 +87,15 @@ func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interf
 	return &SSARAccess{byToken: map[string]*tokenState{}, newClient: newClient}
 }
 
+// hashToken returns a hex-encoded SHA-256 hash of the token for use as a map key.
 func hashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }
 
+// Authorized filters items to only those the user can access, then returns
+// the [start:stop] window. Each item is checked via SSAR (list) or
+// ManagedClusterView (create) for remote apps. Results are batched in chunks.
 func (a *SSARAccess) Authorized(ctx context.Context, token string, items []App, start, stop int) []App {
 	capHint := stop - start
 	if capHint < 0 {
@@ -131,6 +141,8 @@ func (a *SSARAccess) Authorized(ctx context.Context, token string, items []App, 
 	return authorized[start:stop]
 }
 
+// canList checks whether the user can list the resource cluster-wide, falling
+// back to a namespace-scoped list if cluster-wide is denied.
 func (a *SSARAccess) canList(ctx context.Context, token string, obj map[string]any) (bool, error) {
 	ok, err := a.ssar(ctx, token, obj, "list", "", "")
 	if err != nil || ok {
@@ -143,6 +155,8 @@ func (a *SSARAccess) canList(ctx context.Context, token string, obj map[string]a
 	return a.ssar(ctx, token, obj, "list", "", ns)
 }
 
+// canAccessRemote checks whether the user can create a ManagedClusterView in
+// any of the given cluster namespaces (sufficient for remote app access).
 func (a *SSARAccess) canAccessRemote(ctx context.Context, token string, clusters []string) (bool, error) {
 	for _, ns := range clusters {
 		view := map[string]any{
@@ -158,6 +172,8 @@ func (a *SSARAccess) canAccessRemote(ctx context.Context, token string, clusters
 	return false, nil
 }
 
+// clientFor lazily creates and caches a kubernetes.Interface for the given
+// token. Concurrent callers for the same token wait on a single-flight channel.
 func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 	for {
 		a.mu.Lock()
@@ -207,6 +223,8 @@ func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 	}
 }
 
+// ssar executes a SelfSubjectAccessReview with TTL caching. Returns the
+// cached result when available, otherwise issues the review and caches it.
 func (a *SSARAccess) ssar(ctx context.Context, token string, obj map[string]any, verb, name, namespace string) (bool, error) {
 	kind := kindOf(obj)
 	group := apiGroup(apiVersionOf(obj))
@@ -261,6 +279,8 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
 	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
+// cleanup removes expired SSAR cache entries and evicts the least-recently-used
+// tokens when the cache exceeds accessCacheMaxTokens.
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
