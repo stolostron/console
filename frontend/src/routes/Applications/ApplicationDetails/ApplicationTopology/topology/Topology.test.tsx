@@ -2,6 +2,7 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 //import { render, fireEvent, waitFor, screen } from '@testing-library/react'
+import { Visualization } from '@patternfly/react-topology'
 import { nockSearch } from '../../../../../lib/nock-util'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -142,6 +143,71 @@ describe('Topology tests', () => {
         )
       ).not.toBeInTheDocument()
     })
+  })
+
+  test('should clear the graph when a refresh removes every node', async () => {
+    const fromModelSpy = jest.spyOn(Visualization.prototype, 'fromModel')
+    const { rerender } = render(
+      <StateProvider>
+        <Topology {...props1} />
+      </StateProvider>
+    )
+
+    await waitFor(() => expect(fromModelSpy).toHaveBeenCalled())
+    fromModelSpy.mockClear()
+
+    rerender(
+      <StateProvider>
+        <Topology {...props1} elements={{ ...props1.elements, nodes: [], links: [] }} />
+      </StateProvider>
+    )
+
+    await waitFor(() => {
+      expect(fromModelSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          nodes: [],
+          edges: [],
+        })
+      )
+    })
+
+    fromModelSpy.mockRestore()
+  })
+
+  test('should rebuild the graph when a refresh changes links but not nodes', async () => {
+    const fromModelSpy = jest.spyOn(Visualization.prototype, 'fromModel')
+    const { rerender } = render(
+      <StateProvider>
+        <Topology {...props1} />
+      </StateProvider>
+    )
+
+    await waitFor(() => expect(fromModelSpy).toHaveBeenCalled())
+    fromModelSpy.mockClear()
+
+    const changedLinks = props1.elements.links.map((link, index) =>
+      index === 0 ? { ...link, target: 'member--subscription--test--test-subscription-2' } : link
+    )
+    rerender(
+      <StateProvider>
+        <Topology {...props1} elements={{ ...props1.elements, links: changedLinks }} />
+      </StateProvider>
+    )
+
+    await waitFor(() => {
+      expect(fromModelSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          edges: expect.arrayContaining([
+            expect.objectContaining({
+              source: props1.elements.links[0].source,
+              target: 'member--subscription--test--test-subscription-2',
+            }),
+          ]),
+        })
+      )
+    })
+
+    fromModelSpy.mockRestore()
   })
 })
 
