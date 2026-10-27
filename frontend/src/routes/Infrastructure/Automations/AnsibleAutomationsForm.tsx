@@ -516,8 +516,10 @@ export function AnsibleAutomationsForm(props: {
               linkType: LinkType.external,
               isDisabled: !ansibleInventory,
               callback: () => {
+                const host = ansibleCredentials.find((credential) => credential.metadata.name === ansibleSelection)
+                  ?.stringData?.host
                 window.open(
-                  `${ansibleCredentials[0].stringData?.host}/#/inventories/inventory/${
+                  `${host}/#/inventories/inventory/${
                     ansibleTowerInventoryList.find((inv) => inv.name === ansibleInventory)?.id
                   }`
                 )
