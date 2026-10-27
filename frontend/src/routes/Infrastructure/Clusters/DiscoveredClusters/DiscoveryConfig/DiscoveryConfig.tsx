@@ -268,7 +268,7 @@ export function DiscoveryConfigPageContent(props: {
                   type: 'success',
                   autoClose: true,
                 })
-                navigate(NavigationPath.discoveredClusters)
+                void navigate(NavigationPath.discoveredClusters)
               })
               .catch(handleError)
           } else {
@@ -322,7 +322,7 @@ export function DiscoveryConfigPageContent(props: {
           type: 'success',
           autoClose: true,
         })
-        navigate(NavigationPath.discoveredClusters)
+        void navigate(NavigationPath.discoveredClusters)
       } else {
         await replaceDiscoveryConfig(discoveryConfig).promise
         toastContext.addAlert({
@@ -333,7 +333,7 @@ export function DiscoveryConfigPageContent(props: {
           type: 'success',
           autoClose: true,
         })
-        navigate(NavigationPath.discoveredClusters)
+        void navigate(NavigationPath.discoveredClusters)
       }
     } catch (err) {
       toastContext.clearAlerts()

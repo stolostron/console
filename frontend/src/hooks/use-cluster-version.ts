@@ -52,7 +52,7 @@ export function useClusterVersion(): UseClusterVersionResult {
       }
     }
 
-    getClusterVersion()
+    void getClusterVersion()
   }, [])
 
   return {

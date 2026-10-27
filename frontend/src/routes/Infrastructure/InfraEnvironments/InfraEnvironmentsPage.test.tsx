@@ -1,15 +1,23 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { render, screen } from '@testing-library/react'
-import { AgentK8sResource, AgentServiceConfigK8sResource, InfraEnvK8sResource } from '@openshift-assisted/ui-lib/cim'
+import {
+  AgentK8sResource,
+  AgentServiceConfigK8sResource,
+  InfraEnvK8sResource,
+  StorageClassK8sResource,
+} from '@openshift-assisted/ui-lib/cim'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 
-import { infraEnvironmentsState } from '../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { agentServiceConfigsState, infraEnvironmentsState, storageClassState } from '../../../atoms'
+import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
 import {
+  clickByText,
   createClusterVersionMock,
   getCSVDownloadLink,
   getCSVExportSpies,
+  typeByTestId,
+  waitForNocks,
   waitForTestId,
   waitForText,
   clickElement,
@@ -23,6 +31,7 @@ import InfraEnvironmentsPage, {
   isPullSecretReused,
 } from './InfraEnvironmentsPage'
 import { infraEnvName, mockInfraEnv1 } from '../../../test-helpers/infraEnvName'
+import { IResource } from '../../../resources'
 
 const mockNavigate = jest.fn()
 jest.mock('react-router', () => {
@@ -74,6 +83,59 @@ const mockAgent2: AgentK8sResource = {
 }
 
 const mockInfraEnvironments: InfraEnvK8sResource[] = [mockInfraEnv1]
+
+const mockStorageClass: StorageClassK8sResource = {
+  apiVersion: 'storage.k8s.io/v1',
+  kind: 'StorageClass',
+  metadata: { name: 'gp2' },
+  provisioner: 'kubernetes.io/aws-ebs',
+  reclaimPolicy: 'Delete',
+}
+
+const mockStorageConfig = {
+  accessModes: ['ReadWriteOnce' as const],
+  resources: { requests: { storage: '10Gi' } },
+}
+
+const mockAgentServiceConfig: AgentServiceConfigK8sResource = {
+  apiVersion: 'agent-install.openshift.io/v1beta1',
+  kind: 'AgentServiceConfig',
+  metadata: { name: 'agent' },
+  spec: {
+    databaseStorage: mockStorageConfig,
+    filesystemStorage: mockStorageConfig,
+    imageStorage: mockStorageConfig,
+  },
+  status: {
+    conditions: [
+      {
+        type: 'DeploymentsHealthy',
+        status: 'True',
+        reason: 'DeploymentSucceeded',
+        message: 'All the deployments managed by Infrastructure-operator are healthy.',
+        lastTransitionTime: '2021-10-04T11:26:37Z',
+      },
+    ],
+  },
+}
+
+const CimWorkingEmptyComponent = () => {
+  return (
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(infraEnvironmentsState, [])
+        store.set(storageClassState, [mockStorageClass])
+        store.set(agentServiceConfigsState, [mockAgentServiceConfig])
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.infraEnvironments]}>
+        <Routes>
+          <Route path={NavigationPath.infraEnvironments} element={<InfraEnvironmentsPage />} />
+        </Routes>
+      </MemoryRouter>
+    </StateProvider>
+  )
+}
 
 const Component = () => {
   return (
@@ -211,5 +273,65 @@ describe('InfraEnvironmentsPage - Version-specific URLs', () => {
       await clickElement(screen.getByRole('button', { name: /install storage operator/i }))
       expect(mockNavigate).toHaveBeenCalledWith('/operatorhub/ns/multicluster-engine?category=Storage')
     })
+  })
+})
+
+describe('Infrastructure Environments page - empty state navigation', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    mockUseClusterVersion.mockReturnValue({
+      version: '4.19',
+      isLoading: false,
+      error: undefined,
+    })
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('navigates to create infrastructure environment from the empty state', async () => {
+    render(<CimWorkingEmptyComponent />)
+    await waitForText('No infrastructure environments yet')
+
+    const createButton = screen.getByRole('button', { name: 'Create infrastructure environment' })
+    expect(createButton).toBeEnabled()
+
+    await clickElement(createButton)
+    expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.createInfraEnv)
+  })
+})
+
+describe('Infrastructure Environments page - delete', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  it('deletes an infrastructure environment and its related resources', async () => {
+    const deleteInfraEnvNock = nockDelete(mockInfraEnv1 as IResource)
+    const deleteRoleNock = nockDelete({
+      kind: 'Role',
+      apiVersion: 'rbac.authorization.k8s.io/v1',
+      metadata: { name: 'capi-provider-role', namespace: infraEnvName },
+    })
+    const deleteSecretNock = nockDelete({
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: { name: `pullsecret-${infraEnvName}`, namespace: infraEnvName },
+    })
+
+    const { getByText, getAllByRole } = render(<Component />)
+    await waitForText(infraEnvName, true)
+
+    // open the bulk delete modal
+    await clickElement(getAllByRole('checkbox')[0])
+    await clickElement(getByText('Actions'))
+    await clickElement(getByText('Delete infrastructure environments'))
+
+    // confirm and submit the deletion
+    await typeByTestId('confirm', 'confirm')
+    await clickByText('Delete')
+
+    await waitForNocks([deleteInfraEnvNock, deleteRoleNock, deleteSecretNock])
   })
 })

@@ -94,7 +94,7 @@ const CreateInfraEnv: React.FC = () => {
         }
       } else {
         setCreationStatus({ status: 'DONE', messages: [] })
-        navigate(
+        void navigate(
           generatePath(NavigationPath.infraEnvironmentOverview, {
             namespace: infraEnv.metadata.namespace,
             name: infraEnv.metadata.name,
@@ -129,7 +129,7 @@ const CreateInfraEnv: React.FC = () => {
               portals={Portals}
               createControl={{
                 createResource: (resourceJSON) => {
-                  createInfraEnv(resourceJSON)
+                  void createInfraEnv(resourceJSON)
                 },
                 cancelCreate: () => navigate(NavigationPath.infraEnvironments),
                 pauseCreate: () => {},

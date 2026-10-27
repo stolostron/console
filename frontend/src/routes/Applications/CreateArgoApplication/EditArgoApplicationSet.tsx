@@ -128,7 +128,7 @@ export function EditArgoApplicationSet({
         setLoadingAppSets(false)
       }
     }
-    fetchAppSets()
+    void fetchAppSets()
   }, [])
 
   useEffect(() => {

@@ -339,9 +339,9 @@ export function CreateSubscriptionApplication({
 
   const redirectRoute = () => {
     if (searchParams.get('context') === 'applications') {
-      navigate(NavigationPath.applications)
+      void navigate(NavigationPath.applications)
     } else {
-      navigate(
+      void navigate(
         generatePath(NavigationPath.applicationOverview, {
           namespace: editApplication?.selectedAppNamespace ?? '',
           name: editApplication?.selectedAppName ?? '',
@@ -394,7 +394,7 @@ export function CreateSubscriptionApplication({
             app.metadata.namespace === createdResource.metadata.namespace!
         ) !== -1
       ) {
-        navigate({
+        void navigate({
           pathname: generatePath(NavigationPath.applicationOverview, {
             namespace: createdResource.metadata.namespace!,
             name: createdResource.metadata.name!,
@@ -423,7 +423,7 @@ export function CreateSubscriptionApplication({
           isLoaded: true,
         })
       }
-      fetchApplication()
+      void fetchApplication()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

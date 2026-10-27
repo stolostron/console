@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter } from 'react-router'
+import { render, screen, within } from '@testing-library/react'
+import { MemoryRouter, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
   applicationsState,
@@ -16,6 +16,7 @@ import {
   clickByLabel,
   clickByTestId,
   clickByText,
+  clickElement,
   getCSVDownloadLink,
   getCSVExportSpies,
   waitForText,
@@ -240,6 +241,11 @@ const mockChannels = [mockChannel]
 const mockApplications = [mockApplication]
 const mockClusters = [hubCluster]
 
+function LocationDisplay() {
+  const location = useLocation()
+  return <div id="location-display">{location.pathname + location.search}</div>
+}
+
 function TestAdvancedConfigurationPage(props: { defaultToggleOption?: ApplicationToggleOptions }) {
   const defaultToggle = props.defaultToggleOption
   return (
@@ -255,10 +261,17 @@ function TestAdvancedConfigurationPage(props: { defaultToggleOption?: Applicatio
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.advancedConfiguration]}>
+        <LocationDisplay />
         <AdvancedConfiguration defaultToggleOption={defaultToggle} />
       </MemoryRouter>
     </StateProvider>
   )
+}
+
+async function openRowAction(appName: string, actionName: string) {
+  const row = screen.getByText(appName).closest('tr')!
+  await clickElement(within(row).getByRole('button', { name: /actions/i }))
+  await clickElement(screen.getByRole('menuitem', { name: actionName }))
 }
 
 describe('advanced configuration page', () => {
@@ -290,6 +303,20 @@ describe('advanced configuration page', () => {
   test('should click channel option', async () => {
     render(<TestAdvancedConfigurationPage />)
     await clickByTestId('channels')
+  })
+
+  test('edit subscription row action navigates to the resource editor', async () => {
+    render(<TestAdvancedConfigurationPage />)
+    await waitForText(mockSubscription1.metadata!.name!)
+    await openRowAction(mockSubscription1.metadata!.name!, 'Edit subscription')
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/search/resources/yaml')
+  })
+
+  test('search subscription row action navigates to search', async () => {
+    render(<TestAdvancedConfigurationPage />)
+    await waitForText(mockSubscription1.metadata!.name!)
+    await openRowAction(mockSubscription1.metadata!.name!, 'Search subscription')
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/search?')
   })
 })
 

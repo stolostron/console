@@ -112,7 +112,7 @@ export function CreateClusterSetModal(props: { isOpen: boolean; onClose: () => v
             <AcmButton
               variant="primary"
               onClick={() => {
-                navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
+                void navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
               }}
             >
               {t('set.manage-resources')}

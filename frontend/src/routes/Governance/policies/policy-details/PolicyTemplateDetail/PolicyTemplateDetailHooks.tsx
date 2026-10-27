@@ -40,7 +40,7 @@ export function useFetchVapb() {
         vapbNames = [`${prefix}-${name}-binding`, `${name}-binding`]
       }
 
-      getVapb({
+      void getVapb({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
           input: [
@@ -108,7 +108,7 @@ export function useFetchOnlyRelatedResources() {
       !error &&
       !data
     ) {
-      getVapb({
+      void getVapb({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
           input: [
@@ -195,7 +195,7 @@ export function useFetchKyvernoRelated() {
         ]
       }
 
-      getKyverno({
+      void getKyverno({
         client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
         variables: {
           input: [

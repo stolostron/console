@@ -99,12 +99,12 @@ export function CreatePolicySet() {
             })
           }
           submitForm()
-          navigate(NavigationPath.policySets)
+          void navigate(NavigationPath.policySets)
         })
       }}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.policySets)
+        void navigate(NavigationPath.policySets)
       }}
     />
   )

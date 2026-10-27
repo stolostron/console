@@ -327,7 +327,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
           const namespace = cluster?.metadata?.namespace ?? UNKNOWN_NAMESPACE
           if (!noRedirect && clusterName && clusterNamespace) {
             setTimeout(() => {
-              navigate(
+              void navigate(
                 generatePath(NavigationPath.clusterDetails, {
                   name: clusterName,
                   namespace: namespace,
@@ -488,7 +488,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                 const clusterNamespace =
                   get(map, 'ClusterDeployment.metadata.namespace') || get(map, 'HostedCluster.metadata.name')
                 const isAssistedFlow = map.InfraEnv
-                createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved')).then(
+                void createResource(resourceJSON, true, t('Saving cluster draft...'), t('Cluster draft saved')).then(
                   (status) => {
                     if (status === 'ERROR') {
                       resolve(status)
@@ -499,7 +499,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                         })
                         resolve(status)
                         setCreationStatus(undefined)
-                        navigate({
+                        void navigate({
                           pathname: generatePath(NavigationPath.editCluster, {
                             namespace: clusterNamespace!,
                             name: clusterName!,
@@ -707,7 +707,7 @@ export default function CreateCluster(props: { infrastructureType: ClusterInfras
                   portals={Portals}
                   createControl={{
                     createResource: (resourceJSON, noRedirect) => {
-                      createResource(resourceJSON, noRedirect)
+                      void createResource(resourceJSON, noRedirect)
                     },
                     cancelCreate,
                     pauseCreate: () => {},

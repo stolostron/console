@@ -403,9 +403,7 @@ describe('Searchbar tests', () => {
       name: /export as csv/i,
     })
     expect(dropdownItem).toBeInTheDocument()
-    await waitFor(() => {
-      fireEvent.click(dropdownItem)
-    })
+    fireEvent.click(dropdownItem)
   })
 
   it('should call generateSearchResultExport using name from saved search', () => {

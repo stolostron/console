@@ -240,7 +240,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
           .map((c) => listNamespaceSecrets(c.namespace!))
       )
       const map: Record<string, string | null> = {}
-      calls.promise
+      void calls.promise
         .then((results) => {
           results.forEach((res) => {
             if (res.status === 'fulfilled') {
@@ -591,7 +591,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
     backLabel: t('back'),
     cancel: () => {
       cancelForm()
-      navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }))
+      void navigate(generatePath(NavigationPath.clusterSetSubmariner, { id: clusterSet.metadata.name! }))
     },
     stateToData,
     sections: [
@@ -1196,7 +1196,7 @@ export function InstallSubmarinerForm(props: { availableClusters: Cluster[] }) {
         return createResource(resource)
       })
       const requests = resultsSettled(calls)
-      requests.promise.then((results) => {
+      return requests.promise.then((results) => {
         const errors: string[] = []
         results.forEach((res) => {
           if (res.status === 'rejected') {

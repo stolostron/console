@@ -84,7 +84,7 @@ export function EditPlacement() {
       (placement) => placement.metadata.name === name && placement.metadata.namespace === namespace
     )
     if (!placement) {
-      navigate(NavigationPath.placements)
+      void navigate(NavigationPath.placements)
       return
     }
     setExistingResources([placement])
@@ -119,9 +119,9 @@ export function EditPlacement() {
               })
               submitForm()
               if (searchParams.get('context') === 'placements') {
-                navigate(NavigationPath.placements)
+                void navigate(NavigationPath.placements)
               } else {
-                navigate(
+                void navigate(
                   generatePath(NavigationPath.placementDetails, {
                     namespace: placement.metadata?.namespace ?? '',
                     name: placement.metadata?.name ?? '',
@@ -142,18 +142,18 @@ export function EditPlacement() {
       onCancel={() => {
         cancelForm()
         if (searchParams.get('context') === 'placements') {
-          navigate(NavigationPath.placements)
+          void navigate(NavigationPath.placements)
         } else {
           const placement = existingResources.find((resource) => resource.kind === PlacementKind)
           if (placement) {
-            navigate(
+            void navigate(
               generatePath(NavigationPath.placementDetails, {
                 namespace: placement.metadata?.namespace ?? '',
                 name: placement.metadata?.name ?? '',
               })
             )
           } else {
-            navigate(NavigationPath.placements)
+            void navigate(NavigationPath.placements)
           }
         }
       }}

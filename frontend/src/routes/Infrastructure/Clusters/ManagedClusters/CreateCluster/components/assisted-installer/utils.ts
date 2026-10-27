@@ -488,7 +488,7 @@ export const getDeleteHostAction =
       const arbiterCount = agentClusterInstall.spec?.provisionRequirements.arbiterAgents || 0
       const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
       // TODO(mlibra): include following promise in the returned one to handle errors
-      setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
+      void setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
     }
 
     return deleteResources(resources as IResource[])
@@ -663,7 +663,7 @@ export const useClusterImages = () => {
         setClusterImages([])
       }
     }
-    fetchImages()
+    void fetchImages()
   }, [])
   return clusterImages
 }

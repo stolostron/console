@@ -83,7 +83,7 @@ const AIClusterDetails: React.FC = () => {
         setNamespaceError(true)
       }
     }
-    getAssistedServiceNS()
+    void getAssistedServiceNS()
   }, [])
 
   const [clusterAgents, cluster] = useMemo(() => {

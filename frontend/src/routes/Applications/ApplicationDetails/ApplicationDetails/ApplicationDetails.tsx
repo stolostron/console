@@ -109,7 +109,7 @@ export function ApplicationDetailsPageContent() {
           namespaces,
         }
       }
-      fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces: fetchedNamespaces }) => {
+      void fetchAuthorizedNamespaces().then(({ authorizedNamespaces, namespaces: fetchedNamespaces }) => {
         // see if the user has access to all namespaces
         if (!authorizedNamespaces || authorizedNamespaces?.length < fetchedNamespaces?.length) {
           setHasSyncPermission(false)

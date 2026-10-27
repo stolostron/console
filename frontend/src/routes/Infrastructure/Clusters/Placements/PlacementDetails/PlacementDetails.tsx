@@ -66,7 +66,7 @@ export default function PlacementDetailsPage() {
         id: 'editPlacement',
         text: t('Edit placement'),
         click: (placement: Placement) => {
-          navigate(
+          void navigate(
             generatePath(NavigationPath.editPlacement, {
               namespace: placement.metadata.namespace!,
               name: placement.metadata.name!,
@@ -79,7 +79,7 @@ export default function PlacementDetailsPage() {
         id: 'searchPlacement',
         text: t('Search placement'),
         click: (placement: Placement) => {
-          navigate(
+          void navigate(
             getSearchLink({
               properties: { name: placement.metadata.name!, namespace: placement.metadata.namespace! },
             })

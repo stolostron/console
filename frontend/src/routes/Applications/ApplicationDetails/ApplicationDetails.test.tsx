@@ -13,7 +13,7 @@ import {
   placementDecisionsState,
   subscriptionsState,
 } from '../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
+import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../lib/PluginContext'
 import { waitForText, clickElement } from '~/lib/test-util'
 import { ActionExtensionProps } from '../../../plugin-extensions/properties'
@@ -304,6 +304,7 @@ const mockSearchResponse = {
   },
 }
 
+const mockNavigate = jest.fn()
 jest.mock('react-router', () => {
   const originalModule = jest.requireActual('react-router')
   return {
@@ -312,12 +313,13 @@ jest.mock('react-router', () => {
     useParams: () => {
       return { name: 'application-0', namespace: 'namespace-0' }
     },
-    useNavigate: () => jest.fn(),
+    useNavigate: () => mockNavigate,
   }
 })
 
 describe('Applications Page', () => {
   beforeEach(async () => {
+    mockNavigate.mockClear()
     nockIgnoreRBAC()
     nockSearch(mockSearchQuery, mockSearchResponse)
     nockIgnoreApiPaths()
@@ -376,5 +378,107 @@ describe('Applications Page', () => {
       })
     )
     expect(screen.getByText(/permanently delete application application-0\?/i)).toBeTruthy()
+  })
+
+  test('Search application action navigates to search', async () => {
+    await waitForText('Actions', true)
+    await clickElement(screen.getByText('Actions'))
+    await clickElement(
+      screen.getByRole('menuitem', {
+        name: /search application/i,
+      })
+    )
+    expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/multicloud/search'))
+  })
+
+  test('Edit application action navigates to subscription editor', async () => {
+    await waitForText('Actions', true)
+    await clickElement(screen.getByText('Actions'))
+    await clickElement(
+      screen.getByRole('menuitem', {
+        name: /edit application/i,
+      })
+    )
+    expect(mockNavigate).toHaveBeenCalledWith('/multicloud/applications/edit/subscription/namespace-0/application-0')
+  })
+})
+
+describe('ApplicationSet details page', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    nockIgnoreRBAC()
+    nockSearch(mockSearchQuery, mockSearchResponse)
+    nockIgnoreApiPaths()
+    // getApplication fetches appset data from the backend aggregate when apiVersion is an appset
+    nockAggegateRequest(
+      'appSetData',
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'ApplicationSet',
+        metadata: { name: 'application-0', namespace: 'namespace-0' },
+      },
+      {
+        appset: {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'ApplicationSet',
+          metadata: { name: 'application-0', namespace: 'namespace-0' },
+        },
+        clusterList: [],
+      },
+      200,
+      true
+    )
+  })
+
+  test('Edit application action navigates to Argo editor for an application set', async () => {
+    const mocks = [
+      {
+        request: {
+          query: SearchSchemaDocument,
+        },
+        result: {
+          data: {
+            searchSchema: {
+              allProperties: ['cluster', 'kind', 'label', 'name', 'namespace'],
+            },
+          },
+        },
+      },
+    ]
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(applicationsState, mockApplications)
+          store.set(subscriptionsState, mockSubscriptions)
+          store.set(channelsState, mockChannels)
+          store.set(placementDecisionsState, mockPlacementsDecisions)
+          store.set(managedClustersState, mockManagedClusters)
+          store.set(managedClusterInfosState, mockManagedClusterInfos)
+          store.set(namespacesState, mockNamespaces)
+        }}
+      >
+        <MemoryRouter initialEntries={['/?apiVersion=applicationset.argoproj.io']}>
+          <MockedProvider mocks={mocks}>
+            <PluginContext.Provider
+              value={{
+                ...defaultPlugin,
+                acmExtensions: acmExtension,
+              }}
+            >
+              <ApplicationDetailsPage />
+            </PluginContext.Provider>
+          </MockedProvider>
+        </MemoryRouter>
+      </StateProvider>
+    )
+
+    await waitForText('Actions', true)
+    await clickElement(screen.getByText('Actions'))
+    await clickElement(
+      screen.getByRole('menuitem', {
+        name: /edit application/i,
+      })
+    )
+    expect(mockNavigate).toHaveBeenCalledWith('/multicloud/applications/edit/argo/namespace-0/application-0')
   })
 })
