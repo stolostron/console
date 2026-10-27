@@ -312,7 +312,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
 
     // setters
-    addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
+    addSetter('argoproj.io/v1beta1', 'ArgoCD', setArgoCDsState)
     addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentKindVersion, AgentKind, setAgents)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
