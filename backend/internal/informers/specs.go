@@ -173,7 +173,7 @@ func DefaultWatchSpecs() []WatchSpec {
 		{kind: "SubscriptionReport", apiVersion: "apps.open-cluster-management.io/v1alpha1"},
 		{kind: "Application", apiVersion: apiArgo, polled: true},
 		{kind: "ApplicationSet", apiVersion: apiArgo, polled: true},
-		{kind: "ArgoCD", apiVersion: apiArgo},
+		{kind: "ArgoCD", apiVersion: "argoproj.io/v1beta1"},
 		{kind: "Authentication", apiVersion: apiConfigOpenShift, cache: true, cluster: true},
 		{kind: "MultiClusterHub", apiVersion: "operator.open-cluster-management.io/v1", cache: true},
 		{kind: "Infrastructure", apiVersion: apiConfigOpenShift, cluster: true},
