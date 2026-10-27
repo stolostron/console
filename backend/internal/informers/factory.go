@@ -118,6 +118,9 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			return
 		}
 
+		// NewFilteredDynamicInformer enables WatchListClient streaming sync
+		// (default since client-go 1.35). The real dynamic client supports it;
+		// set KUBE_FEATURE_WatchListClient=false to force paginated LIST instead.
 		inf := dynamicinformer.NewFilteredDynamicInformer(
 			dyn,
 			gvr,
