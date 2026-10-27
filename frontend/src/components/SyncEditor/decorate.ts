@@ -1,9 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { get } from 'lodash'
-import { ErrorType } from './validation'
 import { Monaco } from '@monaco-editor/react'
+import { get } from 'lodash'
 import { editor as editorTypes, IRange } from 'monaco-editor'
 import { getStatusDecorationsFromMappings, isStatusDecorationClass } from './statusDecorations'
+import { getMatchingValues } from './synchronize'
+import { ErrorType } from './validation'
 
 const startCase = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1)
@@ -26,7 +27,8 @@ export const decorate = (
   preservedUserEdits: any[],
   protectedRanges: any[],
   filteredRows: number[],
-  highlightEditorPath: string
+  highlightEditorPath: string,
+  secrets?: (string | string[])[]
 ) => {
   const decorations: any[] = []
   const squigglyTooltips: any[] = []
@@ -35,11 +37,16 @@ export const decorate = (
   addErrorDecorations(monaco, errors, decorations, squigglyTooltips)
 
   // add change decorations
-  addChangeDecorations(isCustomEdit, monaco, changes, change, decorations)
+  const secretPaths = new Set<string>(
+    getMatchingValues(secrets ?? [], (change?.paths ?? {}) as Parameters<typeof getMatchingValues>[1])
+      .filter(Boolean)
+      .map(({ $p }: { $p: (string | number)[] }) => JSON.stringify($p))
+  )
+  addChangeDecorations(isCustomEdit, monaco, changes, change, secretPaths, decorations)
 
   // if form is making changes, layer any editor changes decorations on top of form changes
   if (preservedUserEdits.length) {
-    addChangeDecorations(true, monaco, preservedUserEdits, change, decorations)
+    addChangeDecorations(true, monaco, preservedUserEdits, change, secretPaths, decorations)
   }
 
   // add protected decorations
@@ -56,7 +63,7 @@ export const decorate = (
 
   // add decorations to editor
   const hasErrors = errors.length > 0
-  const handles = filterResourceEditorDecorations(editor, hasErrors).map((decoration) => decoration.id)
+  const handles = filterResourceEditorDecorations(editor, hasErrors, true).map((decoration) => decoration.id)
   editor.deltaDecorations(handles, decorations)
 
   // scroll to best line to show
@@ -187,6 +194,7 @@ const addChangeDecorations = (
     parsed: { [name: string]: any[] }
     mappings: { [name: string]: any[] }
   },
+  secretPaths: Set<string>,
   decorations: any[]
 ) => {
   changes.forEach((chng) => {
@@ -203,7 +211,7 @@ const addChangeDecorations = (
           zIndex: 1000,
         },
       })
-      if ($f != null && $f.toString().length < 132 && !obj.$s) {
+      if ($f != null && $f.toString().length < 132 && !obj.$s && !secretPaths.has(JSON.stringify(obj.$p))) {
         decorations.push({
           range: new monaco.Range(obj.$r, 0, obj.$r, 132),
           options: {
@@ -224,7 +232,8 @@ export const getModelDecorations = (
 
 const filterResourceEditorDecorations = (
   editor: editorTypes.IStandaloneCodeEditor,
-  hasErrors: boolean
+  hasErrors: boolean,
+  includeInlineAnnotations = false
 ): editorTypes.IModelDecoration[] => {
   // clear resource-editor decorations
   // don't filter protectedDecoration if there are errors because parser doesn't know where protected
@@ -236,6 +245,7 @@ const filterResourceEditorDecorations = (
     return (
       options?.className?.startsWith('squiggly-') ||
       options?.className === 'syncEditorYamlHighlight' ||
+      (includeInlineAnnotations && options?.after?.inlineClassName === 'protectedDecoration') ||
       isStatusDecorationClass(options?.inlineClassName ?? undefined) ||
       LINE_DECORATION_CLASS_NAMES.includes(lineDecorationClass as (typeof LINE_DECORATION_CLASS_NAMES)[number]) ||
       (!!options?.glyphMarginClassName && (options?.inlineClassName !== 'protectedDecoration' || !hasErrors))

@@ -1,9 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { decorate, getModelDecorations, rangeForHighlightPath } from './decorate'
-import { ErrorType } from './validation'
 import type { Monaco } from '@monaco-editor/react'
 import type { editor as editorTypes } from 'monaco-editor'
+import { decorate, getModelDecorations, rangeForHighlightPath } from './decorate'
+import { ErrorType } from './validation'
 
 class MockRange {
   startLineNumber: number
@@ -185,6 +185,24 @@ describe('getModelDecorations', () => {
     } as unknown as editorTypes.IStandaloneCodeEditor
     expect(getModelDecorations(editor, true)).toHaveLength(0)
   })
+
+  it('does not carry inline previous values into a replacement YAML model', () => {
+    const editor = {
+      getModel: () => ({
+        getAllDecorations: () => [
+          {
+            range,
+            options: {
+              description: 'resource-editor',
+              after: { content: '  # dummy-token-v1', inlineClassName: 'protectedDecoration' },
+            },
+          },
+        ],
+      }),
+    } as unknown as editorTypes.IStandaloneCodeEditor
+
+    expect(getModelDecorations(editor, false)).toEqual([])
+  })
 })
 
 type DecorateChangeArg = Parameters<typeof decorate>[6]
@@ -286,6 +304,65 @@ describe('decorate', () => {
     decorate(false, true, editor, monaco, [], [], change, [{ $t: 'N', $a: 'x', $f: null }], [], [], '')
     const applied = deltaDecorations.mock.calls[0][1] as { options: { linesDecorationsClassName?: string } }[]
     expect(applied.some((d) => d.options.linesDecorationsClassName === 'customLineDecoration')).toBe(true)
+  })
+
+  it('does not annotate a previous secret value, even when the secret is revealed', () => {
+    const { editor, deltaDecorations } = createEditor()
+    const tokenPath = ['Secret', 0, 'stringData', 'token']
+    const change = {
+      parsed: {},
+      mappings: { token: { $r: 3, $l: 1, $p: tokenPath } },
+      paths: { 'Secret.0.stringData.token': { $p: tokenPath } },
+    } as unknown as DecorateChangeArg
+
+    decorate(
+      false,
+      true,
+      editor,
+      monaco,
+      [],
+      [],
+      change,
+      [{ $t: 'E', $a: 'token', $f: 'dummy-token-v1' }],
+      [],
+      [],
+      '',
+      ['*.stringData.token']
+    )
+
+    const applied = deltaDecorations.mock.calls[0][1] as { options: { after?: { content: string } } }[]
+    expect(applied.some((decoration) => decoration.options.after?.content.includes('dummy-token-v1'))).toBe(false)
+  })
+
+  it('removes an earlier inline annotation when decorating again', () => {
+    const { editor, decorations, deltaDecorations } = createEditor()
+    decorations.push({
+      id: 'old-token-value',
+      options: {
+        description: 'resource-editor',
+        after: { content: '  # dummy-token-v1', inlineClassName: 'protectedDecoration' },
+      },
+    })
+
+    decorate(false, true, editor, monaco, [], [], baseChange, [], [], [], '')
+
+    expect(deltaDecorations.mock.calls[0][0]).toContain('old-token-value')
+  })
+
+  it('keeps previous value annotations for nonsecret changes', () => {
+    const { editor, deltaDecorations } = createEditor()
+    const change = {
+      parsed: {},
+      mappings: { name: { $r: 3, $l: 1, $p: ['Secret', 0, 'metadata', 'name'] } },
+      paths: { 'Secret.0.metadata.name': { $p: ['Secret', 0, 'metadata', 'name'] } },
+    } as unknown as DecorateChangeArg
+
+    decorate(false, true, editor, monaco, [], [], change, [{ $t: 'E', $a: 'name', $f: 'original-name' }], [], [], '', [
+      '*.stringData.token',
+    ])
+
+    const applied = deltaDecorations.mock.calls[0][1] as { options: { after?: { content: string } } }[]
+    expect(applied.some((decoration) => decoration.options.after?.content.includes('original-name'))).toBe(true)
   })
 
   it('adds protected and filtered row decorations', () => {

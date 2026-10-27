@@ -2,6 +2,10 @@
 
 package aggregate
 
+// nextAppPageChunk returns the next letter-frequency-based page chunk for
+// Search queries. On first call it computes frequency counts over cached app
+// names and splits them so each chunk stays under the searchLimit. Subsequent
+// calls pop chunks until the queue is empty.
 func (e *Engine) nextAppPageChunk(chunks *[]pageChunk, remoteKey string) *pageChunk {
 	if len(*chunks) == 0 {
 		b := e.cache[remoteKey]
@@ -105,6 +109,7 @@ func (e *Engine) nextAppPageChunk(chunks *[]pageChunk, remoteKey string) *pageCh
 	return &ch
 }
 
+// joinKeys concatenates page-chunk letter keys with commas (e.g. "a*,b*,c*").
 func joinKeys(keys []string) string {
 	if len(keys) == 0 {
 		return ""
@@ -116,6 +121,7 @@ func joinKeys(keys []string) string {
 	return out
 }
 
+// splitComma splits a comma-separated string without allocating intermediate slices.
 func splitComma(s string) []string {
 	var out []string
 	start := 0
@@ -128,6 +134,9 @@ func splitComma(s string) []string {
 	return out
 }
 
+// cacheRemoteApps transforms and stores remote apps in the given cache bucket.
+// If a page chunk is active, apps are stored in ResourceMap keyed by the
+// chunk's letter keys; otherwise they go into the flat Resources slice.
 func (e *Engine) cacheRemoteApps(statusMap map[string]StatusMap, remote []map[string]any, chunk *pageChunk, remoteKey string) {
 	resources := e.transform(remote, statusMap, true, nil, nil, nil)
 	if chunk == nil {

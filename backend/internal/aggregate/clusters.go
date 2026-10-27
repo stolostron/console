@@ -15,6 +15,8 @@ type Cluster struct {
 	ConsoleURL    string
 }
 
+// clusters builds the aggregator's cluster list by merging ManagedClusters,
+// ClusterDeployments, ManagedClusterInfos, and HostedClusters from the informer cache.
 func (e *Engine) clusters() []Cluster {
 	managed := e.listKind("cluster.open-cluster-management.io/v1", "ManagedCluster")
 	cds := e.listKind("hive.openshift.io/v1", "ClusterDeployment")
@@ -77,6 +79,7 @@ func (e *Engine) clusters() []Cluster {
 	return out
 }
 
+// keyByName indexes unstructured objects by their metadata.name.
 func keyByName(items []map[string]any) map[string]map[string]any {
 	out := map[string]map[string]any{}
 	for _, item := range items {
@@ -87,6 +90,7 @@ func keyByName(items []map[string]any) map[string]map[string]any {
 	return out
 }
 
+// firstNonEmpty returns the first non-empty string from vals.
 func firstNonEmpty(vals ...string) string {
 	for _, v := range vals {
 		if v != "" {
@@ -96,6 +100,8 @@ func firstNonEmpty(vals ...string) string {
 	return ""
 }
 
+// kubeAPIServer resolves a cluster's kube-apiserver URL from ClusterDeployment
+// or ManagedClusterInfo, falling back to a constructed "api.<name>.<baseDomain>" URL.
 func kubeAPIServer(cd, info map[string]any) string {
 	if u := nestedString(cd, "status", "apiURL"); u != "" {
 		return u
@@ -108,6 +114,8 @@ func kubeAPIServer(cd, info map[string]any) string {
 	return "https://api." + cn + "." + bd
 }
 
+// consoleURL resolves a cluster's OpenShift console URL from cluster claims,
+// ClusterDeployment, ManagedClusterInfo, or HostedCluster.
 func consoleURL(cd, info, mc, hosted map[string]any) string {
 	if claims := nestedSlice(mc, "status", "clusterClaims"); len(claims) > 0 {
 		for _, raw := range claims {
@@ -128,6 +136,7 @@ func consoleURL(cd, info, mc, hosted map[string]any) string {
 	return hypershiftConsoleURL(hosted)
 }
 
+// hypershiftConsoleURL constructs the console URL for a HyperShift HostedCluster.
 func hypershiftConsoleURL(hosted map[string]any) string {
 	if hosted == nil {
 		return ""
@@ -140,6 +149,7 @@ func hypershiftConsoleURL(hosted map[string]any) string {
 	return "https://console-openshift-console.apps." + name + "." + base
 }
 
+// clusterMap returns ManagedCluster objects keyed by metadata.name.
 func (e *Engine) clusterMap() map[string]map[string]any {
 	out := map[string]map[string]any{}
 	for _, c := range e.listKind("cluster.open-cluster-management.io/v1", "ManagedCluster") {
@@ -150,6 +160,9 @@ func (e *Engine) clusterMap() map[string]map[string]any {
 	return out
 }
 
+// applicationClusters resolves the target clusters for an application based on
+// its type: Flux/OCP use status.cluster, Argo uses spec.destination, AppSet
+// uses push/pull model, and Subscription uses PlacementDecisions.
 func (e *Engine) applicationClusters(obj map[string]any, typ string, subscriptions, placementDecisions []map[string]any, local *Cluster, clusters []Cluster) []string {
 	switch typ {
 	case kindFlux, kindOpenShift, kindOpenShiftDefault:
@@ -172,10 +185,14 @@ func (e *Engine) applicationClusters(obj map[string]any, typ string, subscriptio
 	return []string{e.hubClusterName()}
 }
 
+// isArgoPullModel returns true if the ApplicationSet uses OCM pull-model
+// (apps.open-cluster-management.io/ocm-managed-cluster annotation on the template).
 func isArgoPullModel(obj map[string]any) bool {
 	return nestedString(obj, "spec", "template", "metadata", "annotations", "apps.open-cluster-management.io/ocm-managed-cluster") != ""
 }
 
+// argoPullModelClusters collects unique cluster names from Search items for
+// pull-model ApplicationSets.
 func argoPullModelClusters(apps []map[string]any) []string {
 	set := map[string]struct{}{}
 	for _, app := range apps {
@@ -186,6 +203,8 @@ func argoPullModelClusters(apps []map[string]any) []string {
 	return setKeys(set)
 }
 
+// argoPushModelClusters resolves target clusters for push-model ApplicationSet
+// child Applications by inspecting each child's spec.destination.
 func (e *Engine) argoPushModelClusters(resources []map[string]any, local *Cluster, managed []Cluster) []string {
 	set := map[string]struct{}{}
 	localName := ""
@@ -211,6 +230,8 @@ func (e *Engine) argoPushModelClusters(resources []map[string]any, local *Cluste
 	return setKeys(set)
 }
 
+// isLocalClusterURL returns true if raw matches the hub's kube-apiserver URL
+// (kubernetes.default.svc or the local cluster's API hostname).
 func isLocalClusterURL(raw string, local *Cluster) bool {
 	if raw == "https://kubernetes.default.svc" {
 		return true
@@ -237,6 +258,8 @@ func isLocalClusterURL(raw string, local *Cluster) bool {
 	return strings.Contains(localHost, hostnameWithoutAPI)
 }
 
+// subscriptionClusters resolves target clusters for an ACM Subscription app
+// by walking the subscription → placement → PlacementDecision chain.
 func subscriptionClusters(obj map[string]any, subscriptions, placementDecisions []map[string]any) []string {
 	set := map[string]struct{}{}
 	ann := strVal(metaAnnotations(obj)["apps.open-cluster-management.io/subscriptions"])
@@ -274,6 +297,8 @@ func subscriptionClusters(obj map[string]any, subscriptions, placementDecisions 
 	return setKeys(set)
 }
 
+// isLocalSubscription returns true if subName ends with "-local" and the base
+// name (without the suffix) exists in subList, indicating a local override.
 func isLocalSubscription(subName string, subList []string) bool {
 	const suffix = "-local"
 	if !strings.HasSuffix(subName, suffix) {
@@ -288,6 +313,8 @@ func isLocalSubscription(subName string, subList []string) bool {
 	return false
 }
 
+// argoCluster resolves the target cluster for a standalone Argo CD Application
+// using status.cluster, then spec.destination.
 func (e *Engine) argoCluster(obj map[string]any, clusters []Cluster) string {
 	if c := nestedString(obj, "status", "cluster"); c != "" {
 		return c
@@ -300,6 +327,9 @@ func (e *Engine) argoCluster(obj map[string]any, clusters []Cluster) string {
 	return e.argoDestinationCluster(dest, clusters, nestedString(obj, "status", "cluster"), hub)
 }
 
+// argoDestinationCluster maps an Argo spec.destination (server URL or name) to
+// a managed cluster name. It checks cluster-proxy-addon URLs first, then
+// kube-apiserver URLs, and falls back to the destination name.
 func (e *Engine) argoDestinationCluster(dest map[string]any, clusters []Cluster, cluster, hubName string) string {
 	if dest == nil {
 		return "unknown"
@@ -340,6 +370,8 @@ func (e *Engine) argoDestinationCluster(dest map[string]any, clusters []Cluster,
 	return clusterName
 }
 
+// clusterProxyService returns the cluster-proxy-addon-user Service from the
+// informer cache, or nil if not found.
 func (e *Engine) clusterProxyService() map[string]any {
 	for _, s := range e.listKind("v1", "Service") {
 		if metaName(s) == "cluster-proxy-addon-user" && metaNamespace(s) == "multicluster-engine" {
@@ -349,6 +381,7 @@ func (e *Engine) clusterProxyService() map[string]any {
 	return nil
 }
 
+// clusterProxyURL constructs the cluster-proxy-addon-user URL for a managed cluster.
 func clusterProxyURL(service map[string]any, cluster string) string {
 	if service == nil || cluster == "" {
 		return ""
@@ -369,6 +402,7 @@ func clusterProxyURL(service map[string]any, cluster string) string {
 	return "https://cluster-proxy-addon-user.multicluster-engine.svc.cluster.local:" + strconv.Itoa(port) + "/" + cluster
 }
 
+// setKeys converts a string set to a slice of its keys.
 func setKeys(set map[string]struct{}) []string {
 	out := make([]string, 0, len(set))
 	for k := range set {

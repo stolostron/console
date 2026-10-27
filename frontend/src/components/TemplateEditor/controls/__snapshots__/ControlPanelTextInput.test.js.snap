@@ -8,6 +8,9 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
     <div>
       <div
         class="pf-v6-c-form__group"
+        data-ouia-component-id="OUIA-Generated-FormGroup-:r0:"
+        data-ouia-component-type="PF6/FormGroup"
+        data-ouia-safe="true"
         id="controlId-label"
       >
         <div
@@ -33,7 +36,7 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
               <button
                 aria-label="More info"
                 class="pf-v6-c-button pf-m-plain pf-v6-c-form__group-label-help"
-                data-ouia-component-id="OUIA-Generated-Button-plain-:r2:"
+                data-ouia-component-id="OUIA-Generated-Button-plain-:r4:"
                 data-ouia-component-type="PF6/Button"
                 data-ouia-safe="true"
                 id="controlId-label-help-button"
@@ -68,7 +71,7 @@ exports[`ControlPanelTextInput component renders as expected 1`] = `
           >
             <input
               aria-invalid="false"
-              data-ouia-component-id="OUIA-Generated-TextInputBase-:r4:"
+              data-ouia-component-id="OUIA-Generated-TextInputBase-:r6:"
               data-ouia-component-type="PF6/TextInput"
               data-ouia-safe="true"
               data-testid="text-controlId"
@@ -94,6 +97,9 @@ exports[`ControlPanelTextInput component renders as expected 2`] = `
     <div>
       <div
         class="pf-v6-c-form__group"
+        data-ouia-component-id="OUIA-Generated-FormGroup-:r0:"
+        data-ouia-component-type="PF6/FormGroup"
+        data-ouia-safe="true"
         id="controlId-label"
       >
         <div
@@ -104,7 +110,7 @@ exports[`ControlPanelTextInput component renders as expected 2`] = `
           >
             <input
               aria-invalid="true"
-              data-ouia-component-id="OUIA-Generated-TextInputBase-:r4:"
+              data-ouia-component-id="OUIA-Generated-TextInputBase-:r6:"
               data-ouia-component-type="PF6/TextInput"
               data-ouia-safe="true"
               data-testid="text-controlId"

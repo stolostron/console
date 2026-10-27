@@ -519,7 +519,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             remainingEdits,
             protectedRanges,
             filteredRows,
-            editorHighlightPath
+            editorHighlightPath,
+            secrets
           )
           setSquigglyTooltips(squigglyTooltips)
           setLastFormComparison(formComparison)
@@ -720,7 +721,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             lastUserEdits,
             protectedRanges,
             filteredRows,
-            editorHighlightPath
+            editorHighlightPath,
+            secrets
           )
           setSquigglyTooltips(squigglyTooltips)
           setUserEdits(changes)

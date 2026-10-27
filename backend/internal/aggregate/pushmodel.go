@@ -31,6 +31,8 @@ func (e *Engine) addPushModelPodQueryInputs(q *searchapi.Query) (map[string]push
 	return resourceMap, nil
 }
 
+// collectPushModelWorkloads iterates over an ApplicationSet's child apps and
+// collects remote Deployment/StatefulSet names for the push-model pod query.
 func (e *Engine) collectPushModelWorkloads(apps []map[string]any, appSetName string, allClusters []Cluster, hub string, resourceMap map[string]pushEntry, deploymentNames, clusterFilters map[string]struct{}) {
 	for _, app := range apps {
 		dest := nestedMap(app, "spec", "destination")

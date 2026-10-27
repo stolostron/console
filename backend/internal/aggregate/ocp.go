@@ -8,6 +8,8 @@ import (
 	"github.com/stolostron/console/backend/internal/searchapi"
 )
 
+// addOCPQueryInputs appends Search filters for remote OCP Deployments that
+// carry owner labels, excluding openshift* and open-cluster-management* namespaces.
 func (e *Engine) addOCPQueryInputs(q *searchapi.Query) {
 	e.lastOCPChunk = e.nextAppPageChunk(&e.ocpPageChunks, cacheRemoteOCP)
 	chunk := e.lastOCPChunk
@@ -27,6 +29,7 @@ func (e *Engine) addOCPQueryInputs(q *searchapi.Query) {
 	})
 }
 
+// ownerLabelStars returns appOwnerLabels with a "*" wildcard suffix for Search filter values.
 func ownerLabelStars() []string {
 	out := make([]string, len(appOwnerLabels))
 	for i, l := range appOwnerLabels {
@@ -35,6 +38,8 @@ func ownerLabelStars() []string {
 	return out
 }
 
+// addSystemQueryInputs appends Search filters for system-namespace
+// Deployments (openshift*, open-cluster-management*), chunked by cluster name.
 func (e *Engine) addSystemQueryInputs(q *searchapi.Query) {
 	e.lastSystemChunk = e.nextClusterNameChunk()
 	chunk := e.lastSystemChunk
@@ -50,6 +55,8 @@ func (e *Engine) addSystemQueryInputs(q *searchapi.Query) {
 	})
 }
 
+// nextClusterNameChunk returns the next batch of managed cluster names for
+// system-app Search queries. Clusters are split into groups of remoteClusterChunks.
 func (e *Engine) nextClusterNameChunk() []string {
 	if len(e.clusterNameChunks) == 0 {
 		cm := e.clusterMap()
@@ -87,6 +94,10 @@ func (e *Engine) nextClusterNameChunk() []string {
 	return ch
 }
 
+// cacheOCPApplications processes the OCP or system-app Search bucket: groups
+// Deployments by owner label, deduplicates against Argo apps via
+// ocpArgoFilter, computes deployed status, and stores in the appropriate
+// local/remote cache buckets.
 func (e *Engine) cacheOCPApplications(search searchapi.ResultBucket, ocpArgoFilter map[string]struct{}, isSystem bool) {
 	helm := e.listKind("apps.open-cluster-management.io/v1", "HelmRelease")
 	hub := e.hubClusterName()
@@ -164,6 +175,8 @@ func (e *Engine) cacheOCPApplications(search searchapi.ResultBucket, ocpArgoFilt
 	e.cacheRemoteSystemApps(statusMap, remoteApps, e.lastSystemChunk)
 }
 
+// parseSearchLabels parses a semicolon-delimited "key=value" label string
+// from a Search item into key-value pairs.
 func parseSearchLabels(label string) [][2]string {
 	var out [][2]string
 	clean := strings.ReplaceAll(strings.ReplaceAll(label, " ", ""), "\t", "")
@@ -174,6 +187,8 @@ func parseSearchLabels(label string) [][2]string {
 	return out
 }
 
+// ocpLabelValues extracts the application name label, Helm-managed flag, and
+// Argo instance name from parsed Search labels.
 func ocpLabelValues(labels [][2]string) (itemLabel string, isManagedByHelm bool, argoInstance string) {
 	for _, p := range labels {
 		ann, value := p[0], p[1]
@@ -195,6 +210,9 @@ func ocpLabelValues(labels [][2]string) (itemLabel string, isManagedByHelm bool,
 	return itemLabel, isManagedByHelm, argoInstance
 }
 
+// createOCPStatusMap builds the per-app × per-cluster StatusMap for OCP
+// applications. Unlike Argo, health/sync are not computed — only deployed pod
+// status is filled in via computeDeployedPodStatuses.
 func createOCPStatusMap(ocpApps []map[string]any, related []mapKind) map[string]StatusMap {
 	out := map[string]StatusMap{}
 	ids := map[string]*statusIDs{}
@@ -230,6 +248,8 @@ func createOCPStatusMap(ocpApps []map[string]any, related []mapKind) map[string]
 	return out
 }
 
+// cacheRemoteSystemApps stores system-namespace remote apps keyed by cluster
+// name in the cacheRemoteSys ResourceMap.
 func (e *Engine) cacheRemoteSystemApps(statusMap map[string]StatusMap, remote []map[string]any, clusterChunk []string) {
 	if e.cache[cacheRemoteSys].ResourceMap == nil {
 		e.cache[cacheRemoteSys].ResourceMap = map[string][]App{}
