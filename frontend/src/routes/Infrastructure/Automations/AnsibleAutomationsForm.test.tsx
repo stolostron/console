@@ -17,6 +17,8 @@ import {
 import { ResourceErrorCode } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
 import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
@@ -89,12 +91,12 @@ const mockSecret: Secret = {
   },
 }
 
-function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] }) {
+function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[]; secrets?: Secret[] }) {
   return (
     <StateProvider
       initializeStore={(store) => {
         store.set(namespacesState, mockNamespaces)
-        store.set(secretsState, [mockSecret])
+        store.set(secretsState, props.secrets ?? [mockSecret])
         store.set(clusterCuratorsState, [mockClusterCurator])
         store.set(subscriptionOperatorsState, props.subscriptions || [])
       }}
@@ -363,6 +365,34 @@ describe('add automation template page', () => {
     window.open = jest.fn()
     await clickByText('View selected inventory')
     expect(window.open).toHaveBeenCalledWith('https://ansible-tower-web-svc-tower.com/#/inventories/inventory/1')
+  })
+
+  it('opens the selected inventory on the selected credential host', async () => {
+    const secondSecret: Secret = {
+      ...mockSecret,
+      metadata: { ...mockSecret.metadata, name: 'ansible-second-secret' },
+      stringData: { ...mockSecret.stringData, host: 'https://second-controller.example.com' },
+    }
+    render(<AddAnsibleTemplateTest secrets={[mockSecret, secondSecret]} />)
+    const secondCredential = { ...mockAnsibleCredential, secretName: secondSecret.metadata.name! }
+    const secondWorkflowCredential = { ...mockAnsibleCredentialWorkflow, secretName: secondSecret.metadata.name! }
+    const secondInventoryCredential = { ...mockAnsibleCredentialInventory, secretName: secondSecret.metadata.name! }
+    const ansibleJobNock = nockAnsibleTower(secondCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(secondWorkflowCredential, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(secondInventoryCredential, mockInventoryList)
+
+    await clickByPlaceholderText('Select an existing Ansible credential')
+    await clickByText(secondSecret.metadata.name!)
+    await waitForNocks([ansibleJobNock, ansibleWorkflowNock, ansibleInventoryNock])
+    await clickByPlaceholderText('Select an inventory')
+    await clickByText(mockInventoryList.results[0].name!)
+    window.open = jest.fn()
+
+    const inventoryLink = screen.getByRole('button', { name: 'View selected inventory' })
+    await userEvent.click(inventoryLink)
+
+    expect(window.open).toHaveBeenCalledWith('https://second-controller.example.com/#/inventories/inventory/1')
+    expect(await axe(inventoryLink)).toHaveNoViolations()
   })
 
   it('should visit the correct Ansible Automation controller job template url', async () => {
