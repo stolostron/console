@@ -155,6 +155,9 @@ func TestSetSinkNilCache(t *testing.T) {
 	}
 }
 
+// unsupportedWatchListTestClient opts this ListWatch out of WatchListClient.
+// watch.NewFake never emits the initial-events bookmark, so streaming sync
+// would hang; FakeDynamicClient in factory tests opts out the same way.
 type unsupportedWatchListTestClient struct{}
 
 func (unsupportedWatchListTestClient) IsWatchListSemanticsUnSupported() bool {
