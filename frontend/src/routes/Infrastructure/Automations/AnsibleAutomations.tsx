@@ -155,7 +155,7 @@ function AnsibleJobTemplateTable() {
                   isAriaDisabled: true,
                   rbac: [rbacPatch(curator)],
                   click: (curator: ClusterCurator) => {
-                    navigate(
+                    void navigate(
                       generatePath(NavigationPath.editAnsibleAutomation, {
                         namespace: curator.metadata.namespace!,
                         name: curator.metadata.name!,
@@ -234,7 +234,7 @@ function AnsibleJobTemplateTable() {
             id: 'add',
             title: t('template.create'),
             click: () => {
-              navigate(NavigationPath.addAnsibleAutomation)
+              void navigate(NavigationPath.addAnsibleAutomation)
             },
             variant: ButtonVariant.primary,
           },

@@ -280,7 +280,7 @@ export default function DetailsPage() {
         component="button"
         key="edit-resource"
         onClick={() => {
-          navigate(`${NavigationPath.resourceYAML}${window.location.search}`)
+          void navigate(`${NavigationPath.resourceYAML}${window.location.search}`)
         }}
       >
         {t('Edit {{resourceKind}}', { resourceKind: kind })}

@@ -129,7 +129,7 @@ export const useFetchRoleARNs = (selectedSecret: SelectedSecret) => {
   const refetchAll = useCallback(
     async (accountId: string) => {
       if (accountId !== awsAccountId) {
-        fetch(accountId)
+        void fetch(accountId)
       } else {
         await Promise.all([refetchRoles(), refetchOcmRole(), refetchUserRole()])
       }

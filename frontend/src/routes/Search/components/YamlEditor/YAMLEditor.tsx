@@ -321,7 +321,7 @@ export default function YAMLEditor(props: {
                 onClick={() => {
                   // OCP returns to previous page
                   // We could instead revert any changes and remain on the page || if no changes then go back to previous page?
-                  navigate(-1)
+                  void navigate(-1)
                 }}
               >
                 {t('Cancel')}

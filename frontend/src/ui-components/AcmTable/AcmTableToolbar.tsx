@@ -237,7 +237,7 @@ export function useTableFilterSelections<T>({ id, filters }: { id?: string; filt
 
   useEffect(() => {
     if (queuedSearch !== null) {
-      navigate({ pathname, search: queuedSearch }, { replace: true })
+      void navigate({ pathname, search: queuedSearch }, { replace: true })
       setQueuedSearch(null)
     }
   }, [navigate, pathname, queuedSearch])

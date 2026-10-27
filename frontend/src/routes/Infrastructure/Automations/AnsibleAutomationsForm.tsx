@@ -736,16 +736,16 @@ export function AnsibleAutomationsForm(props: {
     showErrors: forceErrors,
     submit: () => {
       if (isEditing) {
-        replaceResource(stateToData() as IResource).promise.then(async () => {
+        return replaceResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           submitForm()
-          navigate(NavigationPath.ansibleAutomations)
+          void navigate(NavigationPath.ansibleAutomations)
         })
       } else {
-        createResource(stateToData() as IResource).promise.then(async () => {
+        return createResource(stateToData() as IResource).promise.then(async () => {
           if (process.env.NODE_ENV === 'development') await new Promise((resolve) => setTimeout(resolve, 4000))
           submitForm()
-          navigate(NavigationPath.ansibleAutomations)
+          void navigate(NavigationPath.ansibleAutomations)
         })
       }
     },
@@ -753,7 +753,7 @@ export function AnsibleAutomationsForm(props: {
     submittingText: isEditing ? t('saving') : t('adding'),
     cancel: () => {
       cancelForm()
-      navigate(NavigationPath.ansibleAutomations)
+      void navigate(NavigationPath.ansibleAutomations)
     },
     stateToSyncs,
     stateToData,

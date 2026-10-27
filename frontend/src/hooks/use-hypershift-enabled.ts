@@ -31,7 +31,7 @@ export const useIsHypershiftEnabled = () => {
     }
 
     if (localHubName) {
-      getHypershiftStatus()
+      void getHypershiftStatus()
     }
   }, [localHubName])
 

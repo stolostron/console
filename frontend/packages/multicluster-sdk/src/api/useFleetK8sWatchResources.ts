@@ -131,7 +131,7 @@ export function useFleetK8sWatchResources<R extends FleetResourcesObject>(
           ])
         }
         for (const [watch, model, path] of watches) {
-          startWatch(watch, model, path)
+          void startWatch(watch, model, path)
         }
         return () => {
           for (const [watch, model, path, unsubscribe] of watches) {

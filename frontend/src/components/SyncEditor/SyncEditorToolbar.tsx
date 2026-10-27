@@ -197,7 +197,7 @@ export function SyncEditorToolbar(props: Readonly<SyncEditorToolbarProps>): JSX.
               if (model && selection) {
                 const selectedText = model.getValueInRange(selection)
                 const fallbackFull = diffModifiedEditor ? model.getValue() : lastUnredactedYaml || ''
-                navigator.clipboard.writeText(selectedText || fallbackFull)
+                void navigator.clipboard.writeText(selectedText || fallbackFull)
                 setCopyHint(selectedText.length === 0 ? allCopiedCopy : copiedCopy)
                 setTimeout(() => {
                   setCopyHint(defaultCopy)

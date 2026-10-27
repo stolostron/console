@@ -17,7 +17,7 @@ import {
 import { ResourceErrorCode } from '../../../resources/utils'
 import { Provider } from '../../../ui-components'
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
@@ -25,9 +25,11 @@ import {
   nockAnsibleTowerError,
   nockAnsibleTowerInventory,
   nockCreate,
+  nockGet,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
+  nockReplace,
 } from '../../../lib/nock-util'
 import {
   clickByPlaceholderText,
@@ -47,6 +49,16 @@ const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../../../hooks/use-cluster-version', () => ({
   useClusterVersion: () => mockUseClusterVersion(),
 }))
+
+const mockNavigate = jest.fn()
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useNavigate: () => mockNavigate,
+  }
+})
 import { NavigationPath } from '../../../NavigationPath'
 import { AnsibleTowerJobTemplateList } from '../../../resources'
 import AnsibleAutomationsFormPage from './AnsibleAutomationsForm'
@@ -90,6 +102,32 @@ function AddAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] 
       <MemoryRouter initialEntries={[NavigationPath.addAnsibleAutomation]}>
         <Routes>
           <Route path={NavigationPath.addAnsibleAutomation} element={<AnsibleAutomationsFormPage />} />
+        </Routes>
+      </MemoryRouter>
+    </StateProvider>
+  )
+}
+
+function EditAnsibleTemplateTest(props: { subscriptions?: SubscriptionOperator[] }) {
+  return (
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(namespacesState, mockNamespaces)
+        store.set(secretsState, [mockSecret])
+        store.set(clusterCuratorsState, [mockClusterCurator])
+        store.set(subscriptionOperatorsState, props.subscriptions || [])
+      }}
+    >
+      <MemoryRouter
+        initialEntries={[
+          generatePath(NavigationPath.editAnsibleAutomation, {
+            namespace: mockClusterCurator.metadata.namespace!,
+            name: mockClusterCurator.metadata.name!,
+          }),
+        ]}
+      >
+        <Routes>
+          <Route path={NavigationPath.editAnsibleAutomation} element={<AnsibleAutomationsFormPage />} />
         </Routes>
       </MemoryRouter>
     </StateProvider>
@@ -433,5 +471,50 @@ describe('add automation template page', () => {
 
     // ensure the mocks completed successfully
     await waitForNocks([ansibleJobNock, ansibleInventoryNock])
+  })
+})
+
+describe('edit automation template page', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    nockIgnoreOperatorCheck(true)
+  })
+
+  it('should save an edited curator template', async () => {
+    const getNock = nockGet(mockClusterCurator)
+    const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
+
+    render(<EditAnsibleTemplateTest />)
+
+    await waitForNock(getNock)
+    await waitForNocks([ansibleJobNock, ansibleWorkflowNock, ansibleInventoryNock])
+
+    // the form is prepopulated from the fetched curator and renders the Save button
+    await waitForText('Save')
+
+    const replaceNock = nockReplace(mockClusterCurator)
+    await clickByText('Save')
+    await waitForNock(replaceNock)
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.ansibleAutomations))
+  })
+
+  it('should navigate away when cancelling an edited curator template', async () => {
+    const getNock = nockGet(mockClusterCurator)
+    const ansibleJobNock = nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
+    const ansibleWorkflowNock = nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
+    const ansibleInventoryNock = nockAnsibleTowerInventory(mockAnsibleCredentialInventory, mockInventoryList)
+
+    render(<EditAnsibleTemplateTest />)
+
+    await waitForNock(getNock)
+    await waitForNocks([ansibleJobNock, ansibleWorkflowNock, ansibleInventoryNock])
+
+    await waitForText('Cancel')
+    await clickByText('Cancel')
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.ansibleAutomations))
   })
 })

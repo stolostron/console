@@ -33,7 +33,7 @@ export const getUnbindHostAction =
         const arbiterCount = agentClusterInstall.spec?.provisionRequirements.arbiterAgents || 0
         const workerCount = (agentClusterInstall.spec?.provisionRequirements.workerAgents || 1) - 1
         // TODO(mlibra): include following promise in the returned one to handle errors
-        setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
+        void setProvisionRequirements(agentClusterInstall, workerCount, arbiterCount, masterCount)
       }
 
       return patchResource(agent as IResource, [

@@ -344,7 +344,7 @@ function TopologyLogsViewer({
 
   const toggleFullscreen = () => {
     if (resourceLogRef.current && screenfull.isEnabled) {
-      screenfull.toggle(resourceLogRef.current)
+      void screenfull.toggle(resourceLogRef.current)
     }
   }
 

@@ -20,7 +20,7 @@ export default function Search() {
   useEffect(() => {
     // Redirect: 2.12 moves search & details pages from /multicloud/home/search -> /multicloud/search
     if (location.pathname.startsWith('/multicloud/home/search')) {
-      navigate({
+      void navigate({
         pathname: location.pathname.replace('/home', ''),
         search: location.search,
       })

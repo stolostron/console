@@ -56,7 +56,7 @@ export const deleteHypershiftCluster = (cluster: Cluster) => {
 
   return {
     promise: new Promise((resolve, reject) => {
-      promises.then((promisesSettledResult) => {
+      void promises.then((promisesSettledResult) => {
         const rejectedPromises = promisesSettledResult.filter((p) => p.status === 'rejected')
         if (rejectedPromises.length) {
           const errPromise = rejectedPromises.find(
