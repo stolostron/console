@@ -1236,7 +1236,7 @@ const mockAgent0: AgentK8sResource = {
 }
 
 const mockAgentMachine0 = {
-  apiVersion: 'capi-provider.agent-install.openshift.io/v1alpha1',
+  apiVersion: 'capi-provider.agent-install.openshift.io/v1beta1',
   kind: 'AgentMachine',
   metadata: {
     annotations: {
