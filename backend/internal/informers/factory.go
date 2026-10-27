@@ -8,11 +8,8 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	k8sruntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	k8swatch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
@@ -121,10 +118,19 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			return
 		}
 
-		lw := newListWatch(dyn, gvr, st.spec)
-		inf := cache.NewSharedIndexInformer(lw, &unstructured.Unstructured{}, resyncPeriod, cache.Indexers{
-			cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
-		})
+		// NewFilteredDynamicInformer enables WatchListClient streaming sync
+		// (default since client-go 1.35). The real dynamic client supports it;
+		// set KUBE_FEATURE_WatchListClient=false to force paginated LIST instead.
+		inf := dynamicinformer.NewFilteredDynamicInformer(
+			dyn,
+			gvr,
+			metav1.NamespaceAll,
+			resyncPeriod,
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+			func(options *metav1.ListOptions) {
+				applySelectors(st.spec, options)
+			},
+		).Informer()
 		if err := inf.SetTransform(transformFor(st.spec)); err != nil {
 			applog.Logger().Warn("informer transform", "kind", st.spec.Kind, "error", err)
 		}
@@ -167,20 +173,6 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			st.synced.Store(true)
 		}
 		return
-	}
-}
-
-func newListWatch(dyn dynamic.Interface, gvr schema.GroupVersionResource, spec WatchSpec) *cache.ListWatch {
-	ns := metav1.NamespaceAll
-	return &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (k8sruntime.Object, error) {
-			applySelectors(spec, &options)
-			return dyn.Resource(gvr).Namespace(ns).List(context.TODO(), options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (k8swatch.Interface, error) {
-			applySelectors(spec, &options)
-			return dyn.Resource(gvr).Namespace(ns).Watch(context.TODO(), options)
-		},
 	}
 }
 
