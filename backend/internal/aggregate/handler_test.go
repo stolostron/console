@@ -257,11 +257,13 @@ func TestApplicationsAggregateSearchAndSortSources(t *testing.T) {
 		t.Fatalf("search response %+v", searched)
 	}
 
-	sortIndex := colSources
+	// The visible index can change when users reorder or hide columns. The stable
+	// column ID must take precedence over the index in the request.
+	sortIndex := colHealth
 	sortResp := postAggregate(t, h, "/aggregate/applications", RequestListView{
 		Page:    1,
 		PerPage: 10,
-		SortBy:  &SortBy{Index: &sortIndex, Direction: "asc"},
+		SortBy:  &SortBy{Index: &sortIndex, ID: "sources", Direction: "asc"},
 	})
 	defer sortResp.Body.Close()
 	var sorted struct {

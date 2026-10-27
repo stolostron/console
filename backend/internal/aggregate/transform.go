@@ -503,11 +503,26 @@ func statusFilterKey(item App, index int) string {
 	}
 }
 
+// sortColumnIndex resolves a stable column ID first, then falls back to the
+// visible index sent by older frontend clients. An unknown ID must not fall
+// back to the index because that index may refer to a different reordered
+// column.
+func sortColumnIndex(sortBy *SortBy) (int, bool) {
+	if sortBy.ID != "" {
+		index, ok := appSortColumnIndexes[sortBy.ID]
+		return index, ok
+	}
+	if sortBy.Index != nil && *sortBy.Index >= 0 {
+		return *sortBy.Index, true
+	}
+	return 0, false
+}
+
 // sortApplications sorts by the given column index. String columns sort
 // lexicographically; score columns sort worst-first (higher score = worse).
 func sortApplications(index int, desc bool, items []App) []App {
 	out := append([]App(nil), items...)
-	stringCols := map[int]struct{}{colName: {}, colNamespace: {}, colClusters: {}, colSources: {}, colCreated: {}}
+	stringCols := map[int]struct{}{colName: {}, colType: {}, colNamespace: {}, colClusters: {}, colSources: {}, colCreated: {}}
 	scoreCols := map[int]struct{}{colHealth: {}, colSynced: {}, colDeployed: {}}
 	less := func(i, j int) bool { return false }
 	if _, ok := stringCols[index]; ok {
@@ -539,6 +554,8 @@ func transformString(a App, index int) string {
 	switch index {
 	case colName:
 		return a.Transform.Name
+	case colType:
+		return a.Transform.Type
 	case colNamespace:
 		return a.Transform.Namespace
 	case colClusters:

@@ -497,6 +497,13 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // when paging items from backend
   // send request to backend
   const filterSelectionsStr = JSON.stringify(filterSelections)
+  const requestSort = useMemo(() => {
+    if (sort?.index === undefined) {
+      return sort
+    }
+    const columnId = selectedSortedCols[sort.index]?.id
+    return columnId ? { ...sort, id: columnId } : sort
+  }, [selectedSortedCols, sort])
   useEffect(() => {
     if (setRequestView && isPreProcessed) {
       setRequestView({
@@ -504,10 +511,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
         perPage,
         search: internalSearch,
         filters: JSON.parse(filterSelectionsStr),
-        sortBy: sort,
+        sortBy: requestSort,
       })
     }
-  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, setRequestView, sort])
+  }, [filterSelectionsStr, internalSearch, isPreProcessed, page, perPage, requestSort, setRequestView])
 
   const { tableItems, totalCount, allTableItems } = useMemo<{
     tableItems: ITableItem<T>[]
@@ -588,7 +595,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
-        keys: columns
+        keys: selectedSortedCols
           .map((column, i) => (column.search ? `column-${i}` : undefined))
           .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
@@ -598,7 +605,7 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
     }
-  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, columns, totalCount])
+  }, [props.fuseThreshold, isPreProcessed, internalSearch, tableItems, selectedSortedCols, totalCount])
   const { sorted, itemCount } = useMemo<{
     sorted: ITableItem<T>[]
     itemCount: number

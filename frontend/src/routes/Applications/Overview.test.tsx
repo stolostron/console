@@ -40,7 +40,7 @@ jest.mock('../../lib/rbac-util')
 ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
 
 const applicationAggregate = {
-  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
+  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc', id: 'name' } },
   res: {
     page: 1,
     items: [

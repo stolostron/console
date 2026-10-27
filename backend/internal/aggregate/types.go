@@ -26,8 +26,9 @@ const (
 	appSearchIntervalDefault = 60
 )
 
-// AppColumns are zero-based column indices matching the frontend table in
-// Node aggregators/applications.ts. They are used for sorting and status-score lookups.
+// AppColumns are the backend's canonical column indices. The frontend sends a
+// stable column ID with server-side sort requests because users can reorder and
+// hide table columns; these indices remain the fallback for older clients.
 const (
 	colName      = 0 // application name
 	colType      = 1 // application type (subscription, argo, appset, flux, openshift)
@@ -39,6 +40,20 @@ const (
 	colDeployed  = 7 // deployed/pod status score
 	colCreated   = 8 // creation timestamp
 )
+
+// appSortColumnIndexes maps stable frontend column IDs to the backend's
+// canonical sort indices.
+var appSortColumnIndexes = map[string]int{
+	"name":      colName,
+	"type":      colType,
+	"namespace": colNamespace,
+	"clusters":  colClusters,
+	"sources":   colSources,
+	"health":    colHealth,
+	"sync":      colSynced,
+	"pod":       colDeployed,
+	"created":   colCreated,
+}
 
 // Score severity levels ordered from best (0) to worst (4). Each status column
 // has scoreColumnSize (5) buckets; these are indices into those count arrays.
