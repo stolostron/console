@@ -685,6 +685,54 @@ describe('AcmTable', () => {
     expect(container.querySelector('tbody tr:first-of-type [data-label="Last Name"]')).toHaveTextContent('Arthur')
   })
 
+  test('searches values from reordered managed columns', async () => {
+    const tableId = 'reordered-search-table'
+    const items = [
+      {
+        uid: 1,
+        firstName: 'Alpha',
+        last_name: 'Application',
+        gender: 'Healthy',
+        email: 'alpha@example.com',
+        cluster: 'repository-alpha',
+        ip_address: '10.0.0.1',
+      },
+      {
+        uid: 2,
+        firstName: 'Beta',
+        last_name: 'ApplicationSet',
+        gender: 'Degraded',
+        email: 'beta@example.com',
+        cluster: 'repository-beta',
+        ip_address: '10.0.0.2',
+      },
+    ]
+    window.localStorage.setItem(`${tableId}SavedCols`, JSON.stringify(['name', 'sources', 'type', 'health']))
+    window.localStorage.setItem(`${tableId}SavedColOrder`, JSON.stringify(['name', 'type', 'sources', 'health']))
+
+    const { queryByText } = render(
+      <Table
+        id={tableId}
+        items={items}
+        initialSearch="repository-alpha"
+        fuseThreshold={0}
+        useRowActions={false}
+        showColumnManagement
+        columns={[
+          { header: 'Name', cell: 'firstName', search: 'firstName', id: 'name', order: 1 },
+          { header: 'Sources', cell: 'cluster', search: 'cluster', id: 'sources', order: 2 },
+          { header: 'Type', cell: 'last_name', id: 'type', order: 3 },
+          { header: 'Health', cell: 'gender', search: 'gender', id: 'health', order: 4 },
+        ]}
+      />
+    )
+
+    await waitFor(() => expect(queryByText('1 / 2')).toBeVisible(), { timeout: 3000 })
+
+    window.localStorage.removeItem(`${tableId}SavedCols`)
+    window.localStorage.removeItem(`${tableId}SavedColOrder`)
+  })
+
   test('can be searched with advanced filter dropdown', async () => {
     const { getByLabelText, getByText, queryByText, getByRole } = render(<Table advancedFilters={advancedFilters} />)
 
@@ -752,6 +800,46 @@ describe('AcmTable', () => {
     // verify clicking on other headers still works
     await clickElement(getByText('First Name'))
     expect(container.querySelector('tbody tr:first-of-type [data-label="First Name"]')).toHaveTextContent('Abran')
+  })
+  test('server sort requests include the stable column id', async () => {
+    const setRequestView = jest.fn()
+    const tableId = 'serverSortTable'
+    window.localStorage.setItem(`${tableId}SavedCols`, JSON.stringify(['name', 'sources', 'type', 'health']))
+    window.localStorage.setItem(`${tableId}SavedColOrder`, JSON.stringify(['name', 'sources', 'type', 'health']))
+
+    render(
+      <Table
+        id={tableId}
+        initialSort={{ direction: 'asc', index: 1 }}
+        setRequestView={setRequestView}
+        resultView={{
+          page: 1,
+          loading: false,
+          refresh: jest.fn(),
+          items: [],
+          emptyResult: false,
+          processedItemCount: testItems.length,
+          isPreProcessed: true,
+        }}
+        showColumnManagement
+        useRowActions={false}
+        columns={[
+          { header: 'Name', sort: 'firstName', cell: 'firstName', id: 'name', order: 1 },
+          { header: 'Sources', sort: 'gender', cell: 'gender', id: 'sources', order: 2 },
+          { header: 'Type', sort: 'last_name', cell: 'last_name', id: 'type', order: 3 },
+          { header: 'Health', sort: 'uid', cell: 'uid', id: 'health', order: 4 },
+        ]}
+      />
+    )
+
+    await waitFor(() =>
+      expect(setRequestView).toHaveBeenCalledWith(
+        expect.objectContaining({ sortBy: expect.objectContaining({ id: 'sources', index: 1 }) })
+      )
+    )
+
+    window.localStorage.removeItem(`${tableId}SavedCols`)
+    window.localStorage.removeItem(`${tableId}SavedColOrder`)
   })
   test('page size can be updated', async () => {
     const { getByLabelText, getAllByLabelText, getByText, container } = render(
