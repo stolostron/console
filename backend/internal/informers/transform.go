@@ -38,7 +38,75 @@ func transformFor(spec WatchSpec) cache.TransformFunc {
 			unstructured.RemoveNestedField(out.Object, "metadata", "managedFields")
 			out.SetManagedFields(nil)
 		}
+		switch spec.Kind {
+		case "ManagedClusterAddOn":
+			stripAddonFields(out)
+		case "ManagedCluster":
+			stripManagedClusterFields(out)
+		case "ManagedClusterInfo":
+			stripManagedClusterInfoFields(out)
+		}
 		return out, nil
+	}
+}
+
+func stripAddonFields(u *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(u.Object, "status", "registrations")
+	unstructured.RemoveNestedField(u.Object, "status", "supportedConfigs")
+	unstructured.RemoveNestedField(u.Object, "status", "configReferences")
+	unstructured.RemoveNestedField(u.Object, "status", "healthCheck")
+	unstructured.RemoveNestedField(u.Object, "status", "namespace")
+	stripConditionTimestamps(u.Object, "status", "conditions")
+}
+
+func stripManagedClusterFields(u *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(u.Object, "spec", "managedClusterClientConfigs")
+	unstructured.RemoveNestedField(u.Object, "spec", "leaseDurationSeconds")
+	unstructured.RemoveNestedField(u.Object, "spec", "taints")
+	unstructured.RemoveNestedField(u.Object, "status", "allocatable")
+	unstructured.RemoveNestedField(u.Object, "status", "capacity")
+	unstructured.RemoveNestedField(u.Object, "status", "version")
+	stripConditionTimestamps(u.Object, "status", "conditions")
+}
+
+func stripManagedClusterInfoFields(u *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(u.Object, "spec", "loggingCA")
+	unstructured.RemoveNestedField(u.Object, "status", "loggingEndpoint")
+	unstructured.RemoveNestedField(u.Object, "status", "loggingPort")
+	unstructured.RemoveNestedField(u.Object, "status", "kubeVendor")
+	unstructured.RemoveNestedField(u.Object, "status", "cloudVendor")
+	unstructured.RemoveNestedField(u.Object, "status", "clusterID")
+	stripConditionTimestamps(u.Object, "status", "conditions")
+
+	raw, found, _ := unstructured.NestedFieldNoCopy(u.Object, "status", "nodeList")
+	if found {
+		if nodes, ok := raw.([]any); ok {
+			for _, n := range nodes {
+				node, ok := n.(map[string]any)
+				if !ok {
+					continue
+				}
+				stripConditionTimestamps(node, "conditions")
+			}
+		}
+	}
+}
+
+func stripConditionTimestamps(obj map[string]any, path ...string) {
+	raw, found, _ := unstructured.NestedFieldNoCopy(obj, path...)
+	if !found {
+		return
+	}
+	conditions, ok := raw.([]any)
+	if !ok {
+		return
+	}
+	for _, c := range conditions {
+		m, ok := c.(map[string]any)
+		if !ok {
+			continue
+		}
+		delete(m, "lastTransitionTime")
 	}
 }
 

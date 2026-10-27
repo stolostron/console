@@ -65,3 +65,301 @@ func TestTransformForPassthroughNonUnstructured(t *testing.T) {
 		t.Fatalf("got %v err %v", out, err)
 	}
 }
+
+func TestTransformForStripsAddonFields(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "addon.open-cluster-management.io/v1alpha1",
+		"kind":       "ManagedClusterAddOn",
+		"metadata": map[string]any{
+			"name":      "work-manager",
+			"namespace": "cluster1",
+			"uid":       "uid-1",
+			"annotations": map[string]any{
+				"console.open-cluster-management.io/launch-link": "https://example.com",
+			},
+		},
+		"spec": map[string]any{
+			"installNamespace": "open-cluster-management-agent-addon",
+		},
+		"status": map[string]any{
+			"registrations": []any{
+				map[string]any{"signerName": "s", "subject": map[string]any{"groups": []any{"g"}}},
+			},
+			"supportedConfigs": []any{
+				map[string]any{"group": "g", "resource": "r"},
+			},
+			"configReferences": []any{
+				map[string]any{"group": "g", "resource": "r", "name": "n", "namespace": "ns"},
+			},
+			"healthCheck": map[string]any{"mode": "Lease"},
+			"namespace":   "open-cluster-management-agent-addon",
+			"addOnMeta":   map[string]any{"displayName": "Work Manager", "description": "desc"},
+			"addOnConfiguration": map[string]any{
+				"crdName": "klusterletconfigs.config.open-cluster-management.io",
+				"crName":  "klusterletconfig",
+			},
+			"conditions": []any{
+				map[string]any{
+					"type": "Available", "status": "True",
+					"message": "ok", "reason": "ManagedClusterAddOnLeaseUpdated",
+					"lastTransitionTime": "2024-01-01T00:00:00Z",
+				},
+			},
+		},
+	}}
+
+	spec := watch("ManagedClusterAddOn", "addon.open-cluster-management.io/v1alpha1")
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+
+	for _, path := range [][]string{
+		{"status", "registrations"},
+		{"status", "supportedConfigs"},
+		{"status", "configReferences"},
+		{"status", "healthCheck"},
+		{"status", "namespace"},
+	} {
+		if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, path...); found {
+			t.Errorf("expected %v to be stripped", path)
+		}
+	}
+
+	conds, _, _ := unstructured.NestedSlice(u.Object, "status", "conditions")
+	if len(conds) != 1 {
+		t.Fatalf("expected 1 condition, got %d", len(conds))
+	}
+	c := conds[0].(map[string]any)
+	if _, ok := c["reason"]; !ok {
+		t.Error("condition.reason must be kept")
+	}
+	if _, ok := c["lastTransitionTime"]; ok {
+		t.Error("condition.lastTransitionTime should be stripped")
+	}
+
+	if v, _, _ := unstructured.NestedString(u.Object, "status", "addOnMeta", "displayName"); v != "Work Manager" {
+		t.Error("addOnMeta.displayName must be kept")
+	}
+	if v, _, _ := unstructured.NestedString(u.Object, "spec", "installNamespace"); v != "open-cluster-management-agent-addon" {
+		t.Error("spec.installNamespace must be kept")
+	}
+	if u.GetName() != "work-manager" || u.GetNamespace() != "cluster1" {
+		t.Error("metadata.name and namespace must be kept")
+	}
+}
+
+func TestTransformForStripsManagedClusterFields(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "cluster.open-cluster-management.io/v1",
+		"kind":       "ManagedCluster",
+		"metadata": map[string]any{
+			"name": "cluster1",
+			"uid":  "uid-1",
+			"labels": map[string]any{
+				"local-cluster": "true",
+				"cloud":         "Amazon",
+			},
+		},
+		"spec": map[string]any{
+			"hubAcceptsClient": true,
+			"managedClusterClientConfigs": []any{
+				map[string]any{
+					"url":      "https://api.cluster1.example.com:6443",
+					"caBundle": "LS0tLS1CRUdJTi...(large base64 cert)...",
+				},
+			},
+			"leaseDurationSeconds": int64(60),
+			"taints": []any{
+				map[string]any{"key": "node.open-cluster-management.io/unreachable", "effect": "NoSelect"},
+			},
+		},
+		"status": map[string]any{
+			"allocatable": map[string]any{"cpu": "8", "memory": "32Gi"},
+			"capacity":    map[string]any{"cpu": "8", "memory": "32Gi"},
+			"version":     map[string]any{"kubernetes": "v1.28.0"},
+			"clusterClaims": []any{
+				map[string]any{"name": "id.k8s.io", "value": "cluster1-id"},
+			},
+			"conditions": []any{
+				map[string]any{
+					"type": "ManagedClusterConditionAvailable", "status": "True",
+					"reason": "ManagedClusterAvailable", "message": "ok",
+					"lastTransitionTime": "2024-01-01T00:00:00Z",
+				},
+			},
+		},
+	}}
+
+	spec := watch("ManagedCluster", "cluster.open-cluster-management.io/v1").cluster()
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+
+	for _, path := range [][]string{
+		{"spec", "managedClusterClientConfigs"},
+		{"spec", "leaseDurationSeconds"},
+		{"spec", "taints"},
+		{"status", "allocatable"},
+		{"status", "capacity"},
+		{"status", "version"},
+	} {
+		if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, path...); found {
+			t.Errorf("expected %v to be stripped", path)
+		}
+	}
+
+	conds, _, _ := unstructured.NestedSlice(u.Object, "status", "conditions")
+	if len(conds) != 1 {
+		t.Fatalf("expected 1 condition, got %d", len(conds))
+	}
+	c := conds[0].(map[string]any)
+	if _, ok := c["lastTransitionTime"]; ok {
+		t.Error("condition.lastTransitionTime should be stripped")
+	}
+	if _, ok := c["type"]; !ok {
+		t.Error("condition.type must be kept")
+	}
+
+	if v, _, _ := unstructured.NestedBool(u.Object, "spec", "hubAcceptsClient"); !v {
+		t.Error("spec.hubAcceptsClient must be kept")
+	}
+	claims, _, _ := unstructured.NestedSlice(u.Object, "status", "clusterClaims")
+	if len(claims) != 1 {
+		t.Error("clusterClaims must be kept")
+	}
+	if u.GetLabels()["cloud"] != "Amazon" {
+		t.Error("metadata.labels must be kept")
+	}
+}
+
+func TestTransformForStripsManagedClusterInfoFields(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "internal.open-cluster-management.io/v1beta1",
+		"kind":       "ManagedClusterInfo",
+		"metadata": map[string]any{
+			"name":      "cluster1",
+			"namespace": "cluster1",
+			"uid":       "uid-1",
+		},
+		"spec": map[string]any{
+			"masterEndpoint": "https://api.cluster1.example.com:6443",
+			"loggingCA":      "LS0tLS1CRUdJTi...",
+		},
+		"status": map[string]any{
+			"consoleURL":      "https://console.cluster1.example.com",
+			"version":         "v1.28.0",
+			"kubeVendor":      "OpenShift",
+			"cloudVendor":     "Amazon",
+			"clusterID":       "abc-123",
+			"loggingEndpoint": map[string]any{"ip": "10.0.0.1"},
+			"loggingPort":     map[string]any{"port": int64(9200)},
+			"distributionInfo": map[string]any{
+				"type": "OCP",
+				"ocp":  map[string]any{"version": "4.14.0"},
+			},
+			"conditions": []any{
+				map[string]any{
+					"type": "Upgradeable", "status": "True",
+					"reason": "UpgradeReady", "message": "ok",
+					"lastTransitionTime": "2024-01-01T00:00:00Z",
+				},
+			},
+			"nodeList": []any{
+				map[string]any{
+					"name":     "node1",
+					"capacity": map[string]any{"cpu": "8"},
+					"conditions": []any{
+						map[string]any{
+							"type": "Ready", "status": "True",
+							"lastTransitionTime": "2024-01-01T00:00:00Z",
+						},
+					},
+				},
+			},
+		},
+	}}
+
+	spec := watch("ManagedClusterInfo", "internal.open-cluster-management.io/v1beta1")
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+
+	for _, path := range [][]string{
+		{"spec", "loggingCA"},
+		{"status", "loggingEndpoint"},
+		{"status", "loggingPort"},
+		{"status", "kubeVendor"},
+		{"status", "cloudVendor"},
+		{"status", "clusterID"},
+	} {
+		if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, path...); found {
+			t.Errorf("expected %v to be stripped", path)
+		}
+	}
+
+	conds, _, _ := unstructured.NestedSlice(u.Object, "status", "conditions")
+	if len(conds) != 1 {
+		t.Fatalf("expected 1 condition, got %d", len(conds))
+	}
+	c := conds[0].(map[string]any)
+	if _, ok := c["lastTransitionTime"]; ok {
+		t.Error("condition.lastTransitionTime should be stripped")
+	}
+
+	nodes, _, _ := unstructured.NestedSlice(u.Object, "status", "nodeList")
+	if len(nodes) != 1 {
+		t.Fatal("expected 1 node")
+	}
+	node := nodes[0].(map[string]any)
+	nodeConds := node["conditions"].([]any)
+	nc := nodeConds[0].(map[string]any)
+	if _, ok := nc["lastTransitionTime"]; ok {
+		t.Error("node condition.lastTransitionTime should be stripped")
+	}
+
+	if v, _, _ := unstructured.NestedString(u.Object, "spec", "masterEndpoint"); v == "" {
+		t.Error("spec.masterEndpoint must be kept")
+	}
+	if v, _, _ := unstructured.NestedString(u.Object, "status", "consoleURL"); v == "" {
+		t.Error("status.consoleURL must be kept")
+	}
+	if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, "status", "distributionInfo"); !found {
+		t.Error("status.distributionInfo must be kept")
+	}
+}
+
+func TestTransformForDoesNotStripNonTargetKinds(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "v1",
+		"kind":       "Namespace",
+		"metadata":   map[string]any{"name": "test", "uid": "uid-1"},
+		"status": map[string]any{
+			"conditions": []any{
+				map[string]any{
+					"type": "Ready", "status": "True",
+					"reason": "AllGood", "lastTransitionTime": "2024-01-01T00:00:00Z",
+				},
+			},
+		},
+	}}
+	spec := watch("Namespace", "v1").cluster()
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+	conds, _, _ := unstructured.NestedSlice(u.Object, "status", "conditions")
+	if len(conds) != 1 {
+		t.Fatal("expected 1 condition")
+	}
+	c := conds[0].(map[string]any)
+	if _, ok := c["lastTransitionTime"]; !ok {
+		t.Error("non-target kind condition.lastTransitionTime must NOT be stripped")
+	}
+}
