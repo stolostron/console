@@ -339,9 +339,13 @@ describe('SyncArgoCDModal', () => {
       },
     }
 
-    // Mock a slow sync to test disabled state
+    // Use a deferred promise so the test controls when the sync resolves, keeping
+    // the disabled state open until it has been asserted (avoids a timer-based race)
+    let resolveSync: () => void
     ;(patchResource as jest.Mock).mockReturnValueOnce({
-      promise: new Promise((resolve) => setTimeout(resolve, 100)),
+      promise: new Promise<void>((resolve) => {
+        resolveSync = resolve
+      }),
     })
 
     const modalProps: ISyncArgoCDModalProps = {
@@ -369,6 +373,12 @@ describe('SyncArgoCDModal', () => {
     await waitFor(() => {
       expect(synchronizeButton).toBeDisabled()
       expect(cancelButton).toBeDisabled()
+    })
+
+    // Resolve the sync and let the component settle back to the enabled state
+    resolveSync!()
+    await waitFor(() => {
+      expect(synchronizeButton).not.toBeDisabled()
     })
   })
 
