@@ -762,7 +762,7 @@ export const appSets: ApplicationSet[] = [
         spec: {
           destination: { namespace: 'default', server: '{{server}}' },
           project: 'default',
-          source: { path: '', repoURL: 'http://test.com', targetRevision: '' },
+          source: { path: '', repoURL: 'https://test.com', targetRevision: '' },
           syncPolicy: {
             automated: { prune: true, selfHeal: true },
             syncOptions: ['CreateNamespace=true', 'PruneLast=true'],

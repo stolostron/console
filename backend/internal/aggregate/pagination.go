@@ -35,6 +35,14 @@ type ResultListView struct {
 	Request            RequestListView `json:"request"`
 }
 
+// ============================================================================
+// paginate — POST /aggregate/applications
+// ============================================================================
+//
+// Returns a paginated, optionally filtered/sorted/searched list of all cached
+// applications. When the total item count exceeds the preprocess breakpoint
+// (default 500), the backend applies filters, fuzzy search, sorting, and
+// pagination server-side before SSAR-authorizing only the visible window.
 func (h *Handler) paginate(w http.ResponseWriter, r *http.Request, token string) {
 	var req RequestListView
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {

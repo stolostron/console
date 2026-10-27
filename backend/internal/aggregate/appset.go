@@ -15,10 +15,12 @@ import (
 	"github.com/stolostron/console/backend/internal/auth"
 )
 
+// requestStatuses is the JSON body for POST /aggregate/statuses.
 type requestStatuses struct {
 	Clusters []string `json:"clusters"`
 }
 
+// resultStatuses is the JSON response for POST /aggregate/statuses.
 type resultStatuses struct {
 	ItemCount           string                    `json:"itemCount"`
 	FilterCounts        map[string]map[string]int `json:"filterCounts"`
@@ -26,6 +28,7 @@ type resultStatuses struct {
 	Loading             bool                      `json:"loading"`
 }
 
+// resultAppSetData is the JSON response for POST /aggregate/appSetData.
 type resultAppSetData struct {
 	Appset             map[string]any           `json:"appset"`
 	ClusterList        []string                 `json:"clusterList"`
@@ -36,6 +39,13 @@ type resultAppSetData struct {
 	IsAppSetPullModel  bool                     `json:"isAppSetPullModel"`
 }
 
+// ============================================================================
+// statuses — POST /aggregate/statuses
+// ============================================================================
+//
+// Returns filter counts (type, cluster, health, sync, pod status) and system
+// namespace prefixes for the application table sidebar. Optionally filters by
+// a requested cluster list and SSAR-authorizes the full set.
 func (h *Handler) statuses(w http.ResponseWriter, r *http.Request, token string) {
 	var req requestStatuses
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -86,10 +96,12 @@ func (h *Handler) statuses(w http.ResponseWriter, r *http.Request, token string)
 	})
 }
 
+// itoaCount converts n to a string (the frontend expects itemCount as a JSON string).
 func itoaCount(n int) string {
 	return strconv.Itoa(n)
 }
 
+// incFilterCounts increments the count for each key under the given filter id.
 func incFilterCounts(m map[string]map[string]int, id string, keys []string) {
 	inner := m[id]
 	if inner == nil {
@@ -101,6 +113,8 @@ func incFilterCounts(m map[string]map[string]int, id string, keys []string) {
 	}
 }
 
+// incStatusCounts increments the health/sync/deployed filter count for Argo
+// and AppSet items that have at least one cluster status.
 func incStatusCounts(m map[string]map[string]int, id string, item App, index int) {
 	inner := m[id]
 	if inner == nil {
@@ -117,6 +131,13 @@ func incStatusCounts(m map[string]map[string]int, id string, item App, index int
 	}
 }
 
+// ============================================================================
+// appSetData — POST /aggregate/appSetData
+// ============================================================================
+//
+// Returns the full detail view for a single ApplicationSet: the live resource
+// (fetched with the user token), its cluster list, Placement/PlacementDecision,
+// child Application names, and per-child health/sync status map.
 func (h *Handler) appSetData(w http.ResponseWriter, r *http.Request, token string) {
 	var stub map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&stub); err != nil {
@@ -196,6 +217,7 @@ func (h *Handler) appSetData(w http.ResponseWriter, r *http.Request, token strin
 	})
 }
 
+// eMaps returns in, or an empty non-nil slice if in is nil (for clean JSON output).
 func eMaps(in []map[string]any) []map[string]any {
 	if in == nil {
 		return []map[string]any{}
@@ -203,6 +225,8 @@ func eMaps(in []map[string]any) []map[string]any {
 	return in
 }
 
+// fetchAppSet GETs the ApplicationSet from the cluster using the user's token.
+// Tests can override via h.GetAppSet.
 func (h *Handler) fetchAppSet(ctx context.Context, token string, stub map[string]any) (map[string]any, error) {
 	if h.GetAppSet != nil {
 		return h.GetAppSet(ctx, token, stub)
