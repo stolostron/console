@@ -3,11 +3,12 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { policiesState, policyreportState } from '../../../../../atoms'
-import { nockAggegateRequest, nockSearch } from '../../../../../lib/nock-util'
+import { policiesState } from '../../../../../atoms'
+import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockSearch } from '../../../../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../../../../lib/PluginContext'
 import { clickByText, waitForNotText, waitForText } from '../../../../../lib/test-util'
 import { Policy, PolicyReport } from '../../../../../resources'
+import { clusterPolicyReportIdentity } from '../../../../../resources/policy-report'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import {
   mockSearchQueryArgoAppsStatusSummary,
@@ -147,45 +148,42 @@ const mockCluster: Cluster = {
   isRegionalHubCluster: false,
 }
 
-const mockPolicyReports: PolicyReport[] = [
-  {
-    apiVersion: 'wgpolicyk8s.io/v1alpha2',
-    kind: 'PolicyReport',
-    metadata: {
-      name: 'test-cluster',
-      namespace: 'test-cluster',
-      uid: 'uid.report.risk.1',
-    },
-    results: [
-      {
-        category: 'category,category1,category2',
-        scored: false,
-        source: 'insights',
-        properties: {
-          created_at: '2021-03-02T21:26:04Z',
-          total_risk: '1',
-          component: 'rule.id.3',
-        },
-        message: 'policyreport testing risk 1',
-        policy: 'policyreport testing risk 1 policy',
-        result: 'policyreport testing risk 1 result',
-      },
-      {
-        category: 'category,category1,category2',
-        scored: false,
-        source: 'insights',
-        properties: {
-          created_at: '2021-04-02T21:26:04Z',
-          total_risk: '3',
-          component: 'rule.id.3',
-        },
-        message: 'policyreport testing risk 3',
-        policy: 'policyreport testing risk 3 policy',
-        result: 'policyreport testing risk 3 result',
-      },
-    ],
+const mockPolicyReport: PolicyReport = {
+  ...clusterPolicyReportIdentity('test-cluster'),
+  metadata: {
+    name: 'test-cluster-policyreport',
+    namespace: 'test-cluster',
+    uid: 'uid.report.risk.1',
   },
-]
+  results: [
+    {
+      category: 'category,category1,category2',
+      scored: false,
+      source: 'insights',
+      properties: {
+        created_at: '2021-03-02T21:26:04Z',
+        total_risk: '1',
+        component: 'rule.id.3',
+      },
+      message: 'policyreport testing risk 1',
+      policy: 'policyreport testing risk 1 policy',
+      result: 'policyreport testing risk 1 result',
+    },
+    {
+      category: 'category,category1,category2',
+      scored: false,
+      source: 'insights',
+      properties: {
+        created_at: '2021-04-02T21:26:04Z',
+        total_risk: '3',
+        component: 'rule.id.3',
+      },
+      message: 'policyreport testing risk 3',
+      policy: 'policyreport testing risk 3 policy',
+      result: 'policyreport testing risk 3 result',
+    },
+  ],
+}
 
 const mockPolicies: Policy[] = [
   {
@@ -272,6 +270,9 @@ const statusAggregate = {
 
 describe('StatusSummaryCount', () => {
   beforeEach(() => {
+    queryClient.clear()
+    nockIgnoreApiPaths()
+    nockGet(mockPolicyReport)
     nockSearch(mockSearchQueryOCPApplicationsStatusSummary, mockSearchResponseOCPApplications)
     nockSearch(mockSearchQueryOCPApplicationsStatusSummaryFilteredCount, mockSearchResponseOCPApplicationsCount)
     nockSearch(mockSearchQueryOCPApplicationsCount, mockSearchResponseOCPApplicationsCount)
@@ -287,7 +288,6 @@ describe('StatusSummaryCount', () => {
       <StateProvider
         initializeStore={(store) => {
           store.set(policiesState, mockPolicies)
-          store.set(policyreportState, mockPolicyReports)
         }}
       >
         <QueryClientProvider client={queryClient}>
@@ -319,7 +319,8 @@ describe('StatusSummaryCount', () => {
     expect(push).toHaveBeenCalledTimes(2)
     expect(push.mock.calls[1][0]).toBe('/multicloud/governance/policies?violations=violations')
 
-    await clickByText('6')
+    // Cluster Insights issues (2 insights results)
+    await clickByText('2')
 
     await waitForText('Identified issues')
     await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
@@ -338,7 +339,8 @@ describe('StatusSummaryCount', () => {
 
     await waitForNotText('Policy violations')
 
-    await clickByText('6')
+    await waitFor(() => expect(screen.getByText('2')).toBeInTheDocument())
+    await clickByText('2')
 
     await waitForText('Identified issues')
     await waitForText('0 Critical, 1 Important, 0 Moderate, 1 Low')
