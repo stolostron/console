@@ -8,7 +8,6 @@
   position: sticky;
   top: 0px;
   flex-shrink: 0;
-  box-shadow: var(--pf-t--global--box-shadow--sm--bottom);
   z-index: var(--pf-t--global--z-index--md);
   background-color: var(--pf-t--global--background--color--primary--default);
 }
