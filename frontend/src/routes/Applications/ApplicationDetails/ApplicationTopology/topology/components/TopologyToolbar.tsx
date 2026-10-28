@@ -308,7 +308,7 @@ const TopologyToolbar: FC<
 
   return (
     <Toolbar
-      className="pf-m-toggle-group-container"
+      className="topology-toolbar pf-m-toggle-group-container"
       style={{
         rowGap: '14px',
         width: '100%',
