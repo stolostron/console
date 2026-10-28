@@ -45,6 +45,12 @@ func transformFor(spec WatchSpec) cache.TransformFunc {
 			stripManagedClusterFields(out)
 		case "ManagedClusterInfo":
 			stripManagedClusterInfoFields(out)
+		case "ApplicationSet":
+			stripApplicationSetFields(out)
+		case "Application":
+			if spec.APIVersion == "argoproj.io/v1alpha1" {
+				stripArgoApplicationFields(out)
+			}
 		}
 		return out, nil
 	}
@@ -108,6 +114,19 @@ func stripConditionTimestamps(obj map[string]any, path ...string) {
 		}
 		delete(m, "lastTransitionTime")
 	}
+}
+
+func stripApplicationSetFields(u *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(u.Object, "status", "conditions")
+	unstructured.RemoveNestedField(u.Object, "status", "health")
+	unstructured.RemoveNestedField(u.Object, "spec", "template", "spec")
+	unstructured.RemoveNestedField(u.Object, "spec", "template", "metadata", "name")
+	unstructured.RemoveNestedField(u.Object, "spec", "template", "metadata", "labels")
+}
+
+func stripArgoApplicationFields(u *unstructured.Unstructured) {
+	unstructured.RemoveNestedField(u.Object, "status", "operationState")
+	unstructured.RemoveNestedField(u.Object, "status", "history")
 }
 
 func managedFieldsOf(u *unstructured.Unstructured) []any {

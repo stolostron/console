@@ -334,6 +334,201 @@ func TestTransformForStripsManagedClusterInfoFields(t *testing.T) {
 	}
 }
 
+func TestTransformForStripsApplicationSetFields(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "argoproj.io/v1alpha1",
+		"kind":       "ApplicationSet",
+		"metadata": map[string]any{
+			"name":              "my-appset",
+			"namespace":         "openshift-gitops",
+			"uid":               "uid-1",
+			"creationTimestamp":  "2024-01-01T00:00:00Z",
+		},
+		"spec": map[string]any{
+			"generators": []any{
+				map[string]any{
+					"clusterDecisionResource": map[string]any{
+						"labelSelector": map[string]any{
+							"matchLabels": map[string]any{
+								"cluster.open-cluster-management.io/placement": "my-placement",
+							},
+						},
+					},
+				},
+			},
+			"template": map[string]any{
+				"metadata": map[string]any{
+					"name": "{{name}}-app",
+					"labels": map[string]any{
+						"app": "test",
+					},
+					"annotations": map[string]any{
+						"apps.open-cluster-management.io/ocm-managed-cluster": "true",
+					},
+				},
+				"spec": map[string]any{
+					"destination": map[string]any{"namespace": "default"},
+					"source": map[string]any{
+						"repoURL": "https://github.com/example/repo",
+						"path":    "manifests",
+					},
+					"project": "default",
+				},
+			},
+		},
+		"status": map[string]any{
+			"conditions": []any{
+				map[string]any{
+					"type": "ErrorOccurred", "status": "True",
+					"message": "long error message here",
+					"reason":  "ApplicationValidationError",
+				},
+				map[string]any{
+					"type": "ResourcesUpToDate", "status": "False",
+					"message": "another message",
+					"reason":  "ErrorOccurred",
+				},
+			},
+			"health": map[string]any{
+				"status":  "Degraded",
+				"message": "error details",
+			},
+		},
+	}}
+
+	spec := watch("ApplicationSet", "argoproj.io/v1alpha1").polled()
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+
+	for _, path := range [][]string{
+		{"status", "conditions"},
+		{"status", "health"},
+		{"spec", "template", "spec"},
+		{"spec", "template", "metadata", "name"},
+		{"spec", "template", "metadata", "labels"},
+	} {
+		if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, path...); found {
+			t.Errorf("expected %v to be stripped", path)
+		}
+	}
+
+	if v, _, _ := unstructured.NestedString(u.Object, "spec", "template", "metadata", "annotations",
+		"apps.open-cluster-management.io/ocm-managed-cluster"); v != "true" {
+		t.Error("spec.template.metadata.annotations must be kept (used by isArgoPullModel)")
+	}
+
+	if u.GetName() != "my-appset" || u.GetNamespace() != "openshift-gitops" {
+		t.Error("metadata must be kept")
+	}
+	if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, "spec", "generators"); !found {
+		t.Error("spec.generators must be kept")
+	}
+}
+
+func TestTransformForStripsArgoApplicationFields(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "argoproj.io/v1alpha1",
+		"kind":       "Application",
+		"metadata": map[string]any{
+			"name":      "my-app",
+			"namespace": "openshift-gitops",
+			"uid":       "uid-1",
+		},
+		"spec": map[string]any{
+			"destination": map[string]any{
+				"namespace": "default",
+				"server":    "https://kubernetes.default.svc",
+			},
+			"source": map[string]any{
+				"repoURL": "https://github.com/example/repo",
+				"path":    "manifests",
+			},
+		},
+		"status": map[string]any{
+			"operationState": map[string]any{
+				"phase":      "Succeeded",
+				"message":    "successfully synced",
+				"startedAt":  "2024-01-01T00:00:00Z",
+				"finishedAt": "2024-01-01T00:01:00Z",
+				"syncResult": map[string]any{
+					"resources": []any{
+						map[string]any{"kind": "Deployment", "name": "app"},
+					},
+				},
+			},
+			"history": []any{
+				map[string]any{
+					"id":        float64(1),
+					"revision":  "abc123",
+					"deployedAt": "2024-01-01T00:00:00Z",
+				},
+			},
+			"health": map[string]any{"status": "Healthy"},
+			"sync":   map[string]any{"status": "Synced"},
+			"resources": []any{
+				map[string]any{
+					"kind": "Deployment", "name": "app",
+					"namespace": "default", "status": "Synced",
+				},
+			},
+		},
+	}}
+
+	spec := watch("Application", "argoproj.io/v1alpha1").polled()
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+
+	if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, "status", "operationState"); found {
+		t.Error("status.operationState should be stripped from Argo Application")
+	}
+	if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, "status", "history"); found {
+		t.Error("status.history should be stripped from Argo Application")
+	}
+
+	if v, _, _ := unstructured.NestedString(u.Object, "status", "health", "status"); v != "Healthy" {
+		t.Error("status.health must be kept")
+	}
+	if v, _, _ := unstructured.NestedString(u.Object, "status", "sync", "status"); v != "Synced" {
+		t.Error("status.sync must be kept")
+	}
+	resources, found, _ := unstructured.NestedSlice(u.Object, "status", "resources")
+	if !found || len(resources) != 1 {
+		t.Error("status.resources must be kept")
+	}
+	if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, "spec", "destination"); !found {
+		t.Error("spec.destination must be kept")
+	}
+}
+
+func TestTransformForDoesNotStripNonArgoApplication(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "app.k8s.io/v1beta1",
+		"kind":       "Application",
+		"metadata":   map[string]any{"name": "sub-app", "namespace": "ns", "uid": "uid-1"},
+		"status": map[string]any{
+			"conditions": []any{
+				map[string]any{"type": "Ready", "status": "True"},
+			},
+		},
+	}}
+	spec := watch("Application", "app.k8s.io/v1beta1")
+	out, err := transformFor(spec)(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u := out.(*unstructured.Unstructured)
+	conds, found, _ := unstructured.NestedSlice(u.Object, "status", "conditions")
+	if !found || len(conds) != 1 {
+		t.Error("non-Argo Application should NOT have conditions stripped")
+	}
+}
+
 func TestTransformForDoesNotStripNonTargetKinds(t *testing.T) {
 	in := &unstructured.Unstructured{Object: map[string]any{
 		"apiVersion": "v1",
