@@ -179,9 +179,6 @@
   .pf-v6-c-button {
   outline-width: 0px;
 }
-.topologyDetails .sectionContent .clusterDetails .pf-v6-c-pagination .pf-v6-c-options-menu {
-  display: none;
-}
 .topologyDetails
   .sectionContent
   .clusterDetails
@@ -255,9 +252,6 @@
   .pf-v6-c-pagination__nav-control
   .pf-v6-c-button {
   outline-width: 0px;
-}
-.topologyDetails .sectionContent .appDetails .pf-v6-c-pagination .pf-v6-c-options-menu {
-  display: none;
 }
 .topologyDetails
   .sectionContent

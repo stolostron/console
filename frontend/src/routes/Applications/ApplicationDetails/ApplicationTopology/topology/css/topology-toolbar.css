@@ -34,9 +34,6 @@
 .channel-controls-container .channelsCombo .pf-v6-c-dropdown__menu-item {
   font-size: 14px;
 }
-.channel-controls-container .pf-v6-c-options-menu {
-  display: none;
-}
 .channel-controls-container .label {
   font-family: Red Hat Text;
   font-size: 0.8rem;
