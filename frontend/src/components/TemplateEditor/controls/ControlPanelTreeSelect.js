@@ -245,7 +245,6 @@ class ControlPanelTreeSelect extends React.Component {
                   onKeyPress={this.pressToggle.bind(this)}
                 >
                   <input
-                    className="pf-v6-c-combo-control"
                     aria-label={name}
                     ref={this.setInputRef}
                     spellCheck="false"
