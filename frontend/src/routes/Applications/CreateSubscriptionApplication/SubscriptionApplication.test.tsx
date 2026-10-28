@@ -702,12 +702,9 @@ describe('Create Subscription Application page', () => {
     await commitComboBoxByTestId('githubURL', gitLink)
     await commitComboBoxByTestId('githubBranch', 'test-branch')
     await commitComboBoxByTestId('githubPath', 'test-path2')
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     // pick existing Placement
 
     await waitForText('Select an existing placement configuration')
-    await new Promise((resolve) => setTimeout(resolve, 500))
     await clickElement(screen.getByLabelText(/deploy application resources on clusters with all specified labels/i))
     await clickElement(
       screen.getByRole('radio', {

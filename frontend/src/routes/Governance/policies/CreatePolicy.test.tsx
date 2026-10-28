@@ -67,8 +67,7 @@ describe('Create Policy Page', () => {
   test('can create policy', async () => {
     // create form
     const { container } = render(<TestCreatePolicyPage />)
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await waitForText('Create policy', true)
 
     // step 1 -- name, description, and namespace
     await typeElement(screen.getByRole('textbox', { name: 'Name' }), 'policy1')
@@ -193,8 +192,7 @@ describe('Create Policy Page', () => {
   test('can switch to existing placement in Placement mode', async () => {
     // The PlacementBinding points to a Placement to activate Placement mode
     render(<TestCreatePolicyPage initialResources={[mockPolicy[2], mockPlacementBindings[0]]} />)
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await waitForText('Create policy', true)
     await clickElement(screen.getByRole('button', { name: 'Next' }))
     await clickElement(screen.getByRole('button', { name: 'Next' }))
     await waitForText('How do you want to select clusters?')
@@ -226,8 +224,7 @@ describe('Create Policy Page', () => {
       />
     )
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
+    await waitForText('Create policy', true)
     expect(screen.getByRole('textbox', { name: 'Name' })).not.toHaveAttribute('readonly')
     await clearElement(screen.getByRole('textbox', { name: 'Name' }))
     await typeElement(screen.getByRole('textbox', { name: 'Name' }), 'policy2')

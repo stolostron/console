@@ -32,13 +32,19 @@ const createAlert = (overrides: Partial<TopologyAlert> = {}): TopologyAlert => (
 })
 
 describe('TopologyAlerts', () => {
+  let usingFakeTimers = false
+
   beforeEach(() => {
     jest.useFakeTimers()
+    usingFakeTimers = true
   })
 
   afterEach(() => {
-    jest.runOnlyPendingTimers()
+    if (usingFakeTimers) {
+      jest.runOnlyPendingTimers()
+    }
     jest.useRealTimers()
+    usingFakeTimers = false
   })
 
   it('renders the processing overlay', () => {
@@ -202,7 +208,6 @@ describe('TopologyAlerts', () => {
   })
 
   it('has no accessibility violations', async () => {
-    jest.useRealTimers()
     const { container } = render(
       <TopologyAlerts
         alerts={[
@@ -215,10 +220,12 @@ describe('TopologyAlerts', () => {
     )
 
     // Allow staggered alert render to complete
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 150))
+    act(() => {
+      jest.advanceTimersByTime(150)
     })
 
+    jest.useRealTimers()
+    usingFakeTimers = false
     expect(await axe(container)).toHaveNoViolations()
   })
 })

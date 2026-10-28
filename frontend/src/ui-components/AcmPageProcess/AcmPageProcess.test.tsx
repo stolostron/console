@@ -1,22 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState, useEffect } from 'react'
 import { render, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { AcmPageProcess } from './AcmPageProcess'
 import { AcmButton } from '../AcmButton/AcmButton'
 
 describe('AcmPageProcess', () => {
-  const PageProcess = () => {
-    const [isLoading, setIsLoading] = useState<boolean>(true)
-
-    useEffect(() => {
-      setTimeout(() => setIsLoading(false), 750)
-    }, [])
-
+  const PageProcess = (props: { isLoading: boolean }) => {
     return (
       <AcmPageProcess
-        isLoading={isLoading}
+        isLoading={props.isLoading}
         loadingTitle="Destroying"
         loadingMessage="Destroying resource"
         successTitle="Resource destroyed"
@@ -33,9 +26,10 @@ describe('AcmPageProcess', () => {
   }
 
   test('renders', async () => {
-    const { getByText } = render(<PageProcess />)
+    const { getByText, rerender } = render(<PageProcess isLoading={true} />)
     expect(getByText('Destroying')).toBeInTheDocument()
     expect(getByText('Destroying resource')).toBeInTheDocument()
+    rerender(<PageProcess isLoading={false} />)
     await waitFor(() => expect(getByText('Resource destroyed')).toBeInTheDocument())
     expect(getByText('Resource was destroyed')).toBeInTheDocument()
     expect(getByText('Back to Cluster management')).toBeInTheDocument()

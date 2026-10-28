@@ -4,6 +4,7 @@
 import i18n from 'i18next'
 import { v4 as uuidv4 } from 'uuid'
 import { nockIgnoreApiPaths, nockList, nockOff } from '../../../../../lib/nock-util'
+import { waitForNock } from '../../../../../lib/test-util'
 import type { DetailItem, DetailsList, HelmReleaseDetector, NodeLike, ResourceAction, Translator } from '../types'
 import {
   addIngressNodeInfo,
@@ -1355,7 +1356,7 @@ describe('processResourceActionLink open argo editor', () => {
     cluster: 'local-cluster',
   }
   const result = ''
-  it('processResourceActionLink open argo editor', () => {
+  it('processResourceActionLink open argo editor', async () => {
     const listRoutes = {
       apiVersion: 'route.openshift.io/v1',
       kind: 'routes',
@@ -1363,8 +1364,9 @@ describe('processResourceActionLink open argo editor', () => {
         namespace: 'argo_test',
       },
     }
-    nockList(listRoutes, []) // get all 'routes' in 'argo_test' namespace
+    const routesNock = nockList(listRoutes, []) // get all 'routes' in 'argo_test' namespace
     expect(processResourceActionLink(genericLink, () => {}, t, 'local-cluster')).toEqual(result)
+    await waitForNock(routesNock)
   })
 })
 

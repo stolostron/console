@@ -540,7 +540,7 @@ describe('Create Argo Application Set', () => {
   })
 
   test('can render Edit Argo Application Page', async () => {
-    nockList(
+    const applicationSetNock = nockList(
       {
         apiVersion: 'argoproj.io/v1alpha1',
         kind: 'applicationsets',
@@ -557,7 +557,7 @@ describe('Create Argo Application Set', () => {
       </StateProvider>
     )
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    await waitForNocks([applicationSetNock])
     await waitForText('Edit application set - Pull model')
   })
 })

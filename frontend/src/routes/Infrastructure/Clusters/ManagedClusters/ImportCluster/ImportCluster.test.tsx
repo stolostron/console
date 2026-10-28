@@ -1293,7 +1293,6 @@ describe('Import cluster RHOCM mode', () => {
     // Third credential should now be selected
     // Click on the button with the name "Credential Options menu"
     await clickElement(screen.getByRole('combobox', { name: 'Credential' }))
-    // await new Promise((resolve) => setTimeout(resolve, 500))
     expect(screen.getAllByText(mockCRHCredential3.metadata.name!).length).toBeGreaterThan(0)
   })
 })

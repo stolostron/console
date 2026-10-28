@@ -848,8 +848,6 @@ describe('CreateCluster AWS', () => {
     // create the form
     render(<Component />)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
 
@@ -926,8 +924,6 @@ describe('CreateCluster AWS', () => {
     // create the form
     render(<Component subscriptions={[subscriptionOperator]} />)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     // wait for tables/combos to fill in
 
     await waitForNocks(initialNocks)
@@ -994,8 +990,6 @@ describe('CreateCluster AWS', () => {
 
     // create the form
     render(<Component />)
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
@@ -1067,8 +1061,6 @@ describe('CreateCluster AWS', () => {
         <Component />
       </PluginContext.Provider>
     )
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
@@ -1182,11 +1174,8 @@ describe('CreateCluster on premise', () => {
       await pasteByTestId('form-input-pullSecret-field', pullSecretAI)
 
       // transition to Automation
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
+      await waitFor(() => expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled())
       await clickByText('Next')
-      // The test is flaky here
-      await new Promise((resolve) => setTimeout(resolve, 500))
       await waitForText('Automation template')
 
       // skip Automation to the Review and Save step
@@ -1510,8 +1499,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     ]
     render(<Component />)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)
 
@@ -1713,8 +1700,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
     ]
     render(<AutomationComponent />)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     await waitForNocks(initialNocks)
 
     await waitForText('Cluster details', true)
@@ -1821,8 +1806,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
     render(<AutomationComponent curator={installPrehookCurator} />)
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
     await waitForNocks(initialNocks)
 
@@ -2322,8 +2305,6 @@ describe('CreateCluster KubeVirt with RH OpenShift Virtualization credential tha
       nockList(storageClass as IResource, [storageClass] as IResource[]),
     ]
     render(<Component />)
-
-    await new Promise((resolve) => setTimeout(resolve, 500))
 
     // wait for tables/combos to fill in
     await waitForNocks(initialNocks)

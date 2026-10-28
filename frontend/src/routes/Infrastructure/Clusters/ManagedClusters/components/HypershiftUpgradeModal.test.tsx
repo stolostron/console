@@ -14,7 +14,7 @@ import { ConfigMap, NodePool } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { Provider } from '../../../../../ui-components'
 import { HypershiftUpgradeModal } from './HypershiftUpgradeModal'
-import { clickElement } from '~/lib/test-util'
+import { clickElement, waitForNock } from '~/lib/test-util'
 
 /** Expand nodepool group: section has data-testid or use button named by "Cluster node pools" toggle content. */
 function getNodepoolGroupToggle() {
@@ -3361,7 +3361,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await clickElement(npGroupCheckbox)
 
     // Mock the PATCH request for ClusterCurator - control plane only
-    nockPatch(
+    const patchNock = nockPatch(
       {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         kind: 'ClusterCurator',
@@ -3384,7 +3384,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
 
     const upgradeButton = screen.getByText('Update')
     await clickElement(upgradeButton)
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    await waitForNock(patchNock)
   })
 
   it('should execute upgrade - nodepools only selective (lines 901-904, 918-923)', async () => {
@@ -3399,7 +3399,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await clickElement(firstNP)
 
     // Mock the PATCH request for ClusterCurator - nodepools only
-    nockPatch(
+    const patchNock = nockPatch(
       {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         kind: 'ClusterCurator',
@@ -3423,7 +3423,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
 
     const upgradeButton = screen.getByText('Update')
     await clickElement(upgradeButton)
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    await waitForNock(patchNock)
   })
 
   it('should execute upgrade - both CP and selective nodepools (lines 925, 929-930)', async () => {
@@ -3435,7 +3435,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
     await clickElement(firstNP)
 
     // Mock the PATCH request for ClusterCurator
-    nockPatch(
+    const patchNock = nockPatch(
       {
         apiVersion: 'cluster.open-cluster-management.io/v1beta1',
         kind: 'ClusterCurator',
@@ -3458,7 +3458,7 @@ describe('HypershiftUpgradeModal - ClusterCurator Integration', () => {
 
     const upgradeButton = screen.getByText('Update')
     await clickElement(upgradeButton)
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    await waitForNock(patchNock)
   })
 
   it('should auto-check nodepools when CP is a major version ahead (5.0 vs 4.x)', async () => {
