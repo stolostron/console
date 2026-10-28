@@ -22,17 +22,8 @@
   font-weight: 400;
   font-size: 14px;
 }
-.channel-controls-container .channelsCombo .pf-v6-c-dropdown,
 .channel-controls-container .channelsCombo #comboChannel {
   width: 100%;
-}
-.channel-controls-container .channelsCombo .pf-v6-c-dropdown__toggle-text {
-  white-space: normal;
-  text-align: left;
-  font-size: 14px;
-}
-.channel-controls-container .channelsCombo .pf-v6-c-dropdown__menu-item {
-  font-size: 14px;
 }
 .channel-controls-container .label {
   font-family: Red Hat Text;
