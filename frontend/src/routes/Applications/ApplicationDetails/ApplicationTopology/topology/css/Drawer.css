@@ -244,25 +244,6 @@
   .pf-v6-c-accordion__toggle::after {
   width: 0px;
 }
-.topologyDetails
-  .sectionContent
-  .clusterDetails
-  .pf-v6-c-accordion
-  .clusterDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded
-  .pf-v6-c-accordion__expanded-content-body {
-  padding-left: 0px;
-  padding-top: 0px;
-}
-.topologyDetails
-  .sectionContent
-  .clusterDetails
-  .pf-v6-c-accordion
-  .clusterDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded
-  .pf-v6-c-accordion__expanded-content-body::after {
-  width: 0px;
-}
 .topologyDetails .sectionContent .appDetails .pf-v6-c-pagination .pf-v6-c-pagination__total-items {
   display: none;
 }
@@ -318,25 +299,6 @@
   outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion .appDetailItem .pf-v6-c-accordion__toggle::after {
-  width: 0px;
-}
-.topologyDetails
-  .sectionContent
-  .appDetails
-  .pf-v6-c-accordion
-  .appDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded
-  .pf-v6-c-accordion__expanded-content-body {
-  padding-left: 0px;
-  padding-top: 0px;
-}
-.topologyDetails
-  .sectionContent
-  .appDetails
-  .pf-v6-c-accordion
-  .appDetailItem
-  .pf-v6-c-accordion__expanded-content.pf-m-expanded
-  .pf-v6-c-accordion__expanded-content-body::after {
   width: 0px;
 }
 .topologyDetails .label {
