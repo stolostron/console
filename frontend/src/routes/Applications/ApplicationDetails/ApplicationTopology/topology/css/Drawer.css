@@ -179,18 +179,6 @@
   .pf-v6-c-button {
   outline-width: 0px;
 }
-.topologyDetails
-  .sectionContent
-  .clusterDetails
-  .pf-v6-c-select
-  .pf-v6-c-select__toggle
-  .pf-v6-c-select__toggle-wrapper
-  .pf-v6-c-form-control:focus {
-  outline-width: 0px;
-}
-.topologyDetails .sectionContent .clusterDetails .pf-v6-c-select .pf-v6-c-select__toggle .pf-v6-c-button:focus {
-  outline-width: 0px;
-}
 .topologyDetails .sectionContent .clusterDetails .pf-v6-c-accordion {
   --pf-v6-c-accordion__item--m-expanded--before--Opacity: 0;
   --pf-v6-c-accordion__toggle--m-expanded__toggle-text--FontWeight: var(--pf-t--global--font--weight--body--default);
@@ -251,18 +239,6 @@
   .pf-v6-c-pagination__nav
   .pf-v6-c-pagination__nav-control
   .pf-v6-c-button {
-  outline-width: 0px;
-}
-.topologyDetails
-  .sectionContent
-  .appDetails
-  .pf-v6-c-select
-  .pf-v6-c-select__toggle
-  .pf-v6-c-select__toggle-wrapper
-  .pf-v6-c-form-control:focus {
-  outline-width: 0px;
-}
-.topologyDetails .sectionContent .appDetails .pf-v6-c-select .pf-v6-c-select__toggle .pf-v6-c-button:focus {
   outline-width: 0px;
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion {
