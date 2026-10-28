@@ -5,7 +5,3 @@
 .pf-v6-c-modal-box.onboarding-modal-class > .pf-v6-c-modal-box__close + * {
   margin-inline-end: 0px;
 }
-
-.onboarding-modal-footer .pf-v6-c-expandable-section__toggle-text {
-  color: var(--pf-t--global--text--color--100);
-}
