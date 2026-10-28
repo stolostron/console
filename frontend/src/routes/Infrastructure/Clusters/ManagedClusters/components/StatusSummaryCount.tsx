@@ -2,20 +2,21 @@
 
 import { useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
+import { useClusterPolicyReport } from '../../../../../hooks/usePolicyReports'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { PluginContext } from '../../../../../lib/PluginContext'
 import { SupportedAggregate, useAggregate } from '../../../../../lib/useAggregates'
 import { getClusterNavPath, NavigationPath } from '../../../../../NavigationPath'
-import { useSharedValue, useSharedAtoms } from '../../../../../shared-atoms'
+import { useSharedAtoms } from '../../../../../shared-atoms'
 import { AcmCountCardSection, AcmDrawerContext } from '../../../../../ui-components'
 import { useClusterDetailsContext } from '../ClusterDetails/ClusterDetails'
 import { ClusterPolicySidebar } from './ClusterPolicySidebar'
 
 export function StatusSummaryCount() {
-  const { policyreportState, usePolicies } = useSharedAtoms()
-  const policyReports = useSharedValue(policyreportState)
+  const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
   const { cluster } = useClusterDetailsContext()
+  const { policyReport } = useClusterPolicyReport(cluster?.name)
 
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
   const { setDrawerContext } = useContext(AcmDrawerContext)
@@ -24,7 +25,6 @@ export function StatusSummaryCount() {
   const navigate = useNavigate()
 
   const {
-    policyReport,
     policyReportViolations,
     policyReportViolationsCount,
     criticalCount,
@@ -32,14 +32,10 @@ export function StatusSummaryCount() {
     moderateCount,
     lowCount,
   } = useMemo(() => {
-    const policyReport = policyReports.filter(
-      (pr) => pr.metadata.name?.replace('-policyreport', '') === cluster?.name
-    )[0]
     const policyReportViolations = policyReport?.results?.filter((violation) => violation.source === 'insights') || []
     const violationsCount = policyReportViolations.length ?? 0
 
     return {
-      policyReport,
       policyReportViolations,
       policyReportViolationsCount: violationsCount,
       criticalCount: policyReportViolations.filter((item) => item.properties?.total_risk === '4').length,
@@ -47,13 +43,13 @@ export function StatusSummaryCount() {
       moderateCount: policyReportViolations.filter((item) => item.properties?.total_risk === '2').length,
       lowCount: policyReportViolations.filter((item) => item.properties?.total_risk === '1').length,
     }
-  }, [policyReports, cluster?.name])
+  }, [policyReport])
 
   // Show cluster issues sidebar by default if showClusterIssues url param is present
   // This will be true if we are redirected to this page via search results table.
   useEffect(() => {
     const autoShowIssueSidebar = decodeURIComponent(window.location.search).includes('showClusterIssues=true')
-    if (autoShowIssueSidebar && policyReportViolationsCount > 0) {
+    if (autoShowIssueSidebar && policyReport && policyReportViolationsCount > 0) {
       // Add a small delay to ensure the drawer context is ready after location change
       const timeoutId = setTimeout(() => {
         setDrawerContext({
@@ -131,6 +127,7 @@ export function StatusSummaryCount() {
             id: 'clusterIssues',
             count: policyReportViolationsCount,
             countClick: () => {
+              if (!policyReport) return
               setDrawerContext({
                 isExpanded: true,
                 onCloseClick: () => setDrawerContext(undefined),
