@@ -122,9 +122,16 @@ func stripConditionTimestamps(obj map[string]any, path ...string) {
 func stripApplicationSetFields(u *unstructured.Unstructured) {
 	unstructured.RemoveNestedField(u.Object, "status", "conditions")
 	unstructured.RemoveNestedField(u.Object, "status", "health")
-	unstructured.RemoveNestedField(u.Object, "spec", "template", "spec")
 	unstructured.RemoveNestedField(u.Object, "spec", "template", "metadata", "name")
 	unstructured.RemoveNestedField(u.Object, "spec", "template", "metadata", "labels")
+	raw, _, _ := unstructured.NestedFieldNoCopy(u.Object, "spec", "template", "spec")
+	if spec, ok := raw.(map[string]any); ok {
+		for field := range spec {
+			if field != "source" && field != "sources" {
+				delete(spec, field)
+			}
+		}
+	}
 }
 
 func stripArgoApplicationFields(u *unstructured.Unstructured) {

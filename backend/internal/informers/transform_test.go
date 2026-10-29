@@ -3,6 +3,7 @@
 package informers
 
 import (
+	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -142,7 +143,8 @@ func TestTransformForStripsAddonFields(t *testing.T) {
 	if v, _, _ := unstructured.NestedString(u.Object, "status", "addOnMeta", "displayName"); v != "Work Manager" {
 		t.Error("addOnMeta.displayName must be kept")
 	}
-	if v, _, _ := unstructured.NestedString(u.Object, "spec", "installNamespace"); v != "open-cluster-management-agent-addon" {
+	if v, _, _ := unstructured.NestedString(u.Object, "spec", "installNamespace");
+	    v != "open-cluster-management-agent-addon" {
 		t.Error("spec.installNamespace must be kept")
 	}
 	if u.GetName() != "work-manager" || u.GetNamespace() != "cluster1" {
@@ -372,7 +374,11 @@ func TestTransformForStripsApplicationSetFields(t *testing.T) {
 						"repoURL": "https://github.com/example/repo",
 						"path":    "manifests",
 					},
-					"project": "default",
+					"sources": []any{
+						map[string]any{"repoURL": "https://charts.example.com", "chart": "my-chart"},
+					},
+					"project":    "default",
+					"syncPolicy": map[string]any{"automated": map[string]any{"prune": true}},
 				},
 			},
 		},
@@ -397,6 +403,10 @@ func TestTransformForStripsApplicationSetFields(t *testing.T) {
 	}}
 
 	spec := watch("ApplicationSet", "argoproj.io/v1alpha1").polled()
+	wantTemplateSpec, _, _ := unstructured.NestedMap(in.Object, "spec", "template", "spec")
+	delete(wantTemplateSpec, "destination")
+	delete(wantTemplateSpec, "project")
+	delete(wantTemplateSpec, "syncPolicy")
 	out, err := transformFor(spec)(in)
 	if err != nil {
 		t.Fatal(err)
@@ -406,13 +416,19 @@ func TestTransformForStripsApplicationSetFields(t *testing.T) {
 	for _, path := range [][]string{
 		{"status", "conditions"},
 		{"status", "health"},
-		{"spec", "template", "spec"},
+		{"spec", "template", "spec", "destination"},
+		{"spec", "template", "spec", "project"},
+		{"spec", "template", "spec", "syncPolicy"},
 		{"spec", "template", "metadata", "name"},
 		{"spec", "template", "metadata", "labels"},
 	} {
 		if _, found, _ := unstructured.NestedFieldNoCopy(u.Object, path...); found {
 			t.Errorf("expected %v to be stripped", path)
 		}
+	}
+
+	if got, found, err := unstructured.NestedMap(u.Object, "spec", "template", "spec"); err != nil || !found || !reflect.DeepEqual(got, wantTemplateSpec) {
+		t.Fatalf("spec.template.spec must retain only source and sources: got %v, want %v (err %v)", got, wantTemplateSpec, err)
 	}
 
 	if v, _, _ := unstructured.NestedString(u.Object, "spec", "template", "metadata", "annotations",
