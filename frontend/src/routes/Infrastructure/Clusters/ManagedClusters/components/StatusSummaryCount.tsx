@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useContext, useEffect, useMemo } from 'react'
+import { useCallback, useContext, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router'
 import { useClusterPolicyReport } from '../../../../../hooks/usePolicyReports'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
@@ -16,7 +16,13 @@ export function StatusSummaryCount() {
   const { usePolicies } = useSharedAtoms()
   const policies = usePolicies()
   const { cluster } = useClusterDetailsContext()
-  const { policyReport } = useClusterPolicyReport(cluster?.name)
+  const {
+    policyReport,
+    isLoading: isPolicyReportLoading,
+    isError: isPolicyReportError,
+  } = useClusterPolicyReport(cluster?.name)
+  // Avoid treating an in-flight or failed fetch as "no cluster issues".
+  const isPolicyReportUnavailable = isPolicyReportLoading || isPolicyReportError
 
   const { isApplicationsAvailable, isGovernanceAvailable } = useContext(PluginContext)
   const { setDrawerContext } = useContext(AcmDrawerContext)
@@ -49,7 +55,7 @@ export function StatusSummaryCount() {
   // This will be true if we are redirected to this page via search results table.
   useEffect(() => {
     const autoShowIssueSidebar = decodeURIComponent(window.location.search).includes('showClusterIssues=true')
-    if (autoShowIssueSidebar && policyReport && policyReportViolationsCount > 0) {
+    if (autoShowIssueSidebar && !isPolicyReportUnavailable && policyReport && policyReportViolationsCount > 0) {
       // Add a small delay to ensure the drawer context is ready after location change
       const timeoutId = setTimeout(() => {
         setDrawerContext({
@@ -62,7 +68,7 @@ export function StatusSummaryCount() {
 
       return () => clearTimeout(timeoutId)
     }
-  }, [policyReport, policyReportViolationsCount, setDrawerContext])
+  }, [isPolicyReportUnavailable, policyReport, policyReportViolationsCount, setDrawerContext])
 
   const { itemCount } = useAggregate(SupportedAggregate.statuses, { clusters: [cluster.name] })
 
@@ -80,6 +86,37 @@ export function StatusSummaryCount() {
     }
     return violationCount
   }, [policies, cluster])
+
+  const hasClusterIssues = !isPolicyReportUnavailable && policyReportViolationsCount > 0
+  const clusterIssuesTitle =
+    isPolicyReportUnavailable || hasClusterIssues ? t('summary.cluster.issues') : t('summary.cluster.no.issues')
+
+  const getClusterIssuesDescription = useCallback(() => {
+    if (isPolicyReportError) {
+      return t('Unable to retrieve cluster issues.')
+    }
+    if (isPolicyReportLoading) {
+      return t('Loading')
+    }
+    if (hasClusterIssues) {
+      return t('summary.cluster.issues.description.count', {
+        criticalCount,
+        importantCount,
+        moderateCount,
+        lowCount,
+      })
+    }
+    return ''
+  }, [
+    isPolicyReportError,
+    isPolicyReportLoading,
+    hasClusterIssues,
+    criticalCount,
+    importantCount,
+    moderateCount,
+    lowCount,
+    t,
+  ])
 
   return (
     <div style={{ marginTop: '24px' }}>
@@ -125,9 +162,9 @@ export function StatusSummaryCount() {
             : []),
           {
             id: 'clusterIssues',
-            count: policyReportViolationsCount,
+            count: isPolicyReportUnavailable ? 0 : policyReportViolationsCount,
             countClick: () => {
-              if (!policyReport) return
+              if (isPolicyReportUnavailable || !policyReport) return
               setDrawerContext({
                 isExpanded: true,
                 onCloseClick: () => setDrawerContext(undefined),
@@ -135,18 +172,12 @@ export function StatusSummaryCount() {
                 panelContentProps: { minSize: '50%' },
               })
             },
-            title: policyReportViolationsCount > 0 ? t('summary.cluster.issues') : t('summary.cluster.no.issues'),
-            description:
-              policyReportViolationsCount > 0
-                ? t('summary.cluster.issues.description.count', {
-                    criticalCount,
-                    importantCount,
-                    moderateCount,
-                    lowCount,
-                  })
-                : '',
+            title: clusterIssuesTitle,
+            description: getClusterIssuesDescription(),
             // Show the card in danger mode if there is a Critical or Major violation on the cluster
-            isDanger: policyReportViolations.some((item) => Number.parseInt(item.properties?.total_risk, 10) >= 3),
+            isDanger:
+              !isPolicyReportUnavailable &&
+              policyReportViolations.some((item) => Number.parseInt(item.properties?.total_risk, 10) >= 3),
           },
         ]}
       />
