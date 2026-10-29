@@ -3744,6 +3744,7 @@
   "Unable to communicate with the server because the service is unavailable.": "Unable to communicate with the server because the service is unavailable.",
   "Unable to communicate with the server due to a gateway timeout.": "Unable to communicate with the server due to a gateway timeout.",
   "Unable to determine cluster matches.": "Unable to determine cluster matches.",
+  "Unable to retrieve cluster issues.": "Unable to retrieve cluster issues.",
   "Unable to update the resource because of a resource conflict.": "Unable to update the resource because of a resource conflict.",
   "Unauthorized": "Unauthorized",
   "unavailable": "unavailable",
