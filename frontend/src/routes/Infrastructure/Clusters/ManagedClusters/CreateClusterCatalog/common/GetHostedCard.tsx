@@ -1,8 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { CheckIcon } from '@patternfly/react-icons'
 import { CatalogCardItemType, ICatalogCard } from '@stolostron/react-data-view'
 import type { TFunction } from 'i18next'
-import { DOC_LINKS } from '../../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util'
 import { Icon } from '@patternfly/react-core'
 
 function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: boolean, loaded = true): ICatalogCard {
@@ -40,9 +40,7 @@ function GetHostedCard(onNext: () => void, t: TFunction, isHypershiftEnabled: bo
     alertVariant: 'info',
     alertContent:
       loaded && !isHypershiftEnabled ? (
-        <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} target="_blank" rel="noopener noreferrer">
-          {t('View documentation')} <ExternalLinkAltIcon />
-        </a>
+        <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AWS} topPadding={false} />
       ) : undefined,
   }
 }

@@ -89,7 +89,7 @@ export function EditPolicySet() {
       (policySet) => policySet.metadata.namespace == namespace && policySet.metadata.name === name
     )
     if (policySet === undefined) {
-      navigate(NavigationPath.policySets)
+      void navigate(NavigationPath.policySets)
       return
     }
     const policySetPlacementBindings = getPlacementBindingsForResource(policySet, placementBindings)
@@ -129,12 +129,12 @@ export function EditPolicySet() {
             })
           }
           submitForm()
-          navigate(NavigationPath.policySets)
+          void navigate(NavigationPath.policySets)
         })
       }}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.policySets)
+        void navigate(NavigationPath.policySets)
       }}
     />
   )

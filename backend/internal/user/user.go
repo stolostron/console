@@ -52,6 +52,7 @@ func New(opts Options) *Handler {
 	}
 }
 
+// ServeHTTP dispatches /authenticated, /username, and /userpreference.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/authenticated":
@@ -78,6 +79,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// authenticated probes token validity via GET /api and echoes the hub status code.
 func (h *Handler) authenticated(w http.ResponseWriter, r *http.Request) {
 	token := auth.TokenFromRequest(r)
 	if token == "" {
@@ -93,6 +95,7 @@ func (h *Handler) authenticated(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(status)
 }
 
+// username authenticates and returns the TokenReview username as JSON.
 func (h *Handler) username(w http.ResponseWriter, r *http.Request) {
 	token, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r)
 	if !ok {
@@ -117,6 +120,7 @@ func (h *Handler) username(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// userpreference GETs, creates, or patches the UserPreference CR for the authenticated user.
 func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 	token, ok := auth.AuthenticateRequest(r.Context(), h.base, w, r)
 	if !ok {
@@ -210,6 +214,7 @@ func (h *Handler) userpreference(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// preferenceName sanitizes a Kubernetes username into a UserPreference metadata.name.
 func preferenceName(username string) string {
 	if username == "" {
 		return ""
@@ -217,6 +222,7 @@ func preferenceName(username string) string {
 	return sanitizeUsername.ReplaceAllString(strings.ToLower(username), "-")
 }
 
+// writeJSONNull writes a JSON null body with the given status (Node parity for errors).
 func writeJSONNull(w http.ResponseWriter, status int) {
 	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	w.WriteHeader(status)

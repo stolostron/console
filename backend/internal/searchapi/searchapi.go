@@ -100,6 +100,7 @@ func (c *Client) Endpoint(ctx context.Context) string {
 	return c.Discovery().Endpoint(ctx)
 }
 
+// httpClient returns c.HTTP with timeout applied, or a new client when HTTP is nil.
 func (c *Client) httpClient(timeout time.Duration) *http.Client {
 	if c.HTTP != nil {
 		cp := *c.HTTP
@@ -109,6 +110,7 @@ func (c *Client) httpClient(timeout time.Duration) *http.Client {
 	return &http.Client{Timeout: timeout}
 }
 
+// post sends a JSON GraphQL body to the Search endpoint with the service-account Bearer token.
 func (c *Client) post(ctx context.Context, timeout time.Duration, body any) (*Response, error) {
 	raw, err := json.Marshal(body)
 	if err != nil {

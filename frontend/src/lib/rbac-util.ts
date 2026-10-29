@@ -253,7 +253,7 @@ export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<Resource
       resourceAttributes,
       namespaces
     )
-    result.promise.then((flipAuthorization) => {
+    void result.promise.then((flipAuthorization) => {
       if (flipAuthorization) setSomeNamespaceIsAuthorized(!someNamespaceIsAuthorized)
     })
 

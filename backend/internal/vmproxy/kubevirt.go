@@ -2,6 +2,7 @@
 
 package vmproxy
 
+// kubeVirtAPI maps a console VM proxy path to the managed-cluster KubeVirt API path.
 func kubeVirtAPI(urlPath, name, namespace, action string) string {
 	switch urlPath {
 	case "/virtualmachines/update", "/virtualmachines/delete":
@@ -21,6 +22,7 @@ func kubeVirtAPI(urlPath, name, namespace, action string) string {
 	}
 }
 
+// isSubresourceAction reports start/stop/restart/pause/unpause paths that skip JSON content headers.
 func isSubresourceAction(urlPath string) bool {
 	switch urlPath {
 	case "/virtualmachines/start", "/virtualmachines/stop", "/virtualmachines/restart",

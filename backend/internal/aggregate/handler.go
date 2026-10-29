@@ -39,6 +39,8 @@ func NewHandler(engine *Engine, restCfg *rest.Config, access Access) *Handler {
 	}
 }
 
+// stripMulticloud removes the /multicloud prefix so route matching works
+// identically for both /aggregate/* and /multicloud/aggregate/* requests.
 func stripMulticloud(path string) string {
 	const prefix = "/multicloud"
 	if path == prefix {
@@ -50,6 +52,18 @@ func stripMulticloud(path string) string {
 	return path
 }
 
+// ============================================================================
+// ServeHTTP — POST /aggregate/{applications,statuses,appSetData}
+// ============================================================================
+//
+// Main entry point for the application aggregation API. Only POST is accepted.
+// After authenticating the user token it strips the optional /multicloud prefix
+// and dispatches to the appropriate sub-handler:
+//
+//   - /aggregate/applications → paginate (paginated list with optional
+//     server-side filter, sort, and fuzzy search)
+//   - /aggregate/statuses     → statuses (filter counts and system prefixes)
+//   - /aggregate/appSetData   → appSetData (single ApplicationSet detail)
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusNotFound)
@@ -77,10 +91,12 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// writeJSON encodes v as JSON with status 200.
 func writeJSON(w http.ResponseWriter, v any) {
 	writeJSONStatus(w, http.StatusOK, v)
 }
 
+// writeJSONStatus encodes v as JSON with the given HTTP status code.
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
 	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	w.WriteHeader(status)

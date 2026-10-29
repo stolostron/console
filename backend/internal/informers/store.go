@@ -22,10 +22,12 @@ type ResourceKey struct {
 	UID        string `json:"uid,omitempty"`
 }
 
+// CompareKey is a stable sort/dedup identity without UID (apiVersion|kind|ns|name).
 func (k ResourceKey) CompareKey() string {
 	return k.APIVersion + "|" + k.Kind + "|" + k.Namespace + "|" + k.Name
 }
 
+// specRuntime holds the live SharedIndexInformer and sync state for one WatchSpec.
 type specRuntime struct {
 	spec        WatchSpec
 	gvr         schema.GroupVersionResource
@@ -52,6 +54,7 @@ func (c *InformerCache) SetSink(s ResourceSink) {
 	c.mu.Unlock()
 }
 
+// newCache allocates an InformerCache with one specRuntime per WatchSpec (not started).
 func newCache(specs []WatchSpec) *InformerCache {
 	c := &InformerCache{states: make([]*specRuntime, 0, len(specs))}
 	for _, spec := range specs {
@@ -91,6 +94,8 @@ func (c *InformerCache) HasSynced() bool {
 	return true
 }
 
+// objectDedupKey prefers UID so the same object from overlapping specs is listed once;
+// namespace/name is the fallback when UID is empty.
 func objectDedupKey(u *unstructured.Unstructured) string {
 	key := string(u.GetUID())
 	if key == "" {
@@ -286,6 +291,7 @@ type SpecStatus struct {
 	Polled      bool   `json:"polled,omitempty"`
 }
 
+// SpecStatuses returns per-spec sync/unavailable/error state for the debug dump.
 func (c *InformerCache) SpecStatuses() []SpecStatus {
 	if c == nil {
 		return nil

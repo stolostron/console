@@ -164,7 +164,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
           type: 'success',
           autoClose: true,
         })
-        navigate(NavigationPath.clusterPools)
+        void navigate(NavigationPath.clusterPools)
       }
     }
   }
@@ -289,7 +289,7 @@ function CreateClusterPoolWizard(props: { infrastructureType: ClusterPoolInfrast
         portals={Portals}
         createControl={{
           createResource: (resourceJSON) => {
-            createResource(resourceJSON)
+            void createResource(resourceJSON)
           },
           cancelCreate,
           pauseCreate: () => {},

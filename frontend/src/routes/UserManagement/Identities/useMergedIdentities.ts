@@ -62,16 +62,3 @@ export function useMergedUsers(): User[] {
     )
   }, [rbacUsers, mras])
 }
-
-export function useMergedGroups(): Group[] {
-  const { groupsState, multiclusterRoleAssignmentState } = useSharedAtoms()
-  const groupsData = useSharedValue(groupsState)
-  const mras = useSharedValue(multiclusterRoleAssignmentState)
-  return useMemo(() => {
-    const existingNames = new Set(groupsData?.map((g) => g.metadata.name).filter(Boolean) as string[])
-    const mraGroups = groupsFromMulticlusterRoleAssignments(mras ?? [], existingNames)
-    return [...(groupsData ?? []), ...mraGroups].sort((a, b) =>
-      compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')
-    )
-  }, [groupsData, mras])
-}

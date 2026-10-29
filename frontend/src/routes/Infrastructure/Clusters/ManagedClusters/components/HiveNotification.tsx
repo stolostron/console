@@ -85,9 +85,10 @@ export function HiveNotification() {
               role="link"
               id="view-logs"
               className={logsButton}
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
             >
               {t('view.logs')}
-              <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
             </AcmButton>
           </Fragment>
         }
@@ -102,7 +103,7 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
   const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
   if (cluster && cluster.name && cluster.namespace && openShiftConsoleUrl) {
     const response = getHivePod(cluster.namespace, cluster.name, cluster.status)
-    response.then((job) => {
+    void response.then((job) => {
       const podName = job?.metadata.name || ''
       if (podName) {
         window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)

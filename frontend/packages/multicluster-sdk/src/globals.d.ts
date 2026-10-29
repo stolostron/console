@@ -8,11 +8,11 @@ declare global {
   }
 
   interface Window {
-    SERVER_FLAGS: {
-      prometheusBaseURL: string
-      prometheusTenancyBaseURL: string
-      alertManagerBaseURL: string
-      alertmanagerUserWorkloadBaseURL: string
+    SERVER_FLAGS?: {
+      prometheusBaseURL?: string
+      prometheusTenancyBaseURL?: string
+      alertManagerBaseURL?: string
+      alertmanagerUserWorkloadBaseURL?: string
     }
   }
 }

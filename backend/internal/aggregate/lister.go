@@ -14,6 +14,7 @@ type Lister interface {
 // MapLister is a test double for Lister.
 type MapLister map[string][]unstructured.Unstructured
 
+// ListByKind returns cached objects for apiVersion|kind (test double).
 func (m MapLister) ListByKind(apiVersion, kind string) []unstructured.Unstructured {
 	if m == nil {
 		return nil
@@ -21,6 +22,8 @@ func (m MapLister) ListByKind(apiVersion, kind string) []unstructured.Unstructur
 	return m[apiVersion+"|"+kind]
 }
 
+// listKind returns unstructured objects from the informer cache for the given
+// apiVersion and kind. Results are cached per-rebuild via e.listCache.
 func (e *Engine) listKind(apiVersion, kind string) []map[string]any {
 	if e == nil || e.Lister == nil {
 		return nil
@@ -42,6 +45,8 @@ func (e *Engine) listKind(apiVersion, kind string) []map[string]any {
 	return out
 }
 
+// hubClusterName returns the hub cluster's name by finding the ManagedCluster
+// with the "local-cluster=true" label. Falls back to "local-cluster".
 func (e *Engine) hubClusterName() string {
 	for _, obj := range e.listKind("cluster.open-cluster-management.io/v1", "ManagedCluster") {
 		labels := metaLabels(obj)
@@ -54,6 +59,7 @@ func (e *Engine) hubClusterName() string {
 	return "local-cluster"
 }
 
+// uObj builds an unstructured.Unstructured with the given metadata and extra fields (test helper).
 func uObj(apiVersion, kind, name, namespace string, extra map[string]any) unstructured.Unstructured {
 	obj := map[string]any{
 		"apiVersion": apiVersion,

@@ -48,10 +48,12 @@ type StreamTracker interface {
 // AllowAllAccess is for tests.
 type AllowAllAccess struct{}
 
+// Allow always returns true so tests can skip RBAC.
 func (AllowAllAccess) Allow(context.Context, string, Event) (bool, error) {
 	return true, nil
 }
 
+// Prefetch is a no-op for the allow-all checker.
 func (AllowAllAccess) Prefetch(context.Context, string, []Event) {}
 
 type ssarKey struct {
@@ -109,6 +111,7 @@ type SSARAccess struct {
 	byToken map[string]*tokenState
 }
 
+// NewSSARAccess builds an AccessChecker that impersonates each user token for SSAR/SSRR.
 func NewSSARAccess(base *rest.Config) *SSARAccess {
 	return NewSSARAccessWithClient(func(userToken string) (kubernetes.Interface, error) {
 		cfg := auth.UserRESTConfig(base, userToken)
@@ -118,6 +121,7 @@ func NewSSARAccess(base *rest.Config) *SSARAccess {
 	})
 }
 
+// NewSSARAccessWithClient is like NewSSARAccess but injects the Kubernetes client factory (tests).
 func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interface, error)) *SSARAccess {
 	return &SSARAccess{
 		byToken:         map[string]*tokenState{},
@@ -126,11 +130,13 @@ func NewSSARAccessWithClient(newClient func(userToken string) (kubernetes.Interf
 	}
 }
 
+// hashToken maps a bearer token to a stable cache key so raw tokens are not stored as map keys.
 func hashToken(token string) string {
 	sum := sha256.Sum256([]byte(token))
 	return hex.EncodeToString(sum[:])
 }
 
+// apiGroup returns the API group from an apiVersion string (empty for core).
 func apiGroup(apiVersion string) string {
 	gv, err := schema.ParseGroupVersion(apiVersion)
 	if err != nil {
@@ -139,6 +145,7 @@ func apiGroup(apiVersion string) string {
 	return gv.Group
 }
 
+// objectMeta extracts kind, apiVersion, and metadata name/namespace from an SSE event object.
 func objectMeta(ev Event) (kind, apiVersion, name, namespace string) {
 	if ev.Object == nil {
 		return "", "", "", ""
@@ -154,6 +161,7 @@ func objectMeta(ev Event) (kind, apiVersion, name, namespace string) {
 	return kind, apiVersion, name, namespace
 }
 
+// resourceName returns the plural resource from the event GVR when set.
 func resourceName(ev Event) string {
 	if ev.GVR.Resource != "" {
 		return ev.GVR.Resource
@@ -161,6 +169,7 @@ func resourceName(ev Event) string {
 	return ""
 }
 
+// Allow decides whether the user may receive this SSE event (control frames always pass).
 func (a *SSARAccess) Allow(ctx context.Context, token string, ev Event) (bool, error) {
 	switch ev.Type {
 	case TypeStart, TypeEOP, TypeLoaded, TypeSettings:
@@ -219,6 +228,7 @@ func (a *SSARAccess) allowObject(ctx context.Context, token string, ev Event, de
 	return false, nil
 }
 
+// objectSeenKey builds the remembered-allow key for a namespaced object; false when incomplete.
 func objectSeenKey(group, resource, namespace, name string) (seenKey, bool) {
 	if resource == "" || name == "" {
 		return seenKey{}, false
@@ -226,6 +236,7 @@ func objectSeenKey(group, resource, namespace, name string) (seenKey, bool) {
 	return seenKey{group: group, resource: resource, namespace: namespace, name: name}, true
 }
 
+// rememberAllowed records that this token may see the object so a later DELETED can fall back.
 func (a *SSARAccess) rememberAllowed(token string, key seenKey) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -235,6 +246,7 @@ func (a *SSARAccess) rememberAllowed(token string, key seenKey) {
 	st.last = time.Now()
 }
 
+// forgetAllowed drops a remembered namespaced allow and any pending DELETED acks.
 func (a *SSARAccess) forgetAllowed(token string, key seenKey) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -247,6 +259,7 @@ func (a *SSARAccess) forgetAllowed(token string, key seenKey) {
 	st.last = time.Now()
 }
 
+// wasAllowed reports whether the token previously received a namespaced allow for key.
 func (a *SSARAccess) wasAllowed(token string, key seenKey) bool {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -291,6 +304,7 @@ func (a *SSARAccess) takeDeletedAllow(token string, key seenKey) bool {
 	return true
 }
 
+// BeginStream increments the active SSE stream count for the token (for DELETED allow fan-out).
 func (a *SSARAccess) BeginStream(token string) {
 	if a == nil || token == "" {
 		return
@@ -302,6 +316,7 @@ func (a *SSARAccess) BeginStream(token string) {
 	st.last = time.Now()
 }
 
+// EndStream decrements stream count; when the last stream closes, remembered DELETED allows clear.
 func (a *SSARAccess) EndStream(token string) {
 	if a == nil || token == "" {
 		return
@@ -374,6 +389,7 @@ func (a *SSARAccess) Prefetch(ctx context.Context, token string, events []Event)
 	wg.Wait()
 }
 
+// ssarNamespace puts Namespace gets under the object name so SSAR attributes match the apiserver.
 func ssarNamespace(kind, name, namespace string) string {
 	if kind == "Namespace" {
 		return name
@@ -381,21 +397,25 @@ func ssarNamespace(kind, name, namespace string) string {
 	return namespace
 }
 
+// ssarListCluster checks cluster-scoped list via SelfSubjectAccessReview (first RBAC cascade step).
 func (a *SSARAccess) ssarListCluster(ctx context.Context, token, group, resource, kind string) (bool, error) {
 	key := ssarKey{verb: "list", group: group, kind: kind}
 	return a.ssar(ctx, token, key, group, resource, "list", "", "")
 }
 
+// ssarListNamespaced checks namespaced list; used when SelfSubjectRulesReview is incomplete.
 func (a *SSARAccess) ssarListNamespaced(ctx context.Context, token, group, resource, kind, namespace string) (bool, error) {
 	key := ssarKey{verb: "list", group: group, kind: kind, namespace: namespace}
 	return a.ssar(ctx, token, key, group, resource, "list", "", namespace)
 }
 
+// ssarGet checks get on one object; cluster-scoped kinds always confirm via this after SSRR.
 func (a *SSARAccess) ssarGet(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
 	key := ssarKey{verb: "get", group: group, kind: kind, namespace: namespace, name: name}
 	return a.ssar(ctx, token, key, group, resource, "get", name, ssarNamespace(kind, name, namespace))
 }
 
+// incompleteFallback uses namespaced list then get when SelfSubjectRulesReview cannot decide.
 func (a *SSARAccess) incompleteFallback(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
 	if namespace == "" {
 		return a.ssarGet(ctx, token, group, resource, kind, name, namespace)
@@ -410,6 +430,7 @@ func (a *SSARAccess) incompleteFallback(ctx context.Context, token, group, resou
 	return a.ssarGet(ctx, token, group, resource, kind, name, namespace)
 }
 
+// ensureTokenLocked returns (and lazily creates) per-token SSAR/SSRR cache state. Caller holds mu.
 func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	st := a.byToken[th]
 	if st == nil {
@@ -448,6 +469,7 @@ func (a *SSARAccess) ensureTokenLocked(th string) *tokenState {
 	return st
 }
 
+// clientFor returns a shared impersonating client for the token, coalescing concurrent first builds.
 func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 	a.mu.Lock()
 	st := a.ensureTokenLocked(th)
@@ -482,6 +504,7 @@ func (a *SSARAccess) clientFor(token, th string) (kubernetes.Interface, error) {
 	return client, err
 }
 
+// ssar runs one SelfSubjectAccessReview with TTL cache and singleflight for duplicate keys.
 func (a *SSARAccess) ssar(ctx context.Context, token string, key ssarKey, group, resource, verb, name, namespace string) (bool, error) {
 	now := time.Now()
 	th := hashToken(token)
@@ -531,6 +554,7 @@ func (a *SSARAccess) ssar(ctx context.Context, token string, key ssarKey, group,
 	return allowed, nil
 }
 
+// finishFlight publishes an inflight SSAR result, optionally caching it, then unblocks waiters.
 func (a *SSARAccess) finishFlight(th string, key ssarKey, f *inflight, allowed bool, err error, cache bool) {
 	f.allowed = allowed
 	f.err = err
@@ -547,6 +571,7 @@ func (a *SSARAccess) finishFlight(th string, key ssarKey, f *inflight, allowed b
 	close(f.done)
 }
 
+// enforceEntryCap evicts the oldest SSAR cache entries when a token exceeds the per-token cap.
 func (st *tokenState) enforceEntryCap() {
 	if len(st.entries) <= accessCacheMaxEntriesPerToken {
 		return
@@ -575,6 +600,7 @@ func (a *SSARAccess) StartCleanup(ctx context.Context) <-chan struct{} {
 	return ssarcache.StartIf(ctx, accessCleanupEvery, a.cleanup, a != nil)
 }
 
+// cleanup expires SSAR/SSRR entries and drops idle tokens that have no open streams.
 func (a *SSARAccess) cleanup(now time.Time) {
 	a.mu.Lock()
 	defer a.mu.Unlock()

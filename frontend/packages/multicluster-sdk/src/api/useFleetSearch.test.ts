@@ -5,6 +5,7 @@ import {
   SearchResultItemsQueryVariables,
   useSearchResultItemsQuery,
 } from '../internal/search/search-sdk'
+import { toWatchInput } from '../internal/search/watchInput'
 import { SearchInput } from '../types/search'
 import { useFleetSearch } from './useFleetSearch'
 import { useFleetSearchSubscription } from './useFleetSearchSubscription'
@@ -153,7 +154,24 @@ describe('useFleetSearch', () => {
 
       renderHook(() => useFleetSearch(undefined))
 
-      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(expect.objectContaining({ skip: true }))
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: true, variables: undefined })
+      )
+    })
+
+    it('should skip the query when input is null and not send input:[null]', () => {
+      mockUseSearchResultItemsQuery.mockReturnValue({
+        data: undefined,
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      } as any)
+
+      renderHook(() => useFleetSearch(null as unknown as undefined))
+
+      expect(mockUseSearchResultItemsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({ skip: true, variables: undefined })
+      )
     })
 
     it('should pass the correct variables to the query', () => {
@@ -223,7 +241,7 @@ describe('useFleetSearch', () => {
   })
 
   describe('subscription enabled', () => {
-    it('should pass input to useFleetSearchSubscription when subscriptionEnabled is true', () => {
+    it('should pass a watch input (no limit/offset/orderBy) when subscriptionEnabled is true', () => {
       mockUseSearchResultItemsQuery.mockReturnValue({
         data: undefined,
         loading: false,
@@ -231,9 +249,251 @@ describe('useFleetSearch', () => {
         refetch: jest.fn(),
       } as any)
 
-      renderHook(() => useFleetSearch(mockInput, true))
+      const paginated: SearchInput = {
+        ...mockInput,
+        limit: 10,
+        offset: 5,
+        orderBy: 'name asc',
+      }
+      renderHook(() => useFleetSearch(paginated, true))
 
-      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(mockInput)
+      expect(mockUseFleetSearchSubscription).toHaveBeenCalledWith(toWatchInput(paginated))
+    })
+
+    it('should ignore subscription events outside the query cluster filter', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+        limit: -1,
+        orderBy: 'name asc',
+      }
+      const mockRefetch = pendingRefetch()
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'remote-cluster/uid-remote', {
+          ...mockSearchItem,
+          name: 'remote-group',
+          _uid: 'remote-cluster/uid-remote',
+          cluster: 'remote-cluster',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(mockRefetch).not.toHaveBeenCalled()
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.name).toBe('hub-group')
+    })
+
+    it('should apply matching-cluster events when the query filters by cluster', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+        limit: -1,
+        orderBy: 'name asc',
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'local-cluster/uid-new', {
+          ...mockSearchItem,
+          name: 'new-hub-group',
+          _uid: 'local-cluster/uid-new',
+          cluster: 'local-cluster',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name).sort()).toEqual(['hub-group', 'new-hub-group'])
+    })
+
+    it('should resolve cluster from newData for bare-UID INSERT instead of using the UID as cluster', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', {
+          kind: 'Group',
+          name: 'bare-uid-group',
+          cluster: 'local-cluster',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(result.current[0]).toHaveLength(2)
+      const added = result.current[0]!.find((r) => r.metadata?.name === 'bare-uid-group')
+      expect(added?.cluster).toBe('local-cluster')
+      expect(added?.metadata?.uid).toBe('d55b07ae-137f-4b39-8a85-8fd053f8e5e7')
+    })
+
+    it('should resolve bare-UID cluster from the sole query cluster filter when payload omits cluster', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', {
+          kind: 'Group',
+          name: 'filter-cluster-group',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      const added = result.current[0]!.find((r) => r.metadata?.name === 'filter-cluster-group')
+      expect(added?.cluster).toBe('local-cluster')
+      expect(added?.metadata?.uid).toBe('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee')
+    })
+
+    it('should refetch on bare-UID INSERT when cluster cannot be resolved', () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      // No cluster filter on the query and no cluster on the event payload.
+      const pageInput: SearchInput = {
+        filters: [{ property: 'kind', values: ['Group'] }],
+      }
+      const mockRefetch = pendingRefetch()
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', {
+          kind: 'Group',
+          name: 'unknown-cluster-group',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result } = renderHook(() => useFleetSearch(pageInput, true))
+
+      expect(mockRefetch).toHaveBeenCalled()
+      expect(result.current[0]).toHaveLength(1)
+      expect(result.current[0]![0].metadata?.name).toBe('hub-group')
+    })
+
+    it('should UPDATE and DELETE by bare UID against prefixed local _uid values', () => {
+      const hubItem = {
+        ...mockSearchItem,
+        name: 'hub-group',
+        _uid: 'local-cluster/d55b07ae-137f-4b39-8a85-8fd053f8e5e7',
+        cluster: 'local-cluster',
+      }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+      }
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem]))
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent(
+          'UPDATE',
+          'd55b07ae-137f-4b39-8a85-8fd053f8e5e7',
+          { kind: 'Group', name: 'hub-group', cluster: 'local-cluster', label: 'updated=true' },
+          hubItem
+        ),
+        false,
+        undefined,
+      ])
+
+      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true))
+      expect(result.current[0]![0].metadata?.labels).toEqual({ updated: 'true' })
+
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('DELETE', 'd55b07ae-137f-4b39-8a85-8fd053f8e5e7', null, hubItem),
+        false,
+        undefined,
+      ])
+      act(() => {
+        rerender()
+      })
+      expect(result.current[0]).toHaveLength(0)
+    })
+
+    it('should drop off-cluster events from the refetch queue before settleRefetch applies them', async () => {
+      const hubItem = { ...mockSearchItem, name: 'hub-group', _uid: 'local-cluster/uid-hub', cluster: 'local-cluster' }
+      const pageInput: SearchInput = {
+        filters: [
+          { property: 'kind', values: ['Group'] },
+          { property: 'cluster', values: ['local-cluster'] },
+        ],
+        limit: 10,
+      }
+
+      let resolveRefetch: (value: RefetchResult) => void = () => {}
+      const mockRefetch: RefetchMock = jest.fn(
+        () =>
+          new Promise<RefetchResult>((resolve) => {
+            resolveRefetch = resolve
+          })
+      )
+
+      mockUseSearchResultItemsQuery.mockReturnValue(makeQueryMock([hubItem], mockRefetch))
+      // Same-cluster INSERT triggers paginated-unordered refetch
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'local-cluster/uid-b', {
+          ...mockSearchItem,
+          name: 'hub-b',
+          _uid: 'local-cluster/uid-b',
+          cluster: 'local-cluster',
+        }),
+        false,
+        undefined,
+      ])
+
+      const { result, rerender } = renderHook(() => useFleetSearch(pageInput, true))
+      expect(mockRefetch).toHaveBeenCalledTimes(1)
+
+      // Off-cluster INSERT while refetching must not be applied after settle
+      mockUseFleetSearchSubscription.mockReturnValue([
+        makeEvent('INSERT', 'remote-cluster/uid-remote', {
+          ...mockSearchItem,
+          name: 'remote-group',
+          _uid: 'remote-cluster/uid-remote',
+          cluster: 'remote-cluster',
+        }),
+        false,
+        undefined,
+      ])
+      act(() => {
+        rerender()
+      })
+
+      const freshHubB = {
+        ...mockSearchItem,
+        name: 'hub-b',
+        _uid: 'local-cluster/uid-b',
+        cluster: 'local-cluster',
+      }
+      await act(async () => {
+        resolveRefetch({ data: { searchResult: [{ items: [hubItem, freshHubB] }] } })
+      })
+
+      expect(result.current[0]).toHaveLength(2)
+      expect(result.current[0]!.map((r) => r.metadata?.name).sort()).toEqual(['hub-b', 'hub-group'])
     })
 
     it('should surface a subscription error via the error return value', () => {

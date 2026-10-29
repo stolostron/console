@@ -312,7 +312,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addMapper(ManagedClusterAddOnApiVersion, ManagedClusterAddOnKind, setManagedClusterAddons, ['metadata.namespace'])
 
     // setters
-    addSetter('argoproj.io/v1alpha1', 'ArgoCD', setArgoCDsState)
+    addSetter('argoproj.io/v1beta1', 'ArgoCD', setArgoCDsState)
     addSetter(AgentClusterInstallApiVersion, AgentClusterInstallKind, setAgentClusterInstalls)
     addSetter(AgentKindVersion, AgentKind, setAgents)
     addSetter(AgentMachineApiVersion, AgentMachineKind, setAgentMachinesState)
@@ -697,13 +697,13 @@ export function LoadData(props: { children?: ReactNode }) {
               if (process.env.NODE_ENV === 'development' && res.status === 504) {
                 window.location.reload()
               } else {
-                tokenExpired()
+                void tokenExpired()
               }
               break
           }
         })
         .catch(() => {
-          tokenExpired()
+          void tokenExpired()
         })
         .finally(() => {
           setTimeout(checkLoggedIn, 30 * 1000)

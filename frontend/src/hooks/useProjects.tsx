@@ -38,7 +38,7 @@ export function useProjects() {
   const getNamespaces = useSharedValueGetter(namespacesState)
 
   useEffect(() => {
-    rbacCreate(SecretDefinition).then((attributes) =>
+    void rbacCreate(SecretDefinition).then((attributes) =>
       getAuthorizedNamespaces([attributes], getNamespaces())
         .then((namespaces: string[]) => {
           namespaces.sort((a, b) => a.localeCompare(b))

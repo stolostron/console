@@ -881,7 +881,9 @@ results as INSERT, UPDATE, and DELETE events arrive — keeping the data always
 up to date without polling.
 
 Pagination is supported by setting `limit` and `offset` on the `SearchInput`
-object. The caller is responsible for constructing those values.
+object. The caller is responsible for constructing those values. When the
+subscription is enabled, `limit` / `offset` / `orderBy` are stripped from
+`input` for the GraphQL `watch` (those fields are query-only).
 
 | Function | Type |
 | ---------- | ---------- |
@@ -949,7 +951,7 @@ const [resources, loaded, error, refetch] = useFleetSearch(
 ```
 
 
-[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L246)
+[:link: Source](https://github.com/stolostron/console/blob/main/frontend/packages/multicluster-sdk/tree/../src/api/useFleetSearch.ts#L305)
 
 ### :gear: useFleetSearchPoll
 

@@ -13,6 +13,7 @@ type FilterSelections map[string][]string
 // SortBy matches the frontend table sort payload.
 type SortBy struct {
 	Index     *int   `json:"index,omitempty"`
+	ID        string `json:"id,omitempty"`
 	Direction string `json:"direction,omitempty"`
 }
 
@@ -35,6 +36,14 @@ type ResultListView struct {
 	Request            RequestListView `json:"request"`
 }
 
+// ============================================================================
+// paginate — POST /aggregate/applications
+// ============================================================================
+//
+// Returns a paginated, optionally filtered/sorted/searched list of all cached
+// applications. When the total item count exceeds the preprocess breakpoint
+// (default 500), the backend applies filters, fuzzy search, sorting, and
+// pagination server-side before SSAR-authorizing only the visible window.
 func (h *Handler) paginate(w http.ResponseWriter, r *http.Request, token string) {
 	var req RequestListView
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -64,8 +73,10 @@ func (h *Handler) paginate(w http.ResponseWriter, r *http.Request, token string)
 		if req.Search != "" {
 			items = fuseFilter(items, req.Search)
 		}
-		if req.SortBy != nil && req.SortBy.Index != nil && *req.SortBy.Index >= 0 {
-			items = sortApplications(*req.SortBy.Index, req.SortBy.Direction == "desc", items)
+		if req.SortBy != nil {
+			if sortIndex, ok := sortColumnIndex(req.SortBy); ok {
+				items = sortApplications(sortIndex, req.SortBy.Direction == "desc", items)
+			}
 		}
 		if perPage <= 0 {
 			perPage = itemCount

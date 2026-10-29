@@ -9,60 +9,94 @@ import (
 )
 
 const (
-	appSearchLimitDefault    = 5000
-	searchQueryLimit         = 20000
-	preprocessBreakpoint     = 500
-	scoreColumnSize          = 5
-	remoteClusterChunks      = 10
-	firstPassesFastInterval  = 3
+	// appSearchLimitDefault is the maximum number of apps per Search GraphQL page chunk (overridden by APP_SEARCH_LIMIT).
+	appSearchLimitDefault = 5000
+	// searchQueryLimit is the per-input GraphQL result limit sent to Search API.
+	searchQueryLimit = 20000
+	// preprocessBreakpoint is the item count above which the backend pre-filters, sorts, and paginates
+	// server-side instead of sending the full list to the frontend (overridden by PREPROCESS_BREAKPOINT).
+	preprocessBreakpoint = 500
+	// scoreColumnSize is the number of severity buckets in each status column (healthy through unknown).
+	scoreColumnSize = 5
+	// remoteClusterChunks is how many managed clusters are batched into a single Search query for system apps.
+	remoteClusterChunks = 10
+	// firstPassesFastInterval is the number of initial search-loop passes that run at the fast 15-second cadence.
+	firstPassesFastInterval = 3
+	// appSearchIntervalDefault is the seconds between search-loop passes after the fast interval (overridden by APP_SEARCH_INTERVAL).
 	appSearchIntervalDefault = 60
 )
 
-// AppColumns matches Node aggregators/applications.ts.
+// AppColumns are the backend's canonical column indices. The frontend sends a
+// stable column ID with server-side sort requests because users can reorder and
+// hide table columns; these indices remain the fallback for older clients.
 const (
-	colName      = 0
-	colType      = 1
-	colNamespace = 2
-	colClusters  = 3
-	colHealth    = 4
-	colSynced    = 5
-	colDeployed  = 6
-	colCreated   = 7
+	colName      = 0 // application name
+	colType      = 1 // application type (subscription, argo, appset, flux, openshift)
+	colNamespace = 2 // application namespace
+	colClusters  = 3 // target clusters
+	colSources   = 4 // application source paths or chart/package names
+	colHealth    = 5 // health status score
+	colSynced    = 6 // sync status score
+	colDeployed  = 7 // deployed/pod status score
+	colCreated   = 8 // creation timestamp
 )
 
+// appSortColumnIndexes maps stable frontend column IDs to the backend's
+// canonical sort indices.
+var appSortColumnIndexes = map[string]int{
+	"name":      colName,
+	"type":      colType,
+	"namespace": colNamespace,
+	"clusters":  colClusters,
+	"sources":   colSources,
+	"health":    colHealth,
+	"sync":      colSynced,
+	"pod":       colDeployed,
+	"created":   colCreated,
+}
+
+// Score severity levels ordered from best (0) to worst (4). Each status column
+// has scoreColumnSize (5) buckets; these are indices into those count arrays.
 const (
-	scoreHealthy  = 0
-	scoreProgress = 1
-	scoreWarning  = 2
-	scoreDanger   = 3
-	scoreUnknown  = 4
+	scoreHealthy  = 0 // resource is fully healthy / synced / running
+	scoreProgress = 1 // resource is progressing (roll-out, scaling, etc.)
+	scoreWarning  = 2 // resource has a warning condition (pending, creating, terminating)
+	scoreDanger   = 3 // resource is in an error state (crash loop, image pull failure, etc.)
+	scoreUnknown  = 4 // status could not be determined
 )
 
+// Application type identifiers stored in Transform.Type and used for filtering.
 const (
-	kindSubscriptionApp  = "subscription"
-	kindArgo             = "argo"
-	kindAppSet           = "appset"
-	kindFlux             = "flux"
-	kindOpenShift        = "openshift"
-	kindOpenShiftDefault = "openshift-default"
+	kindSubscriptionApp  = "subscription"      // ACM Subscription-based application
+	kindArgo             = "argo"              // standalone Argo CD Application
+	kindAppSet           = "appset"            // Argo CD ApplicationSet
+	kindFlux             = "flux"              // Flux CD application (kustomize or helm)
+	kindOpenShift        = "openshift"         // OpenShift workload (Deployment with owner labels)
+	kindOpenShiftDefault = "openshift-default" // OpenShift workload in a system namespace
 )
 
+// Cache bucket keys for Engine.cache. Each bucket holds a different category
+// of application, split into local (hub informer) and remote (Search API) sources.
 const (
-	cacheSubscription = "subscription"
-	cacheAppSet       = "appset"
-	cacheLocalArgo    = "localArgoApps"
-	cacheRemoteArgo   = "remoteArgoApps"
-	cacheLocalOCP     = "localOCPApps"
-	cacheRemoteOCP    = "remoteOCPApps"
-	cacheLocalSys     = "localSysApps"
-	cacheRemoteSys    = "remoteSysApps"
+	cacheSubscription = "subscription"   // ACM Subscription apps (local informer only)
+	cacheAppSet       = "appset"         // Argo CD ApplicationSets (local informer only)
+	cacheLocalArgo    = "localArgoApps"  // Argo CD Applications discovered from hub informer
+	cacheRemoteArgo   = "remoteArgoApps" // Argo CD Applications discovered from Search
+	cacheLocalOCP     = "localOCPApps"   // OCP workloads on the hub cluster (from Search)
+	cacheRemoteOCP    = "remoteOCPApps"  // OCP workloads on managed clusters (from Search)
+	cacheLocalSys     = "localSysApps"   // system-namespace OCP workloads on the hub (from Search)
+	cacheRemoteSys    = "remoteSysApps"  // system-namespace OCP workloads on managed clusters (from Search)
 )
 
+// cacheKeys lists every cache bucket in the order they are merged when
+// building the full application list for /aggregate/applications.
 var cacheKeys = []string{
 	cacheSubscription, cacheAppSet, cacheLocalArgo, cacheRemoteArgo,
 	cacheLocalOCP, cacheRemoteOCP, cacheLocalSys, cacheRemoteSys,
 }
 
+// appOwnerLabels are label key prefixes that identify an OCP Deployment as
+// belonging to a named application. The first match wins.
 var appOwnerLabels = []string{
 	"kustomize.toolkit.fluxcd.io/name=",
 	"helm.toolkit.fluxcd.io/name=",
@@ -70,16 +104,20 @@ var appOwnerLabels = []string{
 	"app.kubernetes.io/part-of=",
 }
 
+// fluxAnnotations are annotation key pairs whose joint presence on a resource
+// label string identifies it as a Flux CD application.
 var fluxAnnotations = [][2]string{
 	{"helm.toolkit.fluxcd.io/name", "helm.toolkit.fluxcd.io/namespace"},
 	{"kustomize.toolkit.fluxcd.io/name", "kustomize.toolkit.fluxcd.io/namespace"},
 }
 
+// resErrorStates are lowercased pod/resource status strings that map to scoreDanger.
 var resErrorStates = map[string]struct{}{
 	"err": {}, "off": {}, "invalid": {}, "kill": {}, "propagationfailed": {},
 	"imagepullbackoff": {}, "crashloopbackoff": {}, "lost": {},
 }
 
+// resWarningStates are lowercased pod/resource status strings that map to scoreWarning.
 var resWarningStates = map[string]struct{}{
 	"pending": {}, "creating": {}, "terminating": {},
 }
@@ -90,22 +128,27 @@ type StatusEntry struct {
 	Messages []map[string]string `json:"-"`
 }
 
+// emptyStatusEntry returns a StatusEntry with zeroed counts and an empty messages slice.
 func emptyStatusEntry() StatusEntry {
 	return StatusEntry{Counts: make([]int, scoreColumnSize), Messages: []map[string]string{}}
 }
 
+// missingStatusEntry returns a StatusEntry with one scoreUnknown count and a "Missing" message.
 func missingStatusEntry() StatusEntry {
 	return StatusEntry{Counts: []int{0, 0, 0, 0, 1}, Messages: []map[string]string{{"key": "Status", "value": "Missing"}}}
 }
 
+// emptyDeployedEntry returns a zeroed StatusEntry for the deployed column (no "Missing" marker).
 func emptyDeployedEntry() StatusEntry {
 	return StatusEntry{Counts: make([]int, scoreColumnSize), Messages: []map[string]string{}}
 }
 
+// MarshalJSON encodes StatusEntry as [counts, messages] for frontend score columns.
 func (s StatusEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal([]any{s.Counts, s.Messages})
 }
 
+// MarshalJSON encodes ClusterStatuses as {health,synced,deployed} StatusEntry values.
 func (c ClusterStatuses) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]StatusEntry{
 		"health":   c.Health,
@@ -121,6 +164,7 @@ type ClusterStatuses struct {
 	Deployed StatusEntry
 }
 
+// emptyClusterStatuses returns a ClusterStatuses with zeroed health/synced/deployed.
 func emptyClusterStatuses() ClusterStatuses {
 	return ClusterStatuses{
 		Health:   emptyStatusEntry(),
@@ -129,6 +173,7 @@ func emptyClusterStatuses() ClusterStatuses {
 	}
 }
 
+// missingClusterStatuses returns health/synced as "Missing" (unknown) with an empty deployed entry.
 func missingClusterStatuses() ClusterStatuses {
 	return ClusterStatuses{
 		Health:   missingStatusEntry(),
@@ -149,6 +194,7 @@ type Transform struct {
 	Type      string
 	Namespace string
 	Clusters  []string
+	Sources   string
 	Statuses  StatusMap
 	Scores    Scores
 	Created   string
@@ -182,6 +228,7 @@ type UIData struct {
 	AppSetApps          []string    `json:"appSetApps"`
 }
 
+// cloneMap returns a shallow copy of the map (top-level keys only).
 func cloneMap(m map[string]any) map[string]any {
 	if m == nil {
 		return nil
@@ -193,12 +240,16 @@ func cloneMap(m map[string]any) map[string]any {
 	return out
 }
 
+// cacheBucket stores applications in one of three representations:
+// Resources (flat slice), ResourceMap (keyed by page-chunk prefix), or
+// ResourceUIDMap (keyed by UID for merge-on-refresh).
 type cacheBucket struct {
 	Resources      []App
 	ResourceMap    map[string][]App
 	ResourceUIDMap map[string]App
 }
 
+// emptyCache initializes a cache map with an empty bucket for every cacheKey.
 func emptyCache() map[string]*cacheBucket {
 	out := make(map[string]*cacheBucket, len(cacheKeys))
 	for _, k := range cacheKeys {
@@ -207,11 +258,13 @@ func emptyCache() map[string]*cacheBucket {
 	return out
 }
 
+// strVal safely type-asserts v to a string, returning "" on nil or non-string.
 func strVal(v any) string {
 	s, _ := v.(string)
 	return s
 }
 
+// metaMap returns the "metadata" sub-map from a K8s-style unstructured object.
 func metaMap(obj map[string]any) map[string]any {
 	if obj == nil {
 		return nil
@@ -220,10 +273,12 @@ func metaMap(obj map[string]any) map[string]any {
 	return m
 }
 
+// metaName extracts metadata.name from an unstructured object.
 func metaName(obj map[string]any) string {
 	return strVal(metaMap(obj)["name"])
 }
 
+// metaNamespace extracts metadata.namespace from an unstructured object.
 func metaNamespace(obj map[string]any) string {
 	return strVal(metaMap(obj)["namespace"])
 }
@@ -242,32 +297,39 @@ func appSetNameFromMapKey(key string) string {
 	return key
 }
 
+// metaUID extracts metadata.uid from an unstructured object.
 func metaUID(obj map[string]any) string {
 	return strVal(metaMap(obj)["uid"])
 }
 
+// metaCreation extracts metadata.creationTimestamp from an unstructured object.
 func metaCreation(obj map[string]any) string {
 	return strVal(metaMap(obj)["creationTimestamp"])
 }
 
+// metaLabels extracts metadata.labels from an unstructured object.
 func metaLabels(obj map[string]any) map[string]any {
 	m, _ := metaMap(obj)["labels"].(map[string]any)
 	return m
 }
 
+// metaAnnotations extracts metadata.annotations from an unstructured object.
 func metaAnnotations(obj map[string]any) map[string]any {
 	m, _ := metaMap(obj)["annotations"].(map[string]any)
 	return m
 }
 
+// kindOf extracts the top-level "kind" field from an unstructured object.
 func kindOf(obj map[string]any) string {
 	return strVal(obj["kind"])
 }
 
+// apiVersionOf extracts the top-level "apiVersion" field from an unstructured object.
 func apiVersionOf(obj map[string]any) string {
 	return strVal(obj["apiVersion"])
 }
 
+// nestedMap traverses a chain of map keys and returns the final map, or nil.
 func nestedMap(obj map[string]any, keys ...string) map[string]any {
 	cur := obj
 	for _, k := range keys {
@@ -280,6 +342,7 @@ func nestedMap(obj map[string]any, keys ...string) map[string]any {
 	return cur
 }
 
+// nestedString traverses a chain of map keys and returns the leaf value as a string.
 func nestedString(obj map[string]any, keys ...string) string {
 	if len(keys) == 0 {
 		return ""
@@ -298,6 +361,7 @@ func nestedString(obj map[string]any, keys ...string) string {
 	return ""
 }
 
+// nestedSlice traverses a chain of map keys and returns the leaf value as []any.
 func nestedSlice(obj map[string]any, keys ...string) []any {
 	if len(keys) == 0 {
 		return nil
@@ -317,10 +381,13 @@ func nestedSlice(obj map[string]any, keys ...string) []any {
 	return nil
 }
 
+// searchStr returns a top-level string field from a Search result item.
 func searchStr(item map[string]any, key string) string {
 	return strVal(item[key])
 }
 
+// searchFloat returns a top-level numeric field from a Search result item,
+// handling float64, int, and json.Number representations.
 func searchFloat(item map[string]any, key string) float64 {
 	switch v := item[key].(type) {
 	case float64:
@@ -337,8 +404,11 @@ func searchFloat(item map[string]any, key string) float64 {
 	}
 }
 
+// lower is a convenience alias for strings.ToLower.
 func lower(s string) string { return strings.ToLower(s) }
 
+// findObjectWithKey recursively searches obj (maps and slices) for the first
+// map that contains the given key.
 func findObjectWithKey(obj any, key string) map[string]any {
 	switch t := obj.(type) {
 	case map[string]any:
@@ -360,6 +430,8 @@ func findObjectWithKey(obj any, key string) map[string]any {
 	return nil
 }
 
+// placementNameFromSpec extracts the Placement name from an ApplicationSet spec
+// by locating the clusterDecisionResource matchLabels.
 func placementNameFromSpec(spec map[string]any) string {
 	if spec == nil {
 		return ""
@@ -371,6 +443,7 @@ func placementNameFromSpec(spec map[string]any) string {
 	return nestedString(gen, "clusterDecisionResource", "labelSelector", "matchLabels", "cluster.open-cluster-management.io/placement")
 }
 
+// resourcePlural returns a naive plural of a K8s kind (lowercased + "s") for SSAR requests.
 func resourcePlural(kind string) string {
 	k := strings.ToLower(kind)
 	if k == "" {
@@ -382,6 +455,7 @@ func resourcePlural(kind string) string {
 	return k + "s"
 }
 
+// apiGroup splits "group/version" and returns just the group (empty for core resources).
 func apiGroup(apiVersion string) string {
 	if i := strings.Index(apiVersion, "/"); i >= 0 {
 		return apiVersion[:i]

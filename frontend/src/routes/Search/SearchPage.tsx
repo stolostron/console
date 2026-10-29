@@ -410,7 +410,7 @@ export default function SearchPage() {
   ])
 
   useEffect(() => {
-    getUserPreference().then((resp) => {
+    void getUserPreference().then((resp) => {
       setUserPreference(resp)
       setIsUserPreferenceLoading(false)
     })

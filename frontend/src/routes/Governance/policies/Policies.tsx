@@ -673,7 +673,7 @@ export default function PoliciesPage() {
                                   variant="link"
                                   isInline
                                   onClick={() => {
-                                    navigate({
+                                    void navigate({
                                       pathname: generatePath(NavigationPath.editPolicy, {
                                         namespace: item.policy.metadata.namespace!,
                                         name: item.policy.metadata.name!,

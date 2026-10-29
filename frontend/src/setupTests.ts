@@ -271,6 +271,7 @@ void i18n
         translation,
       },
     },
+    showSupportNotice: false,
   })
 
 window.matchMedia =

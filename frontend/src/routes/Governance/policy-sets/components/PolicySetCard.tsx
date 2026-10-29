@@ -172,7 +172,7 @@ export default function PolicySetCard(props: {
                 onEdit={
                   canEditPolicySet
                     ? () => {
-                        navigate(
+                        void navigate(
                           generatePath(NavigationPath.editPolicySet, {
                             namespace: policySet.metadata.namespace,
                             name: policySet.metadata.name,

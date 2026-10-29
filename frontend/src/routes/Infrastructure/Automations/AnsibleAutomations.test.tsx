@@ -4,6 +4,9 @@ import {
   ClusterCurator,
   ClusterCuratorApiVersion,
   ClusterCuratorKind,
+  Namespace,
+  NamespaceApiVersion,
+  NamespaceKind,
   ProviderConnection,
   ProviderConnectionApiVersion,
   ProviderConnectionKind,
@@ -13,9 +16,9 @@ import {
   SubscriptionOperatorKind,
 } from '../../../resources'
 import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { clusterCuratorsState, secretsState, subscriptionOperatorsState } from '../../../atoms'
+import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperatorsState } from '../../../atoms'
 import {
   mockBadRequestStatus,
   nockDelete,
@@ -36,6 +39,16 @@ import {
   waitForNotText,
   waitForText,
 } from '../../../lib/test-util'
+
+const mockNavigate = jest.fn()
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useNavigate: () => mockNavigate,
+  }
+})
 
 const mockUseClusterVersion = createClusterVersionMock()
 jest.mock('../../../hooks/use-cluster-version', () => ({
@@ -141,6 +154,14 @@ const subscriptionOperator: SubscriptionOperator = {
   },
 }
 
+const mockNamespaces: Namespace[] = [
+  {
+    apiVersion: NamespaceApiVersion,
+    kind: NamespaceKind,
+    metadata: { name: 'default' },
+  },
+]
+
 const clusterCurators = [clusterCurator1, clusterCurator2]
 const mockProviderConnections = [mockAnsibleConnection1, mockAnsibleConnection2, mockAnsibleConnection3]
 const mockSubscription = [subscriptionOperator]
@@ -149,6 +170,7 @@ function TestIntegrationPage(props: {
   providerConnections: ProviderConnection[]
   clusterCurators?: ClusterCurator[]
   subscriptions?: SubscriptionOperator[]
+  namespaces?: Namespace[]
 }) {
   return (
     <StateProvider
@@ -156,6 +178,9 @@ function TestIntegrationPage(props: {
         store.set(secretsState, props.providerConnections as Secret[])
         store.set(clusterCuratorsState, props.clusterCurators || [])
         store.set(subscriptionOperatorsState, props.subscriptions || [])
+        if (props.namespaces) {
+          store.set(namespacesState, props.namespaces)
+        }
       }}
     >
       <MemoryRouter initialEntries={[NavigationPath.ansibleAutomations]}>
@@ -185,9 +210,35 @@ function EmptyStateAutomationPage(props: { providerConnections: ProviderConnecti
 
 describe('Automations page', () => {
   beforeEach(() => {
+    mockNavigate.mockClear()
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
+  })
+
+  test('should navigate to the create template page from the toolbar button', async () => {
+    render(
+      <TestIntegrationPage
+        providerConnections={mockProviderConnections}
+        clusterCurators={clusterCurators}
+        namespaces={mockNamespaces}
+      />
+    )
+    await waitForText(clusterCurator1.metadata!.name!)
+    await clickByText('Create automation template')
+    expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.addAnsibleAutomation)
+  })
+
+  test('should navigate to the edit template page from the row action menu', async () => {
+    render(<TestIntegrationPage providerConnections={mockProviderConnections} clusterCurators={clusterCurators} />)
+    await waitForText(clusterCurator1.metadata!.name!)
+    await clickRowKebabAction(1, 'Edit template', 'Ansible automations table')
+    expect(mockNavigate).toHaveBeenCalledWith(
+      generatePath(NavigationPath.editAnsibleAutomation, {
+        namespace: clusterCurator1.metadata!.namespace!,
+        name: clusterCurator1.metadata!.name!,
+      })
+    )
   })
 
   test('should render emptyState', async () => {

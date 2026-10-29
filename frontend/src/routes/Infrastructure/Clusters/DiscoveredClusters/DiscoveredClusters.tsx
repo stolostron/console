@@ -72,7 +72,7 @@ function EmptyStateCRHCredentials(props: { credentials?: ProviderConnection[] })
 
   const onSelect = (credential: string) => {
     sessionStorage.setItem('DiscoveryCredential', credential)
-    navigate(NavigationPath.createDiscovery)
+    void navigate(NavigationPath.createDiscovery)
   }
 
   const action =
@@ -221,12 +221,18 @@ export function DiscoveredClustersTable(props: {
       ],
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-          <a target="_blank" rel="noreferrer" href={discoveredCluster.spec.console} key="dcConsoleURL">
-            <ExternalLinkAltIcon />
-            <span key="dcNamelink" style={{ marginLeft: '16px' }}>
-              {discoveredCluster.spec.displayName}
-            </span>
-          </a>
+          <AcmButton
+            variant="link"
+            component="a"
+            href={discoveredCluster.spec.console}
+            target="_blank"
+            rel="noreferrer"
+            isInline
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="left"
+          >
+            {discoveredCluster.spec.displayName}
+          </AcmButton>
         </span>
       ),
       exportContent: (discoveredCluster) => discoveredCluster.spec.displayName,

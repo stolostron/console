@@ -44,7 +44,7 @@ export const RosaHCPWrapper = () => {
 
   useEffect(() => {
     if (!selectedSecretObj) {
-      navigate(NavigationPath.managedClusters)
+      void navigate(NavigationPath.managedClusters)
     }
   }, [selectedSecretObj, navigate])
 
@@ -272,7 +272,7 @@ export const RosaHCPWrapper = () => {
         onSubmit={async (yamlString: string) => {
           try {
             const { clusterName } = await createRosaHcpCluster(yamlString, selectedSecret)
-            navigate(generatePath(NavigationPath.clusterDetails, { name: clusterName, namespace: clusterName }))
+            void navigate(generatePath(NavigationPath.clusterDetails, { name: clusterName, namespace: clusterName }))
           } catch (err) {
             setSubmitError(err instanceof Error ? err.message : t('An unexpected error occurred.'))
             throw err

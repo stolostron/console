@@ -35,6 +35,7 @@ var opensslCipherID = map[string]uint16{
 
 var ianaCipherID = map[string]uint16{}
 
+// init fills ianaCipherID from Go's known and insecure cipher suites
 func init() {
 	for _, s := range tls.CipherSuites() {
 		ianaCipherID[s.Name] = s.ID
@@ -44,6 +45,7 @@ func init() {
 	}
 }
 
+// lookupCipher resolves an OpenSSL or IANA cipher name to a suite id.
 func lookupCipher(name string) (uint16, bool) {
 	if id, ok := opensslCipherID[name]; ok {
 		return id, true
@@ -57,6 +59,7 @@ func lookupCipher(name string) (uint16, bool) {
 	return 0, false
 }
 
+// isTLS13Cipher reports whether id is a TLS 1.3-only suite (not settable on tls.Config).
 func isTLS13Cipher(id uint16) bool {
 	switch id {
 	case tls.TLS_AES_128_GCM_SHA256, tls.TLS_AES_256_GCM_SHA384, tls.TLS_CHACHA20_POLY1305_SHA256:
@@ -102,6 +105,7 @@ var (
 	fipsECDHCurves = []string{"secp256r1", "secp384r1", "secp521r1", "SecP256r1MLKEM768", "SecP384r1MLKEM1024"}
 )
 
+// allowedCurveSet returns the ECDH curve names permitted for the FIPS mode.
 func allowedCurveSet(fips bool) map[string]struct{} {
 	src := allECDHCurves
 	if fips {
@@ -114,6 +118,7 @@ func allowedCurveSet(fips bool) map[string]struct{} {
 	return set
 }
 
+// filterCurves maps named groups to CurveIDs, dropping unknown and disallowed names.
 func filterCurves(names []string, fips bool) []tls.CurveID {
 	allowed := allowedCurveSet(fips)
 	out := make([]tls.CurveID, 0, len(names))

@@ -7,16 +7,18 @@ import (
 	"unicode/utf8"
 )
 
+// fuseThreshold is the maximum normalised edit-distance score for a match (Fuse.js 6.6.2 default).
 const fuseThreshold = 0.3
 
-// fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over name/namespace/clusters.
+// fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over the
+// application fields exposed as searchable table columns.
 func fuseFilter(items []App, pattern string) []App {
 	if pattern == "" {
 		return items
 	}
 	out := make([]App, 0, len(items))
 	for _, item := range items {
-		texts := []string{item.Transform.Name, item.Transform.Namespace}
+		texts := []string{item.Transform.Name, item.Transform.Namespace, item.Transform.Sources}
 		if len(item.Transform.Clusters) > 0 {
 			texts = append(texts, item.Transform.Clusters[0])
 		}
@@ -33,7 +35,7 @@ func fuseFilter(items []App, pattern string) []App {
 	return out
 }
 
-// bitapScore is Fuse.js Bitap with ignoreLocation (errors / patternLen).
+// bitapScore computes the Fuse.js Bitap score with ignoreLocation (errors / patternLen).
 func bitapScore(pattern, text string) float64 {
 	if pattern == "" {
 		return 0
@@ -58,7 +60,8 @@ func bitapScore(pattern, text string) float64 {
 	return score
 }
 
-// substringDistance is the minimum edit distance between a and any substring of b (Sellers).
+// substringDistance computes the minimum edit distance between a and any
+// substring of b using the Sellers algorithm (O(|a|·|b|) time, O(|b|) space).
 func substringDistance(a, b []rune) int {
 	prev := make([]int, len(b)+1) // row 0 all zeros: free start in b
 	curr := make([]int, len(b)+1)

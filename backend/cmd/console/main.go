@@ -43,6 +43,7 @@ import (
 	"github.com/stolostron/console/backend/internal/vmproxy"
 )
 
+// main starts the console backend and exits non-zero on fatal startup errors.
 func main() {
 	if err := run(); err != nil {
 		applog.Logger().Error("process exit", "error", err)
@@ -50,6 +51,7 @@ func main() {
 	}
 }
 
+// run loads config, wires handlers and informers, and serves until SIGINT/SIGTERM.
 func run() error {
 	cfg := config.Load()
 	applog.SetLevel(cfg.LogLevel)
@@ -218,9 +220,10 @@ func run() error {
 			Client:     auth.HTTPClient(nil, 0),
 		})),
 		server.WithAnsibleTower(ansibletower.New(ansibletower.Options{
-			RESTConfig:         restCfg,
-			HubCA:              sa.CACert,
-			InsecureSkipVerify: cfg.AnsibleInsecureSkipVerify,
+			RESTConfig: restCfg,
+			HubCA:      sa.CACert,
+			// TLS verification opt-in is tracked by ACM-28645: https://redhat.atlassian.net/browse/ACM-28645
+			InsecureSkipVerify: true,
 		})),
 		server.WithPlacementDebug(placementdebug.New(placementdebug.Options{
 			RESTConfig: restCfg,
@@ -269,6 +272,7 @@ func setServiceAccountNamespacePath(path string) func() {
 	return func() { serviceAccountNamespacePath = prev }
 }
 
+// serviceAccountNamespace reads the projected namespace file, else NAMESPACE.
 func serviceAccountNamespace() string {
 	data, err := os.ReadFile(serviceAccountNamespacePath)
 	if err != nil {

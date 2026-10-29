@@ -8,11 +8,8 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	k8sruntime "k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	k8swatch "k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/cache"
 
@@ -31,14 +28,18 @@ var (
 	startSem         chan struct{}
 )
 
+// init sizes the concurrent list/watch start semaphore.
 func init() {
 	resetStartSem()
 }
 
+// resetStartSem recreates the start semaphore (tests and package init).
 func resetStartSem() {
 	startSem = make(chan struct{}, startConcurrency)
 }
 
+// acquireStartSlot blocks until a concurrent list/watch start slot is free, or
+// ctx is canceled. Returns false when canceled so the caller can exit.
 func acquireStartSlot(ctx context.Context) bool {
 	select {
 	case startSem <- struct{}{}:
@@ -48,6 +49,7 @@ func acquireStartSlot(ctx context.Context) bool {
 	}
 }
 
+// releaseStartSlot frees one concurrent list/watch start slot.
 func releaseStartSlot() {
 	<-startSem
 }
@@ -90,6 +92,11 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 	go c.logMemoryWhenReady(ctx)
 }
 
+// runSpec resolves the GVR and starts a SharedIndexInformer for one WatchSpec.
+// GVR resolution failures retry until ctx is canceled. After the informer
+// starts, an initial cache-sync timeout waits for that same informer to sync
+// (or for ctx to end) and then returns — it does not start another informer.
+// Startup concurrency is capped by acquireStartSlot so many specs do not list at once.
 func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapper ResourceMapper, st *specRuntime) {
 	for {
 		if ctx.Err() != nil {
@@ -121,10 +128,19 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			return
 		}
 
-		lw := newListWatch(dyn, gvr, st.spec)
-		inf := cache.NewSharedIndexInformer(lw, &unstructured.Unstructured{}, resyncPeriod, cache.Indexers{
-			cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
-		})
+		// NewFilteredDynamicInformer enables WatchListClient streaming sync
+		// (default since client-go 1.35). The real dynamic client supports it;
+		// set KUBE_FEATURE_WatchListClient=false to force paginated LIST instead.
+		inf := dynamicinformer.NewFilteredDynamicInformer(
+			dyn,
+			gvr,
+			metav1.NamespaceAll,
+			resyncPeriod,
+			cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+			func(options *metav1.ListOptions) {
+				applySelectors(st.spec, options)
+			},
+		).Informer()
 		if err := inf.SetTransform(transformFor(st.spec)); err != nil {
 			applog.Logger().Warn("informer transform", "kind", st.spec.Kind, "error", err)
 		}
@@ -170,20 +186,7 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 	}
 }
 
-func newListWatch(dyn dynamic.Interface, gvr schema.GroupVersionResource, spec WatchSpec) *cache.ListWatch {
-	ns := metav1.NamespaceAll
-	return &cache.ListWatch{
-		ListFunc: func(options metav1.ListOptions) (k8sruntime.Object, error) {
-			applySelectors(spec, &options)
-			return dyn.Resource(gvr).Namespace(ns).List(context.TODO(), options)
-		},
-		WatchFunc: func(options metav1.ListOptions) (k8swatch.Interface, error) {
-			applySelectors(spec, &options)
-			return dyn.Resource(gvr).Namespace(ns).Watch(context.TODO(), options)
-		},
-	}
-}
-
+// applySelectors copies label and field selectors from spec onto list/watch options.
 func applySelectors(spec WatchSpec, options *metav1.ListOptions) {
 	if s := SelectorQuery(spec.LabelSelector); s != "" {
 		options.LabelSelector = s
@@ -193,6 +196,8 @@ func applySelectors(spec WatchSpec, options *metav1.ListOptions) {
 	}
 }
 
+// logMemoryWhenReady waits until HasSynced (or 2m) then logs heap stats once so
+// operators can see informer memory after startup without polling forever.
 func (c *InformerCache) logMemoryWhenReady(ctx context.Context) {
 	ticker := time.NewTicker(2 * time.Second)
 	defer ticker.Stop()
@@ -214,6 +219,7 @@ func (c *InformerCache) logMemoryWhenReady(ctx context.Context) {
 	}
 }
 
+// logHeap logs heapAlloc, heapInuse, and cached item count for informer memory diagnostics.
 func (c *InformerCache) logHeap(msg string) {
 	var ms runtime.MemStats
 	runtime.ReadMemStats(&ms)

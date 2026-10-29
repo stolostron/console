@@ -21,7 +21,7 @@ export type FilterCounts = {
 export interface IRequestListView {
   page: number
   perPage: number
-  sortBy: ISortBy | undefined
+  sortBy: (ISortBy & { id?: string }) | undefined
   search?: string
   filters?: any
 }

@@ -5,10 +5,101 @@ import { axe } from 'jest-axe'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router'
 import { FormData } from './AcmFormData'
-import { AcmDataFormInput, AcmDataFormPage, generalValidationMessage, requiredValidationMessage } from './AcmDataForm'
+import {
+  AcmDataFormDetails,
+  AcmDataFormInput,
+  AcmDataFormPage,
+  generalValidationMessage,
+  requiredValidationMessage,
+} from './AcmDataForm'
 import { clickElement, typeElement } from '~/lib/test-util'
 
 const t = i18next.t.bind(i18next)
+
+function TestWizardPage({ onSubmit }: { onSubmit?: () => void }) {
+  const [first, setFirst] = useState('')
+  const [second, setSecond] = useState('')
+
+  const formData: FormData = {
+    title: 'Wizard form',
+    sections: [
+      {
+        type: 'Section',
+        title: 'First step',
+        inputs: [{ id: 'first', type: 'Text', label: 'First field', value: first, onChange: setFirst }],
+      },
+      {
+        type: 'Section',
+        title: 'Second step',
+        inputs: [{ id: 'second', type: 'Text', label: 'Second field', value: second, onChange: setSecond }],
+      },
+    ],
+    submit: () => onSubmit?.(),
+    cancel: () => undefined,
+    submitText: 'Submit',
+    submittingText: 'Submitting',
+    reviewTitle: 'Review',
+    reviewDescription: 'Review',
+    cancelLabel: 'Cancel',
+    nextLabel: 'Next',
+    backLabel: 'Back',
+    stateToData: () => [{ metadata: { name: 'wizard' } }],
+  }
+
+  return (
+    <MemoryRouter>
+      <AcmDataFormPage formData={formData} mode="wizard" hideYaml />
+    </MemoryRouter>
+  )
+}
+
+function TestYamlFormPage() {
+  const [name, setName] = useState('copy-me')
+
+  const formData: FormData = {
+    title: 'YAML form',
+    sections: [
+      {
+        type: 'Section',
+        title: 'Details',
+        inputs: [{ id: 'name', type: 'Text', label: 'Name', value: name, onChange: setName }],
+      },
+    ],
+    submit: () => undefined,
+    cancel: () => undefined,
+    submitText: 'Submit',
+    submittingText: 'Submitting',
+    reviewTitle: 'Review',
+    reviewDescription: 'Review',
+    cancelLabel: 'Cancel',
+    nextLabel: 'Next',
+    backLabel: 'Back',
+    stateToData: () => [{ metadata: { name } }],
+  }
+
+  return (
+    <MemoryRouter>
+      <AcmDataFormPage formData={formData} mode="form" />
+    </MemoryRouter>
+  )
+}
+
+function TestPasteInput() {
+  const [value, setValue] = useState('')
+  return (
+    <AcmDataFormInput
+      isReadOnly={false}
+      input={{
+        id: 'pasteable',
+        type: 'Text',
+        label: 'Pasteable',
+        placeholder: 'Enter value',
+        value,
+        onChange: setValue,
+      }}
+    />
+  )
+}
 
 function TestFormPage({ showErrors }: { showErrors?: boolean }) {
   const [name, setName] = useState('')
@@ -176,6 +267,110 @@ describe('ACMDataForm', () => {
       // Banner sits between header and form content (not inside the drawer form section only)
       const header = screen.getByRole('heading', { name: 'Test form' })
       expect(header.compareDocumentPosition(alert) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    })
+  })
+
+  describe('wizard navigation', () => {
+    test('advances to the next step when the active section has no errors', async () => {
+      render(<TestWizardPage />)
+
+      // First step is shown; second field is not yet rendered
+      expect(screen.getByLabelText('First field')).toBeInTheDocument()
+      expect(screen.queryByLabelText('Second field')).not.toBeInTheDocument()
+
+      await clickElement(screen.getByRole('button', { name: /^Next$/i }))
+
+      // goToNextStep advanced the wizard to the second section
+      expect(await screen.findByLabelText('Second field')).toBeInTheDocument()
+    })
+  })
+
+  describe('YAML drawer clipboard', () => {
+    test('copies the YAML representation of the form state to the clipboard', async () => {
+      const writeText = jest.fn().mockResolvedValue(undefined)
+      Object.assign(navigator, { clipboard: { writeText } })
+      localStorage.setItem('yaml', 'true')
+
+      try {
+        render(<TestYamlFormPage />)
+
+        await clickElement(screen.getByRole('button', { name: /copy to clipboard/i }))
+
+        expect(writeText).toHaveBeenCalledTimes(1)
+        expect(writeText).toHaveBeenCalledWith(expect.stringContaining('name: copy-me'))
+      } finally {
+        localStorage.removeItem('yaml')
+      }
+    })
+  })
+
+  describe('paste input button', () => {
+    test('reads from the clipboard and sets the input value', async () => {
+      const readText = jest.fn().mockResolvedValue('pasted-value')
+      Object.assign(navigator, { clipboard: { readText } })
+
+      render(<TestPasteInput />)
+
+      await clickElement(screen.getByRole('button', { name: 'Paste' }))
+
+      expect(readText).toHaveBeenCalledTimes(1)
+      expect(await screen.findByDisplayValue('pasted-value')).toBeInTheDocument()
+    })
+  })
+
+  describe('details-mode secret values (ACM-48319)', () => {
+    const longSecret = `{"auths":{"registry.redhat.io":{"auth":"${'E2OFJJNjdZWUY2ODZmQWhjNW9mMUM3TDNESHdDU'.repeat(20)}"}}}`
+    const multilineSecret = ['-----BEGIN CERTIFICATE-----', 'A'.repeat(600), '', 'A'.repeat(600), ''].join('\n')
+
+    function detailsFormData(value: string): FormData {
+      return {
+        title: 'Credential',
+        sections: [
+          {
+            type: 'Section',
+            title: 'Pull secret',
+            inputs: [
+              {
+                id: 'pullSecret',
+                type: 'TextArea',
+                label: 'Pull secret',
+                value,
+                onChange: () => undefined,
+                isSecret: true,
+              },
+            ],
+          },
+        ],
+        submit: () => undefined,
+        cancel: () => undefined,
+        submitText: 'Submit',
+        submittingText: 'Submitting',
+        reviewTitle: 'Review',
+        reviewDescription: 'Review',
+        cancelLabel: 'Cancel',
+        nextLabel: 'Next',
+        backLabel: 'Back',
+        stateToData: () => [{}],
+      }
+    }
+
+    test.each([
+      ['a long single-line secret', longSecret],
+      ['a multiline secret', multilineSecret],
+    ])('revealing %s keeps the value wrappable instead of widening the page', async (_name, value) => {
+      const { container } = render(<AcmDataFormDetails formData={detailsFormData(value)} />)
+
+      expect(screen.getByText('****************')).toBeInTheDocument()
+
+      await clickElement(screen.getByRole('button', { name: /reveal credentials/i }))
+
+      const valueCell = container.querySelector('.pf-v6-l-split__item.pf-m-fill') as HTMLElement
+      expect(valueCell).toBeInTheDocument()
+      expect(valueCell).toHaveStyle({ whiteSpace: 'pre-wrap' })
+      expect(valueCell).toHaveStyle({ overflowWrap: 'anywhere' })
+
+      const revealButton = screen.getByRole('button', { name: /hide credentials/i })
+      expect(valueCell.contains(revealButton)).toBe(false)
     })
   })
 })

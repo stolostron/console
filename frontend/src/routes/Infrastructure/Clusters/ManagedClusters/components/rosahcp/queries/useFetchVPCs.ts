@@ -38,7 +38,7 @@ export const useFetchVPCs = (selectedSecret: SelectedSecret) => {
   const fetch = useCallback(
     async (args: FetchVPCsArgs): Promise<void> => {
       if (args.account_id === awsAccountId && args.role_arn === installerRoleArn && args.region === region) {
-        refetch()
+        void refetch()
       } else {
         setAwsAccountId(args.account_id)
         setInstallerRoleArn(args.role_arn)

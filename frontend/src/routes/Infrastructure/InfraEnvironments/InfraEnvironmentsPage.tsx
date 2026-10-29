@@ -118,7 +118,7 @@ const deleteInfraEnv = (
 
   return {
     promise: new Promise((resolve, reject) => {
-      deleteResourcesResult.promise.then((promisesSettledResult) => {
+      void deleteResourcesResult.promise.then((promisesSettledResult) => {
         if (promisesSettledResult[0]?.status === 'rejected') {
           const error = promisesSettledResult[0].reason
           if (error) {
@@ -646,7 +646,7 @@ const InfraEnvsTable: React.FC<InfraEnvsTableProps> = ({ infraEnvs, agents, agen
                     <AcmButton
                       variant="primary"
                       onClick={() => {
-                        navigate(NavigationPath.createInfraEnv)
+                        void navigate(NavigationPath.createInfraEnv)
                       }}
                       isDisabled={!isCIMWorking}
                       tooltip={

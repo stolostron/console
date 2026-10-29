@@ -110,7 +110,7 @@ export function useFleetK8sWatchResource<R extends FleetK8sResourceCommon | Flee
     if (useFleet && !isResourceNull && backendPathLoaded && backendAPIPath && !modelLoading && model) {
       const requestPath = getRequestPathFromResource(memoizedResource, model, backendAPIPath)
       const unsubscribe = subscribe(memoizedResource, requestPath, setFleetResult)
-      startWatch(memoizedResource, model, backendAPIPath)
+      void startWatch(memoizedResource, model, backendAPIPath)
 
       return () => {
         unsubscribe()

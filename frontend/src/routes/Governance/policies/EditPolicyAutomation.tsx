@@ -112,7 +112,7 @@ export function EditPolicyAutomation() {
       resource={currentPolicyAutomation}
       onCancel={() => {
         cancelForm()
-        navigate(destination)
+        void navigate(destination)
       }}
       configMaps={configMaps}
       onSubmit={(data: unknown) =>

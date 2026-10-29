@@ -33,6 +33,7 @@ type Hub struct {
 	purge   time.Duration
 }
 
+// New creates a Hub that fans informer events to subscribed GET /events clients.
 func New(cache *informers.InformerCache, settings func() map[string]string) *Hub {
 	if settings == nil {
 		settings = func() map[string]string { return map[string]string{} }
@@ -61,6 +62,7 @@ func (h *Hub) purgeAfter() time.Duration {
 	return h.purge
 }
 
+// subscribe registers a buffered client channel for live fan-out.
 func (h *Hub) subscribe() *client {
 	c := &client{ch: make(chan Event, h.bufSize())}
 	h.mu.Lock()
@@ -69,12 +71,14 @@ func (h *Hub) subscribe() *client {
 	return c
 }
 
+// unsubscribe removes the client and closes its channel.
 func (h *Hub) unsubscribe(c *client) {
 	h.mu.Lock()
 	h.dropLocked(c)
 	h.mu.Unlock()
 }
 
+// dropLocked removes c and closes its channel. Caller holds mu.
 func (h *Hub) dropLocked(c *client) {
 	if _, ok := h.clients[c]; !ok {
 		return
@@ -89,11 +93,13 @@ func (h *Hub) clientCount() int {
 	return len(h.clients)
 }
 
+// assignID stamps a monotonically increasing SSE id onto the event.
 func (h *Hub) assignID(ev Event) Event {
 	ev.ID = nextIDString(h.nextID.Add(1))
 	return ev
 }
 
+// fanout delivers ev to every subscriber; slow clients that stay blocked past purge are dropped.
 func (h *Hub) fanout(ev Event) {
 	now := time.Now()
 	purge := h.purgeAfter()
@@ -144,6 +150,7 @@ func (h *Hub) OnResource(ev informers.ResourceEvent) {
 	}
 }
 
+// push fans out ev followed by LOADED so clients know a batch boundary (Node pushEvent).
 func (h *Hub) push(ev Event) {
 	h.fanout(ev)
 	h.fanout(Event{Type: TypeLoaded})

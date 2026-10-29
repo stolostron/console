@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+const (
+	gitPathAnnotation    = "apps.open-cluster-management.io/git-path"
+	githubPathAnnotation = "apps.open-cluster-management.io/github-path"
+	maxSourceNameLength  = 20
+)
+
+// getApplicationType classifies an unstructured K8s object into one of the
+// kind* constants (subscription, argo, appset, flux, openshift, openshift-default).
 func getApplicationType(obj map[string]any, prefixes []string) string {
 	api := apiVersionOf(obj)
 	kind := kindOf(obj)
@@ -33,6 +41,8 @@ func getApplicationType(obj map[string]any, prefixes []string) string {
 	return "-"
 }
 
+// isFluxApplication returns true when the label string contains both members
+// of at least one Flux annotation pair (kustomize or helm).
 func isFluxApplication(label string) bool {
 	for _, pair := range fluxAnnotations {
 		if strings.Contains(label, pair[0]) && strings.Contains(label, pair[1]) {
@@ -42,6 +52,8 @@ func isFluxApplication(label string) bool {
 	return false
 }
 
+// isSystemApp returns true when the namespace starts with one of the system
+// prefixes (openshift, hive, open-cluster-management, etc.).
 func isSystemApp(namespace string, prefixes []string) bool {
 	if namespace == "" {
 		return false
@@ -54,6 +66,8 @@ func isSystemApp(namespace string, prefixes []string) bool {
 	return false
 }
 
+// getAppNamespace returns the effective namespace for an application. For Argo
+// CD Applications it prefers spec.destination.namespace over metadata.namespace.
 func getAppNamespace(obj map[string]any) string {
 	ns := metaNamespace(obj)
 	if apiVersionOf(obj) == "argoproj.io/v1alpha1" && kindOf(obj) == "Application" {
@@ -64,6 +78,8 @@ func getAppNamespace(obj map[string]any) string {
 	return ns
 }
 
+// getAppNameFromLabel extracts an application name from a semicolon-delimited
+// label string by matching the first appOwnerLabels prefix. Falls back to defaultName.
 func getAppNameFromLabel(label, defaultName string) string {
 	matching := ""
 	for _, p := range appOwnerLabels {
@@ -83,7 +99,15 @@ func getAppNameFromLabel(label, defaultName string) string {
 	return rest
 }
 
-func getTransform(obj map[string]any, typ string, clusterStatusMap map[string]StatusMap, clusters []string) Transform {
+// getTransform builds a Transform projection for a single application object,
+// including name, type, namespace, cluster list, sources, statuses, and creation time.
+func getTransform(
+	obj map[string]any,
+	typ string,
+	clusterStatusMap map[string]StatusMap,
+	clusters []string,
+	sources []string,
+) Transform {
 	statusKey := typ + "/" + metaNamespace(obj) + "/" + metaName(obj)
 	statuses := getAppStatuses(typ, statusKey, clusterStatusMap, clusters)
 	return Transform{
@@ -91,12 +115,147 @@ func getTransform(obj map[string]any, typ string, clusterStatusMap map[string]St
 		Type:      typ,
 		Namespace: getAppNamespace(obj),
 		Clusters:  clusters,
+		Sources:   strings.Join(sources, ", "),
 		Statuses:  statuses,
 		Scores:    getAppStatusScores(clusters, statuses),
 		Created:   metaCreation(obj),
 	}
 }
 
+// getApplicationSources mirrors the Sources column's display values: source
+// paths, Helm chart names, or Subscription package names.
+func getApplicationSources(
+	obj map[string]any,
+	typ string,
+	subscriptions []map[string]any,
+	channels []map[string]any,
+) []string {
+	switch typ {
+	case kindSubscriptionApp:
+		return getSubscriptionSources(obj, subscriptions, channels)
+	case kindArgo:
+		if source := nestedMap(obj, "spec", "source"); source != nil {
+			if strVal(source["repoURL"]) == "" {
+				return nil
+			}
+			return appendUniqueSource(nil, sourceName(source))
+		}
+		sources := nestedSlice(obj, "spec", "sources")
+		out := make([]string, 0, len(sources))
+		for _, value := range sources {
+			source, _ := value.(map[string]any)
+			if source == nil || strVal(source["repoURL"]) == "" {
+				continue
+			}
+			out = appendUniqueSource(out, sourceName(source))
+		}
+		return out
+	case kindAppSet:
+		spec := nestedMap(obj, "spec", "template", "spec")
+		if spec == nil {
+			return nil
+		}
+		if source := nestedMap(spec, "source"); source != nil {
+			return appendUniqueSource(nil, sourceName(source))
+		}
+		sources := nestedSlice(spec, "sources")
+		out := make([]string, 0, len(sources))
+		for _, value := range sources {
+			source, _ := value.(map[string]any)
+			if source != nil {
+				out = appendUniqueSource(out, sourceName(source))
+			}
+		}
+		return out
+	default:
+		return nil
+	}
+}
+
+func getSubscriptionSources(
+	obj map[string]any,
+	subscriptions []map[string]any,
+	channels []map[string]any,
+) []string {
+	rawRefs := strings.Split(strVal(metaAnnotations(obj)["apps.open-cluster-management.io/subscriptions"]), ",")
+	refs := make([]string, 0, len(rawRefs))
+	for _, ref := range rawRefs {
+		if ref = strings.TrimSpace(ref); ref != "" {
+			refs = append(refs, ref)
+		}
+	}
+	out := make([]string, 0, len(refs))
+	for _, ref := range refs {
+		if isLocalSubscription(ref, refs) {
+			continue
+		}
+		parts := strings.Split(ref, "/")
+		if len(parts) < 2 {
+			continue
+		}
+		for _, sub := range subscriptions {
+			if metaNamespace(sub) != parts[0] || metaName(sub) != parts[1] {
+				continue
+			}
+			channelRef := nestedString(sub, "spec", "channel")
+			if channelRef == "" {
+				continue
+			}
+			channelParts := strings.Split(channelRef, "/")
+			if len(channelParts) < 2 {
+				continue
+			}
+			var channel map[string]any
+			for _, candidate := range channels {
+				if metaNamespace(candidate) == channelParts[0] && metaName(candidate) == channelParts[1] {
+					channel = candidate
+					break
+				}
+			}
+			annotations := metaAnnotations(sub)
+			name := truncateSourceName(
+				strings.TrimSpace(firstNonEmpty(strVal(annotations[gitPathAnnotation]), strVal(annotations[githubPathAnnotation]))),
+				maxSourceNameLength,
+			)
+			if name == "" && strVal(nestedMap(channel, "spec")["type"]) == "HelmRepo" {
+				name = truncateSourceName(strVal(nestedMap(sub, "spec")["name"]), maxSourceNameLength)
+			}
+			out = appendUniqueSource(out, name)
+		}
+	}
+	return out
+}
+
+func sourceName(source map[string]any) string {
+	name := strings.TrimSpace(strVal(source["path"]))
+	if name == "" {
+		name = strings.TrimSpace(strVal(source["chart"]))
+	}
+	return truncateSourceName(name, maxSourceNameLength)
+}
+
+func truncateSourceName(name string, maxLength int) string {
+	runes := []rune(name)
+	if len(runes) > maxLength {
+		return string(runes[:maxLength]) + "\u2026"
+	}
+	return name
+}
+
+func appendUniqueSource(sources []string, source string) []string {
+	if source == "" {
+		return sources
+	}
+	for _, existing := range sources {
+		if existing == source {
+			return sources
+		}
+	}
+	return append(sources, source)
+}
+
+// getAppStatuses looks up the StatusMap for a given application key. If absent
+// and the app is an ApplicationSet, it returns missing statuses for each cluster.
 func getAppStatuses(typ, statusKey string, clusterStatusMap map[string]StatusMap, clusters []string) StatusMap {
 	if appStatuses, ok := clusterStatusMap[statusKey]; ok && appStatuses != nil {
 		return appStatuses
@@ -114,6 +273,7 @@ func getAppStatuses(typ, statusKey string, clusterStatusMap map[string]StatusMap
 	return StatusMap{}
 }
 
+// getAppStatusScores computes composite sort scores for health, synced, and deployed.
 func getAppStatusScores(clusters []string, statuses StatusMap) Scores {
 	return Scores{
 		colHealth:   getAppStatusScore(clusters, statuses, colHealth),
@@ -122,6 +282,8 @@ func getAppStatusScores(clusters []string, statuses StatusMap) Scores {
 	}
 }
 
+// getAppStatusScore computes a single sort-score for one status column by
+// weighting danger > warning > progress > unknown > healthy across all clusters.
 func getAppStatusScore(clusters []string, statuses StatusMap, index int) int {
 	score := 0
 	for _, cluster := range clusters {
@@ -149,8 +311,12 @@ func getAppStatusScore(clusters []string, statuses StatusMap, index int) int {
 	return score
 }
 
+// transform converts raw unstructured objects into App rows with Transform
+// projections. It merges subscription labels, resolves cluster lists, and
+// optionally populates uidMap for merge-on-refresh updates.
 func (e *Engine) transform(items []map[string]any, statusMap map[string]StatusMap, isRemote bool, local *Cluster, clusters []Cluster, uidMap map[string]App) []App {
 	subs := e.listKind("apps.open-cluster-management.io/v1", "Subscription")
+	channels := e.listKind("apps.open-cluster-management.io/v1", "Channel")
 	placements := e.listKind("cluster.open-cluster-management.io/v1beta1", "PlacementDecision")
 	hub := e.hubClusterName()
 	out := make([]App, 0, len(items))
@@ -193,7 +359,7 @@ func (e *Engine) transform(items []map[string]any, statusMap map[string]StatusMa
 		cls := e.applicationClusters(app, typ, subs, placements, local, clusters)
 		row := App{
 			Object:    app,
-			Transform: getTransform(app, typ, statusMap, cls),
+			Transform: getTransform(app, typ, statusMap, cls, getApplicationSources(app, typ, subs, channels)),
 		}
 		remote := isRemote
 		if !remote && typ == kindSubscriptionApp {
@@ -215,6 +381,8 @@ func (e *Engine) transform(items []map[string]any, statusMap map[string]StatusMa
 	return out
 }
 
+// getApplicationsHelper merges all App rows from the requested cache buckets
+// into a single slice, reading from Resources, ResourceUIDMap, or ResourceMap.
 func getApplicationsHelper(cache map[string]*cacheBucket, keys []string) []App {
 	var items []App
 	for _, key := range keys {
@@ -241,6 +409,8 @@ func getApplicationsHelper(cache map[string]*cacheBucket, keys []string) []App {
 	return items
 }
 
+// filterApplications applies server-side filters (type, cluster, podStatuses,
+// healthStatus, syncStatus) when the item count exceeds the preprocess breakpoint.
 func filterApplications(filters map[string][]string, items []App) []App {
 	if len(filters) == 0 {
 		return items
@@ -306,6 +476,7 @@ func filterApplications(filters map[string][]string, items []App) []App {
 	return out
 }
 
+// statusFilterKey maps a status score to a filter value string (e.g. "Healthy" / "Unhealthy").
 func statusFilterKey(item App, index int) string {
 	score := 0
 	if item.Transform.Scores != nil {
@@ -332,9 +503,26 @@ func statusFilterKey(item App, index int) string {
 	}
 }
 
+// sortColumnIndex resolves a stable column ID first, then falls back to the
+// visible index sent by older frontend clients. An unknown ID must not fall
+// back to the index because that index may refer to a different reordered
+// column.
+func sortColumnIndex(sortBy *SortBy) (int, bool) {
+	if sortBy.ID != "" {
+		index, ok := appSortColumnIndexes[sortBy.ID]
+		return index, ok
+	}
+	if sortBy.Index != nil && *sortBy.Index >= 0 {
+		return *sortBy.Index, true
+	}
+	return 0, false
+}
+
+// sortApplications sorts by the given column index. String columns sort
+// lexicographically; score columns sort worst-first (higher score = worse).
 func sortApplications(index int, desc bool, items []App) []App {
 	out := append([]App(nil), items...)
-	stringCols := map[int]struct{}{colName: {}, colNamespace: {}, colClusters: {}, colCreated: {}}
+	stringCols := map[int]struct{}{colName: {}, colType: {}, colNamespace: {}, colClusters: {}, colSources: {}, colCreated: {}}
 	scoreCols := map[int]struct{}{colHealth: {}, colSynced: {}, colDeployed: {}}
 	less := func(i, j int) bool { return false }
 	if _, ok := stringCols[index]; ok {
@@ -361,10 +549,13 @@ func sortApplications(index int, desc bool, items []App) []App {
 	return out
 }
 
+// transformString extracts the sortable string value for a given column index.
 func transformString(a App, index int) string {
 	switch index {
 	case colName:
 		return a.Transform.Name
+	case colType:
+		return a.Transform.Type
 	case colNamespace:
 		return a.Transform.Namespace
 	case colClusters:
@@ -372,6 +563,8 @@ func transformString(a App, index int) string {
 			return ""
 		}
 		return a.Transform.Clusters[0]
+	case colSources:
+		return a.Transform.Sources
 	case colCreated:
 		return a.Transform.Created
 	default:
@@ -379,6 +572,8 @@ func transformString(a App, index int) string {
 	}
 }
 
+// addUIData enriches each App with UIData (cluster list, per-cluster statuses,
+// ApplicationSet placement, and child app names) for the frontend table.
 func (e *Engine) addUIData(items []App) []App {
 	e.mu.RLock()
 	defer e.mu.RUnlock()

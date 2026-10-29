@@ -17,7 +17,7 @@ jest.mock('../../resources/utils', () => ({
 }))
 
 const mockArgoCD: IResource = {
-  apiVersion: 'argoproj.io/v1alpha1',
+  apiVersion: 'argoproj.io/v1beta1',
   kind: 'ArgoCD',
   metadata: {
     name: 'openshift-gitops',

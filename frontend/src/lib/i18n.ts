@@ -9,7 +9,7 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import HttpApi from 'i18next-http-backend'
 import { supportedLanguages } from './supportedLanguages'
 
-i18n
+void i18n
   // pass the i18n instance to react-i18next
   .use(initReactI18next)
   // detect user language
@@ -30,7 +30,8 @@ i18n
     },
     defaultNS: 'translation', // the default file for strings when using useTranslation, etc
     nsSeparator: '~',
-    supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded
+    supportedLngs: supportedLanguages, // only languages from this array will attempt to be loaded,
+    showSupportNotice: false,
   })
 
 export default i18n

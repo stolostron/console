@@ -98,7 +98,7 @@ export function DropdownActionModal<T = unknown>(props: IDropdownActionModalProp
                       const error: ItemError<T>[] = []
 
                       if (props.actionFn) {
-                        props
+                        void props
                           .actionFn(props.resource, selection as string)
                           .promise.catch((err) => {
                             console.log(err)

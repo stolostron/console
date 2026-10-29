@@ -53,3 +53,14 @@ func TestFuseMatchesMidStringSubstitution(t *testing.T) {
 		t.Fatalf("%+v", got)
 	}
 }
+
+func TestFuseMatchesApplicationSources(t *testing.T) {
+	items := []App{
+		{Transform: Transform{Name: "other", Namespace: "default", Sources: "helloworld, dependency-chart"}},
+		{Transform: Transform{Name: "unrelated", Namespace: "default"}},
+	}
+	got := fuseFilter(items, "dependency")
+	if len(got) != 1 || got[0].Transform.Name != "other" {
+		t.Fatalf("%+v", got)
+	}
+}

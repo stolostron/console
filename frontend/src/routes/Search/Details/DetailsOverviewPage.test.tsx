@@ -2,9 +2,11 @@
 // Copyright (c) 2022 Red Hat, Inc.
 
 import { render, screen, waitFor } from '@testing-library/react'
-import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../lib/nock-util'
+import { NavigationPath } from '../../../NavigationPath'
 import DetailsOverviewPage, {
   LablesGroup,
   OwnerReferences,
@@ -12,6 +14,11 @@ import DetailsOverviewPage, {
   ResourceSearchLink,
 } from './DetailsOverviewPage'
 import { SearchDetailsContext } from './DetailsPage'
+
+function LocationDisplay() {
+  const location = useLocation()
+  return <div id="location-display">{`${location.pathname}${location.search}`}</div>
+}
 
 describe('DetailsOverviewPage', () => {
   beforeEach(async () => {
@@ -306,5 +313,77 @@ describe('DetailsOverviewPage', () => {
         screen.queryByText('ReplicaSet "application-manager-84c48b9597" has successfully progressed.')
       ).toBeTruthy()
     )
+  })
+
+  it('Should navigate to search/resources when selector and namespace links are clicked', async () => {
+    const context: Partial<SearchDetailsContext> = {
+      cluster: 'local-cluster',
+      resource: {
+        kind: 'Deployment',
+        apiVersion: 'apps/v1',
+        metadata: {
+          name: 'application-manager',
+          namespace: 'open-cluster-management-agent-addon',
+          uid: '4185c145-eb24-472b-b35b-92fdeaaa1b6a',
+        },
+        spec: {
+          selector: {
+            matchLabels: {
+              'app.kubernetes.io/name': 'kube-state-metrics',
+            },
+          },
+          template: {
+            spec: {
+              nodeSelector: {
+                'kubernetes.io/os': 'linux',
+              },
+            },
+          },
+        },
+      } as any,
+      name: 'application-manager',
+      resourceLoading: false,
+      resourceError: '',
+    }
+    render(
+      <StateProvider>
+        <MemoryRouter>
+          <LocationDisplay />
+          <Routes>
+            <Route element={<Outlet context={context} />}>
+              <Route path="*" element={<DetailsOverviewPage />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </StateProvider>
+    )
+
+    // Pod selector link navigates to a search filtered on kind:Pod
+    const podSelectorBtn = await screen.findByText('app.kubernetes.io/name=kube-state-metrics')
+    await userEvent.click(podSelectorBtn)
+    await waitFor(() => {
+      const location = screen.getByTestId('location-display').textContent ?? ''
+      expect(location.startsWith(NavigationPath.search)).toBe(true)
+      expect(location).toContain('kind%3APod')
+    })
+
+    // Node selector link navigates to a search filtered on kind:Node
+    const nodeSelectorBtn = screen.getByText('kubernetes.io/os=linux')
+    await userEvent.click(nodeSelectorBtn)
+    await waitFor(() => {
+      const location = screen.getByTestId('location-display').textContent ?? ''
+      expect(location.startsWith(NavigationPath.search)).toBe(true)
+      expect(location).toContain('kind%3ANode')
+    })
+
+    // Namespace link navigates to the resources page for the Namespace
+    const namespaceBtn = screen.getByText('open-cluster-management-agent-addon')
+    await userEvent.click(namespaceBtn)
+    await waitFor(() => {
+      const location = screen.getByTestId('location-display').textContent ?? ''
+      expect(location.startsWith(NavigationPath.resources)).toBe(true)
+      expect(location).toContain('kind=Namespace')
+      expect(location).toContain('name=open-cluster-management-agent-addon')
+    })
   })
 })
