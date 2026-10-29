@@ -859,9 +859,7 @@ describe('SearchResults Page', () => {
     await waitFor(() => expect(screen.queryByText('(1)')).toBeTruthy())
 
     // Click on the row actions dropdown for testVM1 and verify that plugin actions exist
-    await waitFor(async () => {
-      await clickElement(screen.getAllByRole('button', { name: 'Actions' })[0])
-    })
+    await clickElement(await screen.findByRole('button', { name: 'Actions' }))
     await waitFor(() => expect(screen.getByText('Failover')).toBeInTheDocument())
   })
 })
