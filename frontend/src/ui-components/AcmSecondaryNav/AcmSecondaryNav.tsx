@@ -24,7 +24,7 @@ export function AcmSecondaryNav(props: {
     const selectedTab = props.navItems.find((item) => item.key === tabIndex)
     if (selectedTab) {
       if (selectedTab.to) {
-        navigate(selectedTab.to)
+        void navigate(selectedTab.to)
       } else if (selectedTab.onClick) {
         selectedTab.onClick()
       }

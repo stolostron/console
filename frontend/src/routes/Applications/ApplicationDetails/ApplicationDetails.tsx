@@ -199,7 +199,7 @@ export default function ApplicationDetailsPage() {
                     apiversion: apiversion as string,
                   },
                 })
-            navigate(searchLink)
+            void navigate(searchLink)
           }
         },
       },
@@ -212,13 +212,13 @@ export default function ApplicationDetailsPage() {
         text: t('Edit application'),
         click: () => {
           if (isAppSet) {
-            navigate(
+            void navigate(
               NavigationPath.editApplicationArgo
                 .replace(namespaceString, selectedApp.metadata?.namespace)
                 .replace(nameString, selectedApp.metadata?.name)
             )
           } else {
-            navigate(
+            void navigate(
               NavigationPath.editApplicationSubscription
                 .replace(namespaceString, selectedApp.metadata?.namespace)
                 .replace(nameString, selectedApp.metadata?.name)

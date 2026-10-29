@@ -106,7 +106,7 @@ export function EditPolicy() {
       (policySet) => policySet.metadata.namespace == params.namespace && policySet.metadata.name === params.name
     )
     if (policy === undefined) {
-      navigate(NavigationPath.policies)
+      void navigate(NavigationPath.policies)
       return
     }
     const policyPlacementBindings = getPlacementBindingsForResource(policy, placementBindings)
@@ -155,9 +155,9 @@ export function EditPolicy() {
             })
             submitForm()
             if (searchParams.get('context') === 'policies') {
-              navigate(NavigationPath.policies)
+              void navigate(NavigationPath.policies)
             } else {
-              navigate(
+              void navigate(
                 generatePath(NavigationPath.policyDetails, {
                   namespace: policy.metadata?.namespace ?? '',
                   name: policy.metadata?.name ?? '',
@@ -170,18 +170,18 @@ export function EditPolicy() {
       onCancel={() => {
         cancelForm()
         if (searchParams.get('context') === 'policies') {
-          navigate(NavigationPath.policies)
+          void navigate(NavigationPath.policies)
         } else {
           const policy = existingResources.find((resource) => resource.kind === PolicyKind)
           if (policy) {
-            navigate(
+            void navigate(
               generatePath(NavigationPath.policyDetails, {
                 namespace: policy.metadata?.namespace ?? '',
                 name: policy.metadata?.name ?? '',
               })
             )
           } else {
-            navigate(NavigationPath.policies)
+            void navigate(NavigationPath.policies)
           }
         }
       }}

@@ -213,7 +213,7 @@ export function AcmDataFormPage(props: AcmDataFormProps): JSX.Element {
                           textId="code-content"
                           aria-label={t('Copy to clipboard')}
                           onClick={() => {
-                            navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
+                            void navigator.clipboard.writeText(YAML.stringify(formData.stateToData()))
                             setCopyHint(
                               <span style={{ wordBreak: 'keep-all' }}>{t('Successfully copied to clipboard!')}</span>
                             )
@@ -611,7 +611,7 @@ export function AcmDataFormWizard(props: {
                       return showSectionErrors
                     })
                     if (sectionHasErrors(t, section)) return
-                    goToNextStep(event)
+                    void goToNextStep(event)
                   }}
                   isDisabled={
                     ((showFormErrors || showSectionErrors[section.title]) && sectionHasErrors(t, section)) ||
@@ -1526,7 +1526,7 @@ function PasteInputButton(props: { setValue: (value: string) => void; setShowSec
         icon={<PasteIcon />}
         variant="control"
         onClick={() => {
-          navigator.clipboard.readText().then((value) => {
+          void navigator.clipboard.readText().then((value) => {
             setValue(value)
             if (value && setShowSecrets) setShowSecrets(false)
           })

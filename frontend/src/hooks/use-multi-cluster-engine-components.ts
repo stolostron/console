@@ -22,7 +22,7 @@ export const useMultiClusterEngineComponents = () => {
         setLoaded(true)
       }
     }
-    fetchComponents()
+    void fetchComponents()
   }, [])
   return { components, loaded }
 }

@@ -78,7 +78,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
         setRemoveAppSetResource(false)
         props.close()
         if (props.redirect) {
-          navigate(props.redirect)
+          void navigate(props.redirect)
         }
       })
       .catch((err: unknown) => {

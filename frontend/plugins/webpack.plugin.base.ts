@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-/* eslint-disable @typescript-eslint/no-var-requires */
+
 import CompressionPlugin from 'compression-webpack-plugin'
 import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
 import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
@@ -164,7 +164,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         },
       },
     },
-    devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'source-map',
+    devtool: isDevelopment ? 'cheap-module-source-map' : 'source-map',
   }
   return config
 }

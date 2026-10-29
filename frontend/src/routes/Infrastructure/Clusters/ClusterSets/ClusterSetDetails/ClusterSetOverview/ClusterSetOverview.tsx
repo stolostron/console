@@ -37,7 +37,7 @@ export function ClusterSetOverviewPageContent() {
 
   const navigateToClusterSet = () => {
     if (clusterSet?.metadata?.name) {
-      navigate(generatePath(NavigationPath.clusterSetClusters, { id: clusterSet.metadata.name }))
+      void navigate(generatePath(NavigationPath.clusterSetClusters, { id: clusterSet.metadata.name }))
     }
   }
 

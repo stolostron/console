@@ -52,7 +52,7 @@ export function ClusterSetActionDropdown(props: { managedClusterSet: ManagedClus
         id: 'manage-clusterSet-resources',
         text: t('set.manage-resources'),
         click: (managedClusterSet: ManagedClusterSet) => {
-          navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
+          void navigate(generatePath(NavigationPath.clusterSetManage, { id: managedClusterSet.metadata.name! }))
         },
         isAriaDisabled: true,
         rbac: [rbacCreate(ManagedClusterSetDefinition, undefined, props.managedClusterSet.metadata.name, 'join')],

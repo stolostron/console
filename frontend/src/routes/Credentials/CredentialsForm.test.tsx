@@ -33,6 +33,17 @@ import { Provider, AcmToastContext } from '../../ui-components'
 import { CreateCredentialsFormPage, ViewEditCredentialsFormPage } from './CredentialsForm'
 import { CredentialsType } from './CredentialsType'
 import { Route, Routes } from 'react-router'
+import { generatePath } from 'react-router'
+
+const mockNavigate = jest.fn()
+jest.mock('react-router', () => {
+  const originalModule = jest.requireActual('react-router')
+  return {
+    __esModule: true,
+    ...originalModule,
+    useNavigate: () => mockNavigate,
+  }
+})
 
 describe('add credentials page', () => {
   beforeEach(() => {
@@ -379,6 +390,28 @@ describe('add credentials page', () => {
     const createNock = nockCreate({ ...providerConnection })
     await clickByText('Add')
     await waitForNock(createNock)
+  })
+
+  it('navigates to the credentials list after successfully creating credentials', async () => {
+    render(<Component credentialsType={Provider.ansible} />)
+
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+
+    await typeByTestId('credentialsName', providerConnection.metadata.name!)
+    await selectByText('Select a namespace for the credential', providerConnection.metadata.namespace!)
+    await clickByText('Next')
+    await typeByTestId('ansibleHost', providerConnection.stringData?.host!)
+    await typeByTestId('ansibleToken', providerConnection.stringData?.token!)
+    await clickByText('Next')
+
+    const createNock = nockCreate({ ...providerConnection })
+    await clickByText('Add')
+    await waitForNock(createNock)
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.credentials))
   })
 
   it('should create rhocm credentials with ocm API Token (default) option', async () => {
@@ -755,6 +788,72 @@ describe('view and edit credentials page', () => {
     expect(screen.getByTestId('ansibleToken')).toHaveValue('ansibleToken')
     expect(screen.getByTestId('ansibleToken')).toBeDisabled()
     expect(screen.getByTestId('ansibleHost')).toBeEnabled()
+  })
+
+  it('navigates to the credentials list after successfully saving an edited credential', async () => {
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+    const editPath = `/multicloud/credentials/edit/${providerConnection.metadata.namespace}/${providerConnection.metadata.name}`
+
+    nockGet(
+      {
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name: providerConnection.metadata.name,
+          namespace: providerConnection.metadata.namespace,
+        },
+      },
+      providerConnection
+    )
+
+    // Build the same patch body the form sends so nock matches the PATCH request
+    const data: Record<string, string> = {}
+    const stringData = providerConnection.stringData ?? {}
+    ;(Object.keys(stringData) as (keyof typeof stringData)[]).forEach((key) => {
+      const value = stringData[key]
+      if (value) {
+        data[key as string] = Buffer.from(value, 'ascii').toString('base64')
+      }
+    })
+    const patchBody = [{ op: 'replace' as const, path: '/data', value: data }]
+    const patchNock = nockPatch(providerConnection, patchBody)
+
+    render(
+      <StateProvider>
+        <MemoryRouter initialEntries={[editPath]}>
+          <Routes>
+            <Route path={NavigationPath.editCredentials} element={<ViewEditCredentialsFormPage />} />
+          </Routes>
+        </MemoryRouter>
+      </StateProvider>
+    )
+
+    await waitForText('Basic information')
+    await clickByText('Save')
+    await waitForNock(patchNock)
+
+    await waitFor(() => expect(mockNavigate).toHaveBeenCalledWith(NavigationPath.credentials))
+  })
+
+  it('navigates to the edit page when the edit action is used on the details page', async () => {
+    const providerConnection = createProviderConnection('ans', {
+      host: 'https://ansiblehost.com',
+      token: 'ansibleToken',
+    })
+    const viewPath = `/multicloud/credentials/details/${providerConnection.metadata.namespace}/${providerConnection.metadata.name}`
+    renderCredentialPage(viewPath)
+
+    await clickByText('Edit credential')
+
+    expect(mockNavigate).toHaveBeenCalledWith(
+      generatePath(NavigationPath.editCredentials, {
+        namespace: providerConnection.metadata.namespace!,
+        name: providerConnection.metadata.name!,
+      })
+    )
   })
 
   it('masks a secret typed in the create wizard after leaving and re-entering the step', async () => {

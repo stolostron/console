@@ -44,7 +44,6 @@ describe('UserDetails', () => {
   test('should render user not found message', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: undefined,
-      groups: undefined,
     })
 
     render(<Component />)
@@ -55,7 +54,6 @@ describe('UserDetails', () => {
   test('should render user details with full information', () => {
     mockUseUserDetailsContext.mockReturnValue({
       user: mockUser,
-      groups: [],
     })
 
     render(<Component />)
@@ -74,7 +72,6 @@ describe('UserDetails', () => {
     }
     mockUseUserDetailsContext.mockReturnValue({
       user: userWithoutFullName,
-      groups: [],
     })
 
     render(<Component />)

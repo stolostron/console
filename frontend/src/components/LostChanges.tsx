@@ -141,7 +141,7 @@ export function LostChangesProvider(props: Readonly<PropsWithChildren>) {
     close()
     if (location) {
       unblock()
-      navigate(location)
+      void navigate(location)
     } else if (callback) {
       callback()
     }

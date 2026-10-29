@@ -90,6 +90,10 @@ func (e *Engine) searchLimit() int {
 func (e *Engine) searchInterval() time.Duration {
 	if v := os.Getenv("APP_SEARCH_INTERVAL"); v != "" {
 		if n, err := strconv.Atoi(v); err == nil && n > 0 {
+			// Legacy values above 1000 are milliseconds; smaller values are seconds.
+			if n > 1000 {
+				n /= 1000
+			}
 			return time.Duration(n) * time.Second
 		}
 	}

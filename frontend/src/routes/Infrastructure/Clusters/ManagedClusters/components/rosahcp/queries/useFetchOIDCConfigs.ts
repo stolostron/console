@@ -30,7 +30,7 @@ export const useFetchOIDCConfigs = (selectedSecret: SelectedSecret) => {
   const fetch = useCallback(
     async (accountId: string): Promise<void> => {
       if (accountId === awsAccountId) {
-        refetch()
+        void refetch()
       } else {
         setAwsAccountId(accountId)
       }

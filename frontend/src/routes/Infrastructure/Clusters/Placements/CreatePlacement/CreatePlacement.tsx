@@ -96,7 +96,7 @@ export function CreatePlacement() {
           type: 'success',
           autoClose: true,
         })
-        navigate(
+        void navigate(
           generatePath(NavigationPath.placementDetails, {
             namespace: foundPlacement.metadata?.namespace ?? '',
             name: foundPlacement.metadata?.name ?? '',
@@ -118,7 +118,7 @@ export function CreatePlacement() {
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
         cancelForm()
-        navigate(NavigationPath.placements)
+        void navigate(NavigationPath.placements)
       }}
       breadcrumb={[{ text: t('Placements'), to: NavigationPath.placements }, { text: t('Create placement') }]}
       onSubmit={(data) => {

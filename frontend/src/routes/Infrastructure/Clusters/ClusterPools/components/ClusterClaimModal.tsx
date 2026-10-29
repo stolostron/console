@@ -152,7 +152,7 @@ export function ClusterClaimModal(props: ClusterClaimModalProps) {
                         .promise.then(async (result) => {
                           setClaimCreated(true)
                           if (props.clusterPool?.status?.ready !== undefined && props.clusterPool.status.ready > 0) {
-                            pollClaim(result).then((updatedClaim) => {
+                            void pollClaim(result).then((updatedClaim) => {
                               if (updatedClaim) {
                                 setClusterClaim(updatedClaim)
                                 setClaimed(true)

@@ -2,7 +2,6 @@
 
 import {
   Content,
-  ContentVariants,
   Label,
   PageSection,
   Popover,
@@ -11,7 +10,6 @@ import {
   StackItem,
   ToolbarItem,
 } from '@patternfly/react-core'
-import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
@@ -437,6 +435,81 @@ function createRepoFromArgoSource(source: any) {
   }
 }
 
+const MAX_SOURCE_NAME_LENGTH = 20
+
+export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LENGTH): string {
+  if (name.length > maxLength) {
+    return `${name.slice(0, maxLength)}…`
+  }
+  return name
+}
+
+/** Unique display names for application sources (Argo/Subscription path, or helm chart as fallback). */
+export function getApplicationSourceNames(
+  resource: IResource,
+  subscriptions: Subscription[],
+  channels: Channel[]
+): string[] {
+  const repos = getApplicationRepos(resource, subscriptions, channels) ?? []
+  const names: string[] = []
+  const seen = new Set<string>()
+
+  for (const repo of repos) {
+    const pathName = typeof repo.gitPath === 'string' ? repo.gitPath.trim() : ''
+    const displayName =
+      pathName ||
+      (repo.chart ? String(repo.chart) : repo.type === 'HelmRepo' && repo.package ? String(repo.package) : '')
+    if (displayName && !seen.has(displayName)) {
+      seen.add(displayName)
+      names.push(displayName)
+    }
+  }
+
+  return names
+}
+
+export function ApplicationSourcesCell(props: {
+  resource: IResource
+  subscriptions: Subscription[]
+  channels: Channel[]
+  search: string
+}) {
+  const { t } = useTranslation()
+  const sourceNames = getApplicationSourceNames(props.resource, props.subscriptions, props.channels)
+
+  if (sourceNames.length === 0) {
+    return <span>-</span>
+  }
+
+  const [first, ...rest] = sourceNames
+
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+      <span title={first}>
+        <HighlightSearchText text={truncateSourceName(first)} searchText={props.search} useFuzzyHighlighting />
+      </span>
+      {rest.length > 0 && (
+        <Popover
+          bodyContent={
+            <Stack hasGutter>
+              {rest.map((name) => (
+                <StackItem key={name}>
+                  <HighlightSearchText text={name} searchText={props.search} useFuzzyHighlighting />
+                </StackItem>
+              ))}
+            </Stack>
+          }
+          position={PopoverPosition.right}
+        >
+          <Label style={{ width: 'fit-content', cursor: 'pointer' }} variant="overflow">
+            {t('{{count}} more', { count: rest.length })}
+          </Label>
+        </Popover>
+      )}
+    </span>
+  )
+}
+
 export default function ApplicationsOverview() {
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
@@ -478,6 +551,8 @@ export default function ApplicationsOverview() {
         }
         resourceMap[repo.type] = repo.type
       })
+
+      const sourcesText = getApplicationSourceNames(tableItem, subscriptions, channels).join(', ')
 
       const transformedNamespace = getAppNamespace(tableItem)
 
@@ -522,6 +597,7 @@ export default function ApplicationsOverview() {
           clusterCount: clusterTransformData,
           clusterList: clusterList,
           resourceText: resourceText,
+          sourcesText: sourcesText,
           createdText: getResourceTimestamp(tableItem, 'metadata.creationTimestamp'),
           namespace: transformedNamespace,
           healthScore: healthScore,
@@ -616,23 +692,8 @@ export default function ApplicationsOverview() {
         tooltip: (
           <span>
             {t('Displays the type of the application.')}
-            <Content>
-              <Content
-                component={ContentVariants.a}
-                isVisitedLink
-                href={DOC_LINKS.MANAGE_APPLICATIONS}
-                target="_blank"
-                style={{
-                  cursor: 'pointer',
-                  display: 'inline-block',
-                  padding: '0px',
-                  fontSize: '14px',
-                  color: '#0066cc',
-                }}
-              >
-                {t('View documentation')} <ExternalLinkAltIcon />
-              </Content>
-            </Content>
+
+            <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
           </span>
         ),
         transforms: [cellWidth(10)],
@@ -685,6 +746,28 @@ export default function ApplicationsOverview() {
         isDefault: true,
       },
       {
+        header: t('Sources'),
+        cell: (resource, search) => (
+          <ApplicationSourcesCell
+            resource={resource}
+            subscriptions={subscriptions}
+            channels={channels}
+            search={search}
+          />
+        ),
+        tooltip: t('Source path or chart name from the application repository.'),
+        sort: 'transformed.sourcesText',
+        search: 'transformed.sourcesText',
+        exportContent: (resource) => {
+          const sourceNames = getApplicationSourceNames(resource, subscriptions, channels)
+          return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
+        },
+        id: 'sources',
+        order: 5,
+        isDefault: false,
+        isFirstVisitChecked: false,
+      },
+      {
         header: t('table.labels'),
         cell: (resource) => <AcmLabels labels={getLabels(resource)} isCompact={true} />,
         exportContent: (resource) =>
@@ -692,7 +775,7 @@ export default function ApplicationsOverview() {
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
         id: 'labels',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -709,7 +792,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -726,7 +809,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -743,7 +826,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -764,12 +847,12 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 9,
+        order: 10,
         isDefault: false,
         isFirstVisitChecked: false,
       },
     ],
-    [t, extensionColumns, systemAppNSPrefixes, localCluster]
+    [t, extensionColumns, systemAppNSPrefixes, localCluster, subscriptions, channels]
   )
   const filters = useMemo(
     () => [
@@ -931,7 +1014,7 @@ export default function ApplicationsOverview() {
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: subscriptionAppQueryString,
             })
@@ -941,7 +1024,7 @@ export default function ApplicationsOverview() {
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.editApplicationSubscription, { name, namespace }),
               search: '?context=applications',
             })
@@ -954,7 +1037,7 @@ export default function ApplicationsOverview() {
           id: 'viewApplication',
           title: t('View application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: argoAppSetQueryString,
             })
@@ -964,7 +1047,7 @@ export default function ApplicationsOverview() {
           id: 'editApplication',
           title: t('Edit application'),
           click: () => {
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.editApplicationArgo, { name, namespace }),
               search: '?context=applicationsets',
             })
@@ -979,7 +1062,7 @@ export default function ApplicationsOverview() {
             id: 'viewApplication',
             title: t('View application'),
             click: () => {
-              navigate({
+              void navigate({
                 pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
                 search: '?apiVersion=application.argoproj.io',
               })
@@ -1017,7 +1100,7 @@ export default function ApplicationsOverview() {
                   cluster: resource.status?.cluster ? resource.status?.cluster : localCluster,
                 },
               })
-          navigate(searchLink)
+          void navigate(searchLink)
         },
       })
 
@@ -1028,7 +1111,7 @@ export default function ApplicationsOverview() {
           click: () => {
             const isFlux = isFluxApplication(resource.label)
             const resourceType = isFlux ? 'flux' : 'ocp'
-            navigate({
+            void navigate({
               pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
               search: `?apiVersion=${resourceType}&cluster=${resource.status?.cluster}`,
             })
@@ -1130,11 +1213,11 @@ export default function ApplicationsOverview() {
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
-            navigate(NavigationPath.createApplicationArgo)
+            void navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
-            navigate(NavigationPath.createApplicationArgoPullModel)
+            void navigate(NavigationPath.createApplicationArgoPullModel)
           } else {
-            navigate(NavigationPath.createApplicationSubscription)
+            void navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}

@@ -513,7 +513,7 @@ export function HypershiftUpgradeModal(props: {
   const handleControlPlaneChecked = () => {
     setControlPlaneChecked(!controlPlaneChecked)
     const npErrors: any = {}
-    if (!controlPlaneChecked === false) {
+    if (controlPlaneChecked) {
       if (nodepoolGroupChecked || countTrue(nodepoolsChecked) > 0) {
         if (isVersionGreater(controlPlaneNewVersion, props.controlPlane.distribution?.ocp?.version)) {
           let cpError = true

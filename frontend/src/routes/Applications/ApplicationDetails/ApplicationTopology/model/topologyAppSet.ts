@@ -827,12 +827,12 @@ export const openArgoCDURL = (
   if (cluster === hubClusterName) {
     // Handle local hub cluster
     toggleLoading()
-    getArgoRoute(name, namespace, cluster, undefined, hubClusterName, targetPath)
+    void getArgoRoute(name, namespace, cluster, undefined, hubClusterName, targetPath)
     toggleLoading()
   } else {
     // Handle remote managed cluster
     toggleLoading()
-    getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName, targetPath)
+    void getArgoRouteFromSearch(name, namespace, cluster, t, hubClusterName, targetPath)
     toggleLoading()
   }
 }

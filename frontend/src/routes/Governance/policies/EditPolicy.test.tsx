@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
-import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
+import { render, screen, waitFor } from '@testing-library/react'
+import { MemoryRouter, Route, Routes, generatePath, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { placementBindingsState, policiesState, namespacesState } from '../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockPatch } from '../../../lib/nock-util'
@@ -10,6 +10,11 @@ import { Policy, PlacementBinding } from '../../../resources'
 import { mockNamespaces, mockPolicy, mockPlacements, mockPlacementBindings } from '../governance.sharedMocks'
 import { EditPolicy } from './EditPolicy'
 
+function LocationDisplay() {
+  const location = useLocation()
+  return <div id="location-display">{`${location.pathname}${location.search}`}</div>
+}
+
 const mockPolicyCopy = JSON.parse(JSON.stringify(mockPolicy[2])) as Policy
 mockPolicyCopy.metadata.uid = '20761783-5b48-4f9c-b12c-d5a6b2fac4b5'
 const mockPlacementCopy = JSON.parse(JSON.stringify(mockPlacements[0]))
@@ -17,11 +22,13 @@ mockPlacementCopy.metadata.uid = '35661783-5b48-4f9c-b12c-d5a6b2fac4c2'
 const mockPlacementBindingCopy = JSON.parse(JSON.stringify(mockPlacementBindings[0])) as PlacementBinding
 mockPlacementBindingCopy.metadata.uid = '49661783-5b48-4f9c-b12c-d5a6b2fac434'
 
-function TestEditPolicyPage() {
+function TestEditPolicyPage(props: { context?: string; nonexistent?: boolean }) {
+  const { context, nonexistent } = props
   const actualPath = generatePath(NavigationPath.editPolicy, {
     namespace: mockPolicyCopy.metadata.namespace!,
-    name: mockPolicyCopy.metadata.name!,
+    name: nonexistent ? 'does-not-exist' : mockPolicyCopy.metadata.name!,
   })
+  const initialEntry = context ? `${actualPath}?context=${context}` : actualPath
   return (
     <StateProvider
       initializeStore={(store) => {
@@ -30,7 +37,8 @@ function TestEditPolicyPage() {
         store.set(namespacesState, mockNamespaces)
       }}
     >
-      <MemoryRouter initialEntries={[actualPath]}>
+      <MemoryRouter initialEntries={[initialEntry]}>
+        <LocationDisplay />
         <Routes>
           <Route path={NavigationPath.editPolicy} element={<EditPolicy />} />
         </Routes>
@@ -84,5 +92,54 @@ describe('Edit Policy Page', () => {
     await waitForText('Edit policy')
     await clickByText('Cancel')
     await waitForNotText('Cancel')
+  })
+
+  test('navigates to policies list when the policy cannot be found', async () => {
+    render(<TestEditPolicyPage nonexistent={true} />)
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policies))
+    await waitForNotText('Edit policy')
+  })
+
+  test('navigates to policies list on cancel when context is policies', async () => {
+    render(<TestEditPolicyPage context="policies" />)
+    await waitForText('Edit policy')
+    await clickByText('Cancel')
+    await waitForNotText('Cancel')
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policies))
+  })
+
+  test('navigates to policies list on submit when context is policies', async () => {
+    window.scrollBy = () => {}
+    render(<TestEditPolicyPage context="policies" />)
+    await waitForText('Edit policy')
+
+    // step 1 -- name and namespace
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+
+    // step 2 -- policy templates
+    await clickElement(
+      screen.getByRole('button', {
+        name: /remove item/i,
+      })
+    )
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+
+    // step 3 -- placement
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+
+    // step 4 -- Policy annotations
+    await clickElement(screen.getByRole('button', { name: 'Next' }))
+
+    // step 5 -- Review and Submit
+    const mockPolicyUpdate = [
+      nockPatch(mockPolicyCopy, [{ op: 'remove', path: '/spec/policy-templates/0' }], undefined, 204, {
+        dryRun: 'All',
+      }),
+      nockPatch(mockPolicyCopy, [{ op: 'remove', path: '/spec/policy-templates/0' }]),
+    ]
+    await clickElement(screen.getByRole('button', { name: 'Submit' }))
+    await waitForNocks(mockPolicyUpdate)
+
+    await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policies))
   })
 })

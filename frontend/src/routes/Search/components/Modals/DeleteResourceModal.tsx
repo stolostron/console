@@ -36,7 +36,7 @@ export const ClosedDeleteModalProps: IDeleteModalProps = {
 
 function updateSearchResults(resource: any, relatedResource: boolean, currentQuery: string, searchResultLimit: number) {
   if (relatedResource) {
-    searchClient
+    void searchClient
       .query({
         query: SearchResultRelatedItemsDocument,
         variables: {
@@ -85,7 +85,7 @@ function updateSearchResults(resource: any, relatedResource: boolean, currentQue
           },
         })
       })
-    searchClient
+    void searchClient
       .query({
         query: SearchResultRelatedCountDocument,
         variables: {
@@ -123,7 +123,7 @@ function updateSearchResults(resource: any, relatedResource: boolean, currentQue
         }
       })
   } else {
-    searchClient
+    void searchClient
       .query({
         query: SearchResultItemsDocument,
         variables: {

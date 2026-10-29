@@ -219,7 +219,7 @@ export function launchJobLogs(curator: ClusterCurator | undefined) {
   if (curator?.status?.conditions) {
     const jobName = getFailedCuratorJobName(curator.metadata.name!, curator.status.conditions)
     const jobPodResponse = getMostRecentAnsibleJobPod(curator?.metadata.namespace!, jobName!)
-    jobPodResponse.then((pod) => {
+    void jobPodResponse.then((pod) => {
       launchToOCP(`k8s/ns/${curator.metadata.name}/pods/${pod?.metadata.name}/logs`)
     })
   }
