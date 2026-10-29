@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": ". ../port-defaults.sh && rspack serve --mode development --env DUMMY_AI",
-    "start:hot": "rspack serve --mode development",
+    "start:hot": "rspack serve --mode development --hot",
     "launch": ". ../port-defaults.sh && rspack serve --mode development --env LAUNCH --env DUMMY_AI",
     "storybook": "storybook dev",
     "build": "NODE_OPTIONS=--max-old-space-size=8192 rspack build --mode production",
