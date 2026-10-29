@@ -59,10 +59,7 @@ describe('useUserGroups', () => {
       }),
       true
     )
-    expect(result.current.userGroups.map((group) => group.metadata.name)).toEqual([
-      'e2e-cluster-group',
-      'developers',
-    ])
+    expect(result.current.userGroups.map((group) => group.metadata.name)).toEqual(['e2e-cluster-group', 'developers'])
     // Prefer Search-backed metadata when present; stub missing names from the CR list.
     expect(result.current.userGroups[0]?.metadata.uid).toBe('group-uid')
     expect(result.current.userGroups[1]?.metadata.uid).toBe('developers')
