@@ -2,14 +2,19 @@
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 
-import { ApolloClient, ApolloLink, from, HttpLink, InMemoryCache, split } from '@apollo/client'
+import { ApolloClient, HttpLink, InMemoryCache, split } from '@apollo/client'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { createClient } from 'graphql-ws'
-import { getBackendUrl, getCookie } from '../../../resources/utils'
+import { getBackendUrl } from '../../../resources/utils'
+// The utils barrel re-enters this module before utils.ts is initialized.
+// Reading fetchWithCsrf from the barrel at that point throws and the plugin never leaves Loading.
+import { fetchWithCsrf } from '../../../resources/utils/utils'
 
 const httpLink = new HttpLink({
   uri: () => `${getBackendUrl()}/proxy/search`,
+  credentials: 'same-origin',
+  fetch: fetchWithCsrf,
 })
 
 /** WebSocket URL for GraphQL subscriptions (graphql-ws), aligned with {@link httpLink}. */
@@ -39,29 +44,13 @@ const wsLink = new GraphQLWsLink(
   })
 )
 
-const csrfHeaderLink = new ApolloLink((operation, forward) => {
-  const csrfToken = getCookie('csrf-token')
-  if (csrfToken) {
-    operation.setContext(({ headers = {} }) => ({
-      headers: {
-        ...headers,
-        'X-CSRFToken': csrfToken,
-      },
-    }))
-  }
-
-  return forward(operation)
-})
-
-const httpChain = from([csrfHeaderLink, httpLink])
-
 const link = split(
   ({ query }) => {
     const definition = getMainDefinition(query)
     return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
   },
   wsLink,
-  httpChain
+  httpLink
 )
 
 export const searchClient = new ApolloClient({
