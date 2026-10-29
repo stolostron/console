@@ -59,6 +59,7 @@ func New(opts Options) *Handler {
 	return h
 }
 
+// ServeHTTP routes VM usage, GET helpers, and action requests after authenticating the user.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, ok := h.authenticate(w, r)
 	if !ok {
@@ -75,6 +76,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// authenticate returns the user token via Validate or hub TokenReview (AuthenticateRequest).
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, bool) {
 	if h.opts.Validate != nil {
 		token, ok := auth.RequireToken(w, r)
@@ -90,6 +92,7 @@ func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, 
 	return auth.AuthenticateRequest(r.Context(), h.opts.RESTConfig, w, r)
 }
 
+// proxyBase returns the cluster-proxy-addon-user base URL used to reach managed clusters.
 func (h *Handler) proxyBase(ctx context.Context) (string, error) {
 	u, err := h.opts.Resolver.URL(ctx)
 	if err != nil {
@@ -105,6 +108,7 @@ type actionBody struct {
 	ReqBody        json.RawMessage `json:"reqBody"`
 }
 
+// action proxies a VirtualMachine/snapshot/restore write or subresource call through the addon.
 func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path string) {
 	raw, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -176,6 +180,7 @@ func (h *Handler) action(w http.ResponseWriter, r *http.Request, token, path str
 	writeProxiedBody(w, resp)
 }
 
+// get fetches a VirtualMachine or VirtualMachineSnapshot from a managed cluster via the addon.
 func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string) {
 	base, err := h.proxyBase(r.Context())
 	if err != nil {
@@ -225,6 +230,7 @@ func (h *Handler) get(w http.ResponseWriter, r *http.Request, token, path string
 	_, _ = w.Write(enc)
 }
 
+// writeProxiedBody re-encodes the upstream body as JSON (or text/plain for non-JSON strings).
 func writeProxiedBody(w http.ResponseWriter, resp *http.Response) {
 	body, _ := io.ReadAll(resp.Body)
 	ct := resp.Header.Get("Content-Type")
@@ -250,6 +256,7 @@ func writeProxiedBody(w http.ResponseWriter, resp *http.Response) {
 	_, _ = w.Write(encoded)
 }
 
+// decodeJSONBody reads and unmarshals a JSON response body; empty bodies yield nil.
 func decodeJSONBody(resp *http.Response) (any, error) {
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

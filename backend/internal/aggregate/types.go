@@ -143,10 +143,12 @@ func emptyDeployedEntry() StatusEntry {
 	return StatusEntry{Counts: make([]int, scoreColumnSize), Messages: []map[string]string{}}
 }
 
+// MarshalJSON encodes StatusEntry as [counts, messages] for frontend score columns.
 func (s StatusEntry) MarshalJSON() ([]byte, error) {
 	return json.Marshal([]any{s.Counts, s.Messages})
 }
 
+// MarshalJSON encodes ClusterStatuses as {health,synced,deployed} StatusEntry values.
 func (c ClusterStatuses) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]StatusEntry{
 		"health":   c.Health,

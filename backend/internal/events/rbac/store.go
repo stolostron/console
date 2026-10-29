@@ -9,10 +9,11 @@ import (
 )
 
 const (
-	clusterRoleAPIVersion  = "rbac.authorization.k8s.io/v1"
-	clusterRoleKind        = "ClusterRole"
-	vmClusterRolesLabel    = "rbac.open-cluster-management.io/filter"
-	vmClusterRolesValue    = "vm-clusterroles"
+	clusterRoleAPIVersion = "rbac.authorization.k8s.io/v1"
+	clusterRoleKind       = "ClusterRole"
+	vmClusterRolesLabel   = "rbac.open-cluster-management.io/filter"
+	vmClusterRolesValue   = "vm-clusterroles"
+	// VMClusterRolesSelector is the label selector for console-managed VM ClusterRoles.
 	VMClusterRolesSelector = vmClusterRolesLabel + "=" + vmClusterRolesValue
 )
 
@@ -31,6 +32,7 @@ type Store struct {
 	subs  map[chan Event]struct{}
 }
 
+// NewStore returns an empty ClusterRole store for the rbac SSE informer.
 func NewStore() *Store {
 	return &Store{
 		byUID: map[string]*rbacv1.ClusterRole{},
@@ -45,6 +47,7 @@ func roleUID(role *rbacv1.ClusterRole) string {
 	return role.Name
 }
 
+// cloneRole DeepCopies the role, sets GVK, and clears ManagedFields for SSE payloads.
 func cloneRole(role *rbacv1.ClusterRole) *rbacv1.ClusterRole {
 	cp := role.DeepCopy()
 	cp.APIVersion = clusterRoleAPIVersion
@@ -53,6 +56,7 @@ func cloneRole(role *rbacv1.ClusterRole) *rbacv1.ClusterRole {
 	return cp
 }
 
+// matchesVMLabel reports whether the role carries the vm-clusterroles filter label.
 func matchesVMLabel(role *rbacv1.ClusterRole) bool {
 	if role == nil || role.Labels == nil {
 		return false
@@ -84,6 +88,7 @@ func (s *Store) Delete(role *rbacv1.ClusterRole) {
 	s.mu.Unlock()
 }
 
+// broadcastLocked fans out ev to subscribers without blocking the informer (drops on full buffer).
 func (s *Store) broadcastLocked(ev Event) {
 	for ch := range s.subs {
 		select {
@@ -114,6 +119,7 @@ func (s *Store) Subscribe() chan Event {
 	return ch
 }
 
+// Unsubscribe removes ch from fan-out and closes it.
 func (s *Store) Unsubscribe(ch chan Event) {
 	s.mu.Lock()
 	delete(s.subs, ch)

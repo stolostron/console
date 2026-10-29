@@ -92,6 +92,7 @@ func IsStaticPath(stripped string) bool {
 	return ok
 }
 
+// requestFileURL maps "/" to index.html and strips the query string from the path.
 func requestFileURL(stripped string) string {
 	urlPath := stripped
 	if i := strings.Index(urlPath, "?"); i >= 0 {
@@ -103,6 +104,7 @@ func requestFileURL(stripped string) string {
 	return urlPath
 }
 
+// ServeHTTP serves a static file with cache headers and optional brotli/gzip variants.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if h.fsys == nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -162,6 +164,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// setCacheHeaders applies Cache-Control and security headers based on path and production mode.
 func setCacheHeaders(w http.ResponseWriter, urlPath string, production bool) {
 	switch {
 	case urlPath == "/index.html":
@@ -191,6 +194,7 @@ func setCacheHeaders(w http.ResponseWriter, urlPath string, production bool) {
 	}
 }
 
+// serveCompressed writes a precompressed sibling file when Accept-Encoding allows it.
 func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept, token, suffix string) bool {
 	if !acceptsEncoding(accept, token) {
 		return false
@@ -216,6 +220,7 @@ func serveCompressed(w http.ResponseWriter, fsys fs.FS, rel, contentType, accept
 	return true
 }
 
+// acceptsEncoding reports whether header includes token with a positive q-value.
 func acceptsEncoding(header, token string) bool {
 	token = strings.ToLower(token)
 	found := false
@@ -231,6 +236,7 @@ func acceptsEncoding(header, token string) bool {
 	return found && q > 0
 }
 
+// statFile uses StatFS when available, otherwise opens the file to call Stat.
 func statFile(fsys fs.FS, name string) (fs.FileInfo, error) {
 	if sf, ok := fsys.(fs.StatFS); ok {
 		return sf.Stat(name)

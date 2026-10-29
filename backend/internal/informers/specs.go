@@ -22,6 +22,7 @@ type WatchSpec struct {
 	ClusterScoped          bool
 }
 
+// SpecKey uniquely identifies a watch among DefaultWatchSpecs (apiVersion, kind, selectors).
 func (s WatchSpec) SpecKey() string {
 	return s.APIVersion + "|" + s.Kind + "|" + SelectorQuery(s.LabelSelector) + "|" + SelectorQuery(s.FieldSelector)
 }
@@ -43,6 +44,7 @@ func SelectorQuery(m map[string]string) string {
 	return strings.Join(parts, ",")
 }
 
+// watch starts a WatchSpec that forwards events to GET /events clients by default.
 func watch(kind, apiVersion string) WatchSpec {
 	return WatchSpec{Kind: kind, APIVersion: apiVersion, ForwardEventsToClients: true}
 }
@@ -77,6 +79,7 @@ func (s WatchSpec) ShouldForward() bool {
 	return s.ForwardEventsToClients && !s.Polled
 }
 
+// pairsToMap converts alternating key,value pairs into a selector map.
 func pairsToMap(pairs []string) map[string]string {
 	m := make(map[string]string, len(pairs)/2)
 	for i := 0; i+1 < len(pairs); i += 2 {
@@ -90,6 +93,7 @@ var (
 	clusterScopedKinds map[string]struct{}
 )
 
+// initClusterScopedKinds lazily builds clusterScopedKinds from DefaultWatchSpecs.
 func initClusterScopedKinds() {
 	clusterScopedOnce.Do(func() {
 		clusterScopedKinds = map[string]struct{}{}
@@ -136,6 +140,7 @@ type watchDef struct {
 	labels, fields         []string
 }
 
+// spec materializes a watchDef into a WatchSpec with flags and selectors applied.
 func (d watchDef) spec() WatchSpec {
 	s := watch(d.kind, d.apiVersion)
 	if d.cluster {

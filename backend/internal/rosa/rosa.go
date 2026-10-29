@@ -92,6 +92,7 @@ func (h *Handler) client() *http.Client {
 	return auth.HTTPClient(nil, 0)
 }
 
+// authenticate validates the browser session via Authn, or writes 401 when Authn is unset.
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) bool {
 	if h.Authn != nil {
 		_, ok := h.Authn(w, r)
@@ -101,6 +102,7 @@ func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) bool {
 	return false
 }
 
+// stripPath removes the /multicloud prefix so route matching uses the wizard path only.
 func stripPath(path string) string {
 	const prefix = "/multicloud"
 	if path == prefix {
@@ -182,6 +184,7 @@ func writeJSON(w http.ResponseWriter, v any) {
 	writeJSONStatus(w, http.StatusOK, v)
 }
 
+// writeJSONStatus encodes v as JSON with HTML escaping disabled (OCM payloads may contain URLs).
 func writeJSONStatus(w http.ResponseWriter, status int, v any) {
 	w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 	if status != http.StatusOK {
@@ -192,6 +195,7 @@ func writeJSONStatus(w http.ResponseWriter, status int, v any) {
 	_ = enc.Encode(v)
 }
 
+// encodeRequestURL percent-encodes spaces only (OCM query URLs).
 func encodeRequestURL(raw string) string {
 	return strings.ReplaceAll(raw, " ", "%20")
 }
@@ -202,10 +206,12 @@ func parsePayload(body []byte) (payload, error) {
 	return p, err
 }
 
+// validAWSAccountID accepts an empty id or a 12-digit AWS account number.
 func validAWSAccountID(id string) bool {
 	return id == "" || awsAccountIDRE.MatchString(id)
 }
 
+// ssoToken exchanges the wizard service-account credentials for an OCM bearer token.
 func (h *Handler) ssoToken(ctx context.Context, p payload) (string, error) {
 	return auth.OCMServiceToken(ctx, h.client(), p.ServiceAccountID, p.ServiceAccountSecret)
 }
@@ -245,6 +251,7 @@ func (h *Handler) authPayloadOrg(
 	return p, tok, org, true
 }
 
+// doJSON calls an OCM API with the bearer token and decodes the JSON response body.
 func (h *Handler) doJSON(ctx context.Context, method, token, rawURL string, body any) (status int, out any, err error) {
 	var reader io.Reader
 	if body != nil {
@@ -287,6 +294,7 @@ func (h *Handler) postJSON(ctx context.Context, token, rawURL string, body any) 
 	return postResult{StatusCode: status, Body: out}, nil
 }
 
+// getOrg loads the OCM current_account so handlers can scope org-level queries.
 func (h *Handler) getOrg(ctx context.Context, token string) (orgAccount, error) {
 	raw, err := h.getJSON(ctx, token, h.APIURL+"/api/accounts_mgmt/v1/current_account")
 	if err != nil {
@@ -303,6 +311,7 @@ func (h *Handler) getOrg(ctx context.Context, token string) (orgAccount, error) 
 	return org, nil
 }
 
+// writeUpstream writes out on success, or logs and writes onErr when the upstream call fails.
 func (h *Handler) writeUpstream(w http.ResponseWriter, op string, out any, err error, onErr any) {
 	if err != nil {
 		applog.Logger().Error("rosa "+op, "error", err)
@@ -312,6 +321,7 @@ func (h *Handler) writeUpstream(w http.ResponseWriter, op string, out any, err e
 	writeJSON(w, out)
 }
 
+// awsAccountIds returns organization labels used as AWS account IDs in the wizard.
 func (h *Handler) awsAccountIds(w http.ResponseWriter, r *http.Request, body []byte) {
 	_, tok, org, ok := h.authPayloadOrg(w, r, body, "aws-account-ids")
 	if !ok {
@@ -321,6 +331,7 @@ func (h *Handler) awsAccountIds(w http.ResponseWriter, r *http.Request, body []b
 	h.writeUpstream(w, "aws-account-ids labels", out, err, nil)
 }
 
+// awsBillingAccounts returns org quota_cost including related cloud billing accounts.
 func (h *Handler) awsBillingAccounts(w http.ResponseWriter, r *http.Request, body []byte) {
 	_, tok, org, ok := h.authPayloadOrg(w, r, body, "aws-billing-accounts")
 	if !ok {
@@ -332,6 +343,7 @@ func (h *Handler) awsBillingAccounts(w http.ResponseWriter, r *http.Request, bod
 	h.writeUpstream(w, "aws-billing-accounts quota", out, err, nil)
 }
 
+// oidcConfigs lists OCM OIDC configs for the given AWS account (or account-less configs).
 func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byte) {
 	p, tok, ok := h.authPayload(w, r, body, pathOIDCConfigs)
 	if !ok {
@@ -347,6 +359,7 @@ func (h *Handler) oidcConfigs(w http.ResponseWriter, r *http.Request, body []byt
 	h.writeUpstream(w, pathOIDCConfigs, out, err, map[string]string{"error": errString(err)})
 }
 
+// regions lists cloud providers with regions for the ROSA region picker.
 func (h *Handler) regions(w http.ResponseWriter, r *http.Request, body []byte) {
 	_, tok, ok := h.authPayload(w, r, body, "regions")
 	if !ok {
@@ -356,6 +369,7 @@ func (h *Handler) regions(w http.ResponseWriter, r *http.Request, body []byte) {
 	h.writeUpstream(w, "regions", out, err, map[string]string{"error": errString(err)})
 }
 
+// clusterNameCheck searches OCM for an existing cluster with the proposed name.
 func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body []byte) {
 	p, tok, ok := h.authPayload(w, r, body, pathClusterNameCheck)
 	if !ok {
@@ -372,6 +386,7 @@ func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body 
 	h.writeUpstream(w, pathClusterNameCheck, out, err, nil)
 }
 
+// vpcs queries AWS VPC inquiries (including security groups) for the selected region.
 func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
 	var raw map[string]any
 	if err := json.Unmarshal(body, &raw); err != nil {
@@ -391,6 +406,7 @@ func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
 	h.writeUpstream(w, "vpcs", out, err, map[string]string{"error": errString(err)})
 }
 
+// stsRoleARNs lists STS account roles for the given AWS account.
 func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byte) {
 	p, tok, ok := h.authPayload(w, r, body, pathSTSRoleARNs)
 	if !ok {
@@ -407,6 +423,7 @@ func (h *Handler) stsRoleARNs(w http.ResponseWriter, r *http.Request, body []byt
 	h.writeUpstream(w, pathSTSRoleARNs, out, err, nil)
 }
 
+// stsOCMRole looks up the STS OCM role ARN for the given AWS account.
 func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte) {
 	p, tok, ok := h.authPayload(w, r, body, pathSTSOCMRole)
 	if !ok {
@@ -422,6 +439,7 @@ func (h *Handler) stsOCMRole(w http.ResponseWriter, r *http.Request, body []byte
 	h.writeUpstream(w, pathSTSOCMRole, out, err, nil)
 }
 
+// userRole returns the sts_user_role label for the current OCM account.
 func (h *Handler) userRole(w http.ResponseWriter, r *http.Request, body []byte) {
 	_, tok, org, ok := h.authPayloadOrg(w, r, body, pathSTSUserRole)
 	if !ok {
@@ -431,6 +449,7 @@ func (h *Handler) userRole(w http.ResponseWriter, r *http.Request, body []byte) 
 	h.writeUpstream(w, pathSTSUserRole, out, err, nil)
 }
 
+// machineTypes lists AWS machine types available for the role ARN, region, and AZs.
 func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []byte) {
 	p, tok, ok := h.authPayload(w, r, body, pathMachineTypes)
 	if !ok {
@@ -449,6 +468,7 @@ func (h *Handler) machineTypes(w http.ResponseWriter, r *http.Request, body []by
 	h.writeUpstream(w, pathMachineTypes, out, err, map[string]string{"error": errString(err)})
 }
 
+// versions lists ROSA-enabled HCP OpenShift versions from OCM.
 func (h *Handler) versions(w http.ResponseWriter, r *http.Request, body []byte) {
 	_, tok, ok := h.authPayload(w, r, body, pathOpenShiftVersions)
 	if !ok {
