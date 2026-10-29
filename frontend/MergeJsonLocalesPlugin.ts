@@ -39,6 +39,8 @@ export class MergeJsonLocalesPlugin {
             const merged: Record<string, unknown> = {}
             for (const file of spec.files) {
               if (!fs.existsSync(file)) {
+                // Not present yet: watch the path so creating it later triggers a rebuild.
+                compilation.missingDependencies.add(file)
                 continue
               }
               // Register the input as a build dependency so watch mode rebuilds on change.
