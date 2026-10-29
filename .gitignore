@@ -3,6 +3,7 @@
 **/certs/
 **/node_modules/
 **/dist/
+**/cypress-dist/
 **/build/
 **/.eslintcache
 **/*.tsbuildinfo

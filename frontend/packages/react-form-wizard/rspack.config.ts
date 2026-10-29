@@ -4,9 +4,13 @@ import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh'
 import { rspack } from '@rspack/core'
 import type { Configuration } from '@rspack/cli'
 
-module.exports = function (_env: unknown, argv: { hot: boolean; mode: string | undefined }) {
+module.exports = function (env: any, argv: { hot: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production' || argv.mode === undefined
   const isDevelopment = !isProduction
+  // The Cypress suite builds in production mode and serves the output with `rspack preview`
+  // (see package.json). That needs the assets served from the root path rather than the
+  // GitHub-Pages subpath used by the real `pages` build.
+  const isCypress = !!(env && env.cypress)
 
   const config: Configuration = {
     entry: './wizards',
@@ -47,7 +51,7 @@ module.exports = function (_env: unknown, argv: { hot: boolean; mode: string | u
       }),
     ].filter(Boolean),
     output: {
-      publicPath: isProduction ? '/react-form-wizard/' : '/',
+      publicPath: isProduction && !isCypress ? '/react-form-wizard/' : '/',
     },
     devServer: {
       port: 3000,
