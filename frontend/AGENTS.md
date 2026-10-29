@@ -8,7 +8,7 @@ React 18+ SPA with TypeScript in strict mode. Serves as both the standalone cons
 - **State Management**: Jotai atoms for global state, with selectors represented by derived atoms
 - **Data Fetching**: React Query, Apollo/GraphQL for search
 - **Routing**: React Router with v5 compatibility layer
-- **Build**: Webpack 5 with module federation for dynamic plugins
+- **Build**: Rspack with module federation for dynamic plugins
 - **Testing**: Jest with React Testing Library
 - **i18n**: i18next with namespace-scoped translation files in `public/locales/`
 
@@ -148,7 +148,7 @@ When running as dynamic plugins (the recommended dev mode via `npm run plugins`)
 Plugin builds use module federation. Each plugin has:
 - `console-extensions.ts` — Extension point declarations
 - `console-plugin-metadata.ts` — Plugin metadata
-- `webpack.plugin.ts` — Plugin-specific webpack config
+- `rspack.plugin.ts` — Plugin-specific Rspack config
 
 MCE (MultiCluster Engine) is a prerequisite for ACM. The MCE plugin provides the base multicluster management features, and the ACM plugin adds additional capabilities on top (governance, applications, etc.).
 

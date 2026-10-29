@@ -1,20 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* eslint-disable @typescript-eslint/no-var-requires */
-import ReactRefreshWebpackPlugin from '@pmmmwh/react-refresh-webpack-plugin'
+import { ReactRefreshRspackPlugin } from '@rspack/plugin-react-refresh'
 import CompressionPlugin from 'compression-webpack-plugin'
-import CopyPlugin from 'copy-webpack-plugin'
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import HtmlWebpackPlugin from 'html-webpack-plugin'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
 import * as path from 'path'
-import ReactRefreshTypeScript from 'react-refresh-typescript'
-import webpack from 'webpack'
-import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
-import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
+import { rspack } from '@rspack/core'
+import type { Configuration } from '@rspack/cli'
+import { TsCheckerRspackPlugin } from 'ts-checker-rspack-plugin'
+import { MergeJsonLocalesPlugin } from './MergeJsonLocalesPlugin'
 import { supportedLanguages } from './src/lib/supportedLanguages'
-import ForkTsCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production' || argv.mode === undefined
@@ -28,7 +22,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     console.log('mock%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%')
   }
   const useTsChecker = argv.hot || !openBrowser
-  const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
+  const config: Configuration = {
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
       fallback: {
@@ -48,6 +42,16 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       },
     },
     module: {
+      // Match webpack's leniency: a named import that a (CommonJS) dependency does not export
+      // is a warning, not a hard error. Some app code imports symbols that are not part of a
+      // dependency's public barrel (e.g. getClusterNameOfAgent from @openshift-assisted/ui-lib/cim);
+      // webpack left these as `undefined` at runtime, while rspack otherwise fails the build and
+      // blocks the dev overlay.
+      parser: {
+        javascript: {
+          exportsPresence: 'warn',
+        },
+      },
       rules: [
         { test: /\.(hbs|yaml)$/, type: 'asset/source' },
         {
@@ -68,51 +72,76 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         { test: /\.(jpg|jpeg|png|gif|ttf|eot|woff|woff2)$/, type: 'asset/resource' },
         {
           test: /\.css$/,
-          use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: isDevelopment ? ['style-loader', 'css-loader'] : [rspack.CssExtractRspackPlugin.loader, 'css-loader'],
+          type: 'javascript/auto',
+        },
+        {
+          // Host-console (`@console/*`) components pulled in transitively via the
+          // dynamic-plugin-sdk barrel ship SCSS. Standalone stubs the host modules (see the
+          // `@console/*` replacement below) but still compiles their style imports.
+          test: /\.scss$/,
+          use: isDevelopment
+            ? ['style-loader', 'css-loader', 'sass-loader']
+            : [rspack.CssExtractRspackPlugin.loader, 'css-loader', 'sass-loader'],
+          type: 'javascript/auto',
         },
         {
           test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
-          loader: 'ts-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            configFile: isDevelopment ? 'tsconfig.dev.json' : 'tsconfig.json',
-            transpileOnly: true,
-            getCustomTransformers: () => ({
-              before: [isDevelopment && ReactRefreshTypeScript()].filter(Boolean),
-            }),
+            jsc: {
+              parser: { syntax: 'typescript', tsx: true },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                  development: isDevelopment,
+                  refresh: isDevelopment,
+                },
+              },
+            },
           },
           type: 'javascript/auto',
         },
       ],
     },
     plugins: [
-      new webpack.DefinePlugin({
+      // Standalone mode has no OpenShift Console host, so the host-only modules that the
+      // dynamic-plugin-sdk barrel reaches (via `useResolvedExtensions` et al.) cannot be
+      // resolved. Redirect them to the shared dummy stub — the same module Jest maps
+      // `@console/*` to — since standalone never exercises those host features.
+      new rspack.NormalModuleReplacementPlugin(/^@console\//, path.resolve(__dirname, '__mocks__/dummy.ts')),
+      new rspack.DefinePlugin({
         'process.env.NODE_ENV': isProduction ? JSON.stringify('production') : JSON.stringify('development'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
         'process.env.TRANSLATION_NAMESPACE': JSON.stringify('translation'),
         'process.env.DEBUG_EVENT_STREAM_IDLE': JSON.stringify(process.env.DEBUG_EVENT_STREAM_IDLE ?? ''),
-      }) as unknown as webpack.WebpackPluginInstance,
-      ...locales.map((locale) => {
-        return new MergeJsonWebpackPlugin({
-          files: [
-            `./public/locales/${locale}/translation.json`,
-            `./node_modules/@openshift-assisted/locales/lib/${locale}/translation.json`,
-          ],
-          output: {
-            fileName: `.${isDevelopment ? '/multicloud' : ''}/locales/${locale}/translation.json`,
-          },
-          space: 4,
-        })
       }),
-      new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
+      new MergeJsonLocalesPlugin(
+        locales.map((locale) => ({
+          files: [
+            path.resolve(__dirname, 'public/locales', locale, 'translation.json'),
+            path.resolve(__dirname, 'node_modules/@openshift-assisted/locales/lib', locale, 'translation.json'),
+          ],
+          output: `${isDevelopment ? 'multicloud/' : ''}locales/${locale}/translation.json`,
+        }))
+      ),
+      new rspack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
       useTsChecker &&
-        new ForkTsCheckerWebpackPlugin({
+        new TsCheckerRspackPlugin({
           async: true,
           typescript: {
             // Always use the app tsconfig (`module: esnext`). tsconfig.dev.json is for Jest
             // (`module: commonjs`) and rejects `import.meta` in worker factories.
             configFile: 'tsconfig.json',
             memoryLimit: 8192,
+            // tsconfig.json has no `exclude`, so the checker's file watcher would otherwise
+            // watch every node_modules .d.ts individually and exhaust file descriptors
+            // (EMFILE) on this large tree. The checker still reads node_modules for type
+            // resolution — this only keeps those (unchanging) files out of the watch set.
+            configOverwrite: {
+              exclude: ['node_modules', 'build', 'coverage'],
+            },
           },
         }),
       new MonacoWebpackPlugin({
@@ -129,21 +158,19 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         ],
       }),
       isProduction &&
-        new CopyPlugin({
+        new rspack.CopyRspackPlugin({
           patterns: [{ from: 'public', globOptions: { ignore: ['**/*.html', '**/translation.json'] } }],
         }),
       isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
       isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
-      isDevelopment && new ReactRefreshWebpackPlugin(),
-      // new HtmlWebpackPlugin({ title: 'test', favicon: 'public/favicon.svg' }),
-      new HtmlWebpackPlugin({ template: './public/index.html' }),
-      new MiniCssExtractPlugin({
+      isDevelopment && new ReactRefreshRspackPlugin(),
+      new rspack.HtmlRspackPlugin({ template: './public/index.html' }),
+      new rspack.CssExtractRspackPlugin({
         filename: '[name].[contenthash:8].css',
         chunkFilename: '[id].[contenthash:8].css',
         ignoreOrder: false, // Enable to remove warnings about conflicting order
       }),
-      new BundleAnalyzerPlugin({ analyzerMode: 'disabled' }),
-    ].filter(Boolean) as webpack.WebpackPluginInstance[],
+    ].filter(Boolean),
     output: {
       devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
         path.resolve(info.absoluteResourcePath).replaceAll('\\', '/'),
@@ -153,22 +180,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       publicPath: isProduction ? '/multicloud/' : '/',
       path: path.resolve(__dirname, 'build'),
       clean: true,
-    },
-    optimization: {
-      //     runtimeChunk: 'single',
-      //     splitChunks: {
-      //         cacheGroups: {
-      //             vendor: { test: /[\\/]node_modules[\\/]/, name: 'vendors', chunks: 'all' },
-      //         },
-      //     },
-      minimizer: [
-        `...`,
-        new CssMinimizerPlugin({
-          minimizerOptions: {
-            preset: ['default', { mergeLonghand: false }],
-          },
-        }),
-      ],
     },
     devServer: {
       port: process.env.FRONTEND_PORT,
@@ -214,7 +225,11 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/vpcs',
         '/multicloud/machine-types',
       ].map((backendPath) => ({
-        path: backendPath,
+        // `context` is the path matcher for @rspack/dev-server (it maps to http-proxy-middleware
+        // v3's `pathFilter`). Using `path` here leaves the filter undefined, which makes the entry
+        // match every request — including the HMR `/ws` socket — and the `ws: true` upgrade
+        // handler then hijacks live-reload, blanking the page.
+        context: backendPath,
         target: `https://localhost:${process.env.BACKEND_PORT}`,
         secure: false,
         // Allow browser WebSocket upgrades (Search graphql-ws, K8s watches) through the proxy.
@@ -223,7 +238,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       open: openBrowser,
       historyApiFallback: true,
       compress: true,
-      https: true,
       server: {
         type: 'https',
       },
@@ -239,6 +253,15 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
     },
     // devtool: isDevelopment && 'inline-source-map',
     devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'source-map',
+    // The type-checker (launch / start:hot) feeds the whole TypeScript program — including
+    // every node_modules .d.ts — into its file watcher. On this large tree that opens a
+    // watch handle per file and exhausts file descriptors (EMFILE). Ignoring node_modules
+    // keeps those files readable for type resolution without watching them (they do not
+    // change during a dev session). Standalone does not run the workspace-package watchers,
+    // and linked workspace packages resolve to real paths under packages/, not node_modules.
+    watchOptions: {
+      ignored: /[\\/]node_modules[\\/]/,
+    },
   }
 
   return config

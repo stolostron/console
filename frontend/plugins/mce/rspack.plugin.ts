@@ -1,17 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ConsoleRemotePlugin } from '@openshift-console/dynamic-plugin-sdk-webpack'
-const webpackConfig = require('../webpack.plugin.base')
+const rspackConfig = require('../rspack.plugin.base')
 import { extensions } from './console-extensions'
 import { pluginMetadata } from './console-plugin-metadata'
 
 /**
- * @fileoverview ACM Plugin Webpack Configuration
- * Builds the ACM plugin as a dynamic module for OpenShift Console.
- * Configures output path, bundle naming, and registers the ConsoleRemotePlugin.
- * Packages ACM-specific extensions and metadata for runtime integration.
+ * @fileoverview MCE Plugin Rspack Configuration
+ * Builds the Multicluster Engine plugin for dynamic loading in OpenShift Console.
+ * Defines build output settings and integrates MCE-specific plugin metadata and extensions.
+ * Creates standalone bundle that can be loaded by the OpenShift Console at runtime.
  */
 module.exports = function (env: any, argv: { hot?: boolean; mode?: string }) {
-  const config = webpackConfig(env, argv)
+  const config = rspackConfig(env, argv)
 
   config.plugins.push(
     new ConsoleRemotePlugin({

@@ -2,7 +2,7 @@
 
 import type { Meta, StoryObj } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { ProjectCreateForm } from './ProjectCreateForm'
+import { ProjectCreateForm, type ProjectFormData } from './ProjectCreateForm'
 
 const meta: Meta<typeof ProjectCreateForm> = {
   title: 'Components/Project/ProjectCreateForm',
@@ -29,7 +29,7 @@ export const Default: Story = {
 export const WithSubmitHandler: Story = {
   args: {
     onCancelCallback: action('cancel-clicked'),
-    onSubmit: async (data) => {
+    onSubmit: async (data: ProjectFormData) => {
       action('form-submitted')(data)
       // Simulate async operation
       await new Promise((resolve) => setTimeout(resolve, 1000))

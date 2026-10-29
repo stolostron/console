@@ -1,20 +1,18 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import CompressionPlugin from 'compression-webpack-plugin'
-import CssMinimizerPlugin from 'css-minimizer-webpack-plugin'
-import { Configuration as DevServerConfiguration } from 'webpack-dev-server'
-import MergeJsonWebpackPlugin from 'merge-jsons-webpack-plugin'
-import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import MonacoWebpackPlugin from 'monaco-editor-webpack-plugin'
-import webpack from 'webpack'
-import { supportedLanguages } from '../src/lib/supportedLanguages'
 import path from 'path'
+import { rspack } from '@rspack/core'
+import type { Configuration } from '@rspack/cli'
+import { MergeJsonLocalesPlugin } from '../MergeJsonLocalesPlugin'
+import { supportedLanguages } from '../src/lib/supportedLanguages'
 
 module.exports = function (env: any, argv: { hot?: boolean; mode: string | undefined }) {
   const isProduction = argv.mode === 'production'
   const isDevelopment = !isProduction
   const locales = supportedLanguages
-  const config: webpack.Configuration & { devServer: DevServerConfiguration } = {
+  const config: Configuration = {
     entry: {},
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.jsx'],
@@ -37,6 +35,16 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       },
     },
     module: {
+      // Match webpack's leniency: a named import that a (CommonJS) dependency does not export
+      // is a warning, not a hard error. Some app code imports symbols that are not part of a
+      // dependency's public barrel (e.g. getClusterNameOfAgent from @openshift-assisted/ui-lib/cim);
+      // webpack left these as `undefined` at runtime, while rspack otherwise fails the build and
+      // blocks the dev overlay.
+      parser: {
+        javascript: {
+          exportsPresence: 'warn',
+        },
+      },
       rules: [
         { test: /\.(hbs|yaml)$/, type: 'asset/source' },
         {
@@ -54,36 +62,51 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         {
           test: /\.css$/,
           exclude: /node_modules\/@patternfly/,
-          use: isDevelopment ? ['style-loader', 'css-loader'] : [MiniCssExtractPlugin.loader, 'css-loader'],
+          use: isDevelopment ? ['style-loader', 'css-loader'] : [rspack.CssExtractRspackPlugin.loader, 'css-loader'],
+          type: 'javascript/auto',
         },
         {
           test: /\.css$/,
           include: /node_modules\/@patternfly/,
           loader: 'null-loader',
+          type: 'javascript/auto',
         },
         {
           test: /\.(ts|tsx|js|jsx)$/,
           exclude: /node_modules/,
-          loader: 'ts-loader',
+          loader: 'builtin:swc-loader',
           options: {
-            configFile: isDevelopment ? 'tsconfig.json' : 'tsconfig.json',
-            transpileOnly: true,
+            jsc: {
+              parser: { syntax: 'typescript', tsx: true },
+              transform: {
+                react: {
+                  runtime: 'automatic',
+                  // Always emit the production automatic runtime (react/jsx-runtime), never the
+                  // dev runtime (react/jsx-dev-runtime). In a Console plugin, `react` is a shared
+                  // host-provided module that exposes jsx/jsxs but not jsxDEV; builtin:swc-loader
+                  // otherwise defaults `development` to true in dev mode, yielding
+                  // "jsxDEV is not a function" at runtime. This matches the original ts-loader
+                  // (tsconfig `jsx: react-jsx`) behavior.
+                  development: false,
+                },
+              },
+            },
           },
           type: 'javascript/auto',
         },
       ],
     },
     plugins: [
-      new webpack.NormalModuleReplacementPlugin(/media\/suggest\.css$/, path.resolve(__dirname, '../src/empty.css')),
-      new webpack.DefinePlugin({
+      new rspack.NormalModuleReplacementPlugin(/media\/suggest\.css$/, path.resolve(__dirname, '../src/empty.css')),
+      new rspack.DefinePlugin({
         'process.env.NODE_ENV': JSON.stringify('production'),
         'process.env.REACT_APP_BACKEND_PATH': JSON.stringify('/multicloud'),
         'process.env.MODE': JSON.stringify('plugin'),
         'process.env.PLUGIN_PROXY_PATH': JSON.stringify(`/api/proxy/plugin/${env.plugin}/console`),
         'process.env.TRANSLATION_NAMESPACE': JSON.stringify(`plugin__${env.plugin}`),
         'process.env.DEBUG_EVENT_STREAM_IDLE': JSON.stringify(process.env.DEBUG_EVENT_STREAM_IDLE ?? ''),
-      }) as unknown as webpack.WebpackPluginInstance,
-      new webpack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
+      }),
+      new rspack.ProvidePlugin({ Buffer: ['buffer', 'Buffer'], process: 'process' }),
       new MonacoWebpackPlugin({
         languages: ['yaml'],
         customLanguages: [
@@ -97,26 +120,23 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
           },
         ],
       }),
-      new MiniCssExtractPlugin({
+      new rspack.CssExtractRspackPlugin({
         filename: '[name].[contenthash:8].css',
         chunkFilename: '[id].[contenthash:8].css',
         ignoreOrder: false, // Enable to remove warnings about conflicting order
       }),
-      ...locales.map((locale) => {
-        return new MergeJsonWebpackPlugin({
+      new MergeJsonLocalesPlugin(
+        locales.map((locale) => ({
           files: [
-            `../../public/locales/${locale}/translation.json`,
-            `../../node_modules/@openshift-assisted/locales/lib/${locale}/translation.json`,
+            path.resolve(__dirname, '../public/locales', locale, 'translation.json'),
+            path.resolve(__dirname, '../node_modules/@openshift-assisted/locales/lib', locale, 'translation.json'),
           ],
-          output: {
-            fileName: `locales/${locale}/plugin__${env.plugin}.json`,
-          },
-          space: 4,
-        })
-      }),
+          output: `locales/${locale}/plugin__${env.plugin}.json`,
+        }))
+      ),
       isProduction && new CompressionPlugin({ algorithm: 'gzip' }),
       isProduction && new CompressionPlugin({ algorithm: 'brotliCompress', filename: '[path][base].br' }),
-    ].filter(Boolean) as webpack.WebpackPluginInstance[],
+    ].filter(Boolean),
     output: {
       devtoolModuleFilenameTemplate: (info: { absoluteResourcePath: string }) =>
         path.resolve(info.absoluteResourcePath).replaceAll('\\', '/'),
@@ -124,12 +144,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
       filename: '[name].[contenthash:8].js',
       chunkFilename: '[name].[contenthash:8].js',
       clean: true,
-    },
-    optimization: {
-      minimizer: [
-        `...`,
-        new CssMinimizerPlugin({ minimizerOptions: { preset: ['default', { mergeLonghand: false }] } }),
-      ],
     },
     devServer: {
       static: './dist',
@@ -145,7 +159,6 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         writeToDisk: true,
       },
       compress: true,
-      https: false,
       hot: true,
       client: {
         overlay: {

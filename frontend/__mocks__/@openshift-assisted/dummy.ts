@@ -83,6 +83,9 @@ export const isAgentOfInfraEnv = (): boolean => true
 export const onAgentChangeHostname = (): void => {}
 export const getClusterProperties = (): any => ({})
 export const labelsToArray = (labels: any): any[] => []
+export const getClusterNameOfAgent = (agent: any): string | undefined => agent?.spec?.clusterDeploymentName?.name
+export const getInfraEnvNameOfAgent = (agent: any): string | undefined =>
+  agent?.metadata?.labels?.['infraenvs.agent-install.openshift.io']
 
 // Types
 export type NetworkFormValues = any

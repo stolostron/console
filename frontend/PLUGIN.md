@@ -16,7 +16,7 @@ npm run setup
 npm run plugins
 ```
 
-This concurrently starts the backend server, frontend webpack development server, and a local OpenShift Console container.
+This concurrently starts the backend server, frontend Rspack development server, and a local OpenShift Console container.
 
 The console will be running at http://localhost:9000 (or the value of `CONSOLE_PORT`).
 
@@ -38,9 +38,9 @@ CONSOLE_VERSION=4.21 npm run plugins
 
 ### Troubleshooting: `Failed to construct 'URL': Invalid URL` overlay
 
-Local plugin mode enables OpenShift Console CSP Report-Only. The console CSP detector compares `blockedURI` values with `new URL(...)`, which throws for CSP tokens such as `""`, `inline`, or `eval`. Webpack-dev-server then shows that host error as a full-screen overlay when opening Monaco-heavy pages (Create Policy, Search YAML, etc.).
+Local plugin mode enables OpenShift Console CSP Report-Only. The console CSP detector compares `blockedURI` values with `new URL(...)`, which throws for CSP tokens such as `""`, `inline`, or `eval`. The Rspack dev server then shows that host error as a full-screen overlay when opening Monaco-heavy pages (Create Policy, Search YAML, etc.).
 
-Plugin webpack filters that runtime error from the overlay (`frontend/plugins/webpack.plugin.base.ts`). If the overlay still appears, restart `npm run plugins`, then in DevTools → Application → Local Storage for `http://localhost:9000` delete the `console/csp_violations` key and hard-refresh.
+Plugin Rspack config filters that runtime error from the overlay (`frontend/plugins/rspack.plugin.base.ts`). If the overlay still appears, restart `npm run plugins`, then in DevTools → Application → Local Storage for `http://localhost:9000` delete the `console/csp_violations` key and hard-refresh.
 
 ## Running against a local development build of OCP Console
 
@@ -51,7 +51,7 @@ npm run setup
 npm run plugins-dev
 ```
 
-This starts the backend server and frontend webpack development server, but does **not** start the OpenShift Console container. You are responsible for building and running the OCP Console bridge yourself.
+This starts the backend server and frontend Rspack development server, but does **not** start the OpenShift Console container. You are responsible for building and running the OCP Console bridge yourself.
 
 ### Building and running OCP Console locally
 
