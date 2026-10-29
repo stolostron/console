@@ -74,8 +74,10 @@ export default function SummaryCard(props: {
         {!error ? (
           <div>
             <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 'normal' }}>
-              <span style={{ fontSize: '24px', fontWeight: '500' }}>{summaryTotalHeader.num}</span>
-              <span>{summaryTotalHeader.text}</span>
+              <span style={{ fontSize: '24px', fontWeight: '500' }}>
+                {loading ? <Skeleton width="2rem" height="1.5rem" /> : summaryTotalHeader.num}
+              </span>
+              <span>{loading ? <Skeleton width="8rem" height="1rem" /> : summaryTotalHeader.text}</span>
             </div>
             <Divider style={{ margin: '1rem 0' }} />
             <div style={{ display: 'flex' }}>
