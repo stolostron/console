@@ -8,6 +8,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
+	"net/http/pprof"
 	"os"
 	"path/filepath"
 	"strings"
@@ -350,6 +351,14 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	if o.debugSnapshot != nil {
 		r.Get("/debug/informer-snapshot", o.debugSnapshot.ServeHTTP)
 		r.Get(multicloudPrefix+"/debug/informer-snapshot", o.debugSnapshot.ServeHTTP)
+	}
+	if !cfg.Production {
+		r.Get("/debug/pprof/cmdline", http.HandlerFunc(pprof.Cmdline))
+		r.Get("/debug/pprof/profile", http.HandlerFunc(pprof.Profile))
+		r.Get("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+		r.Post("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
+		r.Get("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
+		r.Get("/debug/pprof/*", http.HandlerFunc(pprof.Index))
 	}
 	r.NotFound(notFoundHandler(o.staticH))
 	r.MethodNotAllowed(func(w http.ResponseWriter, _ *http.Request) {

@@ -31,28 +31,27 @@ func transformFor(spec WatchSpec) cache.TransformFunc {
 		if !ok {
 			return obj, nil
 		}
-		out := u.DeepCopy()
-		out.SetAPIVersion(spec.APIVersion)
-		out.SetKind(spec.Kind)
+		u.SetAPIVersion(spec.APIVersion)
+		u.SetKind(spec.Kind)
 		if spec.Kind != "Policy" {
-			unstructured.RemoveNestedField(out.Object, "metadata", "managedFields")
-			out.SetManagedFields(nil)
+			unstructured.RemoveNestedField(u.Object, "metadata", "managedFields")
+			u.SetManagedFields(nil)
 		}
 		switch spec.Kind {
 		case "ManagedClusterAddOn":
-			stripAddonFields(out)
+			stripAddonFields(u)
 		case "ManagedCluster":
-			stripManagedClusterFields(out)
+			stripManagedClusterFields(u)
 		case "ManagedClusterInfo":
-			stripManagedClusterInfoFields(out)
+			stripManagedClusterInfoFields(u)
 		case "ApplicationSet":
-			stripApplicationSetFields(out)
+			stripApplicationSetFields(u)
 		case "Application":
 			if spec.APIVersion == "argoproj.io/v1alpha1" {
-				stripArgoApplicationFields(out)
+				stripArgoApplicationFields(u)
 			}
 		}
-		return out, nil
+		return u, nil
 	}
 }
 
