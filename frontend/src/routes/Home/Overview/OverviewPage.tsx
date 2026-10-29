@@ -69,7 +69,11 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
     localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
   )
-  const { policyReports } = usePolicyReportsList(isInsightsSectionOpen)
+  const {
+    policyReports,
+    isLoading: isPolicyReportsLoading,
+    isError: isPolicyReportsError,
+  } = usePolicyReportsList(isInsightsSectionOpen)
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(
     localStorage.getItem('cluster-section-toggle') ? localStorage.getItem('cluster-section-toggle') === 'true' : true
   )
@@ -429,6 +433,10 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Cluster recommendations')}
+                    loading={isPolicyReportsLoading}
+                    error={
+                      isPolicyReportsError ? t('An unexpected error occurred while retrieving metrics.') : undefined
+                    }
                     summaryTotalHeader={{
                       num: `${clustersWithIssuesCount}`,
                       text: clustersWithIssuesCount !== 1 ? t('clusters affected') : t('cluster affected'),
