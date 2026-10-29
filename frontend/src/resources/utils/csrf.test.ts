@@ -35,8 +35,10 @@ describe('csrf', () => {
 
   it('retries a search POST once after the console rotates the csrf cookie', async () => {
     let calls = 0
-    const fetchMock = jest.fn(async () => {
+    const sentTokens: Array<string | null> = []
+    const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
       calls += 1
+      sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
       if (calls === 1) {
         cookie = 'csrf-token=token-b'
         return csrfDenied()
@@ -48,9 +50,7 @@ describe('csrf', () => {
     const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
 
     expect(response.status).toBe(200)
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get('X-CSRFToken')).toBe('token-a')
-    expect(new Headers(fetchMock.mock.calls[1][1]?.headers).get('X-CSRFToken')).toBe('token-b')
+    expect(sentTokens).toEqual(['token-a', 'token-b'])
   })
 
   it('does not retry a CSRF mismatch when the cookie did not change', async () => {

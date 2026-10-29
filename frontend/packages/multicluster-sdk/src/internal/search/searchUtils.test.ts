@@ -257,8 +257,10 @@ describe('searchUtils', () => {
 
     it('retries a CSRF mismatch once with the rotated token', async () => {
       let calls = 0
-      const fetchMock = jest.fn(async () => {
+      const sentTokens: Array<string | null> = []
+      const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
         calls += 1
+        sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
         if (calls === 1) {
           cookie = 'csrf-token=token-b'
           return csrfDenied()
@@ -270,11 +272,7 @@ describe('searchUtils', () => {
       const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
 
       expect(response.status).toBe(200)
-      expect(fetchMock).toHaveBeenCalledTimes(2)
-      const firstHeaders = new Headers(fetchMock.mock.calls[0][1]?.headers)
-      const secondHeaders = new Headers(fetchMock.mock.calls[1][1]?.headers)
-      expect(firstHeaders.get('X-CSRFToken')).toBe('token-a')
-      expect(secondHeaders.get('X-CSRFToken')).toBe('token-b')
+      expect(sentTokens).toEqual(['token-a', 'token-b'])
     })
 
     it('does not retry when the token is unchanged', async () => {
@@ -304,17 +302,17 @@ describe('searchUtils', () => {
 
     it('sends the last csrf-token and does not retry a success', async () => {
       cookie = 'csrf-token=old-token; csrf-token=new-token'
-      const fetchMock = jest.fn(
-        async () => new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } })
-      )
+      const sentTokens: Array<string | null> = []
+      const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
+        return new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } })
+      })
       global.fetch = fetchMock as typeof fetch
 
       const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
 
       expect(response.status).toBe(200)
-      expect(fetchMock).toHaveBeenCalledTimes(1)
-      const headers = new Headers(fetchMock.mock.calls[0][1]?.headers)
-      expect(headers.get('X-CSRFToken')).toBe('new-token')
+      expect(sentTokens).toEqual(['new-token'])
     })
   })
 })
