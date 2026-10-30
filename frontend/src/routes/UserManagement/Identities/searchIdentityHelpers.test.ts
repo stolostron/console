@@ -133,6 +133,17 @@ describe('search list helpers', () => {
     ])
   })
 
+  it('treats null Apollo rank rows and null counts as zero Search hits before the extra', () => {
+    // Matches SearchResultCountQuery searchResult: ({ count?: number | null } | null)[]
+    const apolloRanks: ({ count?: number | null } | null | undefined)[] = [null, { count: null }, { count: 2 }]
+    const placed = placeExtrasByRank(['x', 'y', 'z'], apolloRanks, () => 0)
+    expect(placed).toEqual([
+      { resource: 'x', mergedIndex: 0 },
+      { resource: 'y', mergedIndex: 0 },
+      { resource: 'z', mergedIndex: 2 },
+    ])
+  })
+
   it('computes the Search page window around placed extras', () => {
     const window = searchPageWindow([{ mergedIndex: 0 }, { mergedIndex: 5 }], 1, 5, true, true)
     expect(window).toEqual({

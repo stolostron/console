@@ -62,7 +62,8 @@ export function areRanksReady(extrasLength: number, rankCountsLength: number, lo
 /** Map MRA extras onto Search page indices using per-extra "how many Search hits sort before me" counts. */
 export function placeExtrasByRank<T>(
   extras: T[],
-  rankCounts: { count?: number }[],
+  // Apollo searchResult rows are `{ count?: number | null } | null`.
+  rankCounts: ({ count?: number | null } | null | undefined)[],
   compare: (a: T, b: T) => number
 ): { resource: T; mergedIndex: number }[] {
   return extras.map((resource, index) => {
