@@ -213,6 +213,45 @@ describe('useCurrentUser', () => {
     })
   })
 
+  test('surfaces Forbidden for an unresolved route id when no matching MRA exists', async () => {
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: wrapper('charlie') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.user).toBeUndefined()
+      expect((result.current.error as ResourceError).code).toBe(ResourceErrorCode.Forbidden)
+    })
+  })
+
+  test('retries after Forbidden when a matching MRA arrives later', async () => {
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result, rerender } = renderHook(() => useCurrentUser(), { wrapper: wrapper('charlie') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect((result.current.error as ResourceError).code).toBe(ResourceErrorCode.Forbidden)
+    })
+
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [charlieMra]
+      return undefined
+    })
+    rerender()
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.user?.metadata.name).toBe('charlie')
+      expect(result.current.error).toBeUndefined()
+    })
+  })
+
   test('surfaces Forbidden when Search resolved a name', async () => {
     mockSearchWithTestUser()
     mockGetResource.mockImplementation(() => ({

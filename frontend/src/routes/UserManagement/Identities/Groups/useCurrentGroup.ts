@@ -63,6 +63,8 @@ export const useCurrentGroup = (): CurrentGroup => {
     [watchedName]
   )
   const [latestEvent] = useFleetSearchSubscription(watchInput)
+  // Boolean (not the MRA object) so the load effect can retry when MRA data arrives without looping.
+  const allowForbiddenWhenUnresolved = Boolean(mraIdentity)
 
   useEffect(() => {
     if (!id) {
@@ -81,7 +83,7 @@ export const useCurrentGroup = (): CurrentGroup => {
         // Search alone is not enough (no users/annotations); MRA synthetic is last resort.
         // Forbidden on an unresolved route id with a matching MRA must not hide the stub.
         const resolved = await resolveIndexedThenRead(id, hubName, findIndexedGroupName, readGroup, {
-          allowForbiddenWhenUnresolved: Boolean(mraIdentity),
+          allowForbiddenWhenUnresolved,
         })
         if (cancelled) return
         setFetched(resolved)
@@ -98,8 +100,7 @@ export const useCurrentGroup = (): CurrentGroup => {
     return () => {
       cancelled = true
     }
-    // Depend on MRA identity keys (not the object) so late MRA data retries without loops.
-  }, [hubName, id, mraIdentity?.metadata?.name, mraIdentity?.metadata?.uid])
+  }, [allowForbiddenWhenUnresolved, hubName, id])
 
   const hasRoleAssignment = useCallback(
     (name: string) =>
