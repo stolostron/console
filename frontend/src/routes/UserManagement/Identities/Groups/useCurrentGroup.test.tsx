@@ -162,7 +162,7 @@ describe('useCurrentGroup', () => {
     expect(mockGetResource).toHaveBeenCalledTimes(1)
   })
 
-  test('returns loaded with no group when Search finds nothing', async () => {
+  test('returns loaded with no group when Search and getResource find nothing', async () => {
     const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('missing-uid') })
 
     await waitFor(() => {
@@ -170,10 +170,25 @@ describe('useCurrentGroup', () => {
     })
     expect(result.current.group).toBeUndefined()
     expect(result.current.error).toBeUndefined()
-    expect(mockGetResource).not.toHaveBeenCalled()
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'missing-uid' }) })
+    )
   })
 
-  test('falls back to an MRA-only group when Search finds nothing', async () => {
+  test('loads the Group CR by route id when Search has not indexed it yet', async () => {
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('kubevirt-admins')
+      expect(result.current.group?.users).toEqual(['admin1'])
+    })
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+    )
+  })
+
+  test('falls back to an MRA-only group when Search and getResource find nothing', async () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === mraAtom) return [opsMra]
       return undefined
@@ -185,7 +200,9 @@ describe('useCurrentGroup', () => {
       expect(result.current.loaded).toBe(true)
       expect(result.current.group?.metadata.name).toBe('ops-team')
     })
-    expect(mockGetResource).not.toHaveBeenCalled()
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'ops-team' }) })
+    )
     // Still watch by name so a later Group CR INSERT upgrades the page.
     expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith({
       filters: [
@@ -226,12 +243,8 @@ describe('useCurrentGroup', () => {
       metadata: { name: 'ops-team', uid: 'ops-team-uid', creationTimestamp: '2026-10-21T10:00:00Z' },
       users: ['ops-user'],
     }
-    mockGetResource.mockImplementation((resource: Group) => {
-      if (resource.metadata.name === 'ops-team') {
-        return { promise: Promise.resolve(created) }
-      }
-      return { promise: notFound() }
-    })
+    // Initial load: CR not created yet → NotFound → MRA stub. INSERT refresh returns the CR.
+    mockGetResource.mockImplementation(() => ({ promise: notFound() }))
 
     const { result, rerender } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('ops-team') })
     await waitFor(() => {
@@ -239,6 +252,12 @@ describe('useCurrentGroup', () => {
       expect(result.current.group?.users).toEqual([])
     })
 
+    mockGetResource.mockImplementation((resource: Group) => {
+      if (resource.metadata.name === 'ops-team') {
+        return { promise: Promise.resolve(created) }
+      }
+      return { promise: notFound() }
+    })
     mockUseFleetSearchSubscription.mockReturnValue([
       searchEvent('INSERT', 'ops-team', 'weekly/ops-team-uid'),
       false,

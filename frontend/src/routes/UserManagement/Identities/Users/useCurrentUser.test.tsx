@@ -145,17 +145,32 @@ describe('useCurrentUser', () => {
     expect(mockGetResource).toHaveBeenCalledTimes(1)
   })
 
-  test('returns loaded with no user when Search finds nothing', async () => {
+  test('returns loaded with no user when Search and getResource find nothing', async () => {
     const { result } = renderHook(() => useCurrentUser(), { wrapper: wrapper('missing-uid') })
 
     await waitFor(() => {
       expect(result.current.loaded).toBe(true)
     })
     expect(result.current.user).toBeUndefined()
-    expect(mockGetResource).not.toHaveBeenCalled()
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'missing-uid' }) })
+    )
   })
 
-  test('falls back to an MRA-only user when Search finds nothing', async () => {
+  test('loads the User CR by route id when Search has not indexed it yet', async () => {
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: wrapper('test-user') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.user?.metadata.name).toBe('test-user')
+      expect(result.current.user?.fullName).toBe('Test User')
+    })
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'test-user' }) })
+    )
+  })
+
+  test('falls back to an MRA-only user when Search and getResource find nothing', async () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === mraAtom) return [charlieMra]
       return undefined
@@ -167,6 +182,9 @@ describe('useCurrentUser', () => {
       expect(result.current.loaded).toBe(true)
       expect(result.current.user?.metadata.name).toBe('charlie')
     })
+    expect(mockGetResource).toHaveBeenCalledWith(
+      expect.objectContaining({ metadata: expect.objectContaining({ name: 'charlie' }) })
+    )
     expect(mockUseFleetSearchSubscription).toHaveBeenLastCalledWith({
       filters: [
         { property: 'kind', values: ['User'] },

@@ -80,22 +80,22 @@ export const useCurrentGroup = (): CurrentGroup => {
       try {
         // Same path for uid or name in the URL: Search → resolve name → getResource (full CR).
         // Search alone is not enough (no users/annotations); MRA synthetic is last resort only.
+        // When Search misses (errorPolicy, lag, or throw), still try getResource with the route id —
+        // names resolve; uids NotFound safely and fall through to MRA.
         let indexedName: string | undefined
         try {
           indexedName = await findIndexedGroupName(id, hubName)
         } catch {
-          // Search failures must not block the MRA-only fallback below.
+          // Search failures must not block the getResource / MRA fallbacks below.
           indexedName = undefined
         }
         if (cancelled) return
-        if (indexedName) {
-          const resolved = await readGroup(indexedName)
-          if (cancelled) return
-          if (resolved) {
-            setFetched(resolved)
-            setLoaded(true)
-            return
-          }
+        const resolved = await readGroup(indexedName ?? id)
+        if (cancelled) return
+        if (resolved) {
+          setFetched(resolved)
+          setLoaded(true)
+          return
         }
 
         if (cancelled) return
