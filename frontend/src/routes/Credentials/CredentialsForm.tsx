@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import _, { get, noop } from 'lodash'
+import _, { get } from 'lodash'
 import set from 'lodash/set'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useMatch, useNavigate, useParams } from 'react-router'
@@ -27,11 +27,11 @@ import {
 import { createResource, isRequestAbortedError, patchResource } from '../../resources/utils'
 import {
   AcmEmptyState,
+  AcmInlineProvider,
   AcmPage,
   AcmPageHeader,
   AcmToastContext,
   Provider,
-  ProviderLongTextMap,
 } from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import { CredentialsType } from './CredentialsType'
@@ -619,12 +619,10 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'credentialsType',
-            type: 'Text',
+            type: 'Custom',
             label: t('Credential type'),
-            value: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
-            onChange: noop,
+            component: credentialsType ? <AcmInlineProvider provider={credentialsType as Provider} /> : <Fragment />,
             isRequired: false, // always pre-filled
-            isDisabled: true, // always pre-filled
           },
           {
             id: 'disable-alert',
