@@ -214,6 +214,40 @@ describe('useCurrentGroup', () => {
     })
   })
 
+  test('falls back to an MRA-only group when getResource returns Forbidden for the route id', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [opsMra]
+      return undefined
+    })
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('ops-team') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group?.metadata.name).toBe('ops-team')
+      expect(result.current.error).toBeUndefined()
+    })
+  })
+
+  test('surfaces Forbidden when Search resolved a name', async () => {
+    mockSearchWithKubevirtAdmins()
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result } = renderHook(() => useCurrentGroup(), { wrapper: wrapper('kubevirt-admins-uid') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.group).toBeUndefined()
+      expect(result.current.error).toBeInstanceOf(ResourceError)
+      expect((result.current.error as ResourceError).code).toBe(ResourceErrorCode.Forbidden)
+    })
+  })
+
   test('falls back to an MRA-only group when Search fails', async () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
       if (atom === mraAtom) return [opsMra]

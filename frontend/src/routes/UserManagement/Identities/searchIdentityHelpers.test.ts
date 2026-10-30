@@ -182,6 +182,28 @@ describe('resolveIndexedThenRead', () => {
     ).resolves.toEqual({ name: 'bob' })
     expect(read).toHaveBeenCalledWith('bob')
   })
+
+  it('swallows Forbidden only when Search missed and the option is set', async () => {
+    const { ResourceError, ResourceErrorCode } = jest.requireActual('../../../resources/utils')
+    const forbidden = new ResourceError(ResourceErrorCode.Forbidden)
+    const read = jest.fn().mockRejectedValue(forbidden)
+
+    await expect(
+      resolveIndexedThenRead('charlie', 'local-cluster', async () => undefined, read, {
+        allowForbiddenWhenUnresolved: true,
+      })
+    ).resolves.toBeUndefined()
+
+    await expect(resolveIndexedThenRead('charlie', 'local-cluster', async () => undefined, read)).rejects.toBe(
+      forbidden
+    )
+
+    await expect(
+      resolveIndexedThenRead('uid-1', 'local-cluster', async () => 'charlie', read, {
+        allowForbiddenWhenUnresolved: true,
+      })
+    ).rejects.toBe(forbidden)
+  })
 })
 
 describe('findIndexedIdentityName', () => {

@@ -195,6 +195,40 @@ describe('useCurrentUser', () => {
     })
   })
 
+  test('falls back to an MRA-only user when getResource returns Forbidden for the route id', async () => {
+    mockUseSharedValue.mockImplementation((atom: unknown) => {
+      if (atom === mraAtom) return [charlieMra]
+      return undefined
+    })
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: wrapper('charlie') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.user?.metadata.name).toBe('charlie')
+      expect(result.current.error).toBeUndefined()
+    })
+  })
+
+  test('surfaces Forbidden when Search resolved a name', async () => {
+    mockSearchWithTestUser()
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+
+    const { result } = renderHook(() => useCurrentUser(), { wrapper: wrapper('test-user-uid') })
+
+    await waitFor(() => {
+      expect(result.current.loaded).toBe(true)
+      expect(result.current.user).toBeUndefined()
+      expect(result.current.error).toBeInstanceOf(ResourceError)
+      expect((result.current.error as ResourceError).code).toBe(ResourceErrorCode.Forbidden)
+    })
+  })
+
   test('refetches the User CR on a Search UPDATE without unloading the page', async () => {
     mockSearchWithTestUser()
     mockGetResource.mockImplementation(() => {

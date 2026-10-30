@@ -362,15 +362,17 @@ export function useUsersSearch(options: {
   }, [candidates])
 
   const searching = keywords !== undefined
+  const error =
+    asSearchError(pageError) ??
+    asSearchError(lookupError) ??
+    asSearchError(countQuery.error) ??
+    asSearchError(rankQuery.error)
   return {
     users,
     processedItemCount,
-    loading: !ready,
-    error:
-      asSearchError(pageError) ??
-      asSearchError(lookupError) ??
-      asSearchError(countQuery.error) ??
-      asSearchError(rankQuery.error),
+    // Rank/count/page failures must surface via emptyState, not an indefinite skeleton.
+    loading: !ready && !error,
+    error,
     refetch,
     fetchExport,
     emptyResult: ready && searching && processedItemCount === 0,
@@ -433,7 +435,22 @@ export function useUsersByNames(names: string[] | undefined): { users: User[]; l
   }, [uniqueNames])
 
   const [fleet, loaded] = useFleetSearch(input, true)
-  const users = useMemo(() => (fleet as User[] | undefined)?.map(toUser) ?? [], [fleet])
+  const users = useMemo(() => {
+    const indexedUsers = (fleet as User[] | undefined)?.map(toUser) ?? []
+    if (!loaded) return indexedUsers
+
+    // Group.users can list members Search has not indexed; keep a name stub so the tab still shows them.
+    const indexedNames = new Set(indexedUsers.map((user) => user.metadata.name))
+    const nameStubs = uniqueNames
+      .filter((name) => !indexedNames.has(name))
+      .map((name) => ({
+        apiVersion: UserApiVersion,
+        kind: UserKind,
+        metadata: { name, uid: name },
+      }))
+
+    return [...indexedUsers, ...nameStubs]
+  }, [fleet, loaded, uniqueNames])
   return { users, loaded: uniqueNames.length === 0 || loaded }
 }
 

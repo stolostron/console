@@ -79,7 +79,10 @@ export const useCurrentGroup = (): CurrentGroup => {
     const load = async () => {
       try {
         // Search alone is not enough (no users/annotations); MRA synthetic is last resort.
-        const resolved = await resolveIndexedThenRead(id, hubName, findIndexedGroupName, readGroup)
+        // Forbidden on an unresolved route id with a matching MRA must not hide the stub.
+        const resolved = await resolveIndexedThenRead(id, hubName, findIndexedGroupName, readGroup, {
+          allowForbiddenWhenUnresolved: Boolean(mraIdentity),
+        })
         if (cancelled) return
         setFetched(resolved)
         setLoaded(true)
@@ -95,7 +98,8 @@ export const useCurrentGroup = (): CurrentGroup => {
     return () => {
       cancelled = true
     }
-  }, [hubName, id])
+    // Depend on MRA identity keys (not the object) so late MRA data retries without loops.
+  }, [hubName, id, mraIdentity?.metadata?.name, mraIdentity?.metadata?.uid])
 
   const hasRoleAssignment = useCallback(
     (name: string) =>

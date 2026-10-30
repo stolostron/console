@@ -388,15 +388,17 @@ export function useGroupsSearch(options: {
   }, [candidates])
 
   const searching = keywords !== undefined
+  const error =
+    asSearchError(pageError) ??
+    asSearchError(lookupError) ??
+    asSearchError(countQuery.error) ??
+    asSearchError(rankQuery.error)
   return {
     groups,
     processedItemCount,
-    loading: !ready,
-    error:
-      asSearchError(pageError) ??
-      asSearchError(lookupError) ??
-      asSearchError(countQuery.error) ??
-      asSearchError(rankQuery.error),
+    // Rank/count/page failures must surface via emptyState, not an indefinite skeleton.
+    loading: !ready && !error,
+    error,
     refetch,
     fetchExport,
     emptyResult: ready && searching && processedItemCount === 0,

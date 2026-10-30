@@ -247,6 +247,41 @@ describe('useUsersSearch', () => {
     expect(result.current.processedItemCount).toBe(0)
   })
 
+  test('stops loading when the rank query errors so the table can show emptyState', () => {
+    setupAtoms([charlieMra])
+    mockSearch([], [], [])
+    mockUseSearchResultCountQuery.mockImplementation(
+      (options?: { skip?: boolean; variables?: { input?: SearchInput[] } }) => {
+        if (options?.skip) return { data: undefined, loading: false, error: undefined, refetch: jest.fn() }
+        const inputs = options?.variables?.input ?? []
+        if (inputs.some(isComparator)) {
+          return {
+            data: undefined,
+            loading: false,
+            error: new Error('rank failed'),
+            refetch: jest.fn(),
+          }
+        }
+        return {
+          data: { searchResult: [{ count: 0 }] },
+          loading: false,
+          error: undefined,
+          refetch: jest.fn(),
+        }
+      }
+    )
+
+    const { result } = renderHook(() =>
+      useUsersSearch({
+        columns,
+        request: { page: 1, perPage: 10, sortBy: { index: 0, direction: SortByDirection.asc }, filters: {} },
+      })
+    )
+
+    expect(result.current.loading).toBe(false)
+    expect(result.current.error?.message).toBe('rank failed')
+  })
+
   test('preferSearchBackedUsers keeps the indexed User over an MRA stub', () => {
     const stub: User = {
       apiVersion: 'user.openshift.io/v1',
@@ -377,7 +412,8 @@ describe('useHasHubUsers, useUserIdentity, and useUsersByNames', () => {
 
     const { result } = renderHook(() => useUsersByNames(['alice', 'missing']))
     expect(result.current.loaded).toBe(true)
-    expect(result.current.users.map((user) => user.metadata.name)).toEqual(['alice'])
+    expect(result.current.users.map((user) => user.metadata.name)).toEqual(['alice', 'missing'])
+    expect(result.current.users[1]).toEqual(expect.objectContaining({ metadata: { name: 'missing', uid: 'missing' } }))
     expect(mockUseFleetSearch).toHaveBeenCalledWith(
       expect.objectContaining({
         filters: expect.arrayContaining([

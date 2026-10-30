@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { useCallback, useEffect, useRef } from 'react'
 import type { SearchFilter, SearchInput } from '@stolostron/multicluster-sdk'
+import { ResourceError, ResourceErrorCode } from '../../../resources/utils'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument } from '../../Search/search-sdk/search-sdk'
 
@@ -12,12 +13,17 @@ export type SearchLiveEvent = {
   oldData?: { name?: unknown } | null
 }
 
-/** Search → optional indexed name → getResource(name or route id). Search misses fall through safely. */
+/**
+ * Search → optional indexed name → getResource(name or route id). Search misses fall through safely.
+ * When `allowForbiddenWhenUnresolved` is set and Search did not resolve a name, Forbidden from
+ * getResource returns undefined so callers can show an MRA stub instead of an error page.
+ */
 export async function resolveIndexedThenRead<T>(
   id: string,
   hubName: string,
   findIndexed: (id: string, hubName: string) => Promise<string | undefined>,
-  read: (name: string) => Promise<T | undefined>
+  read: (name: string) => Promise<T | undefined>,
+  options?: { allowForbiddenWhenUnresolved?: boolean }
 ): Promise<T | undefined> {
   let indexedName: string | undefined
   try {
@@ -26,7 +32,19 @@ export async function resolveIndexedThenRead<T>(
     // Search failures must not block the getResource / MRA fallbacks below.
     indexedName = undefined
   }
-  return read(indexedName ?? id)
+  try {
+    return await read(indexedName ?? id)
+  } catch (err) {
+    if (
+      options?.allowForbiddenWhenUnresolved &&
+      !indexedName &&
+      err instanceof ResourceError &&
+      err.code === ResourceErrorCode.Forbidden
+    ) {
+      return undefined
+    }
+    throw err
+  }
 }
 
 export function keywordSearchInput(baseFilters: SearchFilter[], keywords: string[] | undefined): SearchInput {
