@@ -6,8 +6,6 @@ import { getSelectPlaceholder, InputCommonProps, useInput } from './Input'
 import { InputSelect, SelectListOptions } from './InputSelect'
 import { WizFormGroup } from './WizFormGroup'
 
-import './Select.css'
-
 export interface Option<T> {
   id?: string
   label: string

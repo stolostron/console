@@ -45,9 +45,9 @@
 .sync-editor__container .pf-v6-c-code-editor__header {
   font-size: 14px;
   font-weight: 600;
-  color: var(--pf-v5-c-label--Color);
-  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
-  border-bottom: 1px solid var(--pf-v5-global--BorderColor--100);
+  color: var(--pf-t--global--text--color--regular);
+  background-color: var(--pf-t--global--background--color--primary--default);
+  border-bottom: 1px solid var(--pf-t--global--border--color--default);
 }
 
 .sync-editor__container .pf-v6-c-code-editor__controls {
@@ -60,7 +60,7 @@
 }
 
 .sync-editor__container .pf-v6-c-code-editor__controls .pf-v6-c-button.pf-m-control {
-  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
+  background-color: var(--pf-t--global--background--color--primary--default);
 }
 
 .sync-editor__container .monaco-diff-editor .codicon-light-bulb {
@@ -105,7 +105,7 @@
   padding: 0;
   border: 0;
   overflow: hidden;
-  background-color: var(--pf-t--global--border--color--default, var(--pf-v5-global--BorderColor--200, #c7c7c7));
+  background-color: var(--pf-t--global--border--color--default, #c7c7c7);
 }
 
 /* Compare controls: diff nav, checkbox label, and separators on one baseline. */
@@ -168,7 +168,7 @@
 
 .sync-editor__container .sy-toolbar-buttons .pf-v6-c-button.pf-m-plain,
 .pf-v6-c-code-editor__controls .pf-v6-c-button.pf-m-control:not([disabled]) {
-  color: var(--pf-v5-c-label--Color);
+  color: var(--pf-t--global--text--color--regular);
 }
 /* 
 .sync-editor__container .pf-v6-c-button::after {
@@ -177,8 +177,8 @@
 } */
 
 .sync-editor__container .pf-v6-c-button:hover {
-  color: var(--pf-v5-c-label--Color);
-  background-color: var(--pf-v5-c-page__main-section--BackgroundColor);
+  color: var(--pf-t--global--text--color--regular);
+  background-color: var(--pf-t--global--background--color--primary--default);
 }
 
 .sync-editor__container .pf-v6-c-code-editor__main {
@@ -204,7 +204,7 @@
   background-color: rgba(255, 190, 140, 0.38) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .syncEditorYamlHighlight {
+:root:where(.pf-v6-theme-dark) .syncEditorYamlHighlight {
   background-color: rgba(255, 190, 140, 0.28) !important;
 }
 
@@ -246,11 +246,11 @@
   background-color: rgba(221, 238, 184, 0.48) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .line-insert {
+:root:where(.pf-v6-theme-dark) .monaco-diff-editor .line-insert {
   background-color: rgba(86, 91, 74, 0.32) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .char-insert {
+:root:where(.pf-v6-theme-dark) .monaco-diff-editor .char-insert {
   background-color: rgba(86, 94, 67, 0.38) !important;
 }
 
@@ -262,18 +262,18 @@
   background-color: rgba(255, 197, 197, 0.48) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .line-delete {
+:root:where(.pf-v6-theme-dark) .monaco-diff-editor .line-delete {
   background-color: rgba(121, 82, 82, 0.32) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .monaco-diff-editor .char-delete {
+:root:where(.pf-v6-theme-dark) .monaco-diff-editor .char-delete {
   background-color: rgba(154, 78, 78, 0.38) !important;
 }
 /* .insertLineDecoration {
   background-color: rgba(159, 255, 223, 0.6) !important;
 } */
 /* 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .insertLineDecoration {
+:root:where(.pf-v6-theme-dark) .insertLineDecoration {
   background-color: rgba(107, 139, 123, 0.55) !important;
 } */
 
@@ -281,6 +281,6 @@
   background-color: rgba(135, 212, 236, 0.35) !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .customLineDecoration {
+:root:where(.pf-v6-theme-dark) .customLineDecoration {
   background-color: rgba(65, 100, 120, 0.45) !important;
 }
