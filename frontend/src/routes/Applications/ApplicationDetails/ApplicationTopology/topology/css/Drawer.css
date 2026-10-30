@@ -193,7 +193,7 @@
   .clusterDetailItem
   .pf-v6-c-accordion__toggle.pf-m-expanded
   .pf-v6-c-accordion__toggle-text {
-  color: #000;
+  color: var(--pf-t--global--text--color--regular);
   font-weight: normal;
 }
 .topologyDetails
@@ -255,7 +255,7 @@
   .appDetailItem
   .pf-v6-c-accordion__toggle.pf-m-expanded
   .pf-v6-c-accordion__toggle-text {
-  color: #000;
+  color: var(--pf-t--global--text--color--regular);
   font-weight: normal;
 }
 .topologyDetails .sectionContent .appDetails .pf-v6-c-accordion .appDetailItem .pf-v6-c-accordion__toggle:hover {
