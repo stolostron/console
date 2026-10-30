@@ -621,8 +621,9 @@ export function CredentialsForm(
             id: 'credentialsType',
             type: 'Custom',
             label: t('Credential type'),
-            component: credentialsType ? <AcmInlineProvider provider={credentialsType as Provider} /> : <Fragment />,
+            component: <AcmInlineProvider provider={credentialsType as Provider} />,
             isRequired: false, // always pre-filled
+            isHidden: !credentialsType,
           },
           {
             id: 'disable-alert',
