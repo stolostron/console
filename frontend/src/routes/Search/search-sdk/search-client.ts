@@ -6,10 +6,8 @@ import { ApolloClient, HttpLink, InMemoryCache, split } from '@apollo/client'
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
 import { getMainDefinition } from '@apollo/client/utilities'
 import { createClient } from 'graphql-ws'
+import { fetchWithCsrf } from '@stolostron/multicluster-sdk/lib/internal/search/searchUtils'
 import { getBackendUrl } from '../../../resources/utils'
-// The utils barrel re-enters this module before utils.ts is initialized.
-// Reading fetchWithCsrf from the barrel at that point throws and the plugin never leaves Loading.
-import { fetchWithCsrf } from '../../../resources/utils/utils'
 
 const httpLink = new HttpLink({
   uri: () => `${getBackendUrl()}/proxy/search`,
