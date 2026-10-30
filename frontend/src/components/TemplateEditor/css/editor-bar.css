@@ -24,12 +24,12 @@
 }
 .editor-bar .editor-bar-group .editor-bar-toolbar {
   display: flex;
-  border-top: 1px solid var(--pf-v5-global--BorderColor--100);
+  border-top: 1px solid var(--pf-t--global--border--color--default);
 }
 .editor-bar .editor-bar-group .editor-bar-toolbar .editor-bar-section {
   display: flex;
   padding: 0 10px;
-  border-left: 1px solid var(--pf-v5-global--BorderColor--100);
+  border-left: 1px solid var(--pf-t--global--border--color--default);
   height: 100%;
   align-items: center;
 }
@@ -56,7 +56,7 @@
 .editor-bar .editor-bar-button {
   padding: 0.125rem;
   cursor: pointer;
-  color: var(--pf-v5-c-label--Color);
+  color: var(--pf-t--global--text--color--regular);
   padding: 0 6px;
 }
 .editor-bar .editor-bar-button svg {
@@ -77,10 +77,10 @@
   fill: #e0182d;
 }
 .editor-bar .editor-bar-button.restore {
-  color: var(--pf-v5-c-label--Color);
+  color: var(--pf-t--global--text--color--regular);
 }
 .editor-bar .editor-bar-button.close {
-  border-left: 1px solid var(--pf-v5-global--BorderColor--100);
+  border-left: 1px solid var(--pf-t--global--border--color--default);
   padding: 16px;
   height: 48px;
 }
@@ -98,7 +98,7 @@
   height: 100%;
   width: 100%;
   justify-content: space-between;
-  border: 1px solid var(--pf-v5-global--BorderColor--100);
+  border: 1px solid var(--pf-t--global--border--color--default);
   background: #e0e0e0;
   padding: 0 10px;
 }

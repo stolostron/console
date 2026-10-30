@@ -2,6 +2,7 @@
 import { Button } from '@patternfly/react-core'
 import { MoonIcon, SunIcon } from '@patternfly/react-icons'
 import { CSSProperties, useState } from 'react'
+import { useTranslation } from './lib/acm-i18next'
 
 // Do not detect dark theme automatically in production for standalone
 if (process.env.NODE_ENV === 'development') {
@@ -21,10 +22,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 function isDarkTheme() {
-  return (
-    document.documentElement.classList.contains('pf-v5-theme-dark') ||
-    document.documentElement.classList.contains('pf-v6-theme-dark')
-  )
+  return document.documentElement.classList.contains('pf-v6-theme-dark')
 }
 
 function toggleTheme() {
@@ -36,20 +34,21 @@ function toggleTheme() {
 }
 
 export function setLightTheme(save?: boolean) {
-  document.documentElement.classList.remove('pf-v5-theme-dark', 'pf-v6-theme-dark')
+  document.documentElement.classList.remove('pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'light')
   }
 }
 
 function setDarkTheme(save?: boolean) {
-  document.documentElement.classList.add('pf-v5-theme-dark', 'pf-v6-theme-dark')
+  document.documentElement.classList.add('pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'dark')
   }
 }
 
 export function ThemeSwitcher(props: { style?: CSSProperties }) {
+  const { t } = useTranslation()
   const [light, setLight] = useState(!isDarkTheme())
   return (
     <Button
@@ -58,6 +57,7 @@ export function ThemeSwitcher(props: { style?: CSSProperties }) {
         setLight(!isDarkTheme())
       }}
       variant="plain"
+      aria-label={light ? t('Switch to dark theme') : t('Switch to light theme')}
       icon={light ? <SunIcon /> : <MoonIcon />}
       style={{ ...props.style }}
     />
