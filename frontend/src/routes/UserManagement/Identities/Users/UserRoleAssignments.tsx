@@ -3,10 +3,10 @@ import { PageSection } from '@patternfly/react-core'
 import { UserKind } from '../../../../resources'
 import { useFindRoleAssignments } from '../../../../resources/clients/multicluster-role-assignment-client'
 import { RoleAssignments } from '../../RoleAssignment/RoleAssignments'
-import { useCurrentUser } from './UserPage'
+import { useUserDetailsContext } from './UserPage'
 
 const UserRoleAssignments = () => {
-  const user = useCurrentUser()
+  const { user } = useUserDetailsContext()
 
   const roleAssignments = useFindRoleAssignments({
     subjectNames: user?.metadata.name ? [user.metadata.name] : [],

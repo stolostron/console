@@ -11,6 +11,20 @@ import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '../../../../ui-components/AcmTable/AcmTableStateProvider'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument, useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
+import {
+  areRanksReady,
+  asSearchError,
+  findIndexedIdentityName,
+  keywordSearchInput,
+  keywordsFromSearch,
+  pagedSearchInput,
+  placeExtrasByRank,
+  rankCountVariables,
+  searchApolloClient,
+  searchPageWindow,
+  stitchSearchPage,
+  useSearchListControls,
+} from '../searchIdentityHelpers'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
 
 export type GroupSortField = 'name' | 'created' | 'userCount'
@@ -42,7 +56,6 @@ export function hubGroupFilters(): SearchFilter[] {
   ]
 }
 
-// TODO: remove/adapt filter as a part of the "ACM-48532 Users: migrate list and details to useFleetSearch" effort
 /**
  * Filters for a Group GraphQL watch. Search ignores limit/offset/orderBy on subscriptions
  * and drops Group events when `cluster` is set. Same hub scope as {@link hubGroupFilters}.
@@ -51,10 +64,7 @@ export function hubGroupWatchFilters(name?: string): SearchFilter[] {
   return [...hubGroupFilters(), ...(name ? [{ property: 'name', values: [name] }] : [])]
 }
 
-export function keywordsFromSearch(search?: string): string[] | undefined {
-  const keywords = (search ?? '').trim().split(/\s+/).filter(Boolean)
-  return keywords.length > 0 ? keywords : undefined
-}
+export { keywordsFromSearch } from '../searchIdentityHelpers'
 
 export function groupOrderBy(
   columns: SortColumn[],
@@ -185,33 +195,12 @@ export function stitchGroupPage(
   start: number,
   perPage: number
 ): Group[] {
-  const extrasByIndex = new Map(extrasOnPage.map((extra) => [extra.mergedIndex, extra.group]))
-  const page: Group[] = []
-  let searchIndex = 0
-  for (let index = start; index < start + perPage; index++) {
-    const extra = extrasByIndex.get(index)
-    if (extra) {
-      page.push(extra)
-      continue
-    }
-    if (searchIndex >= searchItems.length) break
-    page.push(searchItems[searchIndex])
-    searchIndex += 1
-  }
-  return page
-}
-
-function searchApolloClient() {
-  return process.env.NODE_ENV === 'test' ? undefined : searchClient
-}
-
-function asError(error: unknown): Error | undefined {
-  if (!error) return undefined
-  if (error instanceof Error) return error
-  if (typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    return new Error(error.message)
-  }
-  return new Error('Search request failed')
+  return stitchSearchPage(
+    searchItems,
+    extrasOnPage.map(({ mergedIndex, group }) => ({ mergedIndex, resource: group })),
+    start,
+    perPage
+  )
 }
 
 function useMraGroupSubjects(): Group[] {
@@ -281,60 +270,41 @@ export function useGroupsSearch(options: {
   }, [candidates, extrasReady, indexedNames, keywords])
 
   const rankInputs = useMemo<SearchInput[]>(
-    () =>
-      extras.map((group) => ({
-        filters: [...baseFilters, beforeFilter(field, group, descending)],
-        ...(keywords ? { keywords } : {}),
-      })),
+    () => extras.map((group) => keywordSearchInput([...baseFilters, beforeFilter(field, group, descending)], keywords)),
     [baseFilters, descending, extras, field, keywords]
   )
   const rankQuery = useSearchResultCountQuery({
     client: searchApolloClient(),
     skip: extras.length === 0,
-    variables: { input: rankInputs.length > 0 ? rankInputs : [{ filters: baseFilters }] },
+    variables: rankCountVariables(rankInputs, baseFilters),
   })
   const rankCounts = useMemo(() => rankQuery.data?.searchResult ?? [], [rankQuery.data])
-  const ranksReady = extras.length === 0 || (rankCounts.length === extras.length && !rankQuery.loading)
+  const ranksReady = areRanksReady(extras.length, rankCounts.length, rankQuery.loading)
 
   const placedExtras = useMemo(() => {
     if (!ranksReady) return []
-    return extras.map((group, index) => {
-      const searchBefore = rankCounts[index]?.count ?? 0
-      const extrasBefore = extras.filter(
-        (other) => other !== group && compareGroups(other, group, field, descending) < 0
-      ).length
-      return { group, mergedIndex: searchBefore + extrasBefore }
-    })
+    return placeExtrasByRank(extras, rankCounts, (a, b) => compareGroups(a, b, field, descending)).map(
+      ({ resource, mergedIndex }) => ({ group: resource, mergedIndex })
+    )
   }, [descending, extras, field, rankCounts, ranksReady])
 
-  const start = Math.max(0, (page - 1) * perPage)
-  const extrasOnPage = placedExtras.filter((extra) => extra.mergedIndex >= start && extra.mergedIndex < start + perPage)
-  const extrasBeforePage = placedExtras.filter((extra) => extra.mergedIndex < start).length
-  const searchOffset = Math.max(0, start - extrasBeforePage)
-  const searchLimit = Math.max(0, perPage - extrasOnPage.length)
-  const canQueryPage = extrasReady && ranksReady && searchLimit > 0
+  const { start, extrasOnPage, searchOffset, searchLimit, canQueryPage } = searchPageWindow(
+    placedExtras,
+    page,
+    perPage,
+    extrasReady,
+    ranksReady
+  )
 
   const pageInput = useMemo<SearchInput | undefined>(() => {
     if (!canQueryPage) return undefined
-    return {
-      filters: baseFilters,
-      ...(keywords ? { keywords } : {}),
-      limit: searchLimit,
-      offset: searchOffset,
-      orderBy,
-    }
+    return pagedSearchInput(baseFilters, keywords, searchLimit, searchOffset, orderBy)
   }, [baseFilters, canQueryPage, keywords, orderBy, searchLimit, searchOffset])
   // Subscription uses toWatchInput(pageInput): same filters, without limit/offset/orderBy.
   const [pageFleet, pageLoaded, pageError, refetchPage] = useFleetSearch(pageInput, true)
   const pageGroups = pageFleet as Group[] | undefined
 
-  const countInput = useMemo<SearchInput>(
-    () => ({
-      filters: baseFilters,
-      ...(keywords ? { keywords } : {}),
-    }),
-    [baseFilters, keywords]
-  )
+  const countInput = useMemo(() => keywordSearchInput(baseFilters, keywords), [baseFilters, keywords])
   const countQuery = useSearchResultCountQuery({
     client: searchApolloClient(),
     variables: { input: [countInput] },
@@ -368,72 +338,20 @@ export function useGroupsSearch(options: {
     return preferSearchBackedGroups(stitchGroupPage((pageGroups ?? []).map(toGroup), extrasOnPage, start, perPage))
   }, [extrasOnPage, pageGroups, perPage, ready, start])
 
-  const refetchPageRef = useRef(refetchPage)
-  const refetchLookupRef = useRef(refetchLookup)
-  const refetchCountRef = useRef(countQuery.refetch)
-  const refetchRanksRef = useRef(rankQuery.refetch)
-  const lookupNamesLengthRef = useRef(lookupNames.length)
-  const extrasLengthRef = useRef(extras.length)
-  refetchPageRef.current = refetchPage
-  refetchLookupRef.current = refetchLookup
-  refetchCountRef.current = countQuery.refetch
-  refetchRanksRef.current = rankQuery.refetch
-  lookupNamesLengthRef.current = lookupNames.length
-  extrasLengthRef.current = extras.length
-
-  const refetch = useCallback(() => {
-    // Lookup/rank queries are skipped when empty; refetching them POSTs empty Search variables.
-    // useFleetSearch refetch returns void. Apollo refetch returns a Promise, so those stay ignored.
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    refetchPageRef.current()
-    void refetchCountRef.current()
-    if (extrasLengthRef.current > 0) {
-      void refetchRanksRef.current()
-    }
-  }, [])
-
-  // When Search live-adds a Group that was still listed as an MRA extra, refresh lookup
-  // and count so the stub drops out of extras (and pagination stays consistent).
-  useEffect(() => {
-    if (!hasUnresolvedOverlap) return
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    void refetchCountRef.current()
-  }, [hasUnresolvedOverlap])
-
-  // Inverse of overlap: Search DELETE drops a candidate from the subscribed page while
-  // lookup still treats them as indexed, so they never re-enter extras until refresh.
-  // Ignore pageQueryKey changes (pagination/sort/keywords) — those also change page names.
   const pageQueryKey = `${keywords?.join('\0') ?? ''}\n${orderBy}\n${searchOffset}\n${searchLimit}`
-  const prevSearchNamesRef = useRef<Set<string>>(new Set())
-  const prevPageQueryKeyRef = useRef(pageQueryKey)
-  const indexedNamesRef = useRef(indexedNames)
-  const candidateNamesRef = useRef(new Set(lookupNames))
-  indexedNamesRef.current = indexedNames
-  candidateNamesRef.current = new Set(lookupNames)
-
-  useEffect(() => {
-    const prevKey = prevPageQueryKeyRef.current
-    const prevNames = prevSearchNamesRef.current
-    prevPageQueryKeyRef.current = pageQueryKey
-    prevSearchNamesRef.current = searchNamesOnPage
-
-    if (prevKey !== pageQueryKey) return
-
-    const removed = [...prevNames].filter((name) => !searchNamesOnPage.has(name))
-    const deletedCandidateStillIndexed = removed.some(
-      (name) => candidateNamesRef.current.has(name) && indexedNamesRef.current.has(name)
-    )
-    if (!deletedCandidateStillIndexed) return
-
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    void refetchCountRef.current()
-  }, [pageQueryKey, searchNamesOnPage])
+  const refetch = useSearchListControls({
+    refetchPage,
+    refetchLookup,
+    refetchCount: countQuery.refetch,
+    refetchRanks: rankQuery.refetch,
+    lookupNamesLength: lookupNames.length,
+    extrasLength: extras.length,
+    hasUnresolvedOverlap,
+    pageQueryKey,
+    searchNamesOnPage,
+    indexedNames,
+    lookupNames,
+  })
 
   const additionalKey = (additionalGroups ?? []).map((group) => group.metadata.name ?? '').join('\n')
   const skipAdditionalRefetch = useRef(true)
@@ -470,11 +388,17 @@ export function useGroupsSearch(options: {
   }, [candidates])
 
   const searching = keywords !== undefined
+  const error =
+    asSearchError(pageError) ??
+    asSearchError(lookupError) ??
+    asSearchError(countQuery.error) ??
+    asSearchError(rankQuery.error)
   return {
     groups,
     processedItemCount,
-    loading: !ready,
-    error: asError(pageError) ?? asError(lookupError) ?? asError(countQuery.error) ?? asError(rankQuery.error),
+    // Rank/count/page failures must surface via emptyState, not an indefinite skeleton.
+    loading: !ready && !error,
+    error,
     refetch,
     fetchExport,
     emptyResult: ready && searching && processedItemCount === 0,
@@ -518,28 +442,5 @@ export function useGroupIdentity(name: string | undefined): Group | undefined {
  * by `_uid` or `name`. Callers then load the full CR via getResource(name).
  */
 export async function findIndexedGroupName(id: string, hubName: string): Promise<string | undefined> {
-  const result = await searchClient.query({
-    query: SearchResultItemsDocument,
-    variables: {
-      input: [
-        {
-          filters: [...hubGroupFilters()],
-          // Search rejects `_uid` as a filter; scan all hub Groups (same as export).
-          limit: -1,
-        },
-      ],
-    },
-  })
-  const items = result.data?.searchResult?.[0]?.items ?? []
-  const prefixed = `${hubName}/${id}`
-  // Prefer `_uid` matches so a route id that is a uid is not resolved via another Group's name.
-  for (const item of items) {
-    if (typeof item?.name !== 'string') continue
-    const itemUid = typeof item._uid === 'string' ? item._uid : ''
-    if (itemUid === id || itemUid === prefixed || itemUid.endsWith(`/${id}`)) return item.name
-  }
-  for (const item of items) {
-    if (typeof item?.name === 'string' && item.name === id) return item.name
-  }
-  return undefined
+  return findIndexedIdentityName(id, hubName, hubGroupFilters())
 }

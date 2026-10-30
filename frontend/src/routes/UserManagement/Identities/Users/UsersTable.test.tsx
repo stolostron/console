@@ -9,6 +9,28 @@ import { User } from '../../../../resources/rbac'
 import { IAcmTableButtonAction } from '../../../../ui-components/AcmTable/AcmTableTypes'
 import { UsersTable } from './UsersTable'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
+import { useFleetSearch } from '@stolostron/multicluster-sdk/lib/api/useFleetSearch'
+import { useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
+
+jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
+  useFleetSearch: jest.fn(),
+}))
+
+jest.mock('../../../Search/search-sdk/search-sdk', () => ({
+  useSearchResultCountQuery: jest.fn(),
+  SearchResultItemsDocument: 'SearchResultItemsDocument',
+}))
+
+jest.mock('../../../../hooks/use-local-hub', () => ({
+  useLocalHubName: () => 'local-cluster',
+}))
+
+jest.mock('../../../../lib/acm-i18next', () => ({
+  useTranslation: jest.fn().mockReturnValue({
+    t: (key: string) => key,
+  }),
+  Trans: ({ children }: { children: React.ReactNode }) => children,
+}))
 
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
@@ -17,8 +39,14 @@ jest.mock('../../../../shared-atoms', () => ({
 
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
+const mockUseFleetSearch = useFleetSearch as jest.MockedFunction<typeof useFleetSearch>
+const mockUseSearchResultCountQuery = useSearchResultCountQuery as jest.Mock
 
-const usersAtom = Symbol('usersState')
+type FleetSearchInput = {
+  orderBy?: string
+  filters?: { property: string; values?: Array<string | null> }[]
+}
+
 const mraAtom = Symbol('multiclusterRoleAssignmentState')
 
 const mockUsers: User[] = [
@@ -27,7 +55,7 @@ const mockUsers: User[] = [
     kind: 'User',
     metadata: {
       name: 'alice.trask',
-      uid: 'alice.trask',
+      uid: 'alice.trask-uid',
       creationTimestamp: '2023-01-01T00:00:00Z',
     },
   },
@@ -36,7 +64,7 @@ const mockUsers: User[] = [
     kind: 'User',
     metadata: {
       name: 'bob.levy',
-      uid: 'bob.levy',
+      uid: 'bob.levy-uid',
       creationTimestamp: '2023-01-02T00:00:00Z',
     },
   },
@@ -82,17 +110,53 @@ function Component(props: any = {}) {
   )
 }
 
+function mockSearch(users: User[]) {
+  mockUseFleetSearch.mockImplementation((input) => {
+    const searchInput = input as FleetSearchInput | undefined
+    if (!searchInput) return [undefined, true, undefined, jest.fn()]
+    if (searchInput.orderBy) return [users, true, undefined, jest.fn()]
+    const names = new Set(searchInput.filters?.find((filter) => filter.property === 'name')?.values ?? [])
+    return [users.filter((user) => names.has(user.metadata.name ?? '')), true, undefined, jest.fn()]
+  })
+
+  mockUseSearchResultCountQuery.mockImplementation(
+    (options?: { skip?: boolean; variables?: { input?: FleetSearchInput[] } }) => {
+      if (options?.skip) return { data: undefined, loading: false, error: undefined, refetch: jest.fn() }
+      const inputs = options?.variables?.input ?? []
+      const ranked = inputs.some((input) =>
+        input.filters?.some((filter) => {
+          const value = filter.values?.[0]
+          return typeof value === 'string' && (value.startsWith('<') || value.startsWith('>'))
+        })
+      )
+      if (ranked) {
+        return {
+          data: { searchResult: inputs.map(() => ({ count: 0 })) },
+          loading: false,
+          error: undefined,
+          refetch: jest.fn(),
+        }
+      }
+      return {
+        data: { searchResult: [{ count: users.length }] },
+        loading: false,
+        error: undefined,
+        refetch: jest.fn(),
+      }
+    }
+  )
+}
+
 function setupMocks(users: User[] = mockUsers, mras: MulticlusterRoleAssignment[] = mockMras) {
   mockUseSharedAtoms.mockReturnValue({
-    usersState: usersAtom,
     multiclusterRoleAssignmentState: mraAtom,
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: any) => {
-    if (atom === usersAtom) return users
     if (atom === mraAtom) return mras
     return []
   })
+  mockSearch(users)
 }
 
 describe('UsersTable', () => {
@@ -107,9 +171,23 @@ describe('UsersTable', () => {
     })
   })
 
-  test('should render component without errors', () => {
+  test('should query Search with hub User filters and subscription', async () => {
     render(<Component />)
-    expect(document.body).toBeInTheDocument()
+
+    await waitFor(() => {
+      expect(screen.getByText('alice.trask')).toBeInTheDocument()
+    })
+    expect(mockUseFleetSearch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: 'name asc',
+        filters: expect.arrayContaining([
+          { property: 'kind', values: ['User'] },
+          { property: 'apigroup', values: ['user.openshift.io'] },
+          { property: '_hubClusterResource', values: ['*'] },
+        ]),
+      }),
+      true
+    )
   })
 
   test('should render with hiddenColumns prop', async () => {
@@ -151,58 +229,7 @@ describe('UsersTable', () => {
     })
   })
 
-  test('should pass selectedUser to usersTableColumns', async () => {
-    const selectedUser = mockUsers[0]
-    const mockSetSelectedUser = jest.fn()
-    render(<Component selectedUser={selectedUser} setSelectedUser={mockSetSelectedUser} />)
-
-    await waitFor(() => {
-      expect(screen.getByText('alice.trask')).toBeInTheDocument()
-      expect(screen.getByText('bob.levy')).toBeInTheDocument()
-    })
-  })
-
-  test('should render with all props combined', async () => {
-    const mockSetSelectedUser = jest.fn()
-    const selectedUser = mockUsers[0]
-
-    render(
-      <Component
-        hiddenColumns={['identity-provider']}
-        areLinksDisplayed={false}
-        selectedUser={selectedUser}
-        setSelectedUser={mockSetSelectedUser}
-      />
-    )
-
-    await waitFor(() => {
-      expect(screen.getByText('alice.trask')).toBeInTheDocument()
-      expect(screen.getByText('bob.levy')).toBeInTheDocument()
-    })
-  })
-
-  test('should use external selectedUser when provided', async () => {
-    const mockSetSelectedUser = jest.fn()
-    const selectedUser = mockUsers[0]
-
-    render(<Component selectedUser={selectedUser} setSelectedUser={mockSetSelectedUser} />)
-
-    await waitFor(() => {
-      expect(screen.getByText('alice.trask')).toBeInTheDocument()
-      expect(screen.getByText('bob.levy')).toBeInTheDocument()
-    })
-  })
-
-  test('should render without selectedUser when not provided', async () => {
-    render(<Component />)
-
-    await waitFor(() => {
-      expect(screen.getByText('alice.trask')).toBeInTheDocument()
-      expect(screen.getByText('bob.levy')).toBeInTheDocument()
-    })
-  })
-
-  test('should show MRA-derived user not already in usersState', async () => {
+  test('should show MRA-derived user not already in Search', async () => {
     render(<Component />)
 
     await waitFor(() => {
@@ -212,7 +239,7 @@ describe('UsersTable', () => {
     })
   })
 
-  test('should not duplicate user that exists in both usersState and MRA', async () => {
+  test('should not duplicate user that exists in both Search and MRA', async () => {
     render(<Component />)
 
     await waitFor(() => {
@@ -230,7 +257,7 @@ describe('UsersTable', () => {
     })
   })
 
-  test('should render only rbac users when MRA state is empty', async () => {
+  test('should render only Search users when MRA state is empty', async () => {
     setupMocks(mockUsers, [])
 
     render(<Component />)
@@ -243,7 +270,7 @@ describe('UsersTable', () => {
 
   describe('empty state create button', () => {
     beforeEach(() => {
-      mockUseSharedValue.mockReturnValue([])
+      setupMocks([], [])
     })
 
     test('should not show create button in empty state by default', async () => {

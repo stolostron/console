@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate, useParams } from 'react-router'
 import { useFleetSearchSubscription } from '@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
@@ -9,6 +9,7 @@ import { Group, GroupKind, UserApiVersion } from '../../../../resources/rbac'
 import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { AcmToastContext } from '../../../../ui-components'
+import { resolveIndexedThenRead, useIdentityLiveEvents } from '../searchIdentityHelpers'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
 import { findIndexedGroupName, hubGroupWatchFilters } from './useGroupsSearch'
 
@@ -31,28 +32,6 @@ async function readGroup(name: string): Promise<Group | undefined> {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) return undefined
     throw err
   }
-}
-
-function eventName(data: { name?: unknown } | null | undefined): string | undefined {
-  return typeof data?.name === 'string' ? data.name : undefined
-}
-
-function eventMatchesGroup(
-  uid: string,
-  name: string | undefined,
-  groupUid: string | undefined,
-  groupName: string | undefined
-): boolean {
-  if (groupName && name === groupName) return true
-  if (!groupUid || !uid) return false
-  return uid === groupUid || uid.endsWith(`/${groupUid}`)
-}
-
-/** useNavigate returns void in declarative mode and a Promise in data routers. */
-function settleNavigation(navigation: void | Promise<void>) {
-  Promise.resolve(navigation).catch(() => {
-    // The toast already explains the deletion; a failed redirect should not surface again.
-  })
 }
 
 export const useCurrentGroup = (): CurrentGroup => {
@@ -84,6 +63,8 @@ export const useCurrentGroup = (): CurrentGroup => {
     [watchedName]
   )
   const [latestEvent] = useFleetSearchSubscription(watchInput)
+  // Boolean (not the MRA object) so the load effect can retry when MRA data arrives without looping.
+  const allowForbiddenWhenUnresolved = Boolean(mraIdentity)
 
   useEffect(() => {
     if (!id) {
@@ -99,28 +80,13 @@ export const useCurrentGroup = (): CurrentGroup => {
 
     const load = async () => {
       try {
-        // Same path for uid or name in the URL: Search → resolve name → getResource (full CR).
-        // Search alone is not enough (no users/annotations); MRA synthetic is last resort only.
-        let indexedName: string | undefined
-        try {
-          indexedName = await findIndexedGroupName(id, hubName)
-        } catch {
-          // Search failures must not block the MRA-only fallback below.
-          indexedName = undefined
-        }
+        // Search alone is not enough (no users/annotations); MRA synthetic is last resort.
+        // Forbidden on an unresolved route id with a matching MRA must not hide the stub.
+        const resolved = await resolveIndexedThenRead(id, hubName, findIndexedGroupName, readGroup, {
+          allowForbiddenWhenUnresolved,
+        })
         if (cancelled) return
-        if (indexedName) {
-          const resolved = await readGroup(indexedName)
-          if (cancelled) return
-          if (resolved) {
-            setFetched(resolved)
-            setLoaded(true)
-            return
-          }
-        }
-
-        if (cancelled) return
-        setFetched(undefined)
+        setFetched(resolved)
         setLoaded(true)
       } catch (err) {
         if (cancelled) return
@@ -134,67 +100,44 @@ export const useCurrentGroup = (): CurrentGroup => {
     return () => {
       cancelled = true
     }
-  }, [hubName, id])
+  }, [allowForbiddenWhenUnresolved, hubName, id])
 
-  const handledEventKey = useRef<string | undefined>(undefined)
-  const watchedNameRef = useRef(watchedName)
-  useEffect(() => {
-    watchedNameRef.current = watchedName
-  }, [watchedName])
+  const hasRoleAssignment = useCallback(
+    (name: string) =>
+      groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).some(
+        (candidate) => candidate.metadata.name === name
+      ),
+    [mras]
+  )
+  const toastWarning = useCallback(
+    (title: string) => toast.addAlert({ type: 'warning', title, autoClose: true }),
+    [toast]
+  )
+  const deletedWithRoleAssignmentTitle = useCallback(
+    (name: string) => t('Group {{name}} was deleted. Showing the identity from the role assignment.', { name }),
+    [t]
+  )
+  const deletedTitle = useCallback((name: string) => t('Group {{name}} was deleted.', { name }), [t])
+  const detailsPath = useCallback(
+    (name: string) => generatePath(NavigationPath.identitiesGroupsDetails, { id: name }),
+    []
+  )
 
-  useEffect(() => {
-    if (!latestEvent || !watchedName) return
-    const key = `${latestEvent.operation}:${latestEvent.uid}:${String(latestEvent.timestamp)}`
-    if (handledEventKey.current === key) return
-
-    const groupUid = fetched?.metadata?.uid
-    const dataName = eventName(latestEvent.newData) ?? eventName(latestEvent.oldData)
-    if (!eventMatchesGroup(latestEvent.uid, dataName, groupUid, watchedName)) return
-    handledEventKey.current = key
-
-    if (latestEvent.operation === 'DELETE') {
-      // Match by Group name: the route id may still be the CR uid while the MRA subject is the name.
-      const hasRoleAssignment = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).some(
-        (candidate) => candidate.metadata.name === watchedName
-      )
-      if (hasRoleAssignment) {
-        toast.addAlert({
-          type: 'warning',
-          title: t('Group {{name}} was deleted. Showing the identity from the role assignment.', {
-            name: watchedName,
-          }),
-          autoClose: true,
-        })
-        if (id !== watchedName) {
-          settleNavigation(
-            navigate(generatePath(NavigationPath.identitiesGroupsDetails, { id: watchedName }), { replace: true })
-          )
-        } else {
-          setFetched(undefined)
-        }
-        return
-      }
-      toast.addAlert({
-        type: 'warning',
-        title: t('Group {{name}} was deleted.', { name: watchedName }),
-        autoClose: true,
-      })
-      settleNavigation(navigate(NavigationPath.identitiesGroups, { replace: true }))
-      return
-    }
-
-    if (latestEvent.operation !== 'UPDATE' && latestEvent.operation !== 'INSERT') return
-
-    const name = watchedName
-    void readGroup(name)
-      .then((resolved) => {
-        if (watchedNameRef.current !== name || !resolved) return
-        setFetched(resolved)
-      })
-      .catch(() => {
-        // Keep whatever is on screen (CR or MRA stub) if the background refresh fails.
-      })
-  }, [fetched?.metadata?.uid, id, latestEvent, mras, navigate, t, toast, watchedName])
+  useIdentityLiveEvents({
+    latestEvent,
+    watchedName,
+    routeId: id,
+    resourceUid: fetched?.metadata?.uid,
+    hasRoleAssignment,
+    readResource: readGroup,
+    setFetched,
+    toastWarning,
+    deletedWithRoleAssignmentTitle,
+    deletedTitle,
+    detailsPath,
+    listPath: NavigationPath.identitiesGroups,
+    navigate,
+  })
 
   const synthetic = loaded && !fetched && !error ? mraIdentity : undefined
 
