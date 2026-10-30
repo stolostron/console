@@ -243,7 +243,7 @@
   outline-width: 0;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-edit-target-highlight {
+:root:where(.pf-v6-theme-dark) .wizard-review-edit-target-highlight {
   outline-color: rgba(255, 190, 140, 0.28) !important;
 }
 
@@ -263,7 +263,7 @@
   background-color: rgba(21, 128, 61, 0.09);
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-list--changes-only {
+:root:where(.pf-v6-theme-dark) .wizard-review-find-list--changes-only {
   background-color: rgba(110, 193, 115, 0.16);
 }
 
@@ -277,7 +277,7 @@
   background-color: rgba(255, 190, 140, 0.38);
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .wizard-review-find-match {
+:root:where(.pf-v6-theme-dark) .wizard-review-find-match {
   background-color: rgba(255, 190, 140, 0.28) !important;
 }
 
@@ -314,7 +314,7 @@
   grid-template-columns: subgrid;
 }
 
-.wizard-review-find-difference-title > :is(.pf-v6-c-description-list__term, .pf-v5-c-description-list__term) {
+.wizard-review-find-difference-title > .pf-v6-c-description-list__term {
   grid-column: 1 / -1;
   min-width: 0;
 }
@@ -358,7 +358,7 @@
   .wizard-review-find-list
     .wizard-review-find-dl-group
     > .wizard-review-pen-hover-zone--dl-group-row
-    > :is(.pf-v6-c-description-list__term, .pf-v5-c-description-list__term) {
+    > .pf-v6-c-description-list__term {
     grid-column: 1 !important;
     grid-row: 1 !important;
   }
@@ -366,7 +366,7 @@
   .wizard-review-find-list
     .wizard-review-find-dl-group
     > .wizard-review-pen-hover-zone--dl-group-row
-    > :is(.pf-v6-c-description-list__description, .pf-v5-c-description-list__description) {
+    > .pf-v6-c-description-list__description {
     grid-column: 1 !important;
     grid-row: 2 !important;
   }
@@ -380,15 +380,11 @@
   }
 }
 
-.wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+.wizard-review-find-difference-modified-label.pf-v6-c-label {
   --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
-  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #6a6e73 50%, white) 75%, white);
   --pf-v6-c-label__content--Color: var(--pf-t--global--text--color--regular);
-  --pf-v5-c-label__content--Color: var(--pf-t--global--text--color--regular);
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
-  .wizard-review-find-difference-modified-label:is(.pf-v6-c-label, .pf-v5-c-label) {
+:root:where(.pf-v6-theme-dark) .wizard-review-find-difference-modified-label.pf-v6-c-label {
   --pf-v6-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
-  --pf-v5-c-label--BackgroundColor: color-mix(in srgb, color-mix(in srgb, #525860 50%, white) 75%, white);
 }

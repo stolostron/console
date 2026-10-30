@@ -40,7 +40,7 @@ import { IdentitiesList } from '../../../../../../components/rbac/IdentitiesList
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 const addAccessModalIdentitiesClass = css({
-  '& .pf-v5-c-table, & .pf-v6-c-table': {
+  '& .pf-v6-c-table': {
     backgroundColor: 'inherit',
     color: 'inherit',
   },

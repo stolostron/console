@@ -2,7 +2,6 @@
   fill: white;
 }
 
-.pf-v5-theme-dark .pf-topology__node__background,
 .pf-v6-theme-dark .pf-topology__node__background {
   stroke-width: 2;
 }
