@@ -11,8 +11,15 @@ import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '../../../../ui-components/AcmTable/AcmTableStateProvider'
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument, useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
+import {
+  asSearchError,
+  findIndexedIdentityName,
+  keywordsFromSearch,
+  searchApolloClient,
+  stitchSearchPage,
+  useSearchListControls,
+} from '../searchIdentityHelpers'
 import { usersFromMulticlusterRoleAssignments } from '../useMergedIdentities'
-import { keywordsFromSearch } from '../Groups/useGroupsSearch'
 
 export type UserSortField = 'name' | 'created'
 
@@ -159,33 +166,12 @@ export function stitchUserPage(
   start: number,
   perPage: number
 ): User[] {
-  const extrasByIndex = new Map(extrasOnPage.map((extra) => [extra.mergedIndex, extra.user]))
-  const page: User[] = []
-  let searchIndex = 0
-  for (let index = start; index < start + perPage; index++) {
-    const extra = extrasByIndex.get(index)
-    if (extra) {
-      page.push(extra)
-      continue
-    }
-    if (searchIndex >= searchItems.length) break
-    page.push(searchItems[searchIndex])
-    searchIndex += 1
-  }
-  return page
-}
-
-function searchApolloClient() {
-  return process.env.NODE_ENV === 'test' ? undefined : searchClient
-}
-
-function asError(error: unknown): Error | undefined {
-  if (!error) return undefined
-  if (error instanceof Error) return error
-  if (typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    return new Error(error.message)
-  }
-  return new Error('Search request failed')
+  return stitchSearchPage(
+    searchItems,
+    extrasOnPage.map(({ mergedIndex, user }) => ({ mergedIndex, resource: user })),
+    start,
+    perPage
+  )
 }
 
 function useMraUserSubjects(): User[] {
@@ -339,72 +325,20 @@ export function useUsersSearch(options: {
     return preferSearchBackedUsers(stitchUserPage((pageUsers ?? []).map(toUser), extrasOnPage, start, perPage))
   }, [extrasOnPage, pageUsers, perPage, ready, start])
 
-  const refetchPageRef = useRef(refetchPage)
-  const refetchLookupRef = useRef(refetchLookup)
-  const refetchCountRef = useRef(countQuery.refetch)
-  const refetchRanksRef = useRef(rankQuery.refetch)
-  const lookupNamesLengthRef = useRef(lookupNames.length)
-  const extrasLengthRef = useRef(extras.length)
-  refetchPageRef.current = refetchPage
-  refetchLookupRef.current = refetchLookup
-  refetchCountRef.current = countQuery.refetch
-  refetchRanksRef.current = rankQuery.refetch
-  lookupNamesLengthRef.current = lookupNames.length
-  extrasLengthRef.current = extras.length
-
-  const refetch = useCallback(() => {
-    // Lookup/rank queries are skipped when empty; refetching them POSTs empty Search variables.
-    // useFleetSearch refetch returns void. Apollo refetch returns a Promise, so those stay ignored.
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    refetchPageRef.current()
-    void refetchCountRef.current()
-    if (extrasLengthRef.current > 0) {
-      void refetchRanksRef.current()
-    }
-  }, [])
-
-  // When Search live-adds a User that was still listed as an MRA extra, refresh lookup
-  // and count so the stub drops out of extras (and pagination stays consistent).
-  useEffect(() => {
-    if (!hasUnresolvedOverlap) return
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    void refetchCountRef.current()
-  }, [hasUnresolvedOverlap])
-
-  // Inverse of overlap: Search DELETE drops a candidate from the subscribed page while
-  // lookup still treats them as indexed, so they never re-enter extras until refresh.
-  // Ignore pageQueryKey changes (pagination/sort/keywords) — those also change page names.
   const pageQueryKey = `${keywords?.join('\0') ?? ''}\n${orderBy}\n${searchOffset}\n${searchLimit}`
-  const prevSearchNamesRef = useRef<Set<string>>(new Set())
-  const prevPageQueryKeyRef = useRef(pageQueryKey)
-  const indexedNamesRef = useRef(indexedNames)
-  const candidateNamesRef = useRef(new Set(lookupNames))
-  indexedNamesRef.current = indexedNames
-  candidateNamesRef.current = new Set(lookupNames)
-
-  useEffect(() => {
-    const prevKey = prevPageQueryKeyRef.current
-    const prevNames = prevSearchNamesRef.current
-    prevPageQueryKeyRef.current = pageQueryKey
-    prevSearchNamesRef.current = searchNamesOnPage
-
-    if (prevKey !== pageQueryKey) return
-
-    const removed = [...prevNames].filter((name) => !searchNamesOnPage.has(name))
-    const deletedCandidateStillIndexed = removed.some(
-      (name) => candidateNamesRef.current.has(name) && indexedNamesRef.current.has(name)
-    )
-    if (!deletedCandidateStillIndexed) return
-
-    if (lookupNamesLengthRef.current > 0) {
-      refetchLookupRef.current()
-    }
-    void refetchCountRef.current()
-  }, [pageQueryKey, searchNamesOnPage])
+  const refetch = useSearchListControls({
+    refetchPage,
+    refetchLookup,
+    refetchCount: countQuery.refetch,
+    refetchRanks: rankQuery.refetch,
+    lookupNamesLength: lookupNames.length,
+    extrasLength: extras.length,
+    hasUnresolvedOverlap,
+    pageQueryKey,
+    searchNamesOnPage,
+    indexedNames,
+    lookupNames,
+  })
 
   const additionalKey = (additionalUsers ?? []).map((user) => user.metadata.name ?? '').join('\n')
   const skipAdditionalRefetch = useRef(true)
@@ -445,7 +379,11 @@ export function useUsersSearch(options: {
     users,
     processedItemCount,
     loading: !ready,
-    error: asError(pageError) ?? asError(lookupError) ?? asError(countQuery.error) ?? asError(rankQuery.error),
+    error:
+      asSearchError(pageError) ??
+      asSearchError(lookupError) ??
+      asSearchError(countQuery.error) ??
+      asSearchError(rankQuery.error),
     refetch,
     fetchExport,
     emptyResult: ready && searching && processedItemCount === 0,
@@ -518,28 +456,5 @@ export function useUsersByNames(names: string[] | undefined): { users: User[]; l
  * by `_uid` or `name`. Callers then load the full CR via getResource(name).
  */
 export async function findIndexedUserName(id: string, hubName: string): Promise<string | undefined> {
-  const result = await searchClient.query({
-    query: SearchResultItemsDocument,
-    variables: {
-      input: [
-        {
-          filters: [...hubUserFilters()],
-          // Search rejects `_uid` as a filter; scan all hub Users (same as export).
-          limit: -1,
-        },
-      ],
-    },
-  })
-  const items = result.data?.searchResult?.[0]?.items ?? []
-  const prefixed = `${hubName}/${id}`
-  // Prefer `_uid` matches so a route id that is a uid is not resolved via another User's name.
-  for (const item of items) {
-    if (typeof item?.name !== 'string') continue
-    const itemUid = typeof item._uid === 'string' ? item._uid : ''
-    if (itemUid === id || itemUid === prefixed || itemUid.endsWith(`/${id}`)) return item.name
-  }
-  for (const item of items) {
-    if (typeof item?.name === 'string' && item.name === id) return item.name
-  }
-  return undefined
+  return findIndexedIdentityName(id, hubName, hubUserFilters())
 }

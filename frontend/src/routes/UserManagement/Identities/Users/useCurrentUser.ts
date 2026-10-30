@@ -9,6 +9,7 @@ import { User, UserApiVersion, UserKind } from '../../../../resources/rbac'
 import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { AcmToastContext } from '../../../../ui-components'
+import { eventMatchesIdentity, eventResourceName, settleNavigation } from '../searchIdentityHelpers'
 import { usersFromMulticlusterRoleAssignments } from '../useMergedIdentities'
 import { findIndexedUserName, hubUserWatchFilters } from './useUsersSearch'
 
@@ -29,28 +30,6 @@ async function readUser(name: string): Promise<User | undefined> {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) return undefined
     throw err
   }
-}
-
-function eventName(data: { name?: unknown } | null | undefined): string | undefined {
-  return typeof data?.name === 'string' ? data.name : undefined
-}
-
-function eventMatchesUser(
-  uid: string,
-  name: string | undefined,
-  userUid: string | undefined,
-  userName: string | undefined
-): boolean {
-  if (userName && name === userName) return true
-  if (!userUid || !uid) return false
-  return uid === userUid || uid.endsWith(`/${userUid}`)
-}
-
-/** useNavigate returns void in declarative mode and a Promise in data routers. */
-function settleNavigation(navigation: void | Promise<void>) {
-  Promise.resolve(navigation).catch(() => {
-    // The toast already explains the deletion; a failed redirect should not surface again.
-  })
 }
 
 export const useCurrentUser = (): CurrentUser => {
@@ -146,8 +125,8 @@ export const useCurrentUser = (): CurrentUser => {
     if (handledEventKey.current === key) return
 
     const userUid = fetched?.metadata?.uid
-    const dataName = eventName(latestEvent.newData) ?? eventName(latestEvent.oldData)
-    if (!eventMatchesUser(latestEvent.uid, dataName, userUid, watchedName)) return
+    const dataName = eventResourceName(latestEvent.newData) ?? eventResourceName(latestEvent.oldData)
+    if (!eventMatchesIdentity(latestEvent.uid, dataName, userUid, watchedName)) return
     handledEventKey.current = key
 
     if (latestEvent.operation === 'DELETE') {
