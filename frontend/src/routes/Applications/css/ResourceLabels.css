@@ -8,15 +8,14 @@
   margin-right: 8px;
 }
 .label-with-popover.pf-v6-c-popover {
-  --pf-v5-c-popover__content--Padding: 0px;
-  --pf-v5-c-popover__content--PaddingTop: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover__content--PaddingLeft: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover__content--PaddingBottom: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover__content--PaddingRight: var(--pf-v5-c-popover__content--Padding);
-  --pf-v5-c-popover__close--Right: 0;
+  --pf-v6-c-popover__content--PaddingBlockStart: 0px;
+  --pf-v6-c-popover__content--PaddingInlineStart: 0px;
+  --pf-v6-c-popover__content--PaddingBlockEnd: 0px;
+  --pf-v6-c-popover__content--PaddingInlineEnd: 0px;
+  --pf-v6-c-popover__close--InsetInlineEnd: 0;
 }
 .label-with-popover.pf-v6-c-popover .pf-v6-c-popover__content .pf-v6-c-button {
-  --pf-v5-c-button--PaddingTop: 1rem;
+  --pf-v6-c-button--PaddingBlockStart: 1rem;
 }
 .label-with-popover.pf-v6-c-popover .pf-v6-c-popover__content h6 {
   padding: 1rem 1rem 0 1rem;
@@ -25,14 +24,13 @@
   --gutter: 0.5rem;
   --margin: 1rem;
 }
-.channel-labels .pf-v6-l-split {
-  --pf-v5-l-split--m-gutter--MarginRight: var(--gutter);
-}
+/* PatternFly 6 Split and Stack both read the stack gutter variable and apply it as gap. */
+.channel-labels .pf-v6-l-split,
 .channel-labels .pf-v6-l-stack {
-  --pf-v5-l-stack--m-gutter--MarginBottom: var(--gutter);
+  --pf-v6-l-stack--m-gutter--Gap: var(--gutter);
 }
 .channel-labels .channel-label {
-  --pf-v5-l-split--m-gutter--MarginRight: 8px;
+  --pf-v6-l-stack--m-gutter--Gap: 8px;
 }
 .channel-labels .channel-entry {
   margin: var(--margin);

@@ -128,9 +128,9 @@ function UserDropdown() {
           variant="plain"
           isExpanded={userIsOpen}
         >
-          <span className="pf-v6-c-dropdown__toggle">
+          <span>
             <span data-test="username">{name}</span>
-            <CaretDownIcon className="pf-v6-c-dropdown__toggle-icon" />
+            <CaretDownIcon />
           </span>
         </MenuToggle>
       )}

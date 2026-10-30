@@ -696,7 +696,7 @@ exports[`Correctly returns VirtualMachineSnapshot indications 1`] = `
             class="pf-v6-c-label-group__list-item"
           >
             <span
-              class="pf-v6-c-label pf-m-filled css-wm1cuv"
+              class="pf-v6-c-label pf-m-filled css-9virhz"
             >
               <span
                 class="pf-v6-c-label__content"
@@ -713,7 +713,7 @@ exports[`Correctly returns VirtualMachineSnapshot indications 1`] = `
             class="pf-v6-c-label-group__list-item"
           >
             <span
-              class="pf-v6-c-label pf-m-filled css-wm1cuv"
+              class="pf-v6-c-label pf-m-filled css-9virhz"
             >
               <span
                 class="pf-v6-c-label__content"

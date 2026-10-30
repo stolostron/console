@@ -1,8 +1,40 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { dismountTheme, mountTheme } from './theme'
+import { darkThemeMq, dismountTheme, getTheme, mountTheme, THEME_LOCAL_STORAGE_KEY } from './theme'
 
 describe('theme utilities', () => {
+  describe('getTheme', () => {
+    afterEach(() => {
+      localStorage.removeItem(THEME_LOCAL_STORAGE_KEY)
+      document.documentElement.classList.remove('pf-v6-theme-dark')
+      jest.restoreAllMocks()
+    })
+
+    it('returns console-dark when the document carries the PatternFly dark class', () => {
+      document.documentElement.classList.add('pf-v6-theme-dark')
+
+      expect(getTheme()).toBe('console-dark')
+    })
+
+    it('returns console-light when the document does not carry the dark class', () => {
+      expect(getTheme()).toBe('console-light')
+    })
+
+    it('returns console-dark for the system default when the OS prefers dark', () => {
+      localStorage.setItem(THEME_LOCAL_STORAGE_KEY, 'systemDefault')
+      jest.replaceProperty(darkThemeMq, 'matches', true)
+
+      expect(getTheme()).toBe('console-dark')
+    })
+
+    it('falls back to the document class for the system default when the OS prefers light', () => {
+      localStorage.setItem(THEME_LOCAL_STORAGE_KEY, 'systemDefault')
+      jest.replaceProperty(darkThemeMq, 'matches', false)
+
+      expect(getTheme()).toBe('console-light')
+    })
+  })
+
   describe('mountTheme/dismountTheme', () => {
     beforeEach(() => {
       document.body.innerHTML = ''
