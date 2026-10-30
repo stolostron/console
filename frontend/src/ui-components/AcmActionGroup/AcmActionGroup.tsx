@@ -5,7 +5,7 @@ import { Flex, FlexItem, Divider } from '@patternfly/react-core'
 import { css } from '@emotion/css'
 
 const group = css({
-  '& > div > a, & .pf-v6-c-menu-toggle.pf-m-plain': {
+  '& > div > a': {
     paddingInlineStart: 0,
     paddingInlineEnd: 0,
   },
