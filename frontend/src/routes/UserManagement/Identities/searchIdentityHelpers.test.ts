@@ -2,12 +2,19 @@
 import { act, renderHook } from '@testing-library/react'
 import { searchClient } from '../../Search/search-sdk/search-client'
 import {
+  areRanksReady,
   asSearchError,
   eventMatchesIdentity,
   eventResourceName,
   findIndexedIdentityName,
+  keywordSearchInput,
   keywordsFromSearch,
+  pagedSearchInput,
+  placeExtrasByRank,
+  rankCountVariables,
+  resolveIndexedThenRead,
   searchApolloClient,
+  searchPageWindow,
   settleNavigation,
   stitchSearchPage,
   useSearchListControls,
@@ -88,6 +95,81 @@ describe('stitchSearchPage', () => {
 
   it('stops when Search items are exhausted', () => {
     expect(stitchSearchPage(['only'], [], 0, 3)).toEqual(['only'])
+  })
+})
+
+describe('search list helpers', () => {
+  const baseFilters = [{ property: 'kind', values: ['User'] }]
+
+  it('builds keyword and paged Search inputs', () => {
+    expect(keywordSearchInput(baseFilters, undefined)).toEqual({ filters: baseFilters })
+    expect(keywordSearchInput(baseFilters, ['alice'])).toEqual({ filters: baseFilters, keywords: ['alice'] })
+    expect(pagedSearchInput(baseFilters, ['bob'], 10, 20, 'name asc')).toEqual({
+      filters: baseFilters,
+      keywords: ['bob'],
+      limit: 10,
+      offset: 20,
+      orderBy: 'name asc',
+    })
+  })
+
+  it('builds rank variables and readiness', () => {
+    expect(rankCountVariables([], baseFilters)).toEqual({ input: [{ filters: baseFilters }] })
+    expect(rankCountVariables([{ filters: baseFilters }], baseFilters)).toEqual({
+      input: [{ filters: baseFilters }],
+    })
+    expect(areRanksReady(0, 0, true)).toBe(true)
+    expect(areRanksReady(2, 2, false)).toBe(true)
+    expect(areRanksReady(2, 1, false)).toBe(false)
+  })
+
+  it('places extras by Search rank and peers', () => {
+    const placed = placeExtrasByRank(['b', 'a'], [{ count: 1 }, { count: 0 }], (left, right) =>
+      left.localeCompare(right)
+    )
+    expect(placed).toEqual([
+      { resource: 'b', mergedIndex: 2 },
+      { resource: 'a', mergedIndex: 0 },
+    ])
+  })
+
+  it('computes the Search page window around placed extras', () => {
+    const window = searchPageWindow([{ mergedIndex: 0 }, { mergedIndex: 5 }], 1, 5, true, true)
+    expect(window).toEqual({
+      start: 0,
+      extrasOnPage: [{ mergedIndex: 0 }],
+      searchOffset: 0,
+      searchLimit: 4,
+      canQueryPage: true,
+    })
+  })
+})
+
+describe('resolveIndexedThenRead', () => {
+  it('reads by indexed name when Search resolves one', async () => {
+    const read = jest.fn().mockResolvedValue({ name: 'alice' })
+    await expect(resolveIndexedThenRead('uid-1', 'local-cluster', async () => 'alice', read)).resolves.toEqual({
+      name: 'alice',
+    })
+    expect(read).toHaveBeenCalledWith('alice')
+  })
+
+  it('falls back to the route id when Search misses or throws', async () => {
+    const read = jest.fn().mockResolvedValue({ name: 'bob' })
+    await expect(resolveIndexedThenRead('bob', 'local-cluster', async () => undefined, read)).resolves.toEqual({
+      name: 'bob',
+    })
+    await expect(
+      resolveIndexedThenRead(
+        'bob',
+        'local-cluster',
+        async () => {
+          throw new Error('search down')
+        },
+        read
+      )
+    ).resolves.toEqual({ name: 'bob' })
+    expect(read).toHaveBeenCalledWith('bob')
   })
 })
 

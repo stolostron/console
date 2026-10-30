@@ -12,10 +12,16 @@ import { DEFAULT_ITEMS_PER_PAGE, DEFAULT_PAGE } from '../../../../ui-components/
 import { searchClient } from '../../../Search/search-sdk/search-client'
 import { SearchResultItemsDocument, useSearchResultCountQuery } from '../../../Search/search-sdk/search-sdk'
 import {
+  areRanksReady,
   asSearchError,
   findIndexedIdentityName,
+  keywordSearchInput,
   keywordsFromSearch,
+  pagedSearchInput,
+  placeExtrasByRank,
+  rankCountVariables,
   searchApolloClient,
+  searchPageWindow,
   stitchSearchPage,
   useSearchListControls,
 } from '../searchIdentityHelpers'
@@ -264,60 +270,41 @@ export function useGroupsSearch(options: {
   }, [candidates, extrasReady, indexedNames, keywords])
 
   const rankInputs = useMemo<SearchInput[]>(
-    () =>
-      extras.map((group) => ({
-        filters: [...baseFilters, beforeFilter(field, group, descending)],
-        ...(keywords ? { keywords } : {}),
-      })),
+    () => extras.map((group) => keywordSearchInput([...baseFilters, beforeFilter(field, group, descending)], keywords)),
     [baseFilters, descending, extras, field, keywords]
   )
   const rankQuery = useSearchResultCountQuery({
     client: searchApolloClient(),
     skip: extras.length === 0,
-    variables: { input: rankInputs.length > 0 ? rankInputs : [{ filters: baseFilters }] },
+    variables: rankCountVariables(rankInputs, baseFilters),
   })
   const rankCounts = useMemo(() => rankQuery.data?.searchResult ?? [], [rankQuery.data])
-  const ranksReady = extras.length === 0 || (rankCounts.length === extras.length && !rankQuery.loading)
+  const ranksReady = areRanksReady(extras.length, rankCounts.length, rankQuery.loading)
 
   const placedExtras = useMemo(() => {
     if (!ranksReady) return []
-    return extras.map((group, index) => {
-      const searchBefore = rankCounts[index]?.count ?? 0
-      const extrasBefore = extras.filter(
-        (other) => other !== group && compareGroups(other, group, field, descending) < 0
-      ).length
-      return { group, mergedIndex: searchBefore + extrasBefore }
-    })
+    return placeExtrasByRank(extras, rankCounts, (a, b) => compareGroups(a, b, field, descending)).map(
+      ({ resource, mergedIndex }) => ({ group: resource, mergedIndex })
+    )
   }, [descending, extras, field, rankCounts, ranksReady])
 
-  const start = Math.max(0, (page - 1) * perPage)
-  const extrasOnPage = placedExtras.filter((extra) => extra.mergedIndex >= start && extra.mergedIndex < start + perPage)
-  const extrasBeforePage = placedExtras.filter((extra) => extra.mergedIndex < start).length
-  const searchOffset = Math.max(0, start - extrasBeforePage)
-  const searchLimit = Math.max(0, perPage - extrasOnPage.length)
-  const canQueryPage = extrasReady && ranksReady && searchLimit > 0
+  const { start, extrasOnPage, searchOffset, searchLimit, canQueryPage } = searchPageWindow(
+    placedExtras,
+    page,
+    perPage,
+    extrasReady,
+    ranksReady
+  )
 
   const pageInput = useMemo<SearchInput | undefined>(() => {
     if (!canQueryPage) return undefined
-    return {
-      filters: baseFilters,
-      ...(keywords ? { keywords } : {}),
-      limit: searchLimit,
-      offset: searchOffset,
-      orderBy,
-    }
+    return pagedSearchInput(baseFilters, keywords, searchLimit, searchOffset, orderBy)
   }, [baseFilters, canQueryPage, keywords, orderBy, searchLimit, searchOffset])
   // Subscription uses toWatchInput(pageInput): same filters, without limit/offset/orderBy.
   const [pageFleet, pageLoaded, pageError, refetchPage] = useFleetSearch(pageInput, true)
   const pageGroups = pageFleet as Group[] | undefined
 
-  const countInput = useMemo<SearchInput>(
-    () => ({
-      filters: baseFilters,
-      ...(keywords ? { keywords } : {}),
-    }),
-    [baseFilters, keywords]
-  )
+  const countInput = useMemo(() => keywordSearchInput(baseFilters, keywords), [baseFilters, keywords])
   const countQuery = useSearchResultCountQuery({
     client: searchApolloClient(),
     variables: { input: [countInput] },

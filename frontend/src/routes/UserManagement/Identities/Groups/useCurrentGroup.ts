@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useNavigate, useParams } from 'react-router'
 import { useFleetSearchSubscription } from '@stolostron/multicluster-sdk/lib/api/useFleetSearchSubscription'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
@@ -9,7 +9,7 @@ import { Group, GroupKind, UserApiVersion } from '../../../../resources/rbac'
 import { getResource, ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedAtoms, useSharedValue } from '../../../../shared-atoms'
 import { AcmToastContext } from '../../../../ui-components'
-import { eventMatchesIdentity, eventResourceName, settleNavigation } from '../searchIdentityHelpers'
+import { resolveIndexedThenRead, useIdentityLiveEvents } from '../searchIdentityHelpers'
 import { groupsFromMulticlusterRoleAssignments } from '../useMergedIdentities'
 import { findIndexedGroupName, hubGroupWatchFilters } from './useGroupsSearch'
 
@@ -78,28 +78,10 @@ export const useCurrentGroup = (): CurrentGroup => {
 
     const load = async () => {
       try {
-        // Same path for uid or name in the URL: Search → resolve name → getResource (full CR).
-        // Search alone is not enough (no users/annotations); MRA synthetic is last resort only.
-        // When Search misses (errorPolicy, lag, or throw), still try getResource with the route id —
-        // names resolve; uids NotFound safely and fall through to MRA.
-        let indexedName: string | undefined
-        try {
-          indexedName = await findIndexedGroupName(id, hubName)
-        } catch {
-          // Search failures must not block the getResource / MRA fallbacks below.
-          indexedName = undefined
-        }
+        // Search alone is not enough (no users/annotations); MRA synthetic is last resort.
+        const resolved = await resolveIndexedThenRead(id, hubName, findIndexedGroupName, readGroup)
         if (cancelled) return
-        const resolved = await readGroup(indexedName ?? id)
-        if (cancelled) return
-        if (resolved) {
-          setFetched(resolved)
-          setLoaded(true)
-          return
-        }
-
-        if (cancelled) return
-        setFetched(undefined)
+        setFetched(resolved)
         setLoaded(true)
       } catch (err) {
         if (cancelled) return
@@ -115,65 +97,42 @@ export const useCurrentGroup = (): CurrentGroup => {
     }
   }, [hubName, id])
 
-  const handledEventKey = useRef<string | undefined>(undefined)
-  const watchedNameRef = useRef(watchedName)
-  useEffect(() => {
-    watchedNameRef.current = watchedName
-  }, [watchedName])
+  const hasRoleAssignment = useCallback(
+    (name: string) =>
+      groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).some(
+        (candidate) => candidate.metadata.name === name
+      ),
+    [mras]
+  )
+  const toastWarning = useCallback(
+    (title: string) => toast.addAlert({ type: 'warning', title, autoClose: true }),
+    [toast]
+  )
+  const deletedWithRoleAssignmentTitle = useCallback(
+    (name: string) => t('Group {{name}} was deleted. Showing the identity from the role assignment.', { name }),
+    [t]
+  )
+  const deletedTitle = useCallback((name: string) => t('Group {{name}} was deleted.', { name }), [t])
+  const detailsPath = useCallback(
+    (name: string) => generatePath(NavigationPath.identitiesGroupsDetails, { id: name }),
+    []
+  )
 
-  useEffect(() => {
-    if (!latestEvent || !watchedName) return
-    const key = `${latestEvent.operation}:${latestEvent.uid}:${String(latestEvent.timestamp)}`
-    if (handledEventKey.current === key) return
-
-    const groupUid = fetched?.metadata?.uid
-    const dataName = eventResourceName(latestEvent.newData) ?? eventResourceName(latestEvent.oldData)
-    if (!eventMatchesIdentity(latestEvent.uid, dataName, groupUid, watchedName)) return
-    handledEventKey.current = key
-
-    if (latestEvent.operation === 'DELETE') {
-      // Match by Group name: the route id may still be the CR uid while the MRA subject is the name.
-      const hasRoleAssignment = groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()).some(
-        (candidate) => candidate.metadata.name === watchedName
-      )
-      if (hasRoleAssignment) {
-        toast.addAlert({
-          type: 'warning',
-          title: t('Group {{name}} was deleted. Showing the identity from the role assignment.', {
-            name: watchedName,
-          }),
-          autoClose: true,
-        })
-        if (id !== watchedName) {
-          settleNavigation(
-            navigate(generatePath(NavigationPath.identitiesGroupsDetails, { id: watchedName }), { replace: true })
-          )
-        } else {
-          setFetched(undefined)
-        }
-        return
-      }
-      toast.addAlert({
-        type: 'warning',
-        title: t('Group {{name}} was deleted.', { name: watchedName }),
-        autoClose: true,
-      })
-      settleNavigation(navigate(NavigationPath.identitiesGroups, { replace: true }))
-      return
-    }
-
-    if (latestEvent.operation !== 'UPDATE' && latestEvent.operation !== 'INSERT') return
-
-    const name = watchedName
-    void readGroup(name)
-      .then((resolved) => {
-        if (watchedNameRef.current !== name || !resolved) return
-        setFetched(resolved)
-      })
-      .catch(() => {
-        // Keep whatever is on screen (CR or MRA stub) if the background refresh fails.
-      })
-  }, [fetched?.metadata?.uid, id, latestEvent, mras, navigate, t, toast, watchedName])
+  useIdentityLiveEvents({
+    latestEvent,
+    watchedName,
+    routeId: id,
+    resourceUid: fetched?.metadata?.uid,
+    hasRoleAssignment,
+    readResource: readGroup,
+    setFetched,
+    toastWarning,
+    deletedWithRoleAssignmentTitle,
+    deletedTitle,
+    detailsPath,
+    listPath: NavigationPath.identitiesGroups,
+    navigate,
+  })
 
   const synthetic = loaded && !fetched && !error ? mraIdentity : undefined
 
