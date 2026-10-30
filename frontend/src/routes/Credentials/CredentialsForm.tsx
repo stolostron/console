@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { PageSection } from '@patternfly/react-core'
-import _, { get, noop } from 'lodash'
+import _, { get } from 'lodash'
 import set from 'lodash/set'
 import { Fragment, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { generatePath, useMatch, useNavigate, useParams } from 'react-router'
@@ -27,13 +27,11 @@ import {
 import { createResource, isRequestAbortedError, patchResource } from '../../resources/utils'
 import {
   AcmEmptyState,
-  AcmIcon,
+  AcmInlineProvider,
   AcmPage,
   AcmPageHeader,
   AcmToastContext,
   Provider,
-  ProviderIconMap,
-  ProviderLongTextMap,
 } from '../../ui-components'
 import { awsRegions } from '../Infrastructure/Clusters/ManagedClusters/CreateCluster/controlData/ControlDataAWS'
 import { CredentialsType } from './CredentialsType'
@@ -621,20 +619,11 @@ export function CredentialsForm(
         inputs: [
           {
             id: 'credentialsType',
-            type: 'Select',
+            type: 'Custom',
             label: t('Credential type'),
-            value: credentialsType,
-            onChange: noop,
-            options: [
-              {
-                id: credentialsType,
-                value: credentialsType,
-                icon: credentialsType ? <AcmIcon icon={ProviderIconMap[credentialsType as Provider]} /> : '',
-                text: credentialsType ? ProviderLongTextMap[credentialsType as Provider] : '',
-              },
-            ],
+            component: <AcmInlineProvider provider={credentialsType as Provider} />,
             isRequired: false, // always pre-filled
-            isDisabled: true, // always pre-filled
+            isHidden: !credentialsType,
           },
           {
             id: 'disable-alert',
