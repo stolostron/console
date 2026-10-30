@@ -56,14 +56,16 @@ describe('Edit Policy Automation', () => {
   })
 
   test('can edit policy automation', async () => {
+    const ansibleTowerNocks = [
+      nockAnsibleTower(mockAnsibleCredential, mockTemplateList),
+      nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList),
+    ]
     render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
-    nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-    nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateWorkflowList)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    await waitForNocks(ansibleTowerNocks)
 
-    expect(screen.getByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/select the ansible credential/i)).toHaveValue('ansible-test-secret')
-    expect(screen.getByPlaceholderText(/select the ansible job/i)).toHaveValue('test-job-pre-install')
+    expect(await screen.findByRole('heading', { name: 'Edit policy automation' })).toBeInTheDocument()
+    expect(await screen.findByPlaceholderText(/select the ansible credential/i)).toHaveValue('ansible-test-secret')
+    expect(await screen.findByPlaceholderText(/select the ansible job/i)).toHaveValue('test-job-pre-install')
 
     // modify ansible job and schedule
     await clickElement(screen.getByPlaceholderText(/select the ansible job/i))
@@ -95,9 +97,12 @@ describe('Edit Policy Automation', () => {
   })
 
   test('can cancel editing policy automation', async () => {
-    nockAnsibleTower(mockAnsibleCredential, mockTemplateList)
-    nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateList)
+    const ansibleTowerNocks = [
+      nockAnsibleTower(mockAnsibleCredential, mockTemplateList),
+      nockAnsibleTower(mockAnsibleCredentialWorkflow, mockTemplateList),
+    ]
     render(<EditPolicyAutomationTest subscriptions={[mockSubscriptionOperator]} />)
-    await clickElement(screen.getByRole('button', { name: 'Cancel' }))
+    await waitForNocks(ansibleTowerNocks)
+    await clickElement(await screen.findByRole('button', { name: 'Cancel' }))
   })
 })

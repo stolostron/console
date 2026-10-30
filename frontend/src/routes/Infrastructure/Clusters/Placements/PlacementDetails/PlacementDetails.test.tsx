@@ -5,7 +5,7 @@ import { MemoryRouter, Route, Routes, generatePath } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { placementsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
-import { waitForText } from '../../../../../lib/test-util'
+import { waitForNock, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
 import { ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
@@ -59,15 +59,23 @@ describe('PlacementDetails page', () => {
   })
 
   test('renders placement details with breadcrumb and header', async () => {
-    nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } }, [])
+    const appSetNock = nockList(
+      { apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } },
+      []
+    )
     render(<PlacementDetailsComponent />)
+    await waitForNock(appSetNock)
     await waitForText('test-placement', true)
     await waitForText('Placements')
   })
 
   test('renders overview tab content', async () => {
-    nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } }, [])
+    const appSetNock = nockList(
+      { apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace: 'default' } },
+      []
+    )
     render(<PlacementDetailsComponent />)
+    await waitForNock(appSetNock)
     await waitForText('test-placement', true)
     await waitForText('default', true)
     await waitForText('Details')

@@ -10,19 +10,14 @@ import {
 
 // Mock WebSocket
 class MockWebSocket {
-  static CONNECTING = 0 as const
   static OPEN = 1 as const
   static CLOSED = 2 as const
 
-  private _readyState: 0 | 1 | 2 | 3 = MockWebSocket.CONNECTING
+  private _readyState: 0 | 1 | 2 | 3 = MockWebSocket.OPEN
   url: string
 
   constructor(url: string) {
     this.url = url
-    // Simulate immediate connection
-    setTimeout(() => {
-      this._readyState = MockWebSocket.OPEN
-    }, 0)
   }
 
   get readyState() {

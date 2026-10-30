@@ -9,6 +9,12 @@ import { waitForNocks } from '~/lib/test-util'
 import { isGlobalHubState, Settings, settingsState } from '../../../atoms'
 import HeaderWithNotification from './HeaderWithNotification'
 
+function removeGeneratedOUIAIds(baseElement: HTMLElement) {
+  baseElement.querySelectorAll('[data-ouia-component-id]').forEach((element) => {
+    element.removeAttribute('data-ouia-component-id')
+  })
+}
+
 test('renders without search disabled message', async () => {
   const searchIsDisabledMock = nockSearch(
     {
@@ -49,6 +55,7 @@ test('renders without search disabled message', async () => {
     </StateProvider>
   )
   await waitForNocks([searchIsDisabledMock])
+  removeGeneratedOUIAIds(baseElement)
   expect(baseElement).toMatchSnapshot()
 })
 
@@ -118,6 +125,7 @@ test('renders with search disabled message', async () => {
     </StateProvider>
   )
   await waitForNocks([searchIsNotDisabledMock])
+  removeGeneratedOUIAIds(baseElement)
   expect(baseElement).toMatchSnapshot()
 })
 
@@ -169,5 +177,6 @@ test('renders with Global Search alert & no message', async () => {
     </StateProvider>
   )
   await waitForNocks([searchIsNotDisabledMock])
+  removeGeneratedOUIAIds(baseElement)
   expect(baseElement).toMatchSnapshot()
 })

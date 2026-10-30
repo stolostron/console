@@ -98,8 +98,6 @@ describe('Topology tests', () => {
         <Topology {...propsWithSearchDisabledClusters} />
       </StateProvider>
     )
-    await new Promise((resolve) => setTimeout(resolve, 500))
-
     // Wait for the alert to appear
     await waitFor(() => {
       expect(

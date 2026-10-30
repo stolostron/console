@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { waitFor } from '@testing-library/react'
 import { canUser } from '../../lib/rbac-util'
 import { ManagedClusterActionDefinition } from '../managedclusteraction'
 import { ManagedClusterViewDefinition } from '../managedclusterview'
@@ -233,8 +234,7 @@ describe('fleet-can-user', () => {
 
       const request = fleetCanUser('get', mockCluster, mockResource, 'test-namespace', 'test-pod')
 
-      // Wait a bit for the MCV check to complete and fallback to start
-      await new Promise((resolve) => setTimeout(resolve, 10))
+      await waitFor(() => expect(mockedCreateSubjectAccessReviewWithBaseUrl).toHaveBeenCalled())
 
       request.abort()
 

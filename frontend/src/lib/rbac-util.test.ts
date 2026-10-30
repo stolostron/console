@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { renderHook, waitFor } from '@testing-library/react'
+import { act, renderHook, waitFor } from '@testing-library/react'
 import { Namespace, NamespaceDefinition, ResourceAttributes } from '../resources'
 import { nockIgnoreApiPaths, nockRBAC } from './nock-util'
 import {
@@ -195,12 +195,14 @@ describe('useIsAnyNamespaceAuthorized', () => {
     // Rerender with the new object that has the same values
     // This should NOT trigger new network requests because the hook uses
     // JSON.stringify to compare the resourceAttributes, preventing unnecessary re-fetches
-    rerender({ attrs: resourceAttributes2 })
+    await act(async () => {
+      rerender({ attrs: resourceAttributes2 })
+      await Promise.resolve()
+      await Promise.resolve()
+    })
 
     // If additional network requests were made, the test would fail because
     // we haven't set up additional nock mocks for them
-    // Give it a moment to ensure no additional requests are made
-    await new Promise((resolve) => setTimeout(resolve, 100))
   })
 
   it('does not repeat RBAC network requests on multiple rerenders with new promise objects', async () => {
@@ -231,12 +233,15 @@ describe('useIsAnyNamespaceAuthorized', () => {
 
     // Rerender multiple times - each creates a new Promise object
     // but should NOT trigger new network requests
-    rerender()
-    rerender()
-    rerender()
+    await act(async () => {
+      rerender()
+      rerender()
+      rerender()
+      await Promise.resolve()
+      await Promise.resolve()
+    })
 
     // If additional network requests were made, the test would fail because
     // we haven't set up additional nock mocks for them
-    await new Promise((resolve) => setTimeout(resolve, 100))
   })
 })
