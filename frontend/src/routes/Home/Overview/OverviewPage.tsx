@@ -23,6 +23,7 @@ import { getUpgradeRiskPredictions } from '../../../lib/get-upgrade-risk-predict
 import { SupportedAggregate, useAggregate } from '../../../lib/useAggregates'
 import { ObservabilityEndpoint, PrometheusEndpoint, useMetricsPoll } from '../../../lib/useMetricsPoll'
 import { NavigationPath } from '../../../NavigationPath'
+import { usePolicyReportsList } from '../../../hooks/usePolicyReports'
 import { getUserPreference, UserPreference } from '../../../resources'
 import { Cluster } from '../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
@@ -60,15 +61,19 @@ import {
 export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Record<string, string[]> }>) {
   const { selectedClusterLabels } = props
   const { t } = useTranslation()
-  const { clusterManagementAddonsState, policyreportState } = useSharedAtoms()
+  const { clusterManagementAddonsState } = useSharedAtoms()
 
   const policies = useAddRemediationPolicies()
   const allAddons = useClusterAddons()
-  const policyReports = useSharedValue(policyreportState)
   const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const [isInsightsSectionOpen, setIsInsightsSectionOpen] = useState<boolean>(
     localStorage.getItem('insights-section-toggle') ? localStorage.getItem('insights-section-toggle') === 'true' : true
   )
+  const {
+    policyReports,
+    isLoading: isPolicyReportsLoading,
+    isError: isPolicyReportsError,
+  } = usePolicyReportsList(isInsightsSectionOpen)
   const [isClusterSectionOpen, setIsClusterSectionOpen] = useState<boolean>(
     localStorage.getItem('cluster-section-toggle') ? localStorage.getItem('cluster-section-toggle') === 'true' : true
   )
@@ -428,6 +433,10 @@ export default function OverviewPage(props: Readonly<{ selectedClusterLabels: Re
                 <GalleryItem key={'cluster-recommendations-card'} style={{ flex: 1, minWidth: '375px' }}>
                   <SummaryCard
                     title={t('Cluster recommendations')}
+                    loading={isPolicyReportsLoading}
+                    error={
+                      isPolicyReportsError ? t('An unexpected error occurred while retrieving metrics.') : undefined
+                    }
                     summaryTotalHeader={{
                       num: `${clustersWithIssuesCount}`,
                       text: clustersWithIssuesCount !== 1 ? t('clusters affected') : t('cluster affected'),

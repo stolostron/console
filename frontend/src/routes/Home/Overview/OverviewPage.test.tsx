@@ -14,7 +14,6 @@ import {
   managedClustersState,
   placementDecisionsState,
   policiesState,
-  policyreportState,
   Settings,
   settingsState,
   subscriptionsState,
@@ -22,12 +21,13 @@ import {
 import {
   nockAggegateRequest,
   nockIgnoreApiPaths,
+  nockList,
   nockRequest,
   nockSearch,
   nockUpgradeRiskRequest,
 } from '../../../lib/nock-util'
 import { waitForNocks, clickElement } from '~/lib/test-util'
-import { ManagedClusterInfo, UserPreference } from '../../../resources'
+import { ManagedClusterInfo, PolicyReportApiVersion, PolicyReportKind, UserPreference } from '../../../resources'
 import {
   mockApplications,
   mockSearchQueryArgoApps,
@@ -150,8 +150,17 @@ const statusAggregate = {
   },
 }
 
+function nockPolicyReportsList() {
+  return nockList({ apiVersion: PolicyReportApiVersion, kind: PolicyReportKind }, policyReports)
+}
+
+beforeEach(() => {
+  queryClient.clear()
+})
+
 it('should render overview page with expected data', async () => {
   nockIgnoreApiPaths()
+  nockPolicyReportsList()
   nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
@@ -203,7 +212,6 @@ it('should render overview page with expected data', async () => {
           } as ManagedClusterInfo,
         ])
         store.set(policiesState, policies)
-        store.set(policyreportState, policyReports)
         store.set(managedClusterAddonsState, mockManagedClusterAddons)
         store.set(clusterManagementAddonsState, mockClusterManagementAddons)
         store.set(placementDecisionsState, placementDecisions)
@@ -247,6 +255,7 @@ it('should render overview page with expected data', async () => {
 
 it('should toggle card sections correctly', async () => {
   nockIgnoreApiPaths()
+  nockPolicyReportsList()
   nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
@@ -298,7 +307,6 @@ it('should toggle card sections correctly', async () => {
           } as ManagedClusterInfo,
         ])
         store.set(policiesState, policies)
-        store.set(policyreportState, policyReports)
         store.set(managedClusterAddonsState, mockManagedClusterAddons)
         store.set(clusterManagementAddonsState, mockClusterManagementAddons)
         store.set(placementDecisionsState, placementDecisions)
@@ -370,6 +378,7 @@ function getToggleIconPath(container: HTMLElement, toggleId: string): string | n
 
 it('should show AngleUpIcon when section is expanded and AngleDownIcon when collapsed (ACM-37147)', async () => {
   nockIgnoreApiPaths()
+  nockPolicyReportsList()
   nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
   nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
   nockSearch(mockSearchQueryArgoAppsCount, mockSearchResponseArgoAppsCount)
@@ -421,7 +430,6 @@ it('should show AngleUpIcon when section is expanded and AngleDownIcon when coll
           } as ManagedClusterInfo,
         ])
         store.set(policiesState, policies)
-        store.set(policyreportState, policyReports)
         store.set(managedClusterAddonsState, mockManagedClusterAddons)
         store.set(clusterManagementAddonsState, mockClusterManagementAddons)
         store.set(placementDecisionsState, placementDecisions)
