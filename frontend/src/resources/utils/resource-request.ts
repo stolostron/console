@@ -799,11 +799,9 @@ export async function fetchRetry<T>(options: {
   const headers: Record<string, string> = options.headers ?? {
     Accept: 'application/json',
   }
-
-  const csrfToken = getCookie('csrf-token')
-  if (csrfToken && (options.method ?? 'GET') !== 'GET' && options.url.startsWith('/')) {
-    headers['X-CSRFToken'] = csrfToken
-  }
+  let csrfRetried = false
+  const method = options.method ?? 'GET'
+  const sendsCsrf = method !== 'GET' && options.url.startsWith('/')
 
   let fetchBody: string | undefined
   if (options.data) {
@@ -818,10 +816,15 @@ export async function fetchRetry<T>(options: {
   }
 
   while (true) {
+    if (sendsCsrf) {
+      const csrfToken = getCookie('csrf-token')
+      if (csrfToken) headers['X-CSRFToken'] = csrfToken
+    }
+
     let response: Response | undefined
     try {
       response = await fetch(options.url, {
-        method: options.method ?? 'GET',
+        method,
         credentials: 'include',
         headers,
         body: fetchBody,
@@ -890,6 +893,19 @@ export async function fetchRetry<T>(options: {
           } else {
             throw new ResourceError(ResourceErrorCode.Unknown, status.message as string, status.reason)
           }
+        }
+      }
+
+      if (
+        response.status === 403 &&
+        !csrfRetried &&
+        typeof responseData === 'string' &&
+        responseData.includes('CSRF token does not match')
+      ) {
+        const freshToken = getCookie('csrf-token')
+        if (freshToken && freshToken !== headers['X-CSRFToken']) {
+          csrfRetried = true
+          continue
         }
       }
 

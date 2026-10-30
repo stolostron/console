@@ -27,15 +27,8 @@ export const createDownloadFile = (filename: string, content: string, type?: str
   window.URL.revokeObjectURL(url)
 }
 
-export function getCookie(name: string) {
-  if (!document?.cookie) return undefined
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) {
-    const cookie = parts[parts.length - 1]
-    if (cookie) return cookie.split(';').shift()
-  }
-}
+// Shared with the SDK search client — keep a single implementation there.
+export { fetchWithCsrf, getCookie } from '@stolostron/multicluster-sdk/lib/internal/search/searchUtils'
 
 export function getGroupFromApiVersion(apiVersion: string) {
   if (apiVersion.indexOf('/') >= 0) {
