@@ -34,7 +34,6 @@ import {
   DiscoveredCluster,
   DiscoveryConfig,
   GitOpsCluster,
-  Group,
   HelmRelease,
   IResource,
   MachinePool,
@@ -60,7 +59,6 @@ import {
   Subscription,
   SubscriptionOperator,
   SubscriptionReport,
-  User,
 } from './resources'
 import type { AnsibleWorkflow, ClusterExtension } from './resources'
 
@@ -99,7 +97,6 @@ export const configMapsState = AtomArray<ConfigMap>()
 export const discoveredClusterState = AtomArray<DiscoveredCluster>()
 export const discoveryConfigState = AtomArray<DiscoveryConfig>()
 export const gitOpsClustersState = AtomArray<GitOpsCluster>()
-export const groupsState = AtomArray<Group>()
 export const helmReleaseState = AtomArray<HelmRelease>()
 export const hostedClustersState = AtomArray<HostedClusterK8sResource>()
 export const infraEnvironmentsState = AtomArray<InfraEnvK8sResource>()
@@ -130,7 +127,6 @@ export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const clusterExtensionsState = AtomArray<ClusterExtension>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const subscriptionsState = AtomArray<Subscription>()
-export const usersState = AtomArray<User>()
 export const vmClusterRolesState = AtomArray<ClusterRole>()
 
 export const settingsState = atom<Settings>({})
