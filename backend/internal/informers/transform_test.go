@@ -8,7 +8,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestAsUnstructuredVariants(t *testing.T) {
@@ -622,10 +621,7 @@ func TestTransformForIsIdempotentAndInPlace(t *testing.T) {
 		t.Fatal("expected transform to return the input pointer (in-place mutation)")
 	}
 
-	first, err := runtime.DefaultUnstructuredConverter.ToUnstructured(u1)
-	if err != nil {
-		t.Fatal(err)
-	}
+	first := u1.DeepCopy().Object
 
 	out2, err := fn(u1)
 	if err != nil {
@@ -636,10 +632,7 @@ func TestTransformForIsIdempotentAndInPlace(t *testing.T) {
 		t.Fatal("second transform must also return the same pointer")
 	}
 
-	second, err := runtime.DefaultUnstructuredConverter.ToUnstructured(u2)
-	if err != nil {
-		t.Fatal(err)
-	}
+	second := u2.Object
 	if !reflect.DeepEqual(first, second) {
 		t.Fatalf("second transform must be a no-op:\nfirst=%v\nsecond=%v", first, second)
 	}
