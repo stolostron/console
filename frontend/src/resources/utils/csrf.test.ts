@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { fetchRetry, ResourceErrorCode } from './resource-request'
-import { fetchWithCsrf, getCookie } from './utils'
+import { getCookie } from './utils'
 
 describe('csrf', () => {
   const originalFetch = global.fetch
@@ -31,36 +31,6 @@ describe('csrf', () => {
   it('returns the last cookie when the name is duplicated', () => {
     cookie = 'csrf-token=old-token; csrf-token=new-token'
     expect(getCookie('csrf-token')).toBe('new-token')
-  })
-
-  it('retries a search POST once after the console rotates the csrf cookie', async () => {
-    let calls = 0
-    const sentTokens: Array<string | null> = []
-    const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
-      calls += 1
-      sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
-      if (calls === 1) {
-        cookie = 'csrf-token=token-b'
-        return csrfDenied()
-      }
-      return new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } })
-    })
-    global.fetch = fetchMock as typeof fetch
-
-    const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
-
-    expect(response.status).toBe(200)
-    expect(sentTokens).toEqual(['token-a', 'token-b'])
-  })
-
-  it('does not retry a CSRF mismatch when the cookie did not change', async () => {
-    const fetchMock = jest.fn(async () => csrfDenied())
-    global.fetch = fetchMock as typeof fetch
-
-    const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
-
-    expect(response.status).toBe(403)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it('fetchRetry retries a CSRF 403 once with the new token', async () => {

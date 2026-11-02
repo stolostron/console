@@ -28,7 +28,7 @@ export const createDownloadFile = (filename: string, content: string, type?: str
 }
 
 // Shared with the SDK search client — keep a single implementation there.
-export { fetchWithCsrf, getCookie } from '@stolostron/multicluster-sdk/lib/internal/search/searchUtils'
+export { getCookie } from '@stolostron/multicluster-sdk/lib/internal/search/searchUtils'
 
 export function getGroupFromApiVersion(apiVersion: string) {
   if (apiVersion.indexOf('/') >= 0) {
