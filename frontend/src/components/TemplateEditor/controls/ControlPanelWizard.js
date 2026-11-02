@@ -253,6 +253,8 @@ class ControlPanelWizard extends React.Component {
                   {i18n('Back')}
                 </Button>
               </ActionListItem>
+            </ActionListGroup>
+            <ActionListGroup>
               <ActionListItem>
                 <Button variant="link" onClick={close}>
                   {i18n('Cancel')}
