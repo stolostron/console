@@ -28,7 +28,25 @@ func asUnstructured(obj any) (*unstructured.Unstructured, bool) {
 }
 
 // transformFor stamps apiVersion/kind from the WatchSpec and drops managedFields
-// for every kind except Policy (Policy flap detection needs them).
+// for every kind except Policy (Policy flap detection needs them), then strips
+// unused fields for a few high-volume kinds.
+//
+// The function mutates obj in place and returns it. It must stay idempotent:
+// applying the transform twice must not change the object again.
+//
+// Fields that later code still reads must be kept:
+//   - ApplicationSet: spec.generators; template pull-model annotation
+//     apps.open-cluster-management.io/ocm-managed-cluster; and
+//     spec.template.spec.source / sources (placementFromAppSet, isArgoPullModel,
+//     getApplicationSources). Detail/edit paths fetch the live resource.
+//   - Argo Application (argoproj.io/v1alpha1 only): spec (including destination
+//     and syncPolicy); status.health, status.sync, status.resources, and
+//     status.reconciledAt. status.operationState and status.history are dropped.
+//   - ManagedCluster / ManagedClusterInfo / ManagedClusterAddOn (forwarded to
+//     GET /events clients): clusterClaims, distributionInfo, consoleURL,
+//     ManagedClusterInfo status.version, node capacity and condition
+//     type/status, addon condition type/status/message, addOnMeta, and
+//     addOnConfiguration. Condition lastTransitionTime values are removed.
 func transformFor(spec WatchSpec) cache.TransformFunc {
 	return func(obj any) (any, error) {
 		u, ok := asUnstructured(obj)

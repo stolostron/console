@@ -8,6 +8,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/tools/cache"
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func TestAsUnstructuredVariants(t *testing.T) {
@@ -572,5 +573,74 @@ func TestTransformForDoesNotStripNonTargetKinds(t *testing.T) {
 	c := conds[0].(map[string]any)
 	if _, ok := c["lastTransitionTime"]; !ok {
 		t.Error("non-target kind condition.lastTransitionTime must NOT be stripped")
+	}
+}
+
+func TestTransformForIsIdempotentAndInPlace(t *testing.T) {
+	in := &unstructured.Unstructured{Object: map[string]any{
+		"apiVersion": "cluster.open-cluster-management.io/v1",
+		"kind":       "ManagedCluster",
+		"metadata": map[string]any{
+			"name": "cluster1",
+			"uid":  "uid-1",
+			"managedFields": []any{
+				map[string]any{"manager": "kubectl"},
+			},
+		},
+		"spec": map[string]any{
+			"hubAcceptsClient":           true,
+			"managedClusterClientConfigs": []any{map[string]any{"url": "https://example.com"}},
+			"leaseDurationSeconds":       int64(60),
+		},
+		"status": map[string]any{
+			"allocatable": map[string]any{"cpu": "8"},
+			"capacity":    map[string]any{"cpu": "8"},
+			"version":     map[string]any{"kubernetes": "v1.28.0"},
+			"conditions": []any{
+				map[string]any{
+					"type":               "ManagedClusterConditionAvailable",
+					"status":             "True",
+					"lastTransitionTime": "2024-01-01T00:00:00Z",
+				},
+			},
+		},
+	}}
+
+	fn := transformFor(watch("ManagedCluster", "cluster.open-cluster-management.io/v1").cluster())
+
+	out1, err := fn(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u1, ok := out1.(*unstructured.Unstructured)
+	if !ok {
+		t.Fatalf("expected *unstructured.Unstructured, got %T", out1)
+	}
+
+	// Removal of DeepCopy: transform must mutate and return the same object.
+	if u1 != in {
+		t.Fatal("expected transform to return the input pointer (in-place mutation)")
+	}
+
+	first, err := runtime.DefaultUnstructuredConverter.ToUnstructured(u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	out2, err := fn(u1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	u2 := out2.(*unstructured.Unstructured)
+	if u2 != u1 {
+		t.Fatal("second transform must also return the same pointer")
+	}
+
+	second, err := runtime.DefaultUnstructuredConverter.ToUnstructured(u2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(first, second) {
+		t.Fatalf("second transform must be a no-op:\nfirst=%v\nsecond=%v", first, second)
 	}
 }
