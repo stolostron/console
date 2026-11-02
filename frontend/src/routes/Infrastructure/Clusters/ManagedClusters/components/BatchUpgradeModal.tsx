@@ -317,7 +317,9 @@ export function BatchUpgradeModal(props: {
                             >
                               <span>{version}</span>
                               {hasWarning && (
-                                <ExclamationTriangleIcon style={{ color: 'var(--pf-v5-global--warning-color--100)' }} />
+                                <ExclamationTriangleIcon
+                                  style={{ color: 'var(--pf-t--global--icon--color--status--warning--default)' }}
+                                />
                               )}
                             </div>
                           </SelectOption>
@@ -330,7 +332,7 @@ export function BatchUpgradeModal(props: {
                           style={{
                             marginRight: '4px',
                             verticalAlign: 'middle',
-                            color: 'var(--pf-v5-global--warning-color--100)',
+                            color: 'var(--pf-t--global--icon--color--status--warning--default)',
                           }}
                         />
                         {t('Cluster version update risk detected for {{version}}', { version: selectedVersion })} -{' '}
