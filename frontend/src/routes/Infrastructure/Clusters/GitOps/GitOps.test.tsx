@@ -105,7 +105,8 @@ describe('GitOps', () => {
       'href',
       generatePath(NavigationPath.clusterOverview, { namespace: 'weekly-managed', name: 'weekly-managed' })
     )
-    expect(screen.getByText(/ClustersRegistered: True: Registered/)).toBeInTheDocument()
+    expect(screen.queryByRole('term', { name: 'Status' })).not.toBeInTheDocument()
+    expect(screen.queryByText(resource.status!.message!)).not.toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
   })
 
@@ -121,7 +122,7 @@ describe('GitOps', () => {
     expect(screen.getByText('Disabled')).toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
     expect(screen.queryByText('actual-binding')).not.toBeInTheDocument()
-    expect(screen.getAllByText('Not available')).toHaveLength(4)
+    expect(screen.getAllByText('Not available')).toHaveLength(3)
   })
 
   it('includes all namespace bindings when the Placement does not restrict cluster sets', () => {
@@ -139,18 +140,9 @@ describe('GitOps', () => {
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('filters a single resource by name or namespace without confusing no results with no resources', async () => {
+  it('displays the single resource without a search textbox', () => {
     renderGitOps()
-    const search = screen.getByRole('textbox', { name: 'Search GitOps configurations' })
-    await userEvent.type(search, 'missing')
-    expect(screen.getByRole('heading', { name: 'No results found' })).toBeInTheDocument()
-    expect(screen.queryByText('No GitOps configuration')).not.toBeInTheDocument()
-    expect(screen.queryByRole('heading', { name: 'fleet-gitops' })).not.toBeInTheDocument()
-    await userEvent.clear(search)
-    await userEvent.type(search, 'OPENSHIFT')
-    expect(screen.getByRole('heading', { name: 'fleet-gitops' })).toBeInTheDocument()
-    await userEvent.clear(search)
-    await userEvent.type(search, 'fleet-gitops')
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'fleet-gitops' })).toBeInTheDocument()
   })
 
@@ -173,7 +165,7 @@ describe('GitOps', () => {
     expect(request.isDone()).toBe(true)
   })
 
-  it('reports failure rather than linking stale cluster names', () => {
+  it('shows unavailable selected clusters rather than linking stale names after failure', () => {
     renderGitOps([
       {
         ...resource,
@@ -191,7 +183,7 @@ describe('GitOps', () => {
         },
       },
     ])
-    expect(screen.getByText(/ClustersRegistered: False: PlacementNotFound: Placement unavailable/)).toBeInTheDocument()
+    expect(screen.queryByRole('term', { name: 'Status' })).not.toBeInTheDocument()
     expect(screen.getByText('Not available')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'weekly' })).not.toBeInTheDocument()
   })
