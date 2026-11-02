@@ -78,7 +78,17 @@ import {
 } from '@patternfly/react-icons'
 import useResizeObserver from '@react-hook/resize-observer'
 import { Schema } from 'ajv'
-import { Fragment, ReactElement, ReactNode, useCallback, useContext, useRef, useState, type JSX } from 'react'
+import {
+  Fragment,
+  ReactElement,
+  ReactNode,
+  useCallback,
+  useContext,
+  useRef,
+  useState,
+  type CSSProperties,
+  type JSX,
+} from 'react'
 import type { TFunction } from 'i18next'
 import YAML from 'yaml'
 import { useTranslation } from '../lib/acm-i18next'
@@ -727,6 +737,25 @@ function renderStep(step: AcmDataFormStepProps): ReactElement<WizardStepProps> {
   )
 }
 
+/* Mirrors the numbered circle PatternFly renders for .pf-v6-c-wizard__nav-link::before. The step
+   numbers only appear in the wizard review summary, which is inside .pf-v6-c-wizard, so these
+   component variables are inherited from the wizard. */
+const wizardSummaryStepNumberStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  width: 'var(--pf-v6-c-wizard__nav-link--before--Width)',
+  height: 'var(--pf-v6-c-wizard__nav-link--before--Height)',
+  fontSize: 'var(--pf-v6-c-wizard__nav-link--before--FontSize)',
+  lineHeight: 1,
+  color: 'var(--pf-v6-c-wizard__nav-link--before--Color)',
+  backgroundColor: 'var(--pf-v6-c-wizard__nav-link--before--BackgroundColor)',
+  border:
+    'var(--pf-v6-c-wizard__nav-link--before--BorderWidth) solid var(--pf-v6-c-wizard__nav-link--before--BorderColor)',
+  borderRadius: 'var(--pf-v6-c-wizard__nav-link--before--BorderRadius)',
+}
+
 export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: boolean }): JSX.Element {
   const { formData, wizardSummary } = props
   let i = 0
@@ -748,22 +777,7 @@ export function AcmDataFormDetails(props: { formData: FormData; wizardSummary?: 
             {/* {index !== 0 && <Divider />} */}
 
             <Flex alignItems={{ default: 'alignItemsCenter' }}>
-              {wizardSummary && (
-                <span
-                  style={{
-                    backgroundColor: 'var(--pf-v5-c-wizard__nav-link--before--BackgroundColor)',
-                    borderRadius: 'var(--pf-v5-c-wizard__nav-link--before--BorderRadius)',
-                    width: 'var(--pf-v5-c-wizard__nav-link--before--Width)',
-                    height: 'var(--pf-v5-c-wizard__nav-link--before--Height)',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: 'var(--pf-v5-c-wizard__nav-link--before--FontSize)',
-                  }}
-                >
-                  {i.toString()}
-                </span>
-              )}
+              {wizardSummary && <span style={wizardSummaryStepNumberStyle}>{i.toString()}</span>}
               <Title headingLevel="h3">{formSection.title}</Title>
             </Flex>
 

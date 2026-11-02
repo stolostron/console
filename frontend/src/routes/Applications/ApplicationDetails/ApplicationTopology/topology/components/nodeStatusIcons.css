@@ -26,7 +26,7 @@
   fill: currentcolor !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .sync {
+:root:where(.pf-v6-theme-dark) .sync {
   color: rgb(185, 218, 252) !important;
 }
 

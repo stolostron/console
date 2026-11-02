@@ -19,20 +19,20 @@
   font-weight: 600;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionSuccess {
+:root:where(.pf-v6-theme-dark) .statusConditionSuccess {
   color: #7dcc87 !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionSuccessEmphasis {
+:root:where(.pf-v6-theme-dark) .statusConditionSuccessEmphasis {
   color: #b8f0c0 !important;
   font-weight: 600;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionFailure {
+:root:where(.pf-v6-theme-dark) .statusConditionFailure {
   color: #f5a3a0 !important;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .statusConditionFailureEmphasis {
+:root:where(.pf-v6-theme-dark) .statusConditionFailureEmphasis {
   color: #ffd4d2 !important;
   font-weight: 600;
 }
