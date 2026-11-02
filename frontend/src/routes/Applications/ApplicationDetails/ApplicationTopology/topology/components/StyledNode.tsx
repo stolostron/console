@@ -1,13 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import * as React from 'react'
 import { Tooltip, TooltipPosition } from '@patternfly/react-core'
-import { OutlinedListAltIcon, PencilAltIcon } from '@patternfly/react-icons'
+import { EyeIcon, OutlinedListAltIcon, PencilAltIcon } from '@patternfly/react-icons'
 import { useTranslation } from '../../../../../../lib/acm-i18next'
 import { useTopologyRefresh } from '../contexts/TopologyRefreshContext'
 import {
   getTopologyNodeActionVisibility,
   getTopologyNodeDataFromElement,
   showApplicationPickerOnAppSet,
+  showViewRepoOnNode,
 } from '../../helpers/topologyNodeActions'
 import type { TopologyNode } from '../../types'
 import {
@@ -96,7 +97,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
 }) => {
   const { dragNodeRef, getShapeDecoratorCenter, ...defaultNodeRest } = rest
   const { t } = useTranslation()
-  const { refreshResources, onViewLogs, onEditYaml, onEditApplications } = useTopologyRefresh()
+  const { refreshResources, onViewLogs, onEditYaml, onEditApplications, onViewRepo } = useTopologyRefresh()
   const data = element.getData()
   const [hover, hoverRef] = useHover<SVGEllipseElement>(
     ACTION_DECORATOR_HOVER_DELAY_IN_MS,
@@ -189,6 +190,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
           onViewLogs,
           onEditYaml,
           onEditApplications,
+          onViewRepo,
           setDecoratorHover,
           dismissDecoratorHover,
           setDecoratorFocused,
@@ -222,6 +224,7 @@ const renderDecorators = (
     onViewLogs?: (node: TopologyNode) => void
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
+    onViewRepo?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
     dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
@@ -231,18 +234,16 @@ const renderDecorators = (
   const topologyNode = getTopologyNodeDataFromElement(element)
   const { showLogs, showEditYaml } = getTopologyNodeActionVisibility(topologyNode.type, topologyNode.specs)
   const showAppPicker = showApplicationPickerOnAppSet(topologyNode)
+  const showViewRepo = showViewRepoOnNode(topologyNode.type)
+  // The sync icon is treated like the other hover-revealed action buttons rather than an
+  // always-visible status icon.
+  const showSyncRefresh = statusIcon?.icon === 'sync' && Boolean(refreshResources)
 
   return (
     <>
       {statusIcon &&
-        renderStatusDecorator(
-          element,
-          TopologyQuadrant.upperLeft,
-          statusIcon,
-          getShapeDecoratorCenter,
-          refreshResources,
-          translate
-        )}
+        !showSyncRefresh &&
+        renderStatusDecorator(element, TopologyQuadrant.upperLeft, statusIcon, getShapeDecoratorCenter)}
       {specs?.resourceCount > 1 && renderCountDecorator(element, specs?.resourceCount)}
       {renderNodeActionDecorators(
         element,
@@ -252,6 +253,9 @@ const renderDecorators = (
         showLogs,
         showEditYaml,
         showAppPicker,
+        showViewRepo,
+        showSyncRefresh,
+        refreshResources,
         showNodeActions,
         nodeActions
       )}
@@ -261,7 +265,7 @@ const renderDecorators = (
 
 const ACTION_ICON_OFFSET = 2
 
-const getActionIconArtwork = (type: 'logs' | 'edit' | 'argoApp'): React.ReactNode => {
+const getActionIconArtwork = (type: 'logs' | 'edit' | 'argoApp' | 'viewRepo' | 'sync'): React.ReactNode => {
   const offset = `translate(${ACTION_ICON_OFFSET}, ${ACTION_ICON_OFFSET})`
   switch (type) {
     case 'logs':
@@ -276,6 +280,12 @@ const getActionIconArtwork = (type: 'logs' | 'edit' | 'argoApp'): React.ReactNod
           <PencilAltIcon width={ACTION_ICON_SIZE} height={ACTION_ICON_SIZE} aria-hidden />
         </g>
       )
+    case 'viewRepo':
+      return (
+        <g transform={offset}>
+          <EyeIcon width={ACTION_ICON_SIZE} height={ACTION_ICON_SIZE} aria-hidden />
+        </g>
+      )
     case 'argoApp':
       return (
         <g transform={offset}>
@@ -284,6 +294,17 @@ const getActionIconArtwork = (type: 'logs' | 'edit' | 'argoApp'): React.ReactNod
             width={ACTION_ICON_SIZE}
             height={ACTION_ICON_SIZE}
             className="pf-topology-node-action-decorator"
+          />
+        </g>
+      )
+    case 'sync':
+      return (
+        <g transform={offset}>
+          <use
+            href="#nodeStatusIcon_sync"
+            width={ACTION_ICON_SIZE}
+            height={ACTION_ICON_SIZE}
+            className="pf-topology-sync-resource-decorator"
           />
         </g>
       )
@@ -305,11 +326,15 @@ const renderNodeActionDecorators = (
   showLogs?: boolean,
   showEditYaml?: boolean,
   showAppPicker?: boolean,
+  showViewRepo?: boolean,
+  showSyncRefresh?: boolean,
+  refreshResources?: () => void,
   visible?: boolean,
   nodeActions?: {
     onViewLogs?: (node: TopologyNode) => void
     onEditYaml?: (node: TopologyNode) => void
     onEditApplications?: (node: TopologyNode) => void
+    onViewRepo?: (node: TopologyNode) => void
     setDecoratorHover?: (hovered: boolean) => void
     dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
@@ -322,6 +347,19 @@ const renderNodeActionDecorators = (
   const dismissDecoratorHover = nodeActions?.dismissDecoratorHover
   const setDecoratorFocused = nodeActions?.setDecoratorFocused
   const decorators: React.ReactNode[] = []
+  if (showSyncRefresh && refreshResources) {
+    decorators.push(
+      renderActionDecorator(
+        element,
+        TopologyQuadrant.upperLeft,
+        getActionIconArtwork('sync'),
+        translate?.('Sync resources') ?? 'Sync resources',
+        () => refreshResources(),
+        getShapeDecoratorCenter,
+        setDecoratorHover
+      )
+    )
+  }
   if (showLogs && nodeActions?.onViewLogs) {
     decorators.push(
       renderActionDecorator(
@@ -356,6 +394,19 @@ const renderNodeActionDecorators = (
         getActionIconArtwork('edit'),
         translate?.('Edit YAML') ?? 'Edit YAML',
         () => nodeActions.onEditYaml?.(topologyNode),
+        getShapeDecoratorCenter,
+        setDecoratorHover
+      )
+    )
+  }
+  if (showViewRepo && nodeActions?.onViewRepo) {
+    decorators.push(
+      renderActionDecorator(
+        element,
+        TopologyQuadrant.lowerRight,
+        getActionIconArtwork('viewRepo'),
+        translate?.('View repository') ?? 'View repository',
+        () => nodeActions.onViewRepo?.(topologyNode),
         getShapeDecoratorCenter,
         setDecoratorHover
       )
@@ -483,38 +534,10 @@ const StatusIconDecorator: React.FunctionComponent<{
   x: number
   y: number
   statusIcon: { icon: string; classType: string; width: number; height: number }
-  refreshResources?: () => void
-  translate?: (key: string) => string
-}> = ({ x, y, statusIcon, refreshResources, translate }) => {
-  const decoratorRef = React.useRef<SVGGElement>(null)
+}> = ({ x, y, statusIcon }) => {
   const { icon, classType, width, height } = statusIcon
   const iconUse = <use href={`#nodeStatusIcon_${icon}`} width={width} height={height} className={classType} />
-  const isSyncRefresh = icon === 'sync' && refreshResources
-  const syncResourcesLabel = isSyncRefresh && translate ? translate('Sync resources') : undefined
-
-  const decorator = (
-    <Decorator
-      x={x}
-      y={y}
-      radius={DEFAULT_DECORATOR_RADIUS}
-      showBackground
-      icon={iconUse}
-      className={isSyncRefresh ? 'pf-topology-sync-resource-decorator' : undefined}
-      onClick={isSyncRefresh ? () => refreshResources?.() : undefined}
-      ariaLabel={syncResourcesLabel}
-      innerRef={syncResourcesLabel ? decoratorRef : undefined}
-    />
-  )
-
-  if (syncResourcesLabel) {
-    return (
-      <Tooltip triggerRef={decoratorRef} content={syncResourcesLabel} position={TooltipPosition.left}>
-        {decorator}
-      </Tooltip>
-    )
-  }
-
-  return decorator
+  return <Decorator x={x} y={y} radius={DEFAULT_DECORATOR_RADIUS} showBackground icon={iconUse} />
 }
 
 const renderStatusDecorator = (
@@ -528,22 +551,12 @@ const renderStatusDecorator = (
   ) => {
     x: number
     y: number
-  },
-  refreshResources?: () => void,
-  translate?: (key: string) => string
+  }
 ): React.ReactNode => {
   const { x, y } = getShapeDecoratorCenter
     ? getShapeDecoratorCenter(quadrant, element)
     : getDefaultShapeDecoratorCenter(quadrant, element)
-  return (
-    <StatusIconDecorator
-      x={x}
-      y={y}
-      statusIcon={statusIcon}
-      refreshResources={refreshResources}
-      translate={translate}
-    />
-  )
+  return <StatusIconDecorator x={x} y={y} statusIcon={statusIcon} />
 }
 
 const renderCountDecorator = (element: Node, resourceCount: number): React.ReactNode => {

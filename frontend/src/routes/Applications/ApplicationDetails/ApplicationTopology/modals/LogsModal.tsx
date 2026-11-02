@@ -16,7 +16,8 @@ import { AcmAlert, AcmButton, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-c
 import { createResourceURL } from '../helpers/diagram-helpers'
 import type { ResourceAction } from '../types'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
+import { ModalNavigatorLayout } from './ModalNavigatorLayout'
+import { ResourceNavigator } from './ResourceNavigator'
 import {
   buildPodNavigatorGroups,
   findInitialNavigatorSelection,
@@ -125,13 +126,15 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
           paddingBottom: 'var(--pf-t--global--spacer--lg)',
         }}
       >
-        <TopologyModalNavigatorLayout
+        <ModalNavigatorLayout
           showNavigator={showNavigator}
-          navigatorProps={{
-            groups: navigatorGroups,
-            selectedItemId,
-            onSelectItem: handleNavigatorSelect,
-          }}
+          navigator={
+            <ResourceNavigator
+              groups={navigatorGroups}
+              selectedItemId={selectedItemId}
+              onSelectItem={handleNavigatorSelect}
+            />
+          }
         >
           <TopologyLogsViewer
             key={selectedItemId ?? node.id}
@@ -139,7 +142,7 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
             renderResourceURLLink={renderResourceURLLink}
             showPodSelect={!showNavigator}
           />
-        </TopologyModalNavigatorLayout>
+        </ModalNavigatorLayout>
       </div>
     </AcmModal>
   )

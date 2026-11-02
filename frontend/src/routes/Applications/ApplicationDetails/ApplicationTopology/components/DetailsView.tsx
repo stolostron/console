@@ -8,7 +8,7 @@ import { createResourceSearchLink, getFilteredNode } from '../helpers/diagram-he
 import ClusterDetailsContainer from './ClusterDetailsContainer'
 import ArgoAppDetailsContainer from './ArgoAppDetailsContainer'
 import DetailsTable from './DetailsTable'
-import { ResourceKindDecorator } from './ResourceNavigator'
+import { ResourceKindDecorator } from '../modals/ResourceNavigator'
 import {
   DetailsViewProps,
   DetailsViewState,

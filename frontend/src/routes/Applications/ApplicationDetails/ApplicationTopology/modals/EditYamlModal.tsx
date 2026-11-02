@@ -17,9 +17,9 @@ import { fleetResourceRequest } from '~/resources/utils/fleet-resource-request'
 import { onReload, onSave } from '~/routes/Search/components/YamlEditor/utils'
 import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { AcmAlert, AcmModal } from '~/ui-components'
-import { ResourceKindDecorator } from '../components/ResourceNavigator'
-import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
-import '../components/ResourceNavigator.css'
+import { ResourceKindDecorator, ResourceNavigator } from './ResourceNavigator'
+import { ModalNavigatorLayout } from './ModalNavigatorLayout'
+import './ResourceNavigator.css'
 import {
   buildNavigatorGroups,
   findInitialNavigatorSelection,
@@ -63,7 +63,7 @@ function EditYamlModalContent({
     [topologyNode, navigatorMode]
   )
   const navigatorItems = useMemo(() => flattenNavigatorGroups(navigatorGroups), [navigatorGroups])
-  const showNavigator = navigatorItemCount(topologyNode, navigatorMode === 'application' ? 'application' : 'edit') > 0
+  const showNavigator = navigatorItemCount(topologyNode, navigatorMode === 'application' ? 'application' : 'edit') > 1
   const initialSelection = useMemo(() => findInitialNavigatorSelection(navigatorItems), [navigatorItems])
   const [selectedItemId, setSelectedItemId] = useState<string | undefined>(initialSelection?.id)
 
@@ -343,13 +343,15 @@ function EditYamlModalContent({
           paddingRight: 'var(--pf-t--global--spacer--lg)',
         }}
       >
-        <TopologyModalNavigatorLayout
+        <ModalNavigatorLayout
           showNavigator={showNavigator}
-          navigatorProps={{
-            groups: navigatorGroups,
-            selectedItemId,
-            onSelectItem: handleNavigatorSelect,
-          }}
+          navigator={
+            <ResourceNavigator
+              groups={navigatorGroups}
+              selectedItemId={selectedItemId}
+              onSelectItem={handleNavigatorSelect}
+            />
+          }
         >
           <div style={{ flexGrow: 1, minHeight: 0, position: 'relative' }}>
             {(isLoadingResource || isReloading) && (
@@ -495,7 +497,7 @@ function EditYamlModalContent({
               </ActionListGroup>
             </ActionList>
           </div>
-        </TopologyModalNavigatorLayout>
+        </ModalNavigatorLayout>
       </div>
     </AcmModal>
   )

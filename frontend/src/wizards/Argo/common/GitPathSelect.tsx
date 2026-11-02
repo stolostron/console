@@ -5,7 +5,7 @@ import { useCallback, useContext } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Channel, GitSourceCache, getGitPathList, sortWithCachedFirst } from '../ArgoWizard'
-import { getGitBranchPathDetails, getGitChannelPaths } from '../../../resources'
+import { getGitChannelPaths } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
 import { Secret } from '../../../resources'
 
@@ -66,10 +66,6 @@ export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSele
         )
       )
     }
-    getGitBranchPathDetails(repoURL, revision, 'ansible-wrong-template').then((ddf) => {
-      console.log(ddf)
-    })
-
     return getGitPathList(
       {
         metadata: {

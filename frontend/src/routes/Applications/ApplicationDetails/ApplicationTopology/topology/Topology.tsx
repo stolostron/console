@@ -85,6 +85,7 @@ export interface TopologyProps {
   onEditYaml?: (node: TopologyNode, highlightEditorPath?: string) => void
   onEditApplications?: (node: TopologyNode) => void
   onViewLogs?: (node: TopologyNode) => void
+  onViewRepo?: (node: TopologyNode) => void
   onSyncResources?: (node: TopologyNode) => void
   onLaunchArgo?: (node: TopologyNode) => void
 }
@@ -286,6 +287,7 @@ export const Topology = ({
   onEditYaml,
   onEditApplications,
   onViewLogs,
+  onViewRepo,
   onSyncResources,
   onLaunchArgo,
 }: TopologyProps) => {
@@ -295,8 +297,9 @@ export const Topology = ({
       onViewLogs,
       onEditYaml,
       onEditApplications,
+      onViewRepo,
     }),
-    [onRefreshResources, onViewLogs, onEditYaml, onEditApplications]
+    [onRefreshResources, onViewLogs, onEditYaml, onEditApplications, onViewRepo]
   )
   const controllerRef = useRef<Controller>(undefined)
   let controller = controllerRef.current
