@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import type { K8sResourceCondition } from '@openshift-console/dynamic-plugin-sdk'
 import { IResourceDefinition } from './resource'
 import { Metadata } from './metadata'
 import { PlacementApiVersionBetaType, PlacementKindType } from './placement'
@@ -19,6 +20,12 @@ export interface GitOpsCluster {
   kind: GitOpsClusterKindType
   metadata: Metadata
   spec?: {
+    gitopsAddon?: {
+      enabled?: boolean
+      argoCDAgent?: {
+        enabled?: boolean
+      }
+    }
     argoServer?: {
       argoNamespace: string
       cluster?: string
@@ -28,5 +35,10 @@ export interface GitOpsCluster {
       kind: PlacementKindType
       name: string
     }
+  }
+  status?: {
+    phase?: string
+    message?: string
+    conditions?: K8sResourceCondition[]
   }
 }
