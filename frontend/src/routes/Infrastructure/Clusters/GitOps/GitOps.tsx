@@ -1,0 +1,318 @@
+/* Copyright Contributors to the Open Cluster Management project */
+
+import { useState } from 'react'
+import {
+  Alert,
+  Card,
+  CardBody,
+  CardTitle,
+  Content,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  Flex,
+  FlexItem,
+  FormSelect,
+  FormSelectOption,
+  Grid,
+  GridItem,
+  Label,
+  List,
+  ListItem,
+  PageSection,
+  SearchInput,
+  Stack,
+  StackItem,
+  Title,
+} from '@patternfly/react-core'
+import { generatePath, Link } from 'react-router'
+import { RbacDropdown } from '~/components/Rbac'
+import { useTranslation } from '~/lib/acm-i18next'
+import { rbacDelete } from '~/lib/rbac-util'
+import { NavigationPath } from '~/NavigationPath'
+import type { GitOpsCluster } from '~/resources/gitops-cluster'
+import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
+import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
+import { AcmEmptyState, AcmPageContent } from '~/ui-components'
+import { DeleteGitOpsClusterModal } from '~/routes/Infrastructure/Clusters/GitOps/DeleteGitOpsClusterModal'
+import { getGitOpsClusterNames } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterStatus'
+
+const resourceKey = (resource: GitOpsCluster) => `${resource.metadata.namespace}/${resource.metadata.name}`
+
+export default function GitOps() {
+  const { t } = useTranslation()
+  const { gitOpsClustersState } = useSharedAtoms()
+  const resources = useSharedValue(gitOpsClustersState)
+  const [search, setSearch] = useState('')
+  const [selectedKey, setSelectedKey] = useState('')
+  const [deleting, setDeleting] = useState<GitOpsCluster>()
+  const filtered = resources.filter((resource) =>
+    resourceKey(resource).toLowerCase().includes(search.trim().toLowerCase())
+  )
+  const selected =
+    filtered.find((resource) => resourceKey(resource) === selectedKey) ??
+    (filtered.length === 1 ? filtered[0] : undefined)
+  const closeDelete = () => setDeleting(undefined)
+
+  return (
+    <AcmPageContent id="gitops">
+      <PageSection hasBodyWrapper={false}>
+        {resources.length === 0 ? (
+          <AcmEmptyState
+            title={t('No GitOps configuration')}
+            message={t(
+              'No GitOpsCluster resource is available. A GitOpsCluster connects OpenShift GitOps on the hub to selected managed clusters. View Applications to manage your applications.'
+            )}
+            action={<Link to={NavigationPath.applications}>{t('Applications')}</Link>}
+          />
+        ) : (
+          <Stack hasGutter>
+            {resources.length > 1 && (
+              <StackItem>
+                <Alert
+                  isInline
+                  variant="warning"
+                  title={t('Only one GitOpsCluster is supported. Select an existing resource to view or delete it.')}
+                />
+              </StackItem>
+            )}
+            <StackItem>
+              <SearchInput
+                aria-label={t('Search GitOps configurations')}
+                placeholder={t('Search by name or namespace')}
+                value={search}
+                onChange={(_event, value) => setSearch(value)}
+                onClear={() => setSearch('')}
+              />
+            </StackItem>
+            {resources.length > 1 && filtered.length > 0 && (
+              <StackItem>
+                <FormSelect
+                  aria-label={t('GitOps configuration')}
+                  value={selected ? resourceKey(selected) : ''}
+                  onChange={(_event, value) => setSelectedKey(value)}
+                >
+                  <FormSelectOption value="" label={t('Select a GitOps configuration')} isDisabled />
+                  {filtered.map((resource) => (
+                    <FormSelectOption
+                      key={resourceKey(resource)}
+                      value={resourceKey(resource)}
+                      label={resourceKey(resource)}
+                    />
+                  ))}
+                </FormSelect>
+              </StackItem>
+            )}
+            {filtered.length === 0 && (
+              <StackItem>
+                <AcmEmptyState
+                  showSearchIcon
+                  title={t('No results found')}
+                  message={t('No GitOps configurations match your search.')}
+                />
+              </StackItem>
+            )}
+            {selected && (
+              <StackItem>
+                <GitOpsOverview resource={selected} onDelete={setDeleting} />
+              </StackItem>
+            )}
+          </Stack>
+        )}
+        {deleting && <DeleteGitOpsClusterModal resource={deleting} onClose={closeDelete} />}
+      </PageSection>
+    </AcmPageContent>
+  )
+}
+
+function GitOpsOverview({
+  resource,
+  onDelete,
+}: {
+  resource: GitOpsCluster
+  onDelete: (resource: GitOpsCluster) => void
+}) {
+  const { t } = useTranslation()
+  const { placementsState, managedClusterSetBindingsState } = useSharedAtoms()
+  const placements = useSharedValue(placementsState)
+  const bindings = useSharedValue(managedClusterSetBindingsState)
+  const placementName = resource.spec?.placementRef?.name
+  const placement = placements.find(
+    (item) => item.metadata.namespace === resource.metadata.namespace && item.metadata.name === placementName
+  )
+  const relatedBindings = bindings.filter(
+    (binding) =>
+      binding.metadata.namespace === resource.metadata.namespace &&
+      !!placement &&
+      (!placement.spec.clusterSets?.length || placement.spec.clusterSets.includes(binding.spec.clusterSet))
+  )
+  const names = getGitOpsClusterNames(resource.status)
+  const agentEnabled = resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
+  const registered = resource.status?.conditions?.find((condition) => condition.type === 'ClustersRegistered')
+  const statusSummary = registered
+    ? [registered.type, registered.status, registered.reason, registered.message].filter(Boolean).join(': ')
+    : resource.status?.phase
+  const actions = [
+    {
+      id: 'delete-gitops',
+      text: t('Delete'),
+      isAriaDisabled: true,
+      click: onDelete,
+      rbac: [rbacDelete(GitopsClusterDefinition, resource.metadata.namespace, resource.metadata.name)],
+    },
+  ]
+
+  return (
+    <Stack hasGutter>
+      <StackItem>
+        <Flex
+          justifyContent={{ default: 'justifyContentSpaceBetween' }}
+          alignItems={{ default: 'alignItemsFlexStart' }}
+        >
+          <FlexItem>
+            <Title headingLevel="h2">{resource.metadata.name}</Title>
+          </FlexItem>
+          <FlexItem>
+            <RbacDropdown
+              key={resourceKey(resource)}
+              id="gitops-actions"
+              item={resource}
+              isKebab={false}
+              text={t('Actions')}
+              actions={actions}
+            />
+          </FlexItem>
+        </Flex>
+        <Content component="p">
+          {t(
+            'GitOpsCluster resource that connects OpenShift GitOps on the hub to selected managed clusters and defines the active pull model for new pull-based ApplicationSets.'
+          )}
+        </Content>
+      </StackItem>
+      <StackItem>
+        <Grid hasGutter>
+          <GridItem span={12} md={6}>
+            <Card isFullHeight>
+              <CardTitle component="h3">{t('Details')}</CardTitle>
+              <CardBody>
+                <DescriptionList isHorizontal>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Name')}</DescriptionListTerm>
+                    <DescriptionListDescription>{resource.metadata.name}</DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Namespace')}</DescriptionListTerm>
+                    <DescriptionListDescription>{resource.metadata.namespace}</DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Placement')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {placementName ? (
+                        <Link
+                          to={generatePath(NavigationPath.placementOverview, {
+                            namespace: resource.metadata.namespace!,
+                            name: placementName,
+                          })}
+                        >
+                          {placementName}
+                        </Link>
+                      ) : (
+                        t('Not available')
+                      )}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('ManagedClusterSetBindings')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {relatedBindings.length > 0 ? (
+                        <List isPlain>
+                          {relatedBindings.map((binding) => (
+                            <ListItem key={binding.metadata.name}>{binding.metadata.name}</ListItem>
+                          ))}
+                        </List>
+                      ) : (
+                        t('Not available')
+                      )}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Placement selected clusters')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      {names === undefined ? t('Not available') : <GitOpsClusterLinks names={names} />}
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{t('Status')}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      <Stack hasGutter>
+                        <StackItem>{statusSummary ?? t('Not available')}</StackItem>
+                        {resource.status?.message && <StackItem>{resource.status.message}</StackItem>}
+                      </Stack>
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                </DescriptionList>
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem span={12} md={6}>
+            <Card isFullHeight>
+              <CardTitle component="h3">{t('Pull model configuration')}</CardTitle>
+              <CardBody>
+                <Stack hasGutter>
+                  <StackItem>
+                    <DescriptionList>
+                      <DescriptionListGroup>
+                        <DescriptionListTerm>{t('Argo CD Agent')}</DescriptionListTerm>
+                        <DescriptionListDescription>
+                          <Label color={agentEnabled ? 'green' : 'grey'}>
+                            {agentEnabled ? t('Enabled') : t('Disabled')}
+                          </Label>
+                        </DescriptionListDescription>
+                      </DescriptionListGroup>
+                    </DescriptionList>
+                  </StackItem>
+                  <StackItem>
+                    <Content component="p">
+                      {agentEnabled
+                        ? t(
+                            'Argo CD Agent uses direct gRPC connections between managed clusters and OpenShift GitOps on the hub.'
+                          )
+                        : t(
+                            'Argo CD Agent is disabled. Managed clusters do not use direct agent gRPC connections for this GitOpsCluster.'
+                          )}
+                    </Content>
+                  </StackItem>
+                  {agentEnabled && (
+                    <StackItem>
+                      <Alert
+                        isInline
+                        variant="info"
+                        title={t('Argo CD ManifestWork pull is disabled while Argo CD Agent is active.')}
+                      />
+                    </StackItem>
+                  )}
+                </Stack>
+              </CardBody>
+            </Card>
+          </GridItem>
+        </Grid>
+      </StackItem>
+    </Stack>
+  )
+}
+
+function GitOpsClusterLinks({ names }: { names: string[] }) {
+  const { t } = useTranslation()
+  return names.length > 0 ? (
+    <List isPlain>
+      {names.map((name) => (
+        <ListItem key={name}>
+          <Link to={generatePath(NavigationPath.clusterOverview, { namespace: name, name })}>{name}</Link>
+        </ListItem>
+      ))}
+    </List>
+  ) : (
+    <>{t('None')}</>
+  )
+}
