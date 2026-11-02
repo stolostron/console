@@ -33,6 +33,12 @@ export async function clickElementWithFakeTimers(element: Parameters<typeof user
   await user.click(element)
 }
 
+export async function advanceTimersByTime(milliseconds: number) {
+  await act(async () => {
+    await jest.advanceTimersByTimeAsync(milliseconds)
+  })
+}
+
 export async function typeElement(...args: Parameters<typeof userEvent.type>) {
   await userEvent.type(...args)
 }

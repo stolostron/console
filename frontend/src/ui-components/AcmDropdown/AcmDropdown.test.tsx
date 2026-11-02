@@ -57,7 +57,6 @@ describe('AcmDropdown', () => {
     expect(onSelect).toHaveBeenCalled()
     await hoverElement(getByTestId('dropdown'))
     expect(onHover).toHaveBeenCalled()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
   test('renders as a kebab dropdown', async () => {
     const { getByTestId, container } = render(<Component isKebab={true} onToggle={() => null} />)
@@ -65,7 +64,6 @@ describe('AcmDropdown', () => {
     expect(await axe(container)).toHaveNoViolations()
     await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('install-config')).toBeInTheDocument())
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
   test('renders as a kebab dropdown in disabled state', async () => {
     const { getByTestId, queryByTestId } = render(
@@ -74,7 +72,6 @@ describe('AcmDropdown', () => {
     expect(getByTestId('dropdown')).toBeInTheDocument()
     await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeNull()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
   test('renders as enabled primary toggle', async () => {
     const { getByTestId, queryByTestId } = render(
@@ -83,7 +80,6 @@ describe('AcmDropdown', () => {
     expect(getByTestId('dropdown')).toBeInTheDocument()
     await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeInTheDocument()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 
   test('renders as disabled primary toggle', async () => {
@@ -93,7 +89,6 @@ describe('AcmDropdown', () => {
     expect(getByTestId('dropdown')).toBeInTheDocument()
     await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeInTheDocument()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 
   test('renders as disabled primary toggle', async () => {
@@ -103,7 +98,6 @@ describe('AcmDropdown', () => {
     expect(getByTestId('dropdown')).toBeInTheDocument()
     await clickElement(getByTestId('dropdown'))
     expect(queryByTestId('install-config')).toBeNull()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 
   test('renders target="_blank" items with rel="noopener noreferrer"', async () => {
@@ -115,7 +109,6 @@ describe('AcmDropdown', () => {
     expect(anchor).toBeInTheDocument()
     expect(anchor).toHaveAttribute('rel', 'noopener noreferrer')
     expect(anchor).toHaveAttribute('target', '_blank')
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 
   test('renders items with href as anchor tags', async () => {
@@ -126,6 +119,5 @@ describe('AcmDropdown', () => {
     const anchor = linkItem.closest('a')
     expect(anchor).toBeInTheDocument()
     expect(anchor).toHaveAttribute('href', 'www.google.com')
-    await new Promise((resolve) => setTimeout(resolve, 0))
   })
 })

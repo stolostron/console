@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { act, renderHook } from '@testing-library/react'
+import { renderHook } from '@testing-library/react'
 import { waitFor } from '@testing-library/react'
 import { useClustersFromClusterSets } from './useClustersFromClusterSets'
 import { testCases } from './useClustersFromClusterSets.fixtures'
@@ -20,10 +20,6 @@ describe('useClustersFromClusterSets', () => {
     mockUseAllClusters.mockReturnValue(mockClusters)
 
     const { result } = renderHook(() => useClustersFromClusterSets(selectedClusterSets))
-
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 0))
-    })
 
     await waitFor(
       () => {

@@ -71,8 +71,7 @@ describe('Edit Policy Set Page', () => {
 
   test('should render edit policy page', async () => {
     render(<EditPolicySetTest />)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    const descriptionChange = screen.getByRole('textbox', { name: /description/i })
+    const descriptionChange = await screen.findByRole('textbox', { name: /description/i })
     await clearElement(descriptionChange)
     await typeElement(descriptionChange, 'updated text')
 
@@ -99,8 +98,7 @@ describe('Edit Policy Set Page', () => {
 
   test('navigates to policy sets list on cancel', async () => {
     render(<EditPolicySetTest />)
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    await clickElement(screen.getByRole('button', { name: 'Cancel' }))
+    await clickElement(await screen.findByRole('button', { name: 'Cancel' }))
     await waitFor(() => expect(screen.getByTestId('location-display').textContent).toBe(NavigationPath.policySets))
   })
 })
