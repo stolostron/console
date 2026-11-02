@@ -1,6 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 /* istanbul ignore file */
 import { Routes, Route, Navigate } from 'react-router'
+import { useContext } from 'react'
+import { PluginContext } from '~/lib/PluginContext'
+import GitOps from '~/routes/Infrastructure/Clusters/GitOps/GitOps'
 import { MatchType, NavigationPath, SubRoutesRedirect, createRoutePathFunction } from '../../../NavigationPath'
 import { CreateClusterPoolPage } from './ClusterPools/CreateClusterPoolPage'
 import ClusterSetDetails from './ClusterSets/ClusterSetDetails/ClusterSetDetails'
@@ -47,6 +50,7 @@ import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 const clustersChildPath = createRoutePathFunction(NavigationPath.clusters)
 
 export default function Clusters() {
+  const { isACMAvailable } = useContext(PluginContext)
   // Only enable wizard when feature flag is enabled
   const { settingsState } = useSharedAtoms()
   const settings = useSharedValue(settingsState)
@@ -132,6 +136,10 @@ export default function Clusters() {
         <Route path={clustersChildPath(NavigationPath.clusterPools)} element={<ClusterPoolsPage />} />
         <Route path={clustersChildPath(NavigationPath.discoveredClusters)} element={<DiscoveredClustersPage />} />
         <Route path={clustersChildPath(NavigationPath.placements)} element={<PlacementsPage />} />
+        <Route
+          path={clustersChildPath(NavigationPath.gitOps)}
+          element={isACMAvailable ? <GitOps /> : <Navigate to={NavigationPath.managedClusters} replace />}
+        />
       </Route>
       <Route path={clustersChildPath(NavigationPath.createPlacement)} element={<CreatePlacement />} />
       <Route path={clustersChildPath(NavigationPath.editPlacement)} element={<EditPlacement />} />
