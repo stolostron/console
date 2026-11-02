@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Card, Content, ContentVariants, List, ListItem, PageGroup } from '@patternfly/react-core'
-import { ICatalogBreadcrumb, PageHeader } from '@stolostron/react-data-view'
+import { ICatalogBreadcrumb, AcmCatalogPageHeader } from '~/ui-components/AcmCatalog'
 import * as React from 'react'
 import { useTranslation } from '../../../../../../../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../../../../../../../lib/doc-util'
@@ -24,7 +24,7 @@ const DocPage: React.FC<DocPageProps> = ({ listItems, breadcrumbs, onCancel, onB
   return (
     <>
       {breadcrumbs ? (
-        <PageHeader
+        <AcmCatalogPageHeader
           title={t('Create cluster')}
           breadcrumbs={breadcrumbs}
           titleHelp={

@@ -1,18 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ClusterImageSetK8sResource, isValidImageSet } from '@openshift-assisted/ui-lib/cim'
 import { Divider, ExpandableSection, Stack, StackItem } from '@patternfly/react-core'
-import {
-  Catalog,
-  CatalogCardItemType,
-  CatalogColor,
-  DataViewStringContext,
-  ICatalogCard,
-  ItemView,
-} from '@stolostron/react-data-view'
+import { AcmCatalog, CatalogCardItemType, CatalogColor, ICatalogCard, AcmCatalogView } from '~/ui-components/AcmCatalog'
 import { TFunction } from 'i18next'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { ClusterImageSet } from '../../../../../resources'
@@ -237,8 +229,6 @@ export function CreateClusterCatalog() {
     [t]
   )
 
-  const dataViewStrings = useDataViewStrings()
-
   return (
     <AcmPage
       header={
@@ -249,54 +239,52 @@ export function CreateClusterCatalog() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards.cardsWithCreds.length > 0 ? cards.cardsWithCreds : cards.cardsWithOutCreds}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.clusters)}
-          onCancel={cancel(NavigationPath.clusters)}
-          customCatalogSection={
-            cards.cardsWithOutCreds.length > 0 &&
-            cards.cardsWithCreds.length > 0 && (
-              <>
-                <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
-                <ExpandableSection
-                  isExpanded={isAdditionalProvidersExpanded}
-                  onToggle={(_event, isExpanded: boolean) => onAdditionalProvidersToggle(isExpanded)}
-                  toggleContent={
-                    <span
-                      style={{
-                        color: 'var(--pf-t--global--text--color--regular)',
-                      }}
-                    >
-                      {t('Additional providers')}
-                    </span>
-                  }
-                >
-                  <div
+      <AcmCatalogView
+        items={cards.cardsWithCreds.length > 0 ? cards.cardsWithCreds : cards.cardsWithOutCreds}
+        itemKeyFn={keyFn}
+        itemToCardFn={(card) => card}
+        onBack={back(NavigationPath.clusters)}
+        onCancel={cancel(NavigationPath.clusters)}
+        customCatalogSection={
+          cards.cardsWithOutCreds.length > 0 &&
+          cards.cardsWithCreds.length > 0 && (
+            <>
+              <Divider style={{ paddingTop: '24px', paddingBottom: '12px' }} />
+              <ExpandableSection
+                isExpanded={isAdditionalProvidersExpanded}
+                onToggle={(_event, isExpanded: boolean) => onAdditionalProvidersToggle(isExpanded)}
+                toggleContent={
+                  <span
                     style={{
                       color: 'var(--pf-t--global--text--color--regular)',
-                      paddingBottom: '24px',
                     }}
                   >
-                    {t('Add credentials in order to get started with a new infrastructure provider.')}
-                  </div>
-                  <Catalog
-                    keyFn={keyFn}
-                    items={cards.cardsWithOutCreds}
-                    itemToCardFn={(card) => card}
-                    selectItem={() => {}}
-                    unselectItem={() => {}}
-                    isSelected={() => false}
-                    showSelect={false}
-                  />
-                </ExpandableSection>
-              </>
-            )
-          }
-        />
-      </DataViewStringContext.Provider>
+                    {t('Additional providers')}
+                  </span>
+                }
+              >
+                <div
+                  style={{
+                    color: 'var(--pf-t--global--text--color--regular)',
+                    paddingBottom: '24px',
+                  }}
+                >
+                  {t('Add credentials in order to get started with a new infrastructure provider.')}
+                </div>
+                <AcmCatalog
+                  keyFn={keyFn}
+                  items={cards.cardsWithOutCreds}
+                  itemToCardFn={(card) => card}
+                  selectItem={() => {}}
+                  unselectItem={() => {}}
+                  isSelected={() => false}
+                  showSelect={false}
+                />
+              </ExpandableSection>
+            </>
+          )
+        }
+      />
     </AcmPage>
   )
 }

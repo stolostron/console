@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { PageHeader } from '@stolostron/react-data-view'
+import { AcmCatalogPageHeader } from '~/ui-components/AcmCatalog'
 import { useMemo } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -23,7 +23,7 @@ export function CreateKubeVirtControlPlane() {
   return (
     <GetControlPlane
       pageHeader={
-        <PageHeader
+        <AcmCatalogPageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'OpenShift Virtualization' })}
           description={t('Choose a control plane type for your cluster.')}
           breadcrumbs={breadcrumbs('OpenShift Virtualization', t)}

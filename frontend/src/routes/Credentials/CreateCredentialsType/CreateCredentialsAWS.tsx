@@ -1,8 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, ICatalogCard, ItemView, DataViewStringContext } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard, AcmCatalogView } from '~/ui-components/AcmCatalog'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { useDataViewStrings } from '../../../lib/dataViewStrings'
 import { NavigationPath, useBackCancelNavigation } from '../../../NavigationPath'
 import { AcmIcon, AcmIconVariant, AcmPage, AcmPageHeader, Provider } from '../../../ui-components'
 import { getTypedCreateCredentialsPath } from '../CreateCredentialsCatalog'
@@ -52,8 +51,6 @@ export function CreateCredentialsAWS() {
     return newBreadcrumbs
   }, [t])
 
-  const dataViewStrings = useDataViewStrings()
-
   return (
     <AcmPage
       header={
@@ -64,15 +61,13 @@ export function CreateCredentialsAWS() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.addCredentials)}
-          onCancel={cancel(NavigationPath.credentials)}
-        />
-      </DataViewStringContext.Provider>
+      <AcmCatalogView
+        items={cards}
+        itemKeyFn={keyFn}
+        itemToCardFn={(card) => card}
+        onBack={back(NavigationPath.addCredentials)}
+        onCancel={cancel(NavigationPath.credentials)}
+      />
     </AcmPage>
   )
 }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon } from '@patternfly/react-icons'
-import { CatalogCardItemType, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard, AcmCatalogPageHeader } from '~/ui-components/AcmCatalog'
 import { useMemo, useState } from 'react'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -112,7 +112,7 @@ export function CreateControlPlane() {
   return (
     <GetControlPlane
       pageHeader={
-        <PageHeader
+        <AcmCatalogPageHeader
           title={t('Control plane type - {{hcType}}', { hcType: 'Host Inventory' })}
           description={t('Choose a control plane type for your self-managed OpenShift cluster.')}
           breadcrumbs={breadcrumbs('Host Inventory', t)}
