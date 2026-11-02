@@ -21,7 +21,6 @@ import {
   List,
   ListItem,
   PageSection,
-  SearchInput,
   Stack,
   StackItem,
   Title,
@@ -44,15 +43,11 @@ export default function GitOps() {
   const { t } = useTranslation()
   const { gitOpsClustersState } = useSharedAtoms()
   const resources = useSharedValue(gitOpsClustersState)
-  const [search, setSearch] = useState('')
   const [selectedKey, setSelectedKey] = useState('')
   const [deleting, setDeleting] = useState<GitOpsCluster>()
-  const filtered = resources.filter((resource) =>
-    resourceKey(resource).toLowerCase().includes(search.trim().toLowerCase())
-  )
   const selected =
-    filtered.find((resource) => resourceKey(resource) === selectedKey) ??
-    (filtered.length === 1 ? filtered[0] : undefined)
+    resources.find((resource) => resourceKey(resource) === selectedKey) ??
+    (resources.length === 1 ? resources[0] : undefined)
   const closeDelete = () => setDeleting(undefined)
 
   return (
@@ -77,16 +72,7 @@ export default function GitOps() {
                 />
               </StackItem>
             )}
-            <StackItem>
-              <SearchInput
-                aria-label={t('Search GitOps configurations')}
-                placeholder={t('Search by name or namespace')}
-                value={search}
-                onChange={(_event, value) => setSearch(value)}
-                onClear={() => setSearch('')}
-              />
-            </StackItem>
-            {resources.length > 1 && filtered.length > 0 && (
+            {resources.length > 1 && (
               <StackItem>
                 <FormSelect
                   aria-label={t('GitOps configuration')}
@@ -94,7 +80,7 @@ export default function GitOps() {
                   onChange={(_event, value) => setSelectedKey(value)}
                 >
                   <FormSelectOption value="" label={t('Select a GitOps configuration')} isDisabled />
-                  {filtered.map((resource) => (
+                  {resources.map((resource) => (
                     <FormSelectOption
                       key={resourceKey(resource)}
                       value={resourceKey(resource)}
@@ -102,15 +88,6 @@ export default function GitOps() {
                     />
                   ))}
                 </FormSelect>
-              </StackItem>
-            )}
-            {filtered.length === 0 && (
-              <StackItem>
-                <AcmEmptyState
-                  showSearchIcon
-                  title={t('No results found')}
-                  message={t('No GitOps configurations match your search.')}
-                />
               </StackItem>
             )}
             {selected && (
@@ -149,10 +126,6 @@ function GitOpsOverview({
   )
   const names = getGitOpsClusterNames(resource.status)
   const agentEnabled = resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
-  const registered = resource.status?.conditions?.find((condition) => condition.type === 'ClustersRegistered')
-  const statusSummary = registered
-    ? [registered.type, registered.status, registered.reason, registered.message].filter(Boolean).join(': ')
-    : resource.status?.phase
   const actions = [
     {
       id: 'delete-gitops',
@@ -242,15 +215,6 @@ function GitOpsOverview({
                       {names === undefined ? t('Not available') : <GitOpsClusterLinks names={names} />}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
-                  <DescriptionListGroup>
-                    <DescriptionListTerm>{t('Status')}</DescriptionListTerm>
-                    <DescriptionListDescription>
-                      <Stack hasGutter>
-                        <StackItem>{statusSummary ?? t('Not available')}</StackItem>
-                        {resource.status?.message && <StackItem>{resource.status.message}</StackItem>}
-                      </Stack>
-                    </DescriptionListDescription>
-                  </DescriptionListGroup>
                 </DescriptionList>
               </CardBody>
             </Card>
@@ -261,7 +225,7 @@ function GitOpsOverview({
               <CardBody>
                 <Stack hasGutter>
                   <StackItem>
-                    <DescriptionList>
+                    <DescriptionList isHorizontal>
                       <DescriptionListGroup>
                         <DescriptionListTerm>{t('Argo CD Agent')}</DescriptionListTerm>
                         <DescriptionListDescription>
