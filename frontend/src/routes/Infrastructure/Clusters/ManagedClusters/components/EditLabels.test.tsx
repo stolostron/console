@@ -5,6 +5,7 @@ import { render, waitFor } from '@testing-library/react'
 import { mockBadRequestStatus, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { EditLabels } from './EditLabels'
 import { clickElement, typeElement } from '~/lib/test-util'
+import { AcmAlertProvider } from '../../../../../ui-components'
 
 const resource: IResource = {
   apiVersion: ManagedClusterApiVersion,
@@ -34,7 +35,11 @@ describe('EditLabels', () => {
       kind: ManagedClusterKind,
       metadata: { name: 'test-cluster', labels: { abc: '123' } },
     }
-    const { getByText } = render(<EditLabels resource={resource} close={() => {}} />)
+    const { getByText } = render(
+      <AcmAlertProvider>
+        <EditLabels resource={resource} close={() => {}} />
+      </AcmAlertProvider>
+    )
     expect(getByText('abc=123')).toBeInTheDocument()
     const nockScope = nockPatch(
       resource,
@@ -46,7 +51,7 @@ describe('EditLabels', () => {
     )
     await clickElement(getByText('Save'))
     await waitFor(() => expect(nockScope.isDone()).toBeTruthy())
-    waitFor(() => expect('There was bad data sent for accessing resources.').toBeInTheDocument())
+    await waitFor(() => expect(getByText('Could not process request because of invalid data.')).toBeInTheDocument())
   })
 
   test('can add and remove labels without labels on resource', async () => {
