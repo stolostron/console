@@ -963,7 +963,12 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
             component="a"
             target="_blank"
             isInline={true}
-            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`}
+            isDisabled={!clusterURL}
+            href={
+              clusterURL
+                ? `${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}`
+                : undefined
+            }
             icon={<ExternalLinkAltIcon />}
             iconPosition="right"
           >
@@ -974,7 +979,12 @@ export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
             component="a"
             target="_blank"
             isInline={true}
-            href={`${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}/console`}
+            isDisabled={!clusterURL}
+            href={
+              clusterURL
+                ? `${clusterURL}/k8s/ns/${item.namespace}/kubevirt.io~v1~VirtualMachine/${item.name}/console`
+                : undefined
+            }
             icon={<ExternalLinkAltIcon />}
             iconPosition="right"
           >
