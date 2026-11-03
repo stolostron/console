@@ -4,10 +4,11 @@ import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
 import { fetchRetry } from '../../../../resources/utils/resource-request'
-import { VMActionModal } from './VMActionModal'
+import { handleVMActions, VMActionModal } from './VMActionModal'
 import { clickElement } from '~/lib/test-util'
 
 jest.mock('../../../../resources/utils/resource-request', () => ({
+  ...jest.requireActual('../../../../resources/utils/resource-request'),
   getRequest: jest.fn((url) => {
     if (url === '/virtualmachines/get/local-cluster/testVM/testVMNamespace') {
       return {
@@ -49,6 +50,55 @@ jest.mock('../../../../resources/utils/fleet-resource-request', () => ({
     })
   ),
 }))
+
+describe('handleVMActions access-restricted toasts', () => {
+  const t = (key: string) => key
+  const item = {
+    kind: 'VirtualMachine',
+    name: 'testVM',
+    namespace: 'testVMNamespace',
+    cluster: 'local-cluster',
+  }
+
+  afterEach(() => {
+    jest.clearAllMocks()
+  })
+
+  test('shows Access Restricted warning toast for Forbidden errors', async () => {
+    ;(fetchRetry as jest.Mock).mockRejectedValueOnce(
+      new Error('plans.forklift.konveyor.io is forbidden: User "GK0X" cannot list resource "plans"')
+    )
+    const addAlert = jest.fn()
+    handleVMActions('start', 'PUT', item, {}, () => {}, { addAlert } as any, t)
+
+    await waitFor(() =>
+      expect(addAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Access Restricted',
+          message:
+            'You do not have the required permissions to perform this action. Please contact your OpenShift administrator if you need access to this resource.',
+          type: 'warning',
+        })
+      )
+    )
+  })
+
+  test('keeps danger toast for non-authz errors', async () => {
+    ;(fetchRetry as jest.Mock).mockRejectedValueOnce(new Error('boom'))
+    const addAlert = jest.fn()
+    handleVMActions('start', 'PUT', item, {}, () => {}, { addAlert } as any, t)
+
+    await waitFor(() =>
+      expect(addAlert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'Error triggering action {{action}} on {{itemKind}} {{name}}',
+          message: 'boom',
+          type: 'danger',
+        })
+      )
+    )
+  })
+})
 
 describe('VMActionModal', () => {
   afterEach(() => {
