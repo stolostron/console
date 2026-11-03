@@ -144,6 +144,7 @@ interface MockMonaco {
 
 const MonacoEditor = (props: {
   value: string
+  language: string
   onChange(value: string, e: any): unknown
   onMount: (editor: MockEditor, monaco: MockMonaco) => void
   wrapperClassName: any
@@ -331,6 +332,7 @@ const MonacoEditor = (props: {
     <textarea
       aria-label="monaco"
       data-auto={props.wrapperClassName}
+      data-language={props.language}
       data-decorators={editorMockRef.current.newDecorations}
       className="monaco-editor"
       ref={(ref) => {

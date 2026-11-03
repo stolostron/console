@@ -113,19 +113,7 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
       position="top"
       hasNoBodyWrapper
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '70vh',
-          minHeight: 0,
-          overflow: 'hidden',
-          paddingTop: 'var(--pf-t--global--spacer--sm)',
-          paddingLeft: 'var(--pf-t--global--spacer--lg)',
-          paddingRight: 'var(--pf-t--global--spacer--lg)',
-          paddingBottom: 'var(--pf-t--global--spacer--lg)',
-        }}
-      >
+      <div className="resource-modal-body resource-modal-body--padded-bottom">
         <ModalNavigatorLayout
           showNavigator={showNavigator}
           navigator={
@@ -415,7 +403,7 @@ function TopologyLogsViewer({
     logsContent = (
       <LogViewer
         ref={logViewerRef}
-        height={isFullscreen ? '100%' : 'calc(70vh - 200px)'}
+        height="100%"
         data={logs}
         theme="dark"
         isTextWrapped={wrapLines}

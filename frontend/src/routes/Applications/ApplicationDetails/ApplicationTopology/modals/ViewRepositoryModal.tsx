@@ -2,9 +2,10 @@
 
 import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
-import { CodeEditor, Language } from '@patternfly/react-code-editor'
+import { Language } from '@patternfly/react-code-editor'
 import { FolderOpenIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
+import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmModal } from '~/ui-components'
 import type { TopologyNode } from '../types'
@@ -88,19 +89,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
       position="top"
       hasNoBodyWrapper
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '70vh',
-          minHeight: 0,
-          overflow: 'hidden',
-          paddingTop: 'var(--pf-t--global--spacer--sm)',
-          paddingLeft: 'var(--pf-t--global--spacer--lg)',
-          paddingRight: 'var(--pf-t--global--spacer--lg)',
-          paddingBottom: 'var(--pf-t--global--spacer--lg)',
-        }}
-      >
+      <div className="resource-modal-body resource-modal-body--padded-bottom">
         <ModalNavigatorLayout
           navigator={
             <RepositoryNavigator
@@ -113,15 +102,14 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
         >
           <div style={{ flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
             {selectedFile ? (
-              <CodeEditor
-                isDarkTheme={false}
-                isReadOnly
-                isLineNumbersVisible
+              <SyncEditor
+                editorTitle={selectedFile.path}
+                variant="toolbar"
                 code={selectedFile.contents}
+                resources={null}
                 language={getLanguageForPath(selectedFile.path)}
-                height="100%"
-                isFullHeight
-                headerMainContent={selectedFile.path}
+                readonly
+                initialShowChanges={false}
               />
             ) : noFilesFound ? (
               <Bullseye>

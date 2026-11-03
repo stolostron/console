@@ -331,18 +331,7 @@ function EditYamlModalContent({
       position="top"
       hasNoBodyWrapper
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '70vh',
-          minHeight: 0,
-          overflow: 'hidden',
-          paddingTop: 'var(--pf-t--global--spacer--sm)',
-          paddingLeft: 'var(--pf-t--global--spacer--lg)',
-          paddingRight: 'var(--pf-t--global--spacer--lg)',
-        }}
-      >
+      <div className="resource-modal-body">
         <ModalNavigatorLayout
           showNavigator={showNavigator}
           navigator={
