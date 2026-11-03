@@ -895,6 +895,7 @@ function useManagedClusterConsoleURL(clusterName: string, managedHub?: string) {
           filters: [
             { property: 'kind', values: ['Cluster'] },
             { property: 'name', values: [clusterName] },
+            ...(managedHub ? [{ property: 'managedHub', values: [managedHub] }] : []),
           ],
           limit: 10,
         },

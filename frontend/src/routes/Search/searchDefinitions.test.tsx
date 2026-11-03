@@ -690,7 +690,7 @@ test('Correctly returns empty CreateExternalVMLink', () => {
   expect(baseElement).toMatchSnapshot()
 })
 
-function clusterConsoleSearchMock(clusterName: string, items: Record<string, string>[]): MockedResponse {
+function clusterConsoleSearchMock(item: Record<string, string>, items: Record<string, string>[]): MockedResponse {
   return {
     request: {
       query: SearchResultItemsDocument,
@@ -700,7 +700,8 @@ function clusterConsoleSearchMock(clusterName: string, items: Record<string, str
             keywords: [],
             filters: [
               { property: 'kind', values: ['Cluster'] },
-              { property: 'name', values: [clusterName] },
+              { property: 'name', values: [item.cluster] },
+              ...(item.managedHub ? [{ property: 'managedHub', values: [item.managedHub] }] : []),
             ],
             limit: 10,
           },
@@ -775,7 +776,7 @@ test('Correctly returns VMLaunchLinks', () => {
       }}
     >
       <MemoryRouter>
-        <MockedProvider mocks={[clusterConsoleSearchMock('testCluster', [])]}>
+        <MockedProvider mocks={[clusterConsoleSearchMock(item, [])]}>
           <VMLaunchLinks item={item} t={t} />
         </MockedProvider>
       </MemoryRouter>
@@ -793,12 +794,7 @@ test('VM launch links use the managed cluster console URL from search', async ()
     managedHub: 'leaf-hub',
   }
   renderVMLaunchLinks(item, [
-    clusterConsoleSearchMock('spoke-cluster', [
-      {
-        name: 'spoke-cluster',
-        managedHub: 'other-hub',
-        consoleURL: 'https://other-hub.example.com',
-      },
+    clusterConsoleSearchMock(item, [
       {
         name: 'spoke-cluster',
         managedHub: 'leaf-hub',
@@ -846,7 +842,7 @@ test('VM launch links fall back to the local cluster console URL when search has
       }}
     >
       <MemoryRouter>
-        <MockedProvider mocks={[clusterConsoleSearchMock('testCluster', [])]}>
+        <MockedProvider mocks={[clusterConsoleSearchMock(item, [])]}>
           <VMLaunchLinks item={item} t={t} />
         </MockedProvider>
       </MemoryRouter>
