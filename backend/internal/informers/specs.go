@@ -226,7 +226,6 @@ func DefaultWatchSpecs() []WatchSpec {
 		{kind: "Secret", apiVersion: "v1", labels: []string{"cluster.open-cluster-management.io/type", "ans"}},
 		{kind: "Secret", apiVersion: "v1", fields: []string{fieldMetadataName, "auto-import-secret"}},
 		{kind: "Secret", apiVersion: "v1", labels: []string{"argocd.argoproj.io/secret-type", "repository"}},
-		{kind: "PolicyReport", apiVersion: "wgpolicyk8s.io/v1alpha2"},
 		{
 			kind: "ClusterRole", apiVersion: "rbac.authorization.k8s.io/v1", cluster: true,
 			labels: []string{"rbac.open-cluster-management.io/filter", "vm-clusterroles"},

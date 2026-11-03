@@ -51,7 +51,6 @@ import {
   PlacementDecision,
   Policy,
   PolicyAutomation,
-  PolicyReport,
   PolicySet,
   SearchOperator,
   Secret,
@@ -119,7 +118,6 @@ export const placementDecisionsState = AtomArray<PlacementDecision>()
 export const placementsState = AtomArray<Placement>()
 export const policiesState = AtomArray<Policy>()
 export const policyAutomationState = AtomArray<PolicyAutomation>()
-export const policyreportState = AtomArray<PolicyReport>()
 export const policySetsState = AtomArray<PolicySet>()
 export const searchOperatorState = AtomArray<SearchOperator>()
 export const secretsState = AtomArray<Secret>()
