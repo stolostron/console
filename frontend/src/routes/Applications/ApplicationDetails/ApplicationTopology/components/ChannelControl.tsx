@@ -433,6 +433,7 @@ class ChannelControl extends Component<ChannelControlProps, ChannelControlState>
                 <Pagination
                   itemCount={selectedSubscriptionPages * maxNodesPerPage}
                   perPage={maxNodesPerPage}
+                  perPageOptions={[]}
                   page={selectedChannelIndex}
                   onFirstClick={(e) => this.handlePagination(e, 'first')}
                   onLastClick={(e) => this.handlePagination(e, 'last')}
