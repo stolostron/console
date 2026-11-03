@@ -32,6 +32,8 @@ type Settings struct {
 	// allow groups the profile did not configure.
 	noUsableCurves bool
 	rejectedGroups []string
+	unknownGroups  []string
+	excludedCurves []tls.CurveID
 }
 
 type builtinSpec struct {
@@ -138,18 +140,17 @@ func fromProfile(p SecurityProfile, fips bool) Settings {
 	if p.Type == "Custom" && min == tls.VersionTLS13 {
 		ciphers = builtin["Modern"].ciphers
 	}
-	explicitGroups := len(spec.groups) > 0
-	groups := spec.groups
-	if !explicitGroups {
-		groups = builtin["Intermediate"].groups
-	}
-	curves := filterCurves(groups, fips)
+	candidate, err := groupsForProfile(p, fips)
 	s := Settings{
-		MinVersion:   min,
-		CipherSuites: mapCiphers(ciphers),
-		Curves:       curves,
+		MinVersion:     min,
+		CipherSuites:   mapCiphers(ciphers),
+		Curves:         candidate.Curves,
+		excludedCurves: candidate.Excluded,
 	}
-	if explicitGroups && len(curves) == 0 {
+	for _, name := range candidate.Unknown {
+		s.unknownGroups = append(s.unknownGroups, string(name))
+	}
+	if err != nil {
 		s.noUsableCurves = true
 		s.rejectedGroups = slices.Clone(spec.groups)
 	}
@@ -185,6 +186,8 @@ func (s Settings) clone() Settings {
 	out.CipherSuites = slices.Clone(s.CipherSuites)
 	out.Curves = slices.Clone(s.Curves)
 	out.rejectedGroups = slices.Clone(s.rejectedGroups)
+	out.unknownGroups = slices.Clone(s.unknownGroups)
+	out.excludedCurves = slices.Clone(s.excludedCurves)
 	return out
 }
 
@@ -195,5 +198,7 @@ func settingsEqual(a, b Settings) bool {
 		a.noUsableCurves == b.noUsableCurves &&
 		slices.Equal(a.CipherSuites, b.CipherSuites) &&
 		slices.Equal(a.Curves, b.Curves) &&
-		slices.Equal(a.rejectedGroups, b.rejectedGroups)
+		slices.Equal(a.rejectedGroups, b.rejectedGroups) &&
+		slices.Equal(a.unknownGroups, b.unknownGroups) &&
+		slices.Equal(a.excludedCurves, b.excludedCurves)
 }

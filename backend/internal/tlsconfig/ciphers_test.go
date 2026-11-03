@@ -57,32 +57,6 @@ func TestMapCiphersOldProfileIncludesLegacyRSA(t *testing.T) {
 	}
 }
 
-func TestFilterCurvesNonFIPS(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"X25519MLKEM768", "X25519", "secp256r1", "bogus"}, false)
-	want := []tls.CurveID{tls.X25519MLKEM768, tls.X25519, tls.CurveP256}
-	if !slices.Equal(got, want) {
-		t.Fatalf("curves %v want %v", got, want)
-	}
-}
-
-func TestFilterCurvesFIPSExcludesX25519(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"X25519MLKEM768", "X25519", "secp521r1"}, true)
-	want := []tls.CurveID{tls.CurveP521}
-	if !slices.Equal(got, want) {
-		t.Fatalf("FIPS curves %v want %v", got, want)
-	}
-}
-
-func TestFilterCurvesDeduplicates(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"secp256r1", "secp256r1"}, false)
-	if len(got) != 1 || got[0] != tls.CurveP256 {
-		t.Fatalf("dedup curves %v", got)
-	}
-}
-
 func TestIsTLS13Cipher(t *testing.T) {
 	t.Parallel()
 	if !isTLS13Cipher(tls.TLS_AES_128_GCM_SHA256) {

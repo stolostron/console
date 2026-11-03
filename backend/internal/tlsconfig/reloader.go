@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,8 +25,7 @@ const (
 )
 
 var (
-	errNoCertificate   = errors.New("tls certificate not loaded")
-	errNoAllowedGroups = errors.New("tls security profile has no usable groups")
+	errNoCertificate = errors.New("tls certificate not loaded")
 )
 
 // Reloader holds the live TLS settings and certificate. Handshakes read via
@@ -54,7 +54,7 @@ func (r *Reloader) TLSConfig() *tls.Config {
 }
 
 // GetConfigForClient returns a clone of the current profile + cert for one handshake.
-func (r *Reloader) GetConfigForClient(*tls.ClientHelloInfo) (*tls.Config, error) {
+func (r *Reloader) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 	r.mu.RLock()
 	s := r.settings.clone()
 	var certs []tls.Certificate
@@ -62,8 +62,13 @@ func (r *Reloader) GetConfigForClient(*tls.ClientHelloInfo) (*tls.Config, error)
 		certs = []tls.Certificate{*r.cert}
 	}
 	r.mu.RUnlock()
+	nextProtos := []string{nextProtoH2, nextProtoHTTP11}
 	if s.noUsableCurves {
-		return nil, errNoAllowedGroups
+		if err := restrictToRSAKeyExchange(&s, hello); err != nil {
+			return nil, err
+		}
+		// HTTP/2 disallows the TLS_RSA_* suites used by this fallback.
+		nextProtos = []string{nextProtoHTTP11}
 	}
 	cfg := &tls.Config{
 		MinVersion:       s.MinVersion,
@@ -71,10 +76,39 @@ func (r *Reloader) GetConfigForClient(*tls.ClientHelloInfo) (*tls.Config, error)
 		CipherSuites:     s.CipherSuites,
 		CurvePreferences: s.Curves,
 		Certificates:     certs,
-		NextProtos:       []string{nextProtoH2, nextProtoHTTP11},
+		NextProtos:       nextProtos,
 		GetCertificate:   r.GetCertificate,
 	}
 	return cfg, nil
+}
+
+// restrictToRSAKeyExchange preserves Node's empty ecdhCurve behavior: TLS 1.3
+// and ECDHE fail, while explicitly configured RSA key exchange can still work.
+// Never downgrade a TLS 1.3 ClientHello or let empty CurvePreferences enable
+// Go's default groups for ECDHE. TLS 1.2 RSA does not use a group.
+func restrictToRSAKeyExchange(s *Settings, hello *tls.ClientHelloInfo) error {
+	if hello == nil || s.MinVersion >= tls.VersionTLS13 {
+		return errNoUsableTLSGroups
+	}
+	if s.MaxVersion == 0 || s.MaxVersion >= tls.VersionTLS13 {
+		for _, version := range hello.SupportedVersions {
+			if version == tls.VersionTLS13 {
+				return errNoUsableTLSGroups
+			}
+		}
+		s.MaxVersion = tls.VersionTLS12
+	}
+	var rsaCiphers []uint16
+	for _, cipher := range s.CipherSuites {
+		if strings.HasPrefix(tls.CipherSuiteName(cipher), "TLS_RSA_WITH_") {
+			rsaCiphers = append(rsaCiphers, cipher)
+		}
+	}
+	if len(rsaCiphers) == 0 {
+		return errNoUsableTLSGroups
+	}
+	s.CipherSuites = rsaCiphers
+	return nil
 }
 
 // GetCertificate returns the current certificate (updated on file rotation).
@@ -107,6 +141,12 @@ func (r *Reloader) Apply(s Settings) bool {
 			"curves", len(s.Curves),
 		)
 		return false
+	}
+	if len(s.unknownGroups) > 0 {
+		applog.Logger().Warn("TLS security profile contains unknown groups", "groups", s.unknownGroups)
+	}
+	if len(s.excludedCurves) > 0 {
+		applog.Logger().Debug("TLS groups excluded by FIPS policy", "curves", s.excludedCurves)
 	}
 	if s.noUsableCurves {
 		applog.Logger().Error("TLS security profile has no usable groups", "groups", s.rejectedGroups)

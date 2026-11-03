@@ -396,7 +396,7 @@ func TestGetConfigForClientRejectsFilteredGroups(t *testing.T) {
 		t.Fatal("expected profile change")
 	}
 	_, err := r.GetConfigForClient(nil)
-	if !errors.Is(err, errNoAllowedGroups) {
+	if !errors.Is(err, errNoUsableTLSGroups) {
 		t.Fatalf("GetConfigForClient err=%v", err)
 	}
 }
