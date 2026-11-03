@@ -18,11 +18,35 @@ import { useTranslation } from '../lib/acm-i18next'
 import { LoadingPage } from './LoadingPage'
 import { PluginContext } from '../lib/PluginContext'
 
+function isResourceError(error: unknown): error is ResourceError {
+  return typeof ResourceError === 'function' && error instanceof ResourceError
+}
+
+export function isAccessRestrictedError(error: unknown): boolean {
+  if (isResourceError(error)) {
+    return error.code === ResourceErrorCode.Forbidden || error.code === ResourceErrorCode.Unauthorized
+  }
+  const message = error instanceof Error ? error.message : typeof error === 'string' ? error : ''
+  return /forbidden|unauthorized|permission denied|access is denied/i.test(message)
+}
+
+/** Coerce string/Error RBAC failures into ResourceError so shared copy/styling applies. */
+export function normalizeAccessRestrictedError(error: unknown): unknown {
+  if (isResourceError(error) || !isAccessRestrictedError(error)) {
+    return error
+  }
+  const message = error instanceof Error ? error.message : String(error)
+  if (typeof ResourceError !== 'function') {
+    return error
+  }
+  return new ResourceError(ResourceErrorCode.Forbidden, message)
+}
+
 export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; message: string; details?: string } {
   let title = t('Error')
   let message = t('Unknown')
   let details
-  if (error instanceof ResourceError) {
+  if (isResourceError(error)) {
     /* istanbul ignore next */
     switch (error.code) {
       case ResourceErrorCode.BadGateway:
@@ -47,9 +71,9 @@ export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; 
         message = t('Unable to communicate with the server because the network connection was reset.')
         break
       case ResourceErrorCode.Forbidden:
-        title = t('Forbidden')
+        title = t('Access Restricted')
         message = t(
-          'You are not authorized to complete this action.  See your cluster administrator for role-based access control information.'
+          'You do not have the required permissions to perform this action. Please contact your OpenShift administrator if you need access to this resource.'
         )
         break
       case ResourceErrorCode.GatewayTimeout:
@@ -89,8 +113,10 @@ export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; 
         message = t('Request failed because of too many requests. Please retry.')
         break
       case ResourceErrorCode.Unauthorized:
-        title = t('Unauthorized')
-        message = t('You are not authorized to perform this operation.')
+        title = t('Access Restricted')
+        message = t(
+          'You do not have the required permissions to perform this action. Please contact your OpenShift administrator if you need access to this resource.'
+        )
         break
       case ResourceErrorCode.Unknown:
         title = t('Unknown error')
@@ -102,6 +128,12 @@ export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; 
         break
     }
     details = error.message
+  } else if (isAccessRestrictedError(error)) {
+    title = t('Access Restricted')
+    message = t(
+      'You do not have the required permissions to perform this action. Please contact your OpenShift administrator if you need access to this resource.'
+    )
+    details = error instanceof Error ? error.message : typeof error === 'string' ? error : undefined
   } else if (error instanceof Error) {
     message = error.message
   } else if (typeof error === 'string') {
@@ -112,14 +144,20 @@ export function getRawErrorInfo(error: unknown, t: TFunction): { title: string; 
 }
 
 export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
-  const { title, message, details } = getRawErrorInfo(error, t)
+  const normalized = normalizeAccessRestrictedError(error)
+  const { title, message, details } = getRawErrorInfo(normalized, t)
   const actions = details ? (
     <ExpandableSection isWidthLimited toggleText={t('Details')}>
       {details}
     </ExpandableSection>
   ) : undefined
 
-  return { type: 'danger', title, message, actions }
+  return {
+    type: isAccessRestrictedError(normalized) ? 'warning' : 'danger',
+    title,
+    message,
+    actions,
+  }
 }
 
 export function ErrorState(props: { error: Error; actions?: ReactNode }) {
