@@ -4,18 +4,20 @@
 
 import { ButtonProps, Content, ContentVariants, Icon, Label, Popover } from '@patternfly/react-core'
 import { CheckCircleIcon, ExclamationCircleIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import type { TFunction } from 'i18next'
 import _ from 'lodash'
 import queryString from 'query-string'
 import { useMemo, type JSX } from 'react'
-import type { TFunction } from 'i18next'
 import { generatePath, Link } from 'react-router'
 import { useTranslation } from '../../lib/acm-i18next'
 import AcmTimestamp from '../../lib/AcmTimestamp'
 import { NavigationPath } from '../../NavigationPath'
 import { ConfigMap } from '../../resources'
-import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
+import { useSharedAtoms, useSharedValue } from '../../shared-atoms'
 import { AcmButton, AcmLabels } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
+import { searchClient } from './search-sdk/search-client'
+import { useSearchResultItemsQuery } from './search-sdk/search-sdk'
 export interface ResourceDefinitions {
   application: Record<'columns', SearchColumnDefinition[]>
   cluster: Record<'columns', SearchColumnDefinition[]>
@@ -855,15 +857,77 @@ export function CreateExternalVMLink(props: Readonly<{ item: any; t: TFunction }
   return <>{'-'}</>
 }
 
+type SearchedCluster = {
+  name?: string
+  managedHub?: string
+  consoleURL?: string
+}
+
+function consoleURLForManagedCluster(
+  items: SearchedCluster[] | null | undefined,
+  clusterName: string,
+  managedHub?: string
+) {
+  const matches = (items ?? []).filter((cluster) => cluster?.name === clusterName && cluster.consoleURL)
+  if (managedHub) {
+    // leaf hubs from different managed hubs could have same name.
+    const hubMatch = matches.find((cluster) => cluster.managedHub === managedHub)
+    if (hubMatch?.consoleURL) {
+      return hubMatch.consoleURL
+    }
+    // Same cluster name on another hub. Do not use that console.
+    if (matches.some((cluster) => cluster.managedHub)) {
+      return undefined
+    }
+  }
+  return matches[0]?.consoleURL
+}
+
+function useManagedClusterConsoleURL(clusterName: string, managedHub?: string) {
+  const allClusters = useAllClusters(true)
+  const { data, loading } = useSearchResultItemsQuery({
+    skip: managedHub === 'global-hub',
+    client: process.env.NODE_ENV === 'test' ? undefined : searchClient,
+    variables: {
+      input: [
+        {
+          keywords: [],
+          filters: [
+            { property: 'kind', values: ['Cluster'] },
+            { property: 'name', values: [clusterName] },
+          ],
+          limit: 10,
+        },
+      ],
+    },
+  })
+
+  const searchedConsoleURL = consoleURLForManagedCluster(
+    data?.searchResult?.[0]?.items as SearchedCluster[] | undefined,
+    clusterName,
+    managedHub
+  )
+  if (searchedConsoleURL) {
+    return searchedConsoleURL.replace(/\/$/, '')
+  }
+  if (loading) {
+    return ''
+  }
+  // Clusters on a managed hub are not in the local cluster list.
+  if (managedHub && managedHub !== 'global-hub') {
+    return ''
+  }
+  const localConsoleURL = allClusters.find((cluster) => cluster.name === clusterName)?.consoleURL ?? ''
+  return localConsoleURL?.replace(/\/$/, '')
+}
+
 export function VMLaunchLinks(props: Readonly<{ item: any; t: TFunction }>) {
   const { item, t } = props
   const { useIsObservabilityInstalled, configMapsState, clusterManagementAddonsState } = useSharedAtoms()
   const configMaps = useSharedValue(configMapsState)
   const clusterManagementAddons = useSharedValue(clusterManagementAddonsState)
   const isObservabilityInstalled = useIsObservabilityInstalled()
-  const allClusters = useAllClusters(true)
-  const vmCluster = item.cluster
-  const clusterURL = allClusters.filter((c) => c.name === vmCluster)?.[0]?.consoleURL
+  const clusterURL = useManagedClusterConsoleURL(item.cluster, item.managedHub)
 
   const vmMetricLink = useMemo(() => {
     const obsCont = clusterManagementAddons.filter((cma) => cma.metadata.name === 'observability-controller')
