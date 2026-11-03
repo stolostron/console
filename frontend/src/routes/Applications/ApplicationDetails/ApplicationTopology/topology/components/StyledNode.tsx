@@ -31,9 +31,22 @@ import {
 const DEFAULT_DECORATOR_RADIUS = 12
 const ACTION_DECORATOR_RADIUS = DEFAULT_DECORATOR_RADIUS + 2
 const ACTION_ICON_SIZE = 16
+/** Cap inverse zoom so action buttons stay usable without dominating the node. */
+const ACTION_DECORATOR_MAX_SCALE = 2.5
+/** Zoomed-out action buttons render at 80% of full inverse scale. */
+const ACTION_DECORATOR_ZOOM_SIZE = 0.8
 /** Grace period after pointer leaves the node or action decorator before hiding actions. */
 export const ACTION_DECORATOR_HOVER_DELAY_OUT_MS = 400
 const ACTION_DECORATOR_HOVER_DELAY_IN_MS = 200
+
+/** Grow action buttons as the graph zooms out so they stay readable on screen. */
+export const getActionDecoratorScale = (graphScale: number): number => {
+  if (graphScale <= 0 || graphScale >= 1) {
+    return 1
+  }
+  const inverseScale = Math.min(1 / graphScale, ACTION_DECORATOR_MAX_SCALE)
+  return Math.max(1, inverseScale * ACTION_DECORATOR_ZOOM_SIZE)
+}
 
 const stopDecoratorPointerEvent = (event: React.MouseEvent | React.PointerEvent): void => {
   event.stopPropagation()
@@ -163,16 +176,20 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
 
   const LabelIcon = passedData.labelIcon
   const { width, height } = element.getDimensions()
+  const isLowDetail = detailsLevel === ScaleDetailsLevel.low
+  // scaleNode already enlarges the node (and attachments) on hover at low detail.
+  const actionDecoratorScale =
+    isLowDetail && isNodeHovered ? 1 : getActionDecoratorScale(scale)
 
   return (
     <DefaultNode
       element={element}
       raiseLabelOnHover={false}
       nodeStatus={data.status}
-      scaleLabel={detailsLevel !== ScaleDetailsLevel.low}
-      scaleNode={isNodeHovered && detailsLevel === ScaleDetailsLevel.low}
-      showLabel={isNodeHovered || (detailsLevel !== ScaleDetailsLevel.low && showLabel)}
-      showStatusBackground={!isNodeHovered && detailsLevel === ScaleDetailsLevel.low}
+      scaleLabel={!isLowDetail}
+      scaleNode={isNodeHovered && isLowDetail}
+      showLabel={isNodeHovered || (!isLowDetail && showLabel)}
+      showStatusBackground={!isNodeHovered && isLowDetail}
       showStatusDecorator={detailsLevel === ScaleDetailsLevel.high && passedData.showStatusDecorator}
       hover={isNodeHovered}
       dragNodeRef={combinedNodeRef}
@@ -184,9 +201,14 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       onContextMenu={data.showContextMenu ? onContextMenu : undefined}
       contextMenuOpen={contextMenuOpen}
       labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
-      attachments={
-        detailsLevel !== ScaleDetailsLevel.low &&
-        renderDecorators(element, passedData, getShapeDecoratorCenter, refreshResources, t, showNodeActions, {
+      attachments={renderDecorators(
+        element,
+        passedData,
+        getShapeDecoratorCenter,
+        refreshResources,
+        t,
+        showNodeActions,
+        {
           onViewLogs,
           onEditYaml,
           onEditApplications,
@@ -194,8 +216,10 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
           setDecoratorHover,
           dismissDecoratorHover,
           setDecoratorFocused,
-        })
-      }
+        },
+        actionDecoratorScale,
+        !isLowDetail
+      )}
     >
       {(isNodeHovered || detailsLevel !== ScaleDetailsLevel.low) && (
         <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
@@ -228,7 +252,9 @@ const renderDecorators = (
     setDecoratorHover?: (hovered: boolean) => void
     dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
-  }
+  },
+  actionDecoratorScale = 1,
+  showStatusAndCountDecorators = true
 ): React.ReactNode => {
   const { statusIcon, specs } = data
   const topologyNode = getTopologyNodeDataFromElement(element)
@@ -241,10 +267,11 @@ const renderDecorators = (
 
   return (
     <>
-      {statusIcon &&
+      {showStatusAndCountDecorators &&
+        statusIcon &&
         !showSyncRefresh &&
         renderStatusDecorator(element, TopologyQuadrant.upperLeft, statusIcon, getShapeDecoratorCenter)}
-      {specs?.resourceCount > 1 && renderCountDecorator(element, specs?.resourceCount)}
+      {showStatusAndCountDecorators && specs?.resourceCount > 1 && renderCountDecorator(element, specs?.resourceCount)}
       {renderNodeActionDecorators(
         element,
         getShapeDecoratorCenter,
@@ -257,7 +284,8 @@ const renderDecorators = (
         showSyncRefresh,
         refreshResources,
         showNodeActions,
-        nodeActions
+        nodeActions,
+        actionDecoratorScale
       )}
     </>
   )
@@ -338,7 +366,8 @@ const renderNodeActionDecorators = (
     setDecoratorHover?: (hovered: boolean) => void
     dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
-  }
+  },
+  actionDecoratorScale = 1
 ): React.ReactNode => {
   if (!topologyNode) {
     return null
@@ -356,7 +385,8 @@ const renderNodeActionDecorators = (
         translate?.('Sync resources') ?? 'Sync resources',
         () => refreshResources(),
         getShapeDecoratorCenter,
-        setDecoratorHover
+        setDecoratorHover,
+        actionDecoratorScale
       )
     )
   }
@@ -369,7 +399,8 @@ const renderNodeActionDecorators = (
         translate?.('Logs') ?? 'Logs',
         () => nodeActions.onViewLogs?.(topologyNode),
         getShapeDecoratorCenter,
-        setDecoratorHover
+        setDecoratorHover,
+        actionDecoratorScale
       )
     )
   }
@@ -382,7 +413,8 @@ const renderNodeActionDecorators = (
         translate?.('Edit Application YAML') ?? 'Edit Application YAML',
         () => nodeActions.onEditApplications?.(topologyNode),
         getShapeDecoratorCenter,
-        setDecoratorHover
+        setDecoratorHover,
+        actionDecoratorScale
       )
     )
   }
@@ -395,7 +427,8 @@ const renderNodeActionDecorators = (
         translate?.('Edit YAML') ?? 'Edit YAML',
         () => nodeActions.onEditYaml?.(topologyNode),
         getShapeDecoratorCenter,
-        setDecoratorHover
+        setDecoratorHover,
+        actionDecoratorScale
       )
     )
   }
@@ -408,7 +441,8 @@ const renderNodeActionDecorators = (
         translate?.('View repository') ?? 'View repository',
         () => nodeActions.onViewRepo?.(topologyNode),
         getShapeDecoratorCenter,
-        setDecoratorHover
+        setDecoratorHover,
+        actionDecoratorScale
       )
     )
   }
@@ -439,7 +473,8 @@ const ActionIconDecorator: React.FunctionComponent<{
   ariaLabel: string
   onClick: () => void
   setDecoratorHover?: (hovered: boolean) => void
-}> = ({ x, y, icon, ariaLabel, onClick, setDecoratorHover }) => {
+  scale?: number
+}> = ({ x, y, icon, ariaLabel, onClick, setDecoratorHover, scale = 1 }) => {
   const decoratorRef = React.useRef<SVGGElement>(null)
 
   const activate = (event: React.SyntheticEvent) => {
@@ -478,8 +513,10 @@ const ActionIconDecorator: React.FunctionComponent<{
     },
   }
 
+  const scaleTransform = scale !== 1 ? `translate(${x}, ${y}) scale(${scale}) translate(${-x}, ${-y})` : undefined
+
   const decorator = (
-    <g {...pointerIsolationProps} ref={decoratorRef}>
+    <g {...pointerIsolationProps} ref={decoratorRef} transform={scaleTransform}>
       <Decorator
         x={x}
         y={y}
@@ -512,7 +549,8 @@ const renderActionDecorator = (
     x: number
     y: number
   },
-  setDecoratorHover?: (hovered: boolean) => void
+  setDecoratorHover?: (hovered: boolean) => void,
+  scale = 1
 ): React.ReactNode => {
   const { x, y } = getShapeDecoratorCenter
     ? getShapeDecoratorCenter(quadrant, element)
@@ -526,6 +564,7 @@ const renderActionDecorator = (
       ariaLabel={ariaLabel}
       onClick={onClick}
       setDecoratorHover={setDecoratorHover}
+      scale={scale}
     />
   )
 }
