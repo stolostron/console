@@ -441,7 +441,7 @@ export function useUsersByNames(names: string[] | undefined): { users: User[]; l
 
     // Group.users can list members Search has not indexed; keep a name stub so the tab still shows them.
     const indexedNames = new Set(indexedUsers.map((user) => user.metadata.name))
-    const nameStubs = uniqueNames
+    const nameStubs: User[] = uniqueNames
       .filter((name) => !indexedNames.has(name))
       .map((name) => ({
         apiVersion: UserApiVersion,
