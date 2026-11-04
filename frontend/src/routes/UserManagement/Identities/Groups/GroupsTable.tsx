@@ -6,7 +6,7 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
 import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
-import { useGroupsSearch } from './useGroupsSearch'
+import { preferSearchBackedGroups, useGroupsSearch, useMraGroupSubjects } from './useGroupsSearch'
 
 interface GroupsTableProps {
   hiddenColumns?: string[]
@@ -17,6 +17,7 @@ interface GroupsTableProps {
   /** When set, render hub Groups from listGroups() and skip Search. */
   groups?: Group[]
   groupsLoading?: boolean
+  groupsError?: Error
   isCreateButtonDisplayed?: boolean
   createButtonText?: string
   onCreateClick?: () => void
@@ -116,20 +117,20 @@ const GroupsTableFromList = ({
   additionalGroups,
   groups,
   groupsLoading = false,
+  groupsError,
   isCreateButtonDisplayed,
   createButtonText,
   onCreateClick,
   tableActionButtons,
 }: GroupsTableProps & { groups: Group[] }) => {
   const { t } = useTranslation()
+  const mraGroups = useMraGroupSubjects()
 
   const mergedGroups = useMemo(() => {
-    const all = [...groups, ...(additionalGroups ?? [])]
-    const unique = all.filter(
-      (group, index, arr) => arr.findIndex((g) => g.metadata.name === group.metadata.name) === index
+    return preferSearchBackedGroups([...groups, ...(additionalGroups ?? []), ...mraGroups]).toSorted((a, b) =>
+      compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')
     )
-    return unique.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
-  }, [additionalGroups, groups])
+  }, [additionalGroups, groups, mraGroups])
 
   const handleRadioSelect = useCallback(
     (uid: string) => {
@@ -168,6 +169,7 @@ const GroupsTableFromList = ({
         processedItemCount: 0,
         isPreProcessed: false,
       }}
+      emptyStateError={groupsError}
       isCreateButtonDisplayed={isCreateButtonDisplayed}
       createButtonText={createButtonText}
       onCreateClick={onCreateClick}

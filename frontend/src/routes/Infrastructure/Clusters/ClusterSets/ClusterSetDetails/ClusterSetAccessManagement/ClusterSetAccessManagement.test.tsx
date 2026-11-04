@@ -12,7 +12,11 @@ import { ClusterRoleBinding, ClusterRoleBindingKind, Group, RbacApiVersion, User
 import Clusters from '../../../Clusters'
 import { managedClusterSetsState } from '../../../../../../atoms'
 import { nockClusterList, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
-import { useGroupIdentity, useGroupsSearch, useHasHubGroups } from '../../../../../UserManagement/Identities/Groups/useGroupsSearch'
+import {
+  useGroupIdentity,
+  useGroupsSearch,
+  useHasHubGroups,
+} from '../../../../../UserManagement/Identities/Groups/useGroupsSearch'
 
 jest.mock('../../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
   useHasHubGroups: jest.fn(() => {
@@ -24,6 +28,8 @@ jest.mock('../../../../../UserManagement/Identities/Groups/useGroupsSearch', () 
   useGroupsSearch: jest.fn(() => {
     throw new Error('Cluster Set Add Access must not call useGroupsSearch (Search)')
   }),
+  useMraGroupSubjects: jest.fn(() => []),
+  preferSearchBackedGroups: (groups: Group[]) => groups,
 }))
 
 const mockUser1: User = {

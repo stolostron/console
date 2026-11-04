@@ -16,6 +16,7 @@ jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
 jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () => ({
   useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
   useGroupIdentity: jest.fn(),
+  useMraGroupSubjects: jest.fn(() => []),
 }))
 
 const mockUseMergedUsers = useMergedUsers as jest.MockedFunction<typeof useMergedUsers>
@@ -127,6 +128,7 @@ jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
       data-additionalgroups={JSON.stringify((props.additionalGroups ?? []).map((g: any) => g.metadata.name))}
       data-hubgroups={JSON.stringify((props.groups ?? []).map((g: any) => g.metadata.name))}
       data-groupsloading={String(!!props.groupsLoading)}
+      data-groupserror={props.groupsError?.message ?? ''}
       data-iscreatebuttondisplayed={String(!!props.isCreateButtonDisplayed)}
       data-createbuttontext={props.createButtonText ?? ''}
     >
@@ -739,13 +741,18 @@ describe('IdentitiesList', () => {
       expect(groupsTable).toHaveAttribute('data-groupsloading', 'false')
     })
 
+    test('should forward groupsError to GroupsTable', async () => {
+      render(<Component groups={[]} groupsError={new Error('listGroups failed')} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('groups-table')).toHaveAttribute('data-groupserror', 'listGroups failed')
+      })
+    })
+
     test('should resolve initial Group selection from hub groups', async () => {
-      render(
-        <Component
-          groups={mockGroups}
-          initialSelectedIdentity={{ kind: 'Group', name: 'developers' }}
-        />
-      )
+      render(<Component groups={mockGroups} initialSelectedIdentity={{ kind: 'Group', name: 'developers' }} />)
 
       await waitFor(() => {
         expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()

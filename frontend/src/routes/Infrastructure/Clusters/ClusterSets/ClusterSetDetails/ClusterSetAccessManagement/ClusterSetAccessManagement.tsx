@@ -61,6 +61,7 @@ export function ClusterSetAccessManagement() {
   const {
     data: groups,
     loading: groupsLoading,
+    error: groupsError,
     startPolling: groupsStartPolling,
     stopPolling: groupsStopPolling,
   } = useQuery(listGroups)
@@ -174,6 +175,7 @@ export function ClusterSetAccessManagement() {
           }}
           groups={groups ?? []}
           groupsLoading={groupsLoading}
+          groupsError={groupsError}
         />
         <AcmTable<ClusterRoleBinding>
           aria-label={t('Cluster set access table')}
@@ -266,6 +268,7 @@ function AddUsersModal(props: {
   onClose: () => void
   groups: Group[]
   groupsLoading: boolean
+  groupsError?: Error
 }) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
@@ -321,6 +324,7 @@ function AddUsersModal(props: {
                   initialSelectedIdentity={selectedIdentity}
                   groups={props.groups}
                   groupsLoading={props.groupsLoading}
+                  groupsError={props.groupsError}
                 />
               </div>
               <AcmSelect

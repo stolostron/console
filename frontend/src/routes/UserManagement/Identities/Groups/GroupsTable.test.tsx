@@ -533,6 +533,28 @@ describe('GroupsTable', () => {
       expect(mockUseFleetSearch).not.toHaveBeenCalled()
     })
 
+    test('should include MRA-only groups not returned by listGroups', async () => {
+      mockUseFleetSearch.mockClear()
+
+      render(<Component groups={[]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('ops-team')).toBeInTheDocument()
+      })
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+    })
+
+    test('should show listGroups error instead of identity-provider empty state', async () => {
+      setupMocks([], [])
+      render(<Component groups={[]} groupsError={new Error('listGroups failed')} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Error')).toBeInTheDocument()
+        expect(screen.getByText('listGroups failed')).toBeInTheDocument()
+      })
+      expect(screen.queryByText('In order to view Groups, add Identity provider')).not.toBeInTheDocument()
+    })
+
     test('should call setSelectedGroup when a hub group radio is selected', async () => {
       const mockSetSelectedGroup = jest.fn()
       render(<Component groups={mockGroups} setSelectedGroup={mockSetSelectedGroup} />)
