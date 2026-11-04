@@ -1082,6 +1082,8 @@ export interface DetailsViewProps {
   onEditYaml?: (node: TopologyNodeWithStatus) => void
   /** Opens the logs modal for the selected resource */
   onViewLogs?: (node: TopologyNodeWithStatus) => void
+  /** Opens the repository viewer modal for git/chart nodes */
+  onViewRepo?: (node: TopologyNodeWithStatus) => void
 }
 
 // State interface for DetailsView component

@@ -112,6 +112,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   onEditAppSet,
   onEditYaml,
   onViewLogs,
+  onViewRepo,
   onSyncResources,
   onLaunchArgo,
   channelControl,
@@ -159,6 +160,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
           hubClusterName={hubClusterName}
           onEditYaml={onEditYaml}
           onViewLogs={onViewLogs}
+          onViewRepo={onViewRepo}
         />
       ) : undefined,
       !selectedNodeId
@@ -391,6 +393,7 @@ export const Topology = ({
           onEditAppSet={onEditAppSet}
           onEditYaml={onEditYaml}
           onViewLogs={onViewLogs}
+          onViewRepo={onViewRepo}
           onSyncResources={onSyncResources}
           onLaunchArgo={onLaunchArgo}
         />

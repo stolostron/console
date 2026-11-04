@@ -17,10 +17,12 @@ type WizAsyncSelectProps = InputCommonProps<string> & {
   isCreatable?: boolean
   asyncCallback?: () => Promise<string[]>
   footer?: ReactNode
+  /** Extra controls rendered before the sync/refresh button in the input group */
+  extraButtons?: ReactNode
 }
 
 export function WizAsyncSelect(props: WizAsyncSelectProps) {
-  const { asyncCallback, isCreatable, footer } = props
+  const { asyncCallback, isCreatable, footer, extraButtons } = props
   const { displayMode, value, setValue, validated, hidden, id, disabled } = useInput(props)
   const { noResults } = useStringContext()
   const placeholder = getSelectPlaceholder(props)
@@ -121,6 +123,7 @@ export function WizAsyncSelect(props: WizAsyncSelectProps) {
               />
             </PfSelect>
           </InputGroupItem>
+          {extraButtons}
           {props.asyncCallback && loading && <SpinnerButton />}
           {props.asyncCallback && !loading && <SyncButton onClick={sync} />}
         </InputGroup>
