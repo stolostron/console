@@ -8,21 +8,26 @@ import { Group } from '../../../../resources/rbac'
 import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
 import { isSearchBackedGroup, preferSearchBackedGroups, useGroupsSearch, useMraGroupSubjects } from './useGroupsSearch'
 
-interface GroupsTableProps {
+interface GroupsTableCommonProps {
   hiddenColumns?: string[]
   areLinksDisplayed?: boolean
   selectedGroup?: Group
   setSelectedGroup?: (group: Group) => void
   additionalGroups?: Group[]
-  /** When set, render hub Groups from listGroups() and skip Search. */
-  groups?: Group[]
-  groupsLoading?: boolean
-  groupsError?: Error
   isCreateButtonDisplayed?: boolean
   createButtonText?: string
   onCreateClick?: () => void
   tableActionButtons?: IAcmTableButtonAction[]
 }
+
+interface GroupsTableHubProps {
+  /** Hub Groups from listGroups(). When set, skip Search. */
+  groups: Group[]
+  groupsLoading?: boolean
+  groupsError?: Error
+}
+
+type GroupsTableProps = GroupsTableCommonProps & Partial<GroupsTableHubProps>
 
 type GroupsAcmTableProps = Omit<ComponentProps<typeof AcmTable<Group>>, 'aria-label' | 'keyFn' | 'emptyState'> & {
   tableKey: string
@@ -125,7 +130,7 @@ const GroupsTableFromList = ({
   createButtonText,
   onCreateClick,
   tableActionButtons,
-}: GroupsTableProps & { groups: Group[] }) => {
+}: Readonly<GroupsTableCommonProps & GroupsTableHubProps>) => {
   const { t } = useTranslation()
   const mraGroups = useMraGroupSubjects()
 
@@ -209,7 +214,7 @@ const GroupsTableFromSearch = ({
   createButtonText,
   onCreateClick,
   tableActionButtons,
-}: GroupsTableProps) => {
+}: Readonly<GroupsTableCommonProps>) => {
   const { t } = useTranslation()
   const [request, setRequest] = useState<IRequestListView>()
 
