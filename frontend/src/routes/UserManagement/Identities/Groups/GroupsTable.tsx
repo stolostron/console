@@ -1,11 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useCallback, useMemo, useRef, useState } from 'react'
-import { AcmButton, AcmEmptyState, AcmTable, IAcmTableButtonAction } from '~/ui-components'
+import { ComponentProps, useCallback, useMemo, useRef, useState } from 'react'
+import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableButtonAction } from '~/ui-components'
 import { IRequestListView, IResultStatuses } from '../../../../lib/useAggregates'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
-import { groupsTableColumns } from '../IdentityTableHelper'
+import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
 import { useGroupsSearch } from './useGroupsSearch'
 
 interface GroupsTableProps {
@@ -14,13 +14,168 @@ interface GroupsTableProps {
   selectedGroup?: Group
   setSelectedGroup?: (group: Group) => void
   additionalGroups?: Group[]
+  /** When set, render hub Groups from listGroups() and skip Search. */
+  groups?: Group[]
+  groupsLoading?: boolean
   isCreateButtonDisplayed?: boolean
   createButtonText?: string
   onCreateClick?: () => void
   tableActionButtons?: IAcmTableButtonAction[]
 }
 
-const GroupsTable = ({
+type GroupsAcmTableProps = Omit<ComponentProps<typeof AcmTable<Group>>, 'aria-label' | 'keyFn' | 'emptyState'> & {
+  tableKey: string
+  emptyStateError?: Error
+  isCreateButtonDisplayed?: boolean
+  createButtonText?: string
+  onCreateClick?: () => void
+}
+
+const groupKeyFn = (group: Group) => group.metadata.name ?? ''
+
+const GroupsTableEmptyState = ({
+  error,
+  isCreateButtonDisplayed,
+  createButtonText,
+  onCreateClick,
+}: {
+  error?: Error
+  isCreateButtonDisplayed?: boolean
+  createButtonText?: string
+  onCreateClick?: () => void
+}) => {
+  const { t } = useTranslation()
+
+  if (error) {
+    return <AcmEmptyState title={t('Error')} message={error.message} />
+  }
+
+  return (
+    <AcmEmptyState
+      title={t(`In order to view Groups, add Identity provider`)}
+      message={
+        <Trans
+          i18nKey="Once Identity provider is added, Groups will appear in the list after they log in."
+          components={{ bold: <strong /> }}
+        />
+      }
+      action={
+        <div>
+          {isCreateButtonDisplayed && onCreateClick && (
+            <AcmButton variant="primary" onClick={onCreateClick}>
+              {createButtonText ?? t('Create group')}
+            </AcmButton>
+          )}
+          <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
+        </div>
+      }
+    />
+  )
+}
+
+const GroupsAcmTable = ({
+  tableKey,
+  emptyStateError,
+  isCreateButtonDisplayed,
+  createButtonText,
+  onCreateClick,
+  ...tableProps
+}: GroupsAcmTableProps) => {
+  const { t } = useTranslation()
+
+  return (
+    <AcmTable<Group>
+      aria-label={t('Groups table')}
+      key={tableKey}
+      keyFn={groupKeyFn}
+      emptyState={
+        <GroupsTableEmptyState
+          error={emptyStateError}
+          isCreateButtonDisplayed={isCreateButtonDisplayed}
+          createButtonText={createButtonText}
+          onCreateClick={onCreateClick}
+        />
+      }
+      {...tableProps}
+    />
+  )
+}
+
+const GroupsTable = (props: GroupsTableProps) => {
+  if (props.groups !== undefined) {
+    return <GroupsTableFromList {...props} groups={props.groups} />
+  }
+  return <GroupsTableFromSearch {...props} />
+}
+
+const GroupsTableFromList = ({
+  hiddenColumns,
+  areLinksDisplayed = true,
+  selectedGroup,
+  setSelectedGroup,
+  additionalGroups,
+  groups,
+  groupsLoading = false,
+  isCreateButtonDisplayed,
+  createButtonText,
+  onCreateClick,
+  tableActionButtons,
+}: GroupsTableProps & { groups: Group[] }) => {
+  const { t } = useTranslation()
+
+  const mergedGroups = useMemo(() => {
+    const all = [...groups, ...(additionalGroups ?? [])]
+    const unique = all.filter(
+      (group, index, arr) => arr.findIndex((g) => g.metadata.name === group.metadata.name) === index
+    )
+    return unique.toSorted((a, b) => compareStrings(a.metadata.name ?? '', b.metadata.name ?? ''))
+  }, [additionalGroups, groups])
+
+  const handleRadioSelect = useCallback(
+    (uid: string) => {
+      const group = uid ? mergedGroups.find((item) => item.metadata.uid === uid) : undefined
+      if (group) setSelectedGroup?.(group)
+    },
+    [mergedGroups, setSelectedGroup]
+  )
+
+  const filters = useFilters('group', mergedGroups)
+  const columns = useMemo(
+    () =>
+      groupsTableColumns({
+        t,
+        hiddenColumns,
+        onRadioSelect: setSelectedGroup ? handleRadioSelect : () => {},
+        areLinksDisplayed,
+        selectedIdentity: selectedGroup,
+      }),
+    [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedGroup, setSelectedGroup, t]
+  )
+
+  return (
+    <GroupsAcmTable
+      tableKey="groups-table-hub"
+      filters={filters}
+      columns={columns}
+      items={groupsLoading ? undefined : mergedGroups}
+      tableActionButtons={tableActionButtons}
+      resultView={{
+        page: 1,
+        loading: groupsLoading,
+        refresh: () => {},
+        items: [],
+        emptyResult: false,
+        processedItemCount: 0,
+        isPreProcessed: false,
+      }}
+      isCreateButtonDisplayed={isCreateButtonDisplayed}
+      createButtonText={createButtonText}
+      onCreateClick={onCreateClick}
+    />
+  )
+}
+
+const GroupsTableFromSearch = ({
   hiddenColumns,
   areLinksDisplayed = true,
   selectedGroup,
@@ -75,8 +230,6 @@ const GroupsTable = ({
     [areLinksDisplayed, hiddenColumns, selectGroup, selectedGroup, setSelectedGroup, t]
   )
 
-  const keyFn = useCallback((group: Group) => group.metadata.name ?? '', [])
-
   const resultCounts = useMemo<IResultStatuses>(
     () => ({
       itemCount: processedItemCount,
@@ -89,11 +242,9 @@ const GroupsTable = ({
   )
 
   return (
-    <AcmTable<Group>
-      aria-label={t('Groups table')}
-      key="groups-table"
+    <GroupsAcmTable
+      tableKey="groups-table"
       columns={columns}
-      keyFn={keyFn}
       items={groups}
       tableActionButtons={tableActionButtons}
       setRequestView={setRequest}
@@ -109,31 +260,10 @@ const GroupsTable = ({
         processedItemCount,
         isPreProcessed: true,
       }}
-      emptyState={
-        error ? (
-          <AcmEmptyState title={t('Error')} message={error.message} />
-        ) : (
-          <AcmEmptyState
-            title={t(`In order to view Groups, add Identity provider`)}
-            message={
-              <Trans
-                i18nKey="Once Identity provider is added, Groups will appear in the list after they log in."
-                components={{ bold: <strong /> }}
-              />
-            }
-            action={
-              <div>
-                {isCreateButtonDisplayed && onCreateClick && (
-                  <AcmButton variant="primary" onClick={onCreateClick}>
-                    {createButtonText ?? t('Create group')}
-                  </AcmButton>
-                )}
-                <ViewDocumentationLink doclink={DOC_LINKS.IDENTITY_PROVIDER_CONFIGURATION} />
-              </div>
-            }
-          />
-        )
-      }
+      emptyStateError={error}
+      isCreateButtonDisplayed={isCreateButtonDisplayed}
+      createButtonText={createButtonText}
+      onCreateClick={onCreateClick}
     />
   )
 }

@@ -15,17 +15,68 @@ interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
   onGroupSelect?: (group: Group) => void
   initialSelectedIdentity?: { kind: 'User' | 'Group'; name: string }
+  /**
+   * Hub Groups from listGroups(). When provided, the Groups tab skips Search
+   * (required for MCE Cluster Set access management).
+   */
+  groups?: Group[]
+  groupsLoading?: boolean
 }
 
-export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIdentity }: IdentitiesListProps = {}) {
+export function IdentitiesList(props: IdentitiesListProps = {}) {
+  if (props.groups !== undefined) {
+    return <IdentitiesListWithHubGroups {...props} groups={props.groups} />
+  }
+  return <IdentitiesListWithSearchGroups {...props} />
+}
+
+function IdentitiesListWithSearchGroups(props: IdentitiesListProps) {
+  const { hasGroups } = useHasHubGroups()
+  const initialGroupName = props.initialSelectedIdentity?.kind === 'Group' ? props.initialSelectedIdentity.name : undefined
+  const initialGroup = useGroupIdentity(initialGroupName)
+
+  return <IdentitiesListView {...props} hasGroups={hasGroups} initialGroup={initialGroup} />
+}
+
+function IdentitiesListWithHubGroups(props: IdentitiesListProps & { groups: Group[] }) {
+  const { groups, groupsLoading, initialSelectedIdentity } = props
+  const hasGroups = groups.length > 0
+  const initialGroup = useMemo(() => {
+    if (initialSelectedIdentity?.kind !== 'Group') return undefined
+    return groups.find((group) => group.metadata.name === initialSelectedIdentity.name)
+  }, [groups, initialSelectedIdentity])
+
+  return (
+    <IdentitiesListView
+      {...props}
+      hasGroups={hasGroups}
+      initialGroup={initialGroup}
+      hubGroups={groups}
+      groupsLoading={groupsLoading}
+    />
+  )
+}
+
+interface IdentitiesListViewProps extends IdentitiesListProps {
+  hasGroups: boolean
+  initialGroup: Group | undefined
+  hubGroups?: Group[]
+}
+
+function IdentitiesListView({
+  onUserSelect,
+  onGroupSelect,
+  initialSelectedIdentity,
+  hasGroups,
+  initialGroup,
+  hubGroups,
+  groupsLoading,
+}: IdentitiesListViewProps) {
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
   const users = useMergedUsers()
-  const { hasGroups } = useHasHubGroups()
-  const initialGroupName = initialSelectedIdentity?.kind === 'Group' ? initialSelectedIdentity.name : undefined
-  const initialGroup = useGroupIdentity(initialGroupName)
 
   const [activeTabKey, setActiveTabKey] = useState<string | number>(
     initialSelectedIdentity?.kind === 'Group' ? 'groups' : 'users'
@@ -167,6 +218,8 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
                 selectedGroup={selectedGroup}
                 setSelectedGroup={handleOnGroupSelect}
                 additionalGroups={additionalGroups}
+                groups={hubGroups}
+                groupsLoading={groupsLoading}
                 isCreateButtonDisplayed
                 createButtonText={isDirectAuthenticationEnabled ? t('Add group') : undefined}
                 onCreateClick={() => setShowCreatePreAuthorizedGroup(true)}
