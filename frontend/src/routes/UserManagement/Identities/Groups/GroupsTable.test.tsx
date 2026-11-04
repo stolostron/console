@@ -565,6 +565,67 @@ describe('GroupsTable', () => {
       expect(screen.getByText('Error')).toBeInTheDocument()
     })
 
+    test('should replace a selected MRA stub with the preferred hub Group of the same name', async () => {
+      const mockSetSelectedGroup = jest.fn()
+      const mraStub: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: [],
+      }
+      const hubGroup: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team-uid', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: ['ops1'],
+      }
+
+      const { rerender } = render(
+        <Component groups={[]} selectedGroup={mraStub} setSelectedGroup={mockSetSelectedGroup} />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('ops-team')).toBeInTheDocument()
+      })
+
+      mockSetSelectedGroup.mockClear()
+      rerender(
+        <StateProvider>
+          <MemoryRouter>
+            <GroupsTable groups={[hubGroup]} selectedGroup={mraStub} setSelectedGroup={mockSetSelectedGroup} />
+          </MemoryRouter>
+        </StateProvider>
+      )
+
+      await waitFor(() => {
+        expect(mockSetSelectedGroup).toHaveBeenCalledWith(
+          expect.objectContaining({
+            metadata: expect.objectContaining({ name: 'ops-team', uid: 'ops-team-uid' }),
+          })
+        )
+      })
+    })
+
+    test('should not replace selection when preferred hub Group is a different name', async () => {
+      const mockSetSelectedGroup = jest.fn()
+      const selectedStub: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: [],
+      }
+
+      render(
+        <Component groups={mockGroups} selectedGroup={selectedStub} setSelectedGroup={mockSetSelectedGroup} />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+
+      expect(mockSetSelectedGroup).not.toHaveBeenCalled()
+    })
+
     test('should call setSelectedGroup when a hub group radio is selected', async () => {
       const mockSetSelectedGroup = jest.fn()
       render(<Component groups={mockGroups} setSelectedGroup={mockSetSelectedGroup} />)

@@ -1,12 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { ComponentProps, useCallback, useMemo, useRef, useState } from 'react'
+import { ComponentProps, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { AcmAlert, AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableButtonAction } from '~/ui-components'
 import { IRequestListView, IResultStatuses } from '../../../../lib/useAggregates'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
 import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
-import { preferSearchBackedGroups, useGroupsSearch, useMraGroupSubjects } from './useGroupsSearch'
+import {
+  isSearchBackedGroup,
+  preferSearchBackedGroups,
+  useGroupsSearch,
+  useMraGroupSubjects,
+} from './useGroupsSearch'
 
 interface GroupsTableProps {
   hiddenColumns?: string[]
@@ -131,6 +136,16 @@ const GroupsTableFromList = ({
       compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')
     )
   }, [additionalGroups, groups, mraGroups])
+
+  // Upgrade a selected MRA stub to the preferred hub Group when listGroups catches up.
+  // Leave an unrelated selection alone.
+  useEffect(() => {
+    if (!selectedGroup || !setSelectedGroup || isSearchBackedGroup(selectedGroup)) return
+    const preferred = mergedGroups.find((group) => group.metadata.name === selectedGroup.metadata.name)
+    if (preferred && isSearchBackedGroup(preferred) && preferred.metadata.uid !== selectedGroup.metadata.uid) {
+      setSelectedGroup(preferred)
+    }
+  }, [mergedGroups, selectedGroup, setSelectedGroup])
 
   const handleRadioSelect = useCallback(
     (uid: string) => {

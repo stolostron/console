@@ -5,6 +5,7 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Group, User } from '../../resources/rbac'
 import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
 import {
+  isSearchBackedGroup,
   useGroupIdentity,
   useHasHubGroups,
   useMraGroupSubjects,
@@ -106,8 +107,17 @@ function IdentitiesListView({
     if (initialSelectedIdentity.kind === 'User' && users && !selectedUser) {
       const user = users.find((u) => u.metadata.name === initialSelectedIdentity.name)
       if (user) setSelectedUser(user)
-    } else if (initialGroup && !selectedGroup) {
-      setSelectedGroup(initialGroup)
+    } else if (initialGroup) {
+      if (!selectedGroup) {
+        setSelectedGroup(initialGroup)
+      } else if (
+        selectedGroup.metadata.name === initialGroup.metadata.name &&
+        !isSearchBackedGroup(selectedGroup) &&
+        isSearchBackedGroup(initialGroup)
+      ) {
+        // Replace MRA stub with preferred hub Group for the same name.
+        setSelectedGroup(initialGroup)
+      }
     }
   }, [initialGroup, initialSelectedIdentity, selectedGroup, selectedUser, users])
 
