@@ -21,10 +21,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 function isDarkTheme() {
-  return (
-    document.documentElement.classList.contains('pf-v5-theme-dark') ||
-    document.documentElement.classList.contains('pf-v6-theme-dark')
-  )
+  return document.documentElement.classList.contains('pf-v6-theme-dark')
 }
 
 function toggleTheme() {
@@ -36,14 +33,14 @@ function toggleTheme() {
 }
 
 export function setLightTheme(save?: boolean) {
-  document.documentElement.classList.remove('pf-v5-theme-dark', 'pf-v6-theme-dark')
+  document.documentElement.classList.remove('pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'light')
   }
 }
 
 function setDarkTheme(save?: boolean) {
-  document.documentElement.classList.add('pf-v5-theme-dark', 'pf-v6-theme-dark')
+  document.documentElement.classList.add('pf-v6-theme-dark')
   if (save) {
     localStorage.setItem('theme', 'dark')
   }
@@ -58,6 +55,7 @@ export function ThemeSwitcher(props: { style?: CSSProperties }) {
         setLight(!isDarkTheme())
       }}
       variant="plain"
+      aria-label={light ? 'Switch to dark theme' : 'Switch to light theme'}
       icon={light ? <SunIcon /> : <MoonIcon />}
       style={{ ...props.style }}
     />

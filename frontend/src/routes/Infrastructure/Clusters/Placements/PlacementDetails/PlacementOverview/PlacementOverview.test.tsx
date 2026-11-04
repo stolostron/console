@@ -11,7 +11,7 @@ import {
   gitOpsClustersState,
 } from '../../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../../lib/nock-util'
-import { waitForText } from '../../../../../../lib/test-util'
+import { waitForNock, waitForText } from '../../../../../../lib/test-util'
 import {
   ApplicationSet,
   ApplicationSetApiVersion,
@@ -213,6 +213,12 @@ function nockAppSetList(namespace = 'default', appSets: ApplicationSet[] = []) {
   return nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind, metadata: { namespace } }, appSets)
 }
 
+async function renderPlacementOverview(props: OverviewComponentProps = {}) {
+  const appSetListNock = nockAppSetList()
+  render(<OverviewComponent {...props} />)
+  await waitForNock(appSetListNock)
+}
+
 describe('PlacementOverview page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
@@ -220,23 +226,20 @@ describe('PlacementOverview page', () => {
   })
 
   test('renders placement details', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('Details')
     await waitForText('test-placement')
     await waitForText('default')
   })
 
   test('renders cluster sets as links', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('cluster-set-1,')
     await waitForText('cluster-set-2')
   })
 
   test('renders selected clusters count', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('5')
   })
 
@@ -245,15 +248,13 @@ describe('PlacementOverview page', () => {
       ...mockPlacement,
       spec: {},
     }
-    nockAppSetList()
-    render(<OverviewComponent placement={placementNoSets} />)
+    await renderPlacementOverview({ placement: placementNoSets })
     await waitForText('test-placement')
     await waitForText('Details')
   })
 
   test('renders conditions table', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('Conditions')
     await waitForText('PlacementSatisfied')
     await waitForText('PlacementMisconfigured')
@@ -266,14 +267,12 @@ describe('PlacementOverview page', () => {
       ...mockPlacement,
       status: { conditions: [], numberOfSelectedClusters: 0 },
     }
-    nockAppSetList()
-    render(<OverviewComponent placement={placementNoConditions} />)
+    await renderPlacementOverview({ placement: placementNoConditions })
     await waitForText('No conditions')
   })
 
   test('renders last updated timestamp when PlacementSatisfied condition exists', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('Last updated')
   })
 
@@ -282,27 +281,23 @@ describe('PlacementOverview page', () => {
       ...mockPlacement,
       status: undefined,
     }
-    nockAppSetList()
-    render(<OverviewComponent placement={placementNoStatus} />)
+    await renderPlacementOverview({ placement: placementNoStatus })
     await waitForText('-', true)
   })
 
   test('renders filters as None when no predicates', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('Filters')
     await waitForText('None')
   })
 
   test('renders filters with predicates in code block', async () => {
-    nockAppSetList()
-    render(<OverviewComponent placement={mockPlacementWithPredicates} />)
+    await renderPlacementOverview({ placement: mockPlacementWithPredicates })
     await waitForText(/cloud=Amazon/, true)
   })
 
   test('renders placement decisions table', async () => {
-    nockAppSetList()
-    render(<OverviewComponent placementDecisions={[mockPlacementDecision]} />)
+    await renderPlacementOverview({ placementDecisions: [mockPlacementDecision] })
     await waitForText('PlacementDecisions')
     await waitForText('test-placement-decision-1')
     await waitForText('cluster-east,')
@@ -310,20 +305,16 @@ describe('PlacementOverview page', () => {
   })
 
   test('renders empty placement decisions state', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('No placement decisions')
   })
 
   test('renders Governance section when policies exist', async () => {
-    nockAppSetList()
-    render(
-      <OverviewComponent
-        placementBindings={[mockPlacementBinding]}
-        policies={[mockPolicy]}
-        policySets={[mockPolicySet]}
-      />
-    )
+    await renderPlacementOverview({
+      placementBindings: [mockPlacementBinding],
+      policies: [mockPolicy],
+      policySets: [mockPolicySet],
+    })
     await waitForText('Governance')
     await waitForText('test-policy')
     await waitForText('test-policyset')
@@ -332,15 +323,13 @@ describe('PlacementOverview page', () => {
   })
 
   test('renders System section when GitOpsClusters exist', async () => {
-    nockAppSetList()
-    render(<OverviewComponent gitOpsClusters={[mockGitOpsCluster]} />)
+    await renderPlacementOverview({ gitOpsClusters: [mockGitOpsCluster] })
     await waitForText('System')
     await waitForText('test-gitops')
   })
 
   test('hides Used in sections when no related resources', async () => {
-    nockAppSetList()
-    render(<OverviewComponent />)
+    await renderPlacementOverview()
     await waitForText('Used in', true)
     expect(screen.queryByText('Governance')).not.toBeInTheDocument()
     expect(screen.queryByText('Applications')).not.toBeInTheDocument()

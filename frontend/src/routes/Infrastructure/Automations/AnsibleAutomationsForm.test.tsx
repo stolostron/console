@@ -264,7 +264,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-form-group')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')
@@ -324,15 +324,15 @@ describe('add automation template page', () => {
     await changeYaml('towerAuthSecret: ', 'x') // change secret to xansible-test-secret -->error!!
     await changeYaml('name: ', 'y') // change job to ytest-job-pre-install-ii -->error!!
     await changeYaml('type: ', 'z') // change type to zJob -->error!!
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => expect(input.value).toContain('towerAuthSecret: xansible-test-secret'))
     // undo
     input.select()
     replaceTextAtSelection(input, saved)
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => expect(input).toHaveValue(saved))
 
     // close yaml
     await clickElement(screen.getByRole('switch', { name: /yaml/i }))
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Next' })).toBeEnabled())
 
     await clickByText('Next')
 
@@ -353,7 +353,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-form-group')
     await clickByText('Cancel', 1)
     await clickByPlaceholderText('Select an existing Ansible credential')
     await clickByText(mockSecret.metadata.name!)
@@ -407,7 +407,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-form-group')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')
@@ -438,7 +438,7 @@ describe('add automation template page', () => {
     // Should show the modal wizard
     await clickByText('Add credential')
     // Credentials type
-    await waitForTestId('credentialsType-input-toggle')
+    await waitForTestId('credentialsType-form-group')
     await clickByText('Cancel', 1)
 
     await clickByPlaceholderText('Select an existing Ansible credential')

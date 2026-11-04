@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, act } from '@testing-library/react'
+import { render } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { AcmCodeSnippet } from './AcmCodeSnippet'
 import { clickElement } from '~/lib/test-util'
@@ -26,10 +26,7 @@ describe('AcmCodeSnippet', () => {
     expect(getByTestId('snippet')).toBeInstanceOf(HTMLDivElement)
     expect(queryByText('real command')).toBeVisible()
     expect(queryByText(fakeCommand)).toBeNull()
-    await act(async () => {
-      await clickElement(getByTestId('copy-button-snippet'))
-      await new Promise((resolve) => setTimeout(resolve, 2100))
-    })
+    await clickElement(getByTestId('copy-button-snippet'))
     expect(document.execCommand).toHaveBeenCalled()
   })
   test('renders with fake command', () => {

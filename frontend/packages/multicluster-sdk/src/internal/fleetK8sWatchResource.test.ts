@@ -13,7 +13,7 @@ import { handleWebsocketEvent, startWatch, stopWatch, subscribe, useGetInitialRe
 
 import type { FleetWatchK8sResource } from '../types'
 import { NO_FLEET_AVAILABLE_ERROR } from './constants'
-import { renderHook } from '@testing-library/react'
+import { renderHook, waitFor } from '@testing-library/react'
 
 // Mock console methods
 const originalConsoleWarn = console.warn
@@ -27,7 +27,7 @@ class MockWebSocket {
   static OPEN = 1 as const
   static CLOSED = 2 as const
 
-  private _readyState: 0 | 1 | 2 | 3 = MockWebSocket.CONNECTING
+  private _readyState: 0 | 1 | 2 | 3 = MockWebSocket.OPEN
   url: string
   onmessage: ((event: any) => void) | null = null
   onclose: ((event: any) => void) | null = null
@@ -35,10 +35,6 @@ class MockWebSocket {
 
   constructor(url: string) {
     this.url = url
-    // Simulate immediate connection
-    setTimeout(() => {
-      this._readyState = MockWebSocket.OPEN
-    }, 0)
   }
 
   get readyState() {
@@ -857,11 +853,8 @@ describe('startWatch and stopWatch', () => {
     // Start the watch
     await startWatch(mockResource, mockModel, mockBasePath)
 
-    // Give time for subscription to trigger
-    await new Promise((resolve) => setTimeout(resolve, 10))
-
-    // setResult should have been called with the initial data
-    expect(setResult).toHaveBeenCalled()
+    // Wait for the initial data request to notify the subscription.
+    await waitFor(() => expect(setResult).toHaveBeenCalled())
     const lastCall = setResult.mock.calls[setResult.mock.calls.length - 1][0]
     expect(lastCall.data).toEqual([{ cluster: 'test-cluster', ...mockPod }])
     expect(lastCall.loaded).toBe(true)

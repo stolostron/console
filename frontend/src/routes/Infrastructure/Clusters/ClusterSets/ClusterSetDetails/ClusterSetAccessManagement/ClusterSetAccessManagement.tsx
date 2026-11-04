@@ -41,7 +41,7 @@ import { IdentitiesList } from '../../../../../../components/rbac/IdentitiesList
 import { useClusterSetDetailsContext } from '../ClusterSetDetails'
 
 const addAccessModalIdentitiesClass = css({
-  '& .pf-v5-c-table, & .pf-v6-c-table': {
+  '& .pf-v6-c-table': {
     backgroundColor: 'inherit',
     color: 'inherit',
   },
@@ -340,7 +340,7 @@ function AddUsersModal(props: {
                 placeholder={t('access.select.role')}
                 value={role}
                 onChange={(role) => setRole(role)}
-                style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}
+                style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}
               >
                 {clusterSet &&
                   getUserRoles().map((userRole) => (

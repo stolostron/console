@@ -6,9 +6,9 @@ import { css } from '@emotion/css'
 import { getItemWithExpiration, setItemWithExpiration } from '../AcmTable/AcmTableStateProvider'
 
 const visitedLinkClass = css`
-  color: var(--pf-v5-global--link--Color--visited) !important;
+  color: var(--pf-t--global--text--color--link--visited) !important;
   span {
-    color: var(--pf-v5-global--link--Color--visited) !important;
+    color: var(--pf-t--global--text--color--link--visited) !important;
   }
 `
 const visitedLinksKey = 'visited-links'

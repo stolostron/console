@@ -681,6 +681,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
           <Pagination
             itemCount={displayClusterList.length}
             perPage={perPage}
+            perPageOptions={[]}
             page={page}
             widgetId="pagination-options-menu-top"
             onFirstClick={this.handleFirstClick}
@@ -701,6 +702,7 @@ class ClusterDetailsContainer extends Component<ClusterDetailsContainerProps, Cl
           <Pagination
             itemCount={displayClusterList.length}
             perPage={perPage}
+            perPageOptions={[]}
             page={page}
             widgetId="pagination-options-menu-bottom"
             onFirstClick={this.handleFirstClick}

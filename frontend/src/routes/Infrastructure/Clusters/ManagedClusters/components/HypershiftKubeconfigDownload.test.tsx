@@ -262,7 +262,6 @@ describe('HypershiftKubconfigDownload', () => {
     const { queryAllByText, getByText } = await renderHypershiftKubconfigDownload(mockHostedCluster, fetchSecret)
     expect(queryAllByText('Download kubeconfig')).toHaveLength(1)
     await clickElement(getByText('Download kubeconfig'))
-    await new Promise((resolve) => setTimeout(resolve, 100))
     await waitForNocks(nocks)
   })
 

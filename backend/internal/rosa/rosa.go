@@ -388,20 +388,32 @@ func (h *Handler) clusterNameCheck(w http.ResponseWriter, r *http.Request, body 
 
 // vpcs queries AWS VPC inquiries (including security groups) for the selected region.
 func (h *Handler) vpcs(w http.ResponseWriter, r *http.Request, body []byte) {
-	var raw map[string]any
-	if err := json.Unmarshal(body, &raw); err != nil {
+	var request struct {
+		ServiceAccountID     string          `json:"service_account_id"`
+		ServiceAccountSecret string          `json:"service_account_secret"`
+		AWS                  json.RawMessage `json:"aws"`
+		Region               json.RawMessage `json:"region"`
+	}
+	if err := json.Unmarshal(body, &request); err != nil {
 		applog.Logger().Error("rosa vpcs", "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	_, tok, ok := h.authPayload(w, r, body, "vpcs")
-	if !ok {
+
+	tok, err := h.ssoToken(r.Context(), payload{
+		ServiceAccountID:     request.ServiceAccountID,
+		ServiceAccountSecret: request.ServiceAccountSecret,
+	})
+	if err != nil {
+		applog.Logger().Error("rosa vpcs sso", "error", err)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
 	vpcURL := h.APIURL + "/api/clusters_mgmt/v1/aws_inquiries/vpcs?fetchSecurityGroups=true"
 	out, err := h.postJSON(r.Context(), tok, vpcURL, map[string]any{
-		"aws":    raw["aws"],
-		"region": raw["region"],
+		"aws":    request.AWS,
+		"region": request.Region,
 	})
 	h.writeUpstream(w, "vpcs", out, err, map[string]string{"error": errString(err)})
 }

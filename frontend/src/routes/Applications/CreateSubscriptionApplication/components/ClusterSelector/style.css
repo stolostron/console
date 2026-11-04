@@ -5,11 +5,3 @@
 .btn-disabled {
   cursor: not-allowed !important;
 }
-
-.clusterSelector-container .pf-v6-c-accordion__expanded-content-body::after {
-  background-color: unset;
-}
-
-.clusterSelector-labels-section .labels-section .pf-v6-c-select {
-  margin-bottom: 10px;
-}

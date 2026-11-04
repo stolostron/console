@@ -484,7 +484,6 @@ describe('Create Argo Application Set', () => {
     )
     await waitForNocks(initialNocks)
 
-    await new Promise((resolve) => setTimeout(resolve, 500))
     await waitForText('Edit application set - push model')
   })
 })
