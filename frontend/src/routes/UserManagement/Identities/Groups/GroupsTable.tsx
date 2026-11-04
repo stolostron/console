@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { ComponentProps, useCallback, useMemo, useRef, useState } from 'react'
-import { AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableButtonAction } from '~/ui-components'
+import { AcmAlert, AcmButton, AcmEmptyState, AcmTable, compareStrings, IAcmTableButtonAction } from '~/ui-components'
 import { IRequestListView, IResultStatuses } from '../../../../lib/useAggregates'
 import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
@@ -153,27 +153,36 @@ const GroupsTableFromList = ({
     [areLinksDisplayed, handleRadioSelect, hiddenColumns, selectedGroup, setSelectedGroup, t]
   )
 
+  // emptyStateError only appears when the table has no rows; show an inline alert
+  // when cached/MRA rows remain after a listGroups failure (e.g. transient poll error).
+  const showGroupsErrorAlert = Boolean(groupsError) && !groupsLoading && mergedGroups.length > 0
+
   return (
-    <GroupsAcmTable
-      tableKey="groups-table-hub"
-      filters={filters}
-      columns={columns}
-      items={groupsLoading ? undefined : mergedGroups}
-      tableActionButtons={tableActionButtons}
-      resultView={{
-        page: 1,
-        loading: groupsLoading,
-        refresh: () => {},
-        items: [],
-        emptyResult: false,
-        processedItemCount: 0,
-        isPreProcessed: false,
-      }}
-      emptyStateError={groupsError}
-      isCreateButtonDisplayed={isCreateButtonDisplayed}
-      createButtonText={createButtonText}
-      onCreateClick={onCreateClick}
-    />
+    <>
+      {showGroupsErrorAlert && groupsError && (
+        <AcmAlert isInline noClose variant="danger" title={t('Error')} message={groupsError.message} />
+      )}
+      <GroupsAcmTable
+        tableKey="groups-table-hub"
+        filters={filters}
+        columns={columns}
+        items={groupsLoading ? undefined : mergedGroups}
+        tableActionButtons={tableActionButtons}
+        resultView={{
+          page: 1,
+          loading: groupsLoading,
+          refresh: () => {},
+          items: [],
+          emptyResult: false,
+          processedItemCount: 0,
+          isPreProcessed: false,
+        }}
+        emptyStateError={groupsError}
+        isCreateButtonDisplayed={isCreateButtonDisplayed}
+        createButtonText={createButtonText}
+        onCreateClick={onCreateClick}
+      />
+    </>
   )
 }
 

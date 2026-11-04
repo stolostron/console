@@ -555,6 +555,16 @@ describe('GroupsTable', () => {
       expect(screen.queryByText('In order to view Groups, add Identity provider')).not.toBeInTheDocument()
     })
 
+    test('should keep listGroups error visible when merged groups still have rows', async () => {
+      render(<Component groups={mockGroups} groupsError={new Error('listGroups failed')} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+        expect(screen.getByText('listGroups failed')).toBeInTheDocument()
+      })
+      expect(screen.getByText('Error')).toBeInTheDocument()
+    })
+
     test('should call setSelectedGroup when a hub group radio is selected', async () => {
       const mockSetSelectedGroup = jest.fn()
       render(<Component groups={mockGroups} setSelectedGroup={mockSetSelectedGroup} />)
