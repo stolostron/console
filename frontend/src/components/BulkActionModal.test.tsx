@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor, act } from '@testing-library/react'
-import { BulkActionModal } from './BulkActionModal'
+import { BulkActionModal, COMPLETE_DELAY_MS } from './BulkActionModal'
 import { clickElement, clickElementWithFakeTimers } from '~/lib/test-util'
 
 function makeRequestResult<T = unknown>(impl: () => Promise<T>) {
@@ -55,10 +55,10 @@ describe('BulkActionModal - actionOneByOne loop', () => {
       })
       await waitFor(() => expect(actionFn).toHaveBeenCalledTimes(3))
 
-      // Resolve third and allow the modal's 500ms completion delay to elapse
+      // Resolve third and allow the modal's completion delay to elapse
       await act(async () => {
         jest.advanceTimersByTime(funcTimeout)
-        jest.advanceTimersByTime(500)
+        jest.advanceTimersByTime(COMPLETE_DELAY_MS)
       })
       await waitFor(() => expect(close).toHaveBeenCalled())
     } finally {

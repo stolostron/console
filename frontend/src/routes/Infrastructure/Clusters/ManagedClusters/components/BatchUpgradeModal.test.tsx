@@ -3,7 +3,8 @@
 import { render, waitFor } from '@testing-library/react'
 import { StateProvider } from '~/lib/state-provider'
 import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } from '../../../../../lib/nock-util'
-import { waitForNocks, clickElement } from '~/lib/test-util'
+import { COMPLETE_DELAY_MS } from '~/components/BulkActionModal'
+import { advanceTimersByTime, clickElement, clickElementWithFakeTimers, waitForNocks } from '~/lib/test-util'
 import { ClusterCuratorDefinition } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import { BatchUpgradeModal } from './BatchUpgradeModal'
@@ -382,31 +383,41 @@ describe('BatchUpgradeModal', () => {
     expect(isClosed).toBe(true)
   })
   it('should show loading when click upgrade, and upgrade button should be disabled when loading', async () => {
-    let isClosed = false
-    const { getByText, queryByText } = render(
-      <StateProvider>
-        <MemoryRouter>
-          <BatchUpgradeModal
-            clusters={allClusters}
-            open={true}
-            close={() => {
-              isClosed = true
-            }}
-          />
-        </MemoryRouter>
-      </StateProvider>
-    )
-    const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
-    const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
-    expect(getByText('Update')).toBeTruthy()
-    await clickElement(getByText('Update'))
-    await waitFor(() => expect(queryByText('Updating')).toBeTruthy())
-    await clickElement(getByText('Updating')) // do additional click. make sure not calling update again
-    await clickElement(getByText('Updating'))
-    await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
-    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-    await waitFor(() => expect(queryByText('Updating')).toBeFalsy(), { timeout: 5000 })
-    await waitFor(() => expect(isClosed).toBe(true))
+    // Fake timers keep the modal in its processing state until we advance them. BulkActionModal
+    // waits COMPLETE_DELAY_MS after the requests settle before leaving the processing state, so with
+    // real timers the double-click below races that timeout and fails on a loaded machine.
+    jest.useFakeTimers()
+    try {
+      let isClosed = false
+      const { getByRole, queryByText } = render(
+        <StateProvider>
+          <MemoryRouter>
+            <BatchUpgradeModal
+              clusters={allClusters}
+              open={true}
+              close={() => {
+                isClosed = true
+              }}
+            />
+          </MemoryRouter>
+        </StateProvider>
+      )
+      const mockNockUpgrade1 = nockPatch(clusterCuratorReady1, getPatchUpdate('1.2.9'))
+      const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('2.2.6'))
+      await clickElementWithFakeTimers(getByRole('button', { name: 'Update' }))
+      const updatingButton = getByRole('button', { name: /Updating/ })
+      expect(updatingButton).toBeDisabled()
+      // additional clicks while loading must not submit again
+      await clickElementWithFakeTimers(updatingButton)
+      await clickElementWithFakeTimers(updatingButton)
+      await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
+      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+      await advanceTimersByTime(COMPLETE_DELAY_MS)
+      await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
+      await waitFor(() => expect(isClosed).toBe(true))
+    } finally {
+      jest.useRealTimers()
+    }
   })
 
   it('should close modal if click cancel', async () => {
