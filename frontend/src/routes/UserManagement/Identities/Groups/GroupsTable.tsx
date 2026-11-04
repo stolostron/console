@@ -102,11 +102,14 @@ const GroupsAcmTable = ({
   )
 }
 
-const GroupsTable = (props: GroupsTableProps) => {
-  if (props.groups !== undefined) {
-    return <GroupsTableFromList {...props} groups={props.groups} />
+const GroupsTable = (props: Readonly<GroupsTableProps>) => {
+  const { groups, groupsLoading, groupsError, ...tableProps } = props
+  if (groups !== undefined) {
+    return (
+      <GroupsTableFromList {...tableProps} groups={groups} groupsLoading={groupsLoading} groupsError={groupsError} />
+    )
   }
-  return <GroupsTableFromSearch {...props} />
+  return <GroupsTableFromSearch {...tableProps} />
 }
 
 const GroupsTableFromList = ({

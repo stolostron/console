@@ -29,14 +29,22 @@ interface IdentitiesListProps {
   groupsError?: Error
 }
 
-export function IdentitiesList(props: IdentitiesListProps = {}) {
-  if (props.groups !== undefined) {
-    return <IdentitiesListWithHubGroups {...props} groups={props.groups} />
+export function IdentitiesList(props: Readonly<IdentitiesListProps> = {}) {
+  const { groups, groupsLoading, groupsError, ...listProps } = props
+  if (groups !== undefined) {
+    return (
+      <IdentitiesListWithHubGroups
+        {...listProps}
+        groups={groups}
+        groupsLoading={groupsLoading}
+        groupsError={groupsError}
+      />
+    )
   }
-  return <IdentitiesListWithSearchGroups {...props} />
+  return <IdentitiesListWithSearchGroups {...listProps} />
 }
 
-function IdentitiesListWithSearchGroups(props: IdentitiesListProps) {
+function IdentitiesListWithSearchGroups(props: Readonly<IdentitiesListProps>) {
   const { hasGroups } = useHasHubGroups()
   const initialGroupName =
     props.initialSelectedIdentity?.kind === 'Group' ? props.initialSelectedIdentity.name : undefined
@@ -45,7 +53,7 @@ function IdentitiesListWithSearchGroups(props: IdentitiesListProps) {
   return <IdentitiesListView {...props} hasGroups={hasGroups} initialGroup={initialGroup} />
 }
 
-function IdentitiesListWithHubGroups(props: IdentitiesListProps & { groups: Group[] }) {
+function IdentitiesListWithHubGroups(props: Readonly<IdentitiesListProps & { groups: Group[] }>) {
   const { groups, groupsLoading, groupsError, initialSelectedIdentity } = props
   const mraGroups = useMraGroupSubjects()
   const hasGroups = groups.length > 0 || mraGroups.length > 0
@@ -84,7 +92,7 @@ function IdentitiesListView({
   hubGroups,
   groupsLoading,
   groupsError,
-}: IdentitiesListViewProps) {
+}: Readonly<IdentitiesListViewProps>) {
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
@@ -107,17 +115,19 @@ function IdentitiesListView({
     if (initialSelectedIdentity.kind === 'User' && users && !selectedUser) {
       const user = users.find((u) => u.metadata.name === initialSelectedIdentity.name)
       if (user) setSelectedUser(user)
-    } else if (initialGroup) {
-      if (!selectedGroup) {
-        setSelectedGroup(initialGroup)
-      } else if (
-        selectedGroup.metadata.name === initialGroup.metadata.name &&
+      return
+    }
+
+    if (!initialGroup) return
+
+    const shouldSelectInitialGroup =
+      !selectedGroup ||
+      (selectedGroup.metadata.name === initialGroup.metadata.name &&
         !isSearchBackedGroup(selectedGroup) &&
-        isSearchBackedGroup(initialGroup)
-      ) {
-        // Replace MRA stub with preferred hub Group for the same name.
-        setSelectedGroup(initialGroup)
-      }
+        isSearchBackedGroup(initialGroup))
+
+    if (shouldSelectInitialGroup) {
+      setSelectedGroup(initialGroup)
     }
   }, [initialGroup, initialSelectedIdentity, selectedGroup, selectedUser, users])
 
