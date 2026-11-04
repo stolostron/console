@@ -78,7 +78,7 @@ describe('ViewRepositoryModal', () => {
     renderModal()
 
     await screen.findByText('one.md')
-    expect(await screen.findByTestId('sync-editor')).toHaveTextContent('apps: apps/one.md')
+    expect(await screen.findByTestId('sync-editor')).toHaveTextContent('main: apps/one.md')
     await waitFor(() => expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument())
   })
 
