@@ -79,7 +79,20 @@ export function AcmCatalogCard({
   const fadedStyle = { opacity: disabled ? 0.5 : undefined }
 
   return (
-    <Card id={card.id} isLarge onClick={card.onClick} style={{ cursor: disabled ? undefined : 'pointer' }}>
+    <Card
+      id={card.id}
+      isLarge
+      onClick={card.onClick}
+      onKeyDown={(event) => {
+        if (!disabled && event.target === event.currentTarget && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault()
+          card.onClick?.()
+        }
+      }}
+      role={disabled ? undefined : 'button'}
+      tabIndex={disabled ? undefined : 0}
+      style={{ cursor: disabled ? undefined : 'pointer' }}
+    >
       <CardHeader
         actions={
           showSelect || showDropdown
@@ -232,7 +245,7 @@ export function AcmCatalogCard({
                 isInline
                 onClick={(event) => {
                   event.stopPropagation()
-                  window.open(card.learnMore, '_blank')
+                  window.open(card.learnMore, '_blank', 'noopener,noreferrer')
                 }}
               >
                 {t('Learn more')}

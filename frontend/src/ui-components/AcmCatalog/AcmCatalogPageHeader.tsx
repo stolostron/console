@@ -71,7 +71,16 @@ export function AcmCatalogPageHeader({
                         key={breadcrumb.id ?? breadcrumb.label}
                         id={breadcrumb.id}
                         component={breadcrumb.component}
-                        onClick={breadcrumb.to ? () => navigate(breadcrumb.to!) : undefined}
+                        to={breadcrumb.to}
+                        target={breadcrumb.target}
+                        onClick={
+                          breadcrumb.to && !breadcrumb.target
+                            ? (event) => {
+                                event.preventDefault()
+                                navigate(breadcrumb.to!)
+                              }
+                            : undefined
+                        }
                         isActive={!breadcrumb.to}
                         style={{
                           color: breadcrumb.to ? 'var(--pf-t--global--text--color--link--default)' : undefined,
