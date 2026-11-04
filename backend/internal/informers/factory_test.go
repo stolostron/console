@@ -410,6 +410,28 @@ func TestUnavailableCRDInvalidatesCache(t *testing.T) {
 	t.Fatal("expected Invalidate() to be called for an unavailable CRD")
 }
 
+// waitAllSpecsFailed blocks until every spec has recorded a resolve error.
+// Coalescing must be asserted only once all specs have actually attempted: a
+// spec that has not run yet cannot have invalidated, so a fixed sleep risks
+// counting one invalidation and passing for the wrong reason.
+func waitAllSpecsFailed(t *testing.T, c *InformerCache, want int) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		failed := 0
+		for _, s := range c.SpecStatuses() {
+			if s.Error != "" {
+				failed++
+			}
+		}
+		if failed == want {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("not every spec recorded a resolve error; statuses=%+v", c.SpecStatuses())
+}
+
 // Many permanently missing specs (AnsibleJob with no AAP, ACM kinds on MCE)
 // must not refetch discovery once per spec per retry round.
 func TestUnavailableCRDRefreshIsCoalesced(t *testing.T) {
@@ -420,9 +442,9 @@ func TestUnavailableCRDRefreshIsCoalesced(t *testing.T) {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	_ = StartSpecs(ctx, nil, mapper, specs)
-	time.Sleep(300 * time.Millisecond)
-	cancel()
+	defer cancel()
+	c := StartSpecs(ctx, nil, mapper, specs)
+	waitAllSpecsFailed(t, c, len(specs))
 
 	if got := mapper.invalidated.Load(); got != 1 {
 		t.Fatalf("Invalidate() called %d times across %d unavailable specs; want 1", got, len(specs))
