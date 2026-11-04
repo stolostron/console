@@ -107,9 +107,7 @@ const UsersAcmTable = ({
 const UsersTable = (props: Readonly<UsersTableProps>) => {
   const { users, usersLoading, usersError, ...tableProps } = props
   if (users !== undefined) {
-    return (
-      <UsersTableFromList {...tableProps} users={users} usersLoading={usersLoading} usersError={usersError} />
-    )
+    return <UsersTableFromList {...tableProps} users={users} usersLoading={usersLoading} usersError={usersError} />
   }
   return <UsersTableFromSearch {...tableProps} />
 }

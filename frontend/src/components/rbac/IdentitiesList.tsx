@@ -34,12 +34,7 @@ export function IdentitiesList(props: Readonly<IdentitiesListProps> = {}) {
   const { users, usersLoading, usersError, ...listProps } = props
   if (users !== undefined) {
     return (
-      <IdentitiesListWithHubUsers
-        {...listProps}
-        users={users}
-        usersLoading={usersLoading}
-        usersError={usersError}
-      />
+      <IdentitiesListWithHubUsers {...listProps} users={users} usersLoading={usersLoading} usersError={usersError} />
     )
   }
   return <IdentitiesListWithSearchUsers {...listProps} />
