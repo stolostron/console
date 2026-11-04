@@ -6,7 +6,7 @@ import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
-import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement } from '~/lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement, waitTimeout } from '~/lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -350,10 +350,15 @@ describe('Applications Page', () => {
     await clickElement(screen.getByTestId('export-search-result'))
     await clickElement(screen.getByText('Export all to CSV'))
 
-    await waitFor(() => {
-      const toastElement = screen.getByText(/Export successful/i)
-      expect(toastElement).toBeInTheDocument()
-    })
+    // The export path fetches every row before adding the toast, so give it the same timeout the rest
+    // of this suite uses rather than the 1s testing-library default.
+    await waitFor(
+      () => {
+        const toastElement = screen.getByText(/Export successful/i)
+        expect(toastElement).toBeInTheDocument()
+      },
+      { timeout: waitTimeout }
+    )
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [

@@ -498,4 +498,146 @@ describe('GroupsTable', () => {
       expect(screen.queryByRole('button', { name: 'Create group' })).not.toBeInTheDocument()
     })
   })
+
+  describe('hub Groups path (listGroups / non-Search)', () => {
+    test('should render provided groups without calling Search', async () => {
+      mockUseFleetSearch.mockClear()
+      mockUseSearchResultCountQuery.mockClear()
+
+      render(<Component groups={mockGroups} groupsLoading={false} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+        expect(screen.getByText('developers')).toBeInTheDocument()
+        expect(screen.getByText('sre-team')).toBeInTheDocument()
+      })
+
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+      expect(mockUseSearchResultCountQuery).not.toHaveBeenCalled()
+    })
+
+    test('should merge additionalGroups with hub groups', async () => {
+      const additionalGroup: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'extra-group', uid: 'extra-group', creationTimestamp: '2023-04-01T00:00:00Z' },
+        users: [],
+      }
+
+      render(<Component groups={mockGroups} additionalGroups={[additionalGroup]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('extra-group')).toBeInTheDocument()
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+    })
+
+    test('should include MRA-only groups not returned by listGroups', async () => {
+      mockUseFleetSearch.mockClear()
+
+      render(<Component groups={[]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('ops-team')).toBeInTheDocument()
+      })
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+    })
+
+    test('should show listGroups error instead of identity-provider empty state', async () => {
+      setupMocks([], [])
+      render(<Component groups={[]} groupsError={new Error('listGroups failed')} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Error')).toBeInTheDocument()
+        expect(screen.getByText('listGroups failed')).toBeInTheDocument()
+      })
+      expect(screen.queryByText('In order to view Groups, add Identity provider')).not.toBeInTheDocument()
+    })
+
+    test('should keep listGroups error visible when merged groups still have rows', async () => {
+      render(<Component groups={mockGroups} groupsError={new Error('listGroups failed')} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+        expect(screen.getByText('listGroups failed')).toBeInTheDocument()
+      })
+      expect(screen.getByText('Error')).toBeInTheDocument()
+    })
+
+    test('should replace a selected MRA stub with the preferred hub Group of the same name', async () => {
+      const mockSetSelectedGroup = jest.fn()
+      const mraStub: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: [],
+      }
+      const hubGroup: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team-uid', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: ['ops1'],
+      }
+
+      const { rerender } = render(
+        <Component groups={[]} selectedGroup={mraStub} setSelectedGroup={mockSetSelectedGroup} />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText('ops-team')).toBeInTheDocument()
+      })
+
+      mockSetSelectedGroup.mockClear()
+      rerender(
+        <StateProvider>
+          <MemoryRouter>
+            <GroupsTable groups={[hubGroup]} selectedGroup={mraStub} setSelectedGroup={mockSetSelectedGroup} />
+          </MemoryRouter>
+        </StateProvider>
+      )
+
+      await waitFor(() => {
+        expect(mockSetSelectedGroup).toHaveBeenCalledWith(
+          expect.objectContaining({
+            metadata: expect.objectContaining({ name: 'ops-team', uid: 'ops-team-uid' }),
+          })
+        )
+      })
+    })
+
+    test('should not replace selection when preferred hub Group is a different name', async () => {
+      const mockSetSelectedGroup = jest.fn()
+      const selectedStub: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'ops-team', uid: 'ops-team', creationTimestamp: '2023-02-01T00:00:00Z' },
+        users: [],
+      }
+
+      render(<Component groups={mockGroups} selectedGroup={selectedStub} setSelectedGroup={mockSetSelectedGroup} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+
+      expect(mockSetSelectedGroup).not.toHaveBeenCalled()
+    })
+
+    test('should call setSelectedGroup when a hub group radio is selected', async () => {
+      const mockSetSelectedGroup = jest.fn()
+      render(<Component groups={mockGroups} setSelectedGroup={mockSetSelectedGroup} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()
+      })
+
+      const radio = screen.getByRole('radio', { name: 'Select kubevirt-admins' })
+      radio.click()
+
+      expect(mockSetSelectedGroup).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'kubevirt-admins' }) })
+      )
+    })
+  })
 })
