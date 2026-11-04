@@ -8,6 +8,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/rest"
@@ -92,6 +93,31 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 	go c.logMemoryWhenReady(ctx)
 }
 
+// resolveGVR looks the spec's GVR up in discovery, forcing one refetch from
+// the API server when the cached lookup fails.
+//
+// mapper is a memory-cached discovery client: it snapshots the whole discovery
+// document on first use and only drops it on Invalidate. A pod that starts
+// while the hub is still establishing CRDs therefore caches a snapshot that is
+// missing them, and re-reading that same snapshot every retry round can never
+// succeed — the spec logs "informer spec unavailable" forever even though the
+// CRD now exists. Both failure shapes come straight out of that snapshot with
+// no API call: memory.ErrCacheNotFound ("not found") when the whole
+// groupVersion is absent, and errKindNotFound when the cached resource list
+// for a present groupVersion does not carry the kind.
+//
+// Re-resolving only after a granted refresh keeps the refetch and the retry in
+// the same critical section, so the spec that paid for the refresh is the one
+// that sees the fresh document; the refetch repopulates the shared cache, so
+// the other specs pick it up on their own next attempt.
+func (c *InformerCache) resolveGVR(mapper ResourceMapper, st *specRuntime) (schema.GroupVersionResource, error) {
+	gvr, err := ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+	if err == nil || !c.refresh.request(mapper) {
+		return gvr, err
+	}
+	return ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+}
+
 // runSpec resolves the GVR and starts a SharedIndexInformer for one WatchSpec.
 // GVR resolution failures retry until ctx is canceled. After the informer
 // starts, an initial cache-sync timeout waits for that same informer to sync
@@ -102,7 +128,7 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 		if ctx.Err() != nil {
 			return
 		}
-		gvr, err := ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+		gvr, err := c.resolveGVR(mapper, st)
 		if err != nil {
 			st.setError(err)
 			if isUnavailable(err) {
@@ -112,9 +138,6 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			} else {
 				applog.Logger().Warn("informer GVR resolve failed; retrying",
 					"kind", st.spec.Kind, "apiVersion", st.spec.APIVersion, "error", err)
-				if inv, ok := mapper.(CacheInvalidator); ok {
-					inv.Invalidate()
-				}
 			}
 			if !waitRetry(ctx) {
 				return

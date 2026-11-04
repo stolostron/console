@@ -376,7 +376,7 @@ func TestStaleDiscoveryCacheInvalidatedOnRetry(t *testing.T) {
 }
 
 type unavailableMapper struct {
-	invalidated atomic.Bool
+	invalidated atomic.Int32
 }
 
 func (m *unavailableMapper) ServerResourcesForGroupVersion(string) (*metav1.APIResourceList, error) {
@@ -384,21 +384,28 @@ func (m *unavailableMapper) ServerResourcesForGroupVersion(string) (*metav1.APIR
 }
 
 func (m *unavailableMapper) Invalidate() {
-	m.invalidated.Store(true)
+	m.invalidated.Add(1)
 }
 
-func TestUnavailableCRDDoesNotInvalidateCache(t *testing.T) {
+// An "unavailable" lookup is served from the cached discovery snapshot without
+// touching the API server, so it must still force one refetch; otherwise a pod
+// that cached a snapshot taken before the CRDs were established retries that
+// same snapshot forever and only a restart recovers it.
+func TestUnavailableCRDInvalidatesCache(t *testing.T) {
 	mapper := &unavailableMapper{}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	_ = StartSpecs(ctx, nil, mapper, []WatchSpec{watch("AnsibleJob", "tower.ansible.com/v1alpha1")})
 
-	time.Sleep(200 * time.Millisecond)
-	cancel()
-
-	if mapper.invalidated.Load() {
-		t.Fatal("Invalidate() should not be called for unavailable CRDs")
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if mapper.invalidated.Load() > 0 {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
+	t.Fatal("expected Invalidate() to be called for an unavailable CRD")
 }
 
 func TestAcquireStartSlotCanceled(t *testing.T) {

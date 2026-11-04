@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
+	"time"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,6 +24,36 @@ type ResourceMapper interface {
 // Calling Invalidate forces the next lookup to fetch fresh data from the API server.
 type CacheInvalidator interface {
 	Invalidate()
+}
+
+// discoveryRefresh coalesces cached-discovery invalidation across the spec
+// goroutines. Invalidate drops the whole cached discovery document, so the
+// first spec to force a refetch repopulates it for every other spec; without
+// the throttle a hub that is legitimately missing CRDs (AnsibleJob with no AAP
+// installed, ACM-only kinds on MCE) would refetch discovery once per missing
+// spec on every retry round.
+type discoveryRefresh struct {
+	mu   sync.Mutex
+	last time.Time
+}
+
+// request invalidates mapper's cached discovery and reports whether it did.
+// It returns false when mapper does not cache, or when another spec already
+// forced a refetch within discoveryRefreshInterval — the caller should then
+// keep the failure it already has and wait for its next retry.
+func (r *discoveryRefresh) request(mapper ResourceMapper) bool {
+	inv, ok := mapper.(CacheInvalidator)
+	if !ok {
+		return false
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if !r.last.IsZero() && time.Since(r.last) < discoveryRefreshInterval {
+		return false
+	}
+	r.last = time.Now()
+	inv.Invalidate()
+	return true
 }
 
 var errKindNotFound = errors.New("kind not found for apiVersion")
