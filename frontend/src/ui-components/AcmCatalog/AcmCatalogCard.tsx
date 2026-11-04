@@ -30,7 +30,6 @@ import {
 import { EllipsisVIcon, ExternalLinkAltIcon, OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import { useState } from 'react'
 import { useTranslation } from '~/lib/acm-i18next'
-import { AcmScrollable } from '../AcmScrollable/AcmScrollable'
 import { CatalogCardItemType, CatalogItemAction, ICatalogCard, ICatalogCardListItem } from './catalogTypes'
 
 function CardList({ items, icon }: { items: ICatalogCardListItem[]; icon?: React.ReactNode }) {
@@ -187,30 +186,28 @@ export function AcmCatalogCard({
         </Split>
       </CardHeader>
       {card.items && (
-        <AcmScrollable>
-          <CardBody style={{ paddingTop: 0, ...fadedStyle }}>
-            <DescriptionList>
-              {card.items.map((item, index) =>
-                item.type === CatalogCardItemType.Description ? (
-                  <DescriptionList key={index}>
-                    <DescriptionListGroup>
-                      <span style={{ opacity: 0.9 }}>{item.description}</span>
-                    </DescriptionListGroup>
-                  </DescriptionList>
-                ) : (
-                  <DescriptionList key={index} orientation={item.horizontal ? { sm: 'horizontal' } : undefined}>
-                    <DescriptionListGroup>
-                      <DescriptionListTerm>{item.title}</DescriptionListTerm>
-                      <DescriptionListDescription>
-                        <CardList icon={item.icon} items={item.items} />
-                      </DescriptionListDescription>
-                    </DescriptionListGroup>
-                  </DescriptionList>
-                )
-              )}
-            </DescriptionList>
-          </CardBody>
-        </AcmScrollable>
+        <CardBody style={{ paddingTop: 0, ...fadedStyle }}>
+          <DescriptionList>
+            {card.items.map((item, index) =>
+              item.type === CatalogCardItemType.Description ? (
+                <DescriptionList key={index}>
+                  <DescriptionListGroup>
+                    <span style={{ opacity: 0.9 }}>{item.description}</span>
+                  </DescriptionListGroup>
+                </DescriptionList>
+              ) : (
+                <DescriptionList key={index} orientation={item.horizontal ? { sm: 'horizontal' } : undefined}>
+                  <DescriptionListGroup>
+                    <DescriptionListTerm>{item.title}</DescriptionListTerm>
+                    <DescriptionListDescription>
+                      <CardList icon={item.icon} items={item.items} />
+                    </DescriptionListDescription>
+                  </DescriptionListGroup>
+                </DescriptionList>
+              )
+            )}
+          </DescriptionList>
+        </CardBody>
       )}
       {(card.labels || card.learnMore) && (
         <CardFooter>

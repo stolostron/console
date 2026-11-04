@@ -17,7 +17,6 @@ import { PlusCircleIcon } from '@patternfly/react-icons'
 import { ReactNode, useEffect, useState } from 'react'
 import { useTranslation } from '~/lib/acm-i18next'
 import { usePaginationTitles } from '~/lib/paginationStrings'
-import { AcmScrollable } from '../AcmScrollable/AcmScrollable'
 import { AcmCatalog } from './AcmCatalog'
 import { ICatalogCard } from './catalogTypes'
 
@@ -48,7 +47,7 @@ export function AcmCatalogView({
   }, [items.length, page, perPage])
 
   return (
-    <div className="pf-v6-u-display-flex pf-v6-u-flex-direction-column pf-v6-u-h-100">
+    <>
       {items.length === 0 ? (
         <div style={{ paddingTop: 'var(--pf-t--global--spacer--2xl)' }}>
           <EmptyState headingLevel="h2" icon={PlusCircleIcon} titleText={t('No items yet')}>
@@ -56,18 +55,16 @@ export function AcmCatalogView({
           </EmptyState>
         </div>
       ) : (
-        <AcmScrollable>
-          <PageSection hasBodyWrapper={false} className="pf-v6-u-flex-grow-1 pf-v6-u-p-lg">
-            <AcmCatalog keyFn={itemKeyFn} items={pagedItems} itemToCardFn={itemToCardFn} />
-            {customCatalogSection}
-          </PageSection>
-        </AcmScrollable>
+        <PageSection hasBodyWrapper={false} className="pf-v6-u-flex-grow-1 pf-v6-u-p-lg">
+          <AcmCatalog keyFn={itemKeyFn} items={pagedItems} itemToCardFn={itemToCardFn} />
+          {customCatalogSection}
+        </PageSection>
       )}
       {(onBack || onCancel || showPagination) && (
         <PageSection
           hasBodyWrapper={false}
           padding={{ default: 'noPadding' }}
-          style={{ flexGrow: 0, padding: 16 }}
+          style={{ padding: 16 }}
           stickyOnBreakpoint={{ default: 'bottom' }}
         >
           <Split>
@@ -108,6 +105,6 @@ export function AcmCatalogView({
           </Split>
         </PageSection>
       )}
-    </div>
+    </>
   )
 }
