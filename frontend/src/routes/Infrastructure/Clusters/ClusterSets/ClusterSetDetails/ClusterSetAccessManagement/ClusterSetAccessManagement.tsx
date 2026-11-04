@@ -58,7 +58,13 @@ export function ClusterSetAccessManagement() {
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
   const { data, refresh, error, startPolling, stopPolling } = useQuery(listClusterRoleBindings)
-  const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
+  const {
+    data: groups,
+    loading: groupsLoading,
+    error: groupsError,
+    startPolling: groupsStartPolling,
+    stopPolling: groupsStopPolling,
+  } = useQuery(listGroups)
 
   useEffect(() => {
     startPolling()
@@ -167,6 +173,9 @@ export function ClusterSetAccessManagement() {
             refresh()
             setAddModalOpen(false)
           }}
+          groups={groups ?? []}
+          groupsLoading={groupsLoading}
+          groupsError={groupsError}
         />
         <AcmTable<ClusterRoleBinding>
           aria-label={t('Cluster set access table')}
@@ -254,7 +263,15 @@ export function ClusterSetAccessManagement() {
   )
 }
 
-function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
+function AddUsersModal(
+  props: Readonly<{
+    isOpen: boolean
+    onClose: () => void
+    groups: Group[]
+    groupsLoading: boolean
+    groupsError?: Error
+  }>
+) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
   const [selectedIdentity, setSelectedIdentity] = useState<{ kind: 'User' | 'Group'; name: string } | undefined>()
@@ -307,6 +324,9 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
                   onUserSelect={handleUserSelect}
                   onGroupSelect={handleGroupSelect}
                   initialSelectedIdentity={selectedIdentity}
+                  groups={props.groups}
+                  groupsLoading={props.groupsLoading}
+                  groupsError={props.groupsError}
                 />
               </div>
               <AcmSelect

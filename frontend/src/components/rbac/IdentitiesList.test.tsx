@@ -16,6 +16,13 @@ jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
 jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () => ({
   useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
   useGroupIdentity: jest.fn(),
+  useMraGroupSubjects: jest.fn(() => []),
+  isSearchBackedGroup: (group: { metadata?: { name?: string; uid?: string }; userCount?: number }) => {
+    if (group.userCount !== undefined) return true
+    const name = group.metadata?.name
+    const uid = group.metadata?.uid
+    return Boolean(uid && name && uid !== name)
+  },
 }))
 
 const mockUseMergedUsers = useMergedUsers as jest.MockedFunction<typeof useMergedUsers>
@@ -125,6 +132,9 @@ jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
       data-testid="groups-table"
       data-arelinks={props.areLinksDisplayed}
       data-additionalgroups={JSON.stringify((props.additionalGroups ?? []).map((g: any) => g.metadata.name))}
+      data-hubgroups={JSON.stringify((props.groups ?? []).map((g: any) => g.metadata.name))}
+      data-groupsloading={String(!!props.groupsLoading)}
+      data-groupserror={props.groupsError?.message ?? ''}
       data-iscreatebuttondisplayed={String(!!props.isCreateButtonDisplayed)}
       data-createbuttontext={props.createButtonText ?? ''}
     >
@@ -144,6 +154,12 @@ jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
         props.additionalGroups?.map((g: any) => (
           <button key={g.metadata.name} onClick={() => props.setSelectedGroup(g)}>
             Select {g.metadata.name}
+          </button>
+        ))}
+      {props.setSelectedGroup &&
+        props.groups?.map((g: any) => (
+          <button key={`hub-${g.metadata.name}`} onClick={() => props.setSelectedGroup(g)}>
+            Select hub {g.metadata.name}
           </button>
         ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create Group Action</button>}
@@ -709,6 +725,101 @@ describe('IdentitiesList', () => {
       expect(mockOnGroupSelect).toHaveBeenCalledTimes(3)
       expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
         expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
+  })
+
+  describe('hub Groups path (listGroups / non-Search)', () => {
+    test('should pass hub groups to GroupsTable and skip Search hooks', async () => {
+      render(<Component groups={mockGroups} groupsLoading={false} />)
+
+      expect(mockUseHasHubGroups).not.toHaveBeenCalled()
+      expect(mockUseGroupIdentity).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('groups-table')).toBeInTheDocument()
+      })
+
+      const groupsTable = screen.getByTestId('groups-table')
+      expect(groupsTable).toHaveAttribute('data-hubgroups', JSON.stringify(['developers', 'ops-mra']))
+      expect(groupsTable).toHaveAttribute('data-groupsloading', 'false')
+    })
+
+    test('should forward groupsError to GroupsTable', async () => {
+      render(<Component groups={[]} groupsError={new Error('listGroups failed')} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('groups-table')).toHaveAttribute('data-groupserror', 'listGroups failed')
+      })
+    })
+
+    test('should replace an MRA stub initial selection with the preferred hub Group', async () => {
+      const { useMraGroupSubjects } = jest.requireMock(
+        '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
+      ) as { useMraGroupSubjects: jest.Mock }
+
+      useMraGroupSubjects.mockReturnValue([
+        {
+          apiVersion: 'user.openshift.io/v1',
+          kind: 'Group',
+          metadata: { name: 'developers', uid: 'developers' },
+          users: [],
+        },
+      ])
+
+      const hubDevelopers: Group = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'Group',
+        metadata: { name: 'developers', uid: 'developers-hub-uid', creationTimestamp: '2025-01-01T00:00:00Z' },
+        users: ['alice'],
+      }
+
+      const { rerender } = render(
+        <Component groups={[]} initialSelectedIdentity={{ kind: 'Group', name: 'developers' }} />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()
+      })
+
+      useMraGroupSubjects.mockReturnValue([])
+      rerender(
+        <StateProvider>
+          <MemoryRouter>
+            <IdentitiesList groups={[hubDevelopers]} initialSelectedIdentity={{ kind: 'Group', name: 'developers' }} />
+          </MemoryRouter>
+        </StateProvider>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByTestId('groups-table')).toHaveAttribute('data-hubgroups', JSON.stringify(['developers']))
+        expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()
+      })
+    })
+
+    test('should resolve initial Group selection from hub groups', async () => {
+      render(<Component groups={mockGroups} initialSelectedIdentity={{ kind: 'Group', name: 'developers' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()
+      })
+      expect(mockUseGroupIdentity).not.toHaveBeenCalled()
+    })
+
+    test('should call onGroupSelect when selecting a hub group', async () => {
+      const mockOnGroupSelect = jest.fn()
+      render(<Component groups={mockGroups} onGroupSelect={mockOnGroupSelect} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+      await waitFor(() => expect(screen.getByTestId('groups-table')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select hub developers' }))
+      expect(mockOnGroupSelect).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'developers' }) })
       )
     })
   })

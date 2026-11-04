@@ -14,6 +14,7 @@ import {
   useGroupsSearch,
   useGroupIdentity,
   useHasHubGroups,
+  useMraGroupSubjects,
 } from './useGroupsSearch'
 
 jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
@@ -441,6 +442,58 @@ describe('findIndexedGroupName', () => {
     })
 
     await expect(findIndexedGroupName('developers', 'local-cluster')).resolves.toBe('developers')
+  })
+})
+
+describe('useMraGroupSubjects', () => {
+  test('returns an empty list when there are no MulticlusterRoleAssignments', () => {
+    setupAtoms([])
+    const { result } = renderHook(() => useMraGroupSubjects())
+    expect(result.current).toEqual([])
+  })
+
+  test('maps Group subjects to Group stubs without calling Search', () => {
+    setupAtoms([opsMra, developersMra])
+    mockUseFleetSearch.mockClear()
+
+    const { result } = renderHook(() => useMraGroupSubjects())
+
+    expect(result.current.map((group) => group.metadata.name)).toEqual(['ops-team', 'developers'])
+    expect(result.current.every((group) => group.kind === 'Group')).toBe(true)
+    expect(result.current.every((group) => group.metadata.uid === group.metadata.name)).toBe(true)
+    expect(mockUseFleetSearch).not.toHaveBeenCalled()
+  })
+
+  test('ignores User subjects and empty Group names', () => {
+    const userMra: MulticlusterRoleAssignment = {
+      apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+      kind: 'MulticlusterRoleAssignment',
+      metadata: { name: 'mra-user', creationTimestamp: '2023-02-03T00:00:00Z' },
+      spec: { subject: { kind: 'User', name: 'some-user' }, roleAssignments: [] },
+    }
+    const emptyNameMra: MulticlusterRoleAssignment = {
+      apiVersion: 'rbac.open-cluster-management.io/v1beta1',
+      kind: 'MulticlusterRoleAssignment',
+      metadata: { name: 'mra-empty', creationTimestamp: '2023-02-04T00:00:00Z' },
+      spec: { subject: { kind: 'Group', name: '' }, roleAssignments: [] },
+    }
+
+    setupAtoms([opsMra, userMra, emptyNameMra])
+
+    const { result } = renderHook(() => useMraGroupSubjects())
+    expect(result.current.map((group) => group.metadata.name)).toEqual(['ops-team'])
+  })
+
+  test('dedupes Group subjects that share a name', () => {
+    const duplicateOpsMra: MulticlusterRoleAssignment = {
+      ...opsMra,
+      metadata: { ...opsMra.metadata, name: 'mra-ops-2' },
+    }
+    setupAtoms([opsMra, duplicateOpsMra])
+
+    const { result } = renderHook(() => useMraGroupSubjects())
+    expect(result.current).toHaveLength(1)
+    expect(result.current[0].metadata.name).toBe('ops-team')
   })
 })
 
