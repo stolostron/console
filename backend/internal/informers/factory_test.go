@@ -4,10 +4,12 @@ package informers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -406,6 +408,72 @@ func TestUnavailableCRDInvalidatesCache(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 	}
 	t.Fatal("expected Invalidate() to be called for an unavailable CRD")
+}
+
+// Many permanently missing specs (AnsibleJob with no AAP, ACM kinds on MCE)
+// must not refetch discovery once per spec per retry round.
+func TestUnavailableCRDRefreshIsCoalesced(t *testing.T) {
+	mapper := &unavailableMapper{}
+	specs := make([]WatchSpec, 0, 20)
+	for i := range 20 {
+		specs = append(specs, watch(fmt.Sprintf("Missing%d", i), "tower.ansible.com/v1alpha1"))
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	_ = StartSpecs(ctx, nil, mapper, specs)
+	time.Sleep(300 * time.Millisecond)
+	cancel()
+
+	if got := mapper.invalidated.Load(); got != 1 {
+		t.Fatalf("Invalidate() called %d times across %d unavailable specs; want 1", got, len(specs))
+	}
+}
+
+// recoveringMapper mimics a memory-cached discovery client whose snapshot was
+// taken while the CRD was still being established: every lookup fails with the
+// memory.ErrCacheNotFound shape ("not found") until Invalidate forces a
+// refetch, which then sees the kind that the API server was serving all along.
+type recoveringMapper struct {
+	mu    sync.Mutex
+	fresh bool
+}
+
+func (m *recoveringMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !m.fresh {
+		return nil, errors.New("not found")
+	}
+	return &metav1.APIResourceList{GroupVersion: gv, APIResources: []metav1.APIResource{
+		{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}},
+	}}, nil
+}
+
+func (m *recoveringMapper) Invalidate() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.fresh = true
+}
+
+// ACM-50052: the spec must start its informer without a pod restart once the
+// stale discovery snapshot is refetched.
+func TestStaleDiscoverySnapshotRecoversWithoutRestart(t *testing.T) {
+	scheme := runtime.NewScheme()
+	listKinds := map[schema.GroupVersionResource]string{
+		{Version: "v1", Resource: "configmaps"}: "ConfigMapList",
+	}
+	cm := uObj("v1", "ConfigMap", "ns", "settings", "uid-1", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, cm)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, client, &recoveringMapper{}, []WatchSpec{watch("ConfigMap", "v1")})
+
+	waitSynced(t, c)
+	got := c.ListByKind("v1", "ConfigMap")
+	if len(got) != 1 || got[0].GetName() != "settings" {
+		t.Fatalf("store %+v; want the ConfigMap to be cached after discovery refresh", names(got))
+	}
 }
 
 func TestAcquireStartSlotCanceled(t *testing.T) {
