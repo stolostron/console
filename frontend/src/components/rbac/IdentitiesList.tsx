@@ -28,14 +28,24 @@ interface IdentitiesListProps {
   usersError?: Error
 }
 
-export function IdentitiesList(props: IdentitiesListProps = {}) {
-  if (props.users !== undefined) {
-    return <IdentitiesListWithHubUsers {...props} users={props.users} />
+type IdentitiesListBaseProps = Omit<IdentitiesListProps, 'users' | 'usersLoading' | 'usersError'>
+
+export function IdentitiesList(props: Readonly<IdentitiesListProps> = {}) {
+  const { users, usersLoading, usersError, ...listProps } = props
+  if (users !== undefined) {
+    return (
+      <IdentitiesListWithHubUsers
+        {...listProps}
+        users={users}
+        usersLoading={usersLoading}
+        usersError={usersError}
+      />
+    )
   }
-  return <IdentitiesListWithSearchUsers {...props} />
+  return <IdentitiesListWithSearchUsers {...listProps} />
 }
 
-function IdentitiesListWithSearchUsers(props: IdentitiesListProps) {
+function IdentitiesListWithSearchUsers(props: Readonly<IdentitiesListBaseProps>) {
   const { hasUsers } = useHasHubUsers()
   const initialUserName =
     props.initialSelectedIdentity?.kind === 'User' ? props.initialSelectedIdentity.name : undefined
@@ -44,7 +54,7 @@ function IdentitiesListWithSearchUsers(props: IdentitiesListProps) {
   return <IdentitiesListView {...props} hasUsers={hasUsers} initialUser={initialUser} />
 }
 
-function IdentitiesListWithHubUsers(props: IdentitiesListProps & { users: User[] }) {
+function IdentitiesListWithHubUsers(props: Readonly<IdentitiesListProps & { users: User[] }>) {
   const { users, usersLoading, usersError, initialSelectedIdentity } = props
   const mraUsers = useMraUserSubjects()
   const hasUsers = users.length > 0 || mraUsers.length > 0
@@ -68,10 +78,12 @@ function IdentitiesListWithHubUsers(props: IdentitiesListProps & { users: User[]
   )
 }
 
-interface IdentitiesListViewProps extends IdentitiesListProps {
+interface IdentitiesListViewProps extends IdentitiesListBaseProps {
   hasUsers: boolean
   initialUser: User | undefined
   hubUsers?: User[]
+  usersLoading?: boolean
+  usersError?: Error
 }
 
 function IdentitiesListView({
@@ -83,7 +95,7 @@ function IdentitiesListView({
   hubUsers,
   usersLoading,
   usersError,
-}: IdentitiesListViewProps) {
+}: Readonly<IdentitiesListViewProps>) {
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()

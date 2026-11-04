@@ -267,13 +267,15 @@ export function ClusterSetAccessManagement() {
   )
 }
 
-function AddUsersModal(props: {
-  isOpen: boolean
-  onClose: () => void
-  users: User[]
-  usersLoading: boolean
-  usersError?: Error
-}) {
+function AddUsersModal(
+  props: Readonly<{
+    isOpen: boolean
+    onClose: () => void
+    users: User[]
+    usersLoading: boolean
+    usersError?: Error
+  }>
+) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
   const [selectedIdentity, setSelectedIdentity] = useState<{ kind: 'User' | 'Group'; name: string } | undefined>()

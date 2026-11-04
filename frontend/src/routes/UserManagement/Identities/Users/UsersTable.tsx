@@ -24,6 +24,8 @@ interface UsersTableProps {
   tableActionButtons?: IAcmTableButtonAction[]
 }
 
+type UsersTableBaseProps = Omit<UsersTableProps, 'users' | 'usersLoading' | 'usersError'>
+
 type UsersAcmTableProps = Omit<ComponentProps<typeof AcmTable<User>>, 'aria-label' | 'keyFn' | 'emptyState'> & {
   tableKey: string
   emptyStateError?: Error
@@ -102,11 +104,14 @@ const UsersAcmTable = ({
   )
 }
 
-const UsersTable = (props: UsersTableProps) => {
-  if (props.users !== undefined) {
-    return <UsersTableFromList {...props} users={props.users} />
+const UsersTable = (props: Readonly<UsersTableProps>) => {
+  const { users, usersLoading, usersError, ...tableProps } = props
+  if (users !== undefined) {
+    return (
+      <UsersTableFromList {...tableProps} users={users} usersLoading={usersLoading} usersError={usersError} />
+    )
   }
-  return <UsersTableFromSearch {...props} />
+  return <UsersTableFromSearch {...tableProps} />
 }
 
 const UsersTableFromList = ({
@@ -122,7 +127,7 @@ const UsersTableFromList = ({
   createButtonText,
   onCreateClick,
   tableActionButtons,
-}: UsersTableProps & { users: User[] }) => {
+}: Readonly<UsersTableProps & { users: User[] }>) => {
   const { t } = useTranslation()
   const mraUsers = useMraUserSubjects()
 
@@ -187,7 +192,7 @@ const UsersTableFromSearch = ({
   createButtonText,
   onCreateClick,
   tableActionButtons,
-}: UsersTableProps) => {
+}: Readonly<UsersTableBaseProps>) => {
   const { t } = useTranslation()
   const [request, setRequest] = useState<IRequestListView>()
 
