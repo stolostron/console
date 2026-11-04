@@ -7,6 +7,7 @@ import { render, waitFor } from '@testing-library/react'
 import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { MemoryRouter } from 'react-router'
+import { COMPLETE_DELAY_MS } from '~/components/BulkActionModal'
 import { advanceTimersByTime, clickElement, clickElementWithFakeTimers } from '~/lib/test-util'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
@@ -284,7 +285,7 @@ describe('BatchChannelSelectModal', () => {
       await clickElementWithFakeTimers(savingButton)
       await clickElementWithFakeTimers(savingButton)
       await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await advanceTimersByTime(500) // COMPLETE_DELAY_MS in BulkActionModal
+      await advanceTimersByTime(COMPLETE_DELAY_MS)
       await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
       await waitFor(() => expect(isClosed).toBe(true))
     } finally {

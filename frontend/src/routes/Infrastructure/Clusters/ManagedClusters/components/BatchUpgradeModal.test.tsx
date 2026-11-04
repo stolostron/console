@@ -3,6 +3,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { StateProvider } from '~/lib/state-provider'
 import { nockCreate, nockIgnoreApiPaths, nockPatch, nockUpgradeRiskRequest } from '../../../../../lib/nock-util'
+import { COMPLETE_DELAY_MS } from '~/components/BulkActionModal'
 import { advanceTimersByTime, clickElement, clickElementWithFakeTimers, waitForNocks } from '~/lib/test-util'
 import { ClusterCuratorDefinition } from '../../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
@@ -411,7 +412,7 @@ describe('BatchUpgradeModal', () => {
       await clickElementWithFakeTimers(updatingButton)
       await waitFor(() => expect(mockNockUpgrade1.isDone()).toBeTruthy())
       await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-      await advanceTimersByTime(500) // COMPLETE_DELAY_MS in BulkActionModal
+      await advanceTimersByTime(COMPLETE_DELAY_MS)
       await waitFor(() => expect(queryByText('Updating')).toBeFalsy())
       await waitFor(() => expect(isClosed).toBe(true))
     } finally {
