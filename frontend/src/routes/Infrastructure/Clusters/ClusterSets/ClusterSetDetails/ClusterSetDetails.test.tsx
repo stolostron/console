@@ -104,6 +104,8 @@ jest.mock('../../../../UserManagement/Identities/Users/useUsersSearch', () => ({
   useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
   useUserIdentity: jest.fn(() => undefined),
   useUsersByNames: jest.fn(() => ({ users: [], loaded: true })),
+  useMraUserSubjects: jest.fn(() => []),
+  preferSearchBackedUsers: (users: unknown) => users,
   useUsersSearch: jest.fn(() => ({
     users: [
       {
