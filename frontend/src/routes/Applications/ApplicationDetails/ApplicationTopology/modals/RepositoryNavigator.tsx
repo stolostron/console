@@ -2,7 +2,7 @@
 
 import type { FC } from 'react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { SearchInput, Spinner, TreeView, type TreeViewDataItem } from '@patternfly/react-core'
+import { Bullseye, SearchInput, Spinner, TreeView, type TreeViewDataItem } from '@patternfly/react-core'
 import { FileIcon, FolderIcon, FolderOpenIcon } from '@patternfly/react-icons'
 import { useTranslation } from '~/lib/acm-i18next'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
@@ -34,6 +34,8 @@ export type RepositoryNavigatorProps = {
   onSelectItem: (item: RepositoryNavigatorFileItem) => void
   /** Called once, after every source has finished loading, if no file was found under any branch. */
   onNoFilesFound?: () => void
+  /** Called whenever the aggregate loading state of every repository source changes. */
+  onLoadingChange?: (isLoading: boolean) => void
 }
 
 type SourceTreeState = { status: 'loading' } | { status: 'loaded'; node: GitBranchPathNode }
@@ -140,7 +142,13 @@ function findFirstFileItem(
   return undefined
 }
 
-export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({ node, selectedItemId, onSelectItem }) => {
+export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
+  node,
+  selectedItemId,
+  onSelectItem,
+  onNoFilesFound,
+  onLoadingChange,
+}) => {
   const { t } = useTranslation()
   const { secretsState } = useSharedAtoms()
   const secrets = useSharedValue(secretsState)
@@ -188,6 +196,10 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({ node, select
   )
   const expandAllFolders = allSourcesLoaded && totalFileCount > 0 && totalFileCount < AUTO_EXPAND_FILE_COUNT_THRESHOLD
 
+  useEffect(() => {
+    onLoadingChange?.(!allSourcesLoaded)
+  }, [allSourcesLoaded, onLoadingChange])
+
   const treeData = useMemo<TreeViewDataItem[]>(() => {
     const lookup = new Map<string, RepositoryNavigatorFileItem>()
     const query = searchValue.trim().toLowerCase()
@@ -218,8 +230,10 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({ node, select
     if (firstFile) {
       hasAutoSelectedRef.current = true
       onSelectItem(firstFile)
+    } else {
+      onNoFilesFound?.()
     }
-  }, [sources, treeBySource, treeData, selectedItemId, onSelectItem])
+  }, [sources, treeBySource, treeData, selectedItemId, onSelectItem, onNoFilesFound])
 
   const activeItems = useMemo<TreeViewDataItem[]>(() => {
     if (!selectedItemId) {
@@ -249,15 +263,21 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({ node, select
         aria-label={t('Search')}
       />
       <div className="resource-navigator__scroll">
-        <TreeView
-          aria-label={t('Repository files')}
-          className="resource-navigator"
-          data={treeData}
-          activeItems={activeItems}
-          onSelect={handleSelect}
-          hasGuides
-          hasSelectableNodes
-        />
+        {allSourcesLoaded ? (
+          <TreeView
+            aria-label={t('Repository files')}
+            className="resource-navigator"
+            data={treeData}
+            activeItems={activeItems}
+            onSelect={handleSelect}
+            hasGuides
+            hasSelectableNodes
+          />
+        ) : (
+          <Bullseye>
+            <Spinner size="lg" aria-label={t('Loading')} />
+          </Bullseye>
+        )}
       </div>
     </div>
   )

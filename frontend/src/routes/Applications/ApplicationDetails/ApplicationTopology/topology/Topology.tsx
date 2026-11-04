@@ -176,9 +176,16 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   const alertsKeyAtProcessingStartRef = useRef<string>(undefined)
   const prevIsProcessingSaveRef = useRef(false)
 
-  const isCreatingProgressing = elements.nodes.some(
-    (node: TopologyNode) => node.type === 'applicationset' && Boolean(node.specs?.isCreatingProgressing)
-  )
+  // "Progressing..." is driven by all ApplicationSet clusters / save state. When the
+  // toolbar cluster filter is active, keep both overlay sources false so filtered-out
+  // clusters (or a global save) do not cover alerts for the selected cluster(s).
+  const hasActiveClusterFilter = Boolean(toolbarControl.activeClusters && toolbarControl.activeClusters.length > 0)
+  const isCreatingProgressing =
+    !hasActiveClusterFilter &&
+    elements.nodes.some(
+      (node: TopologyNode) => node.type === 'applicationset' && Boolean(node.specs?.isCreatingProgressing)
+    )
+  const showProcessingSave = Boolean(isProcessingSave) && !hasActiveClusterFilter
 
   useEffect(() => {
     if (isProcessingSave && !prevIsProcessingSaveRef.current) {
@@ -221,7 +228,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
     return () => clearTimeout(timer)
   }, [isProcessingSave, processingSaveStart, onClearProcessingSave])
 
-  const showAlerts = (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing || isCreatingProgressing
+  const showAlerts = (alerts && alerts.length > 0) || showProcessingSave || isAnalyzing || isCreatingProgressing
 
   return (
     <TopologyView
@@ -252,7 +259,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
             alerts={alerts ?? []}
             currentAlertsKey={currentAlertsKey ?? '[]'}
             isAnalyzing={isAnalyzing}
-            isProcessingSave={isProcessingSave}
+            isProcessingSave={showProcessingSave}
             isCreatingProgressing={isCreatingProgressing}
             onEditAppSet={onEditAppSet}
             onEditYaml={onEditYaml}

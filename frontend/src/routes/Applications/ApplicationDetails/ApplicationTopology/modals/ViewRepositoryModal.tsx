@@ -3,16 +3,14 @@
 import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Language } from '@patternfly/react-code-editor'
-import { FolderOpenIcon } from '@patternfly/react-icons'
+import { FolderOpenIcon, GitAltIcon } from '@patternfly/react-icons'
 import { useCallback, useMemo, useState } from 'react'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmModal } from '~/ui-components'
 import type { TopologyNode } from '../types'
 import { buildRepositorySources } from '../helpers/repositoryNavigatorHelpers'
-import { typeToShapeMap } from '../model/NodeDetailsProvider'
 import { ModalNavigatorLayout } from './ModalNavigatorLayout'
-import { ResourceKindDecorator } from './ResourceNavigator'
 import { RepositoryNavigator, type RepositoryNavigatorFileItem } from './RepositoryNavigator'
 import './ResourceNavigator.css'
 
@@ -55,6 +53,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
   const { t } = useTranslation()
   const [selectedFile, setSelectedFile] = useState<RepositoryNavigatorFileItem | undefined>(undefined)
   const [noFilesFound, setNoFilesFound] = useState(false)
+  const [isRepositoryLoading, setIsRepositoryLoading] = useState(true)
   const sources = useMemo(() => buildRepositorySources(node), [node])
   const modalTitle = sources.length === 1 ? sources[0].repoURL : (node.name as string) || t('Repository')
 
@@ -66,22 +65,16 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
     setNoFilesFound(true)
   }, [])
 
-  const { shape: iconShape = 'git', className: iconClassName = 'container' } =
-    typeToShapeMap[String(node.type) as keyof typeof typeToShapeMap] || {}
-  const TitleIcon = useMemo(
-    () =>
-      function ViewRepositoryModalTitleIcon() {
-        return <ResourceKindDecorator shape={iconShape} className={iconClassName} size={39} />
-      },
-    [iconShape, iconClassName]
-  )
+  const handleRepositoryLoadingChange = useCallback((isLoading: boolean) => {
+    setIsRepositoryLoading(isLoading)
+  }, [])
 
   return (
     <AcmModal
       id="view-repository-modal"
       isOpen={true}
       title={modalTitle}
-      titleIconVariant={TitleIcon}
+      titleIconVariant={GitAltIcon}
       aria-label={t('View repository')}
       showClose={true}
       onClose={close}
@@ -97,11 +90,16 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
               selectedItemId={selectedFile?.id}
               onSelectItem={handleSelectItem}
               onNoFilesFound={handleNoFilesFound}
+              onLoadingChange={handleRepositoryLoadingChange}
             />
           }
         >
           <div style={{ flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            {selectedFile ? (
+            {isRepositoryLoading || (!selectedFile && !noFilesFound) ? (
+              <Bullseye>
+                <Spinner size="xl" aria-label={t('Loading')} />
+              </Bullseye>
+            ) : selectedFile ? (
               <SyncEditor
                 editorTitle={selectedFile.path}
                 variant="toolbar"
@@ -117,11 +115,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
                   <EmptyStateBody>{t('This repository does not contain any files to display.')}</EmptyStateBody>
                 </EmptyState>
               </Bullseye>
-            ) : (
-              <Bullseye>
-                <Spinner size="xl" aria-label={t('Loading')} />
-              </Bullseye>
-            )}
+            ) : null}
           </div>
         </ModalNavigatorLayout>
       </div>
