@@ -790,19 +790,13 @@ describe('IdentitiesList', () => {
       rerender(
         <StateProvider>
           <MemoryRouter>
-            <IdentitiesList
-              groups={[hubDevelopers]}
-              initialSelectedIdentity={{ kind: 'Group', name: 'developers' }}
-            />
+            <IdentitiesList groups={[hubDevelopers]} initialSelectedIdentity={{ kind: 'Group', name: 'developers' }} />
           </MemoryRouter>
         </StateProvider>
       )
 
       await waitFor(() => {
-        expect(screen.getByTestId('groups-table')).toHaveAttribute(
-          'data-hubgroups',
-          JSON.stringify(['developers'])
-        )
+        expect(screen.getByTestId('groups-table')).toHaveAttribute('data-hubgroups', JSON.stringify(['developers']))
         expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()
       })
     })

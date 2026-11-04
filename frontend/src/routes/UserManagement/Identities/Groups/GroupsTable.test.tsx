@@ -615,9 +615,7 @@ describe('GroupsTable', () => {
         users: [],
       }
 
-      render(
-        <Component groups={mockGroups} selectedGroup={selectedStub} setSelectedGroup={mockSetSelectedGroup} />
-      )
+      render(<Component groups={mockGroups} selectedGroup={selectedStub} setSelectedGroup={mockSetSelectedGroup} />)
 
       await waitFor(() => {
         expect(screen.getByText('kubevirt-admins')).toBeInTheDocument()

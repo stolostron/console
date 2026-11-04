@@ -6,12 +6,7 @@ import { Trans, useTranslation } from '../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../lib/doc-util'
 import { Group } from '../../../../resources/rbac'
 import { groupsTableColumns, useFilters } from '../IdentityTableHelper'
-import {
-  isSearchBackedGroup,
-  preferSearchBackedGroups,
-  useGroupsSearch,
-  useMraGroupSubjects,
-} from './useGroupsSearch'
+import { isSearchBackedGroup, preferSearchBackedGroups, useGroupsSearch, useMraGroupSubjects } from './useGroupsSearch'
 
 interface GroupsTableProps {
   hiddenColumns?: string[]
