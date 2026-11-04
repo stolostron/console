@@ -1,6 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { getTopologyNodeActionVisibility, showApplicationPickerOnAppSet } from './topologyNodeActions'
+import {
+  getTopologyNodeActionVisibility,
+  showApplicationPickerOnAppSet,
+  showViewRepoOnNode,
+} from './topologyNodeActions'
 import type { TopologyNode } from '../types'
 
 describe('topologyNodeActions', () => {
@@ -13,6 +17,13 @@ describe('topologyNodeActions', () => {
       showLogs: false,
       showEditYaml: true,
     })
+  })
+
+  test('showViewRepoOnNode', () => {
+    expect(showViewRepoOnNode('git')).toBe(true)
+    expect(showViewRepoOnNode('chart')).toBe(false)
+    expect(showViewRepoOnNode('pod')).toBe(false)
+    expect(showViewRepoOnNode(undefined)).toBe(false)
   })
 
   test('showApplicationPickerOnAppSet', () => {

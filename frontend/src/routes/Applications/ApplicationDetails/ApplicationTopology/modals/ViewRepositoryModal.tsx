@@ -4,12 +4,12 @@ import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { Language } from '@patternfly/react-code-editor'
 import { FolderOpenIcon, GitAltIcon } from '@patternfly/react-icons'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmModal } from '~/ui-components'
 import type { TopologyNode } from '../types'
-import { buildRepositorySources } from '../helpers/repositoryNavigatorHelpers'
+import { getViewTitle } from '../helpers/repositoryNavigatorHelpers'
 import { ModalNavigatorLayout } from './ModalNavigatorLayout'
 import { RepositoryNavigator, type RepositoryNavigatorFileItem } from './RepositoryNavigator'
 import './ResourceNavigator.css'
@@ -54,8 +54,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
   const [selectedFile, setSelectedFile] = useState<RepositoryNavigatorFileItem | undefined>(undefined)
   const [noFilesFound, setNoFilesFound] = useState(false)
   const [isRepositoryLoading, setIsRepositoryLoading] = useState(true)
-  const sources = useMemo(() => buildRepositorySources(node), [node])
-  const modalTitle = sources.length === 1 ? sources[0].repoURL : (node.name as string) || t('Repository')
+  const modalTitle = (node.name as string) || t('Repository')
 
   const handleSelectItem = useCallback((item: RepositoryNavigatorFileItem) => {
     setSelectedFile(item)
@@ -101,7 +100,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
               </Bullseye>
             ) : selectedFile ? (
               <SyncEditor
-                editorTitle={selectedFile.path}
+                editorTitle={getViewTitle(selectedFile.id)}
                 variant="toolbar"
                 code={selectedFile.contents}
                 resources={null}

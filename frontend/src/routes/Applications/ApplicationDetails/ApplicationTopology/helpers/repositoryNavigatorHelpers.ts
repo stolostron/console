@@ -73,6 +73,12 @@ export function getRepositorySourceGroupId(source: RepositorySource): string {
   return `${source.repoURL}::${source.targetRevision}::${source.path}`
 }
 
+/** Builds the SyncEditor title from the revision and last segment of a selected file id. */
+export function getViewTitle(id: string): string {
+  const parts = id.split('::')
+  return [parts[1], parts[parts.length - 1]].join(': ')
+}
+
 /** Display label for a repository source's top-level navigator item. Excludes the repo URL. */
 export function getRepositorySourceGroupTitle(source: RepositorySource): string {
   if (source.path) {
