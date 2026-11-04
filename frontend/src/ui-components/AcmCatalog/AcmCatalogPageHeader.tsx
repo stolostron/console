@@ -25,7 +25,7 @@ export function AcmCatalogPageHeader({
   description,
   navigation,
   actions,
-}: {
+}: Readonly<{
   breadcrumbs?: ICatalogBreadcrumb[]
   title?: string
   titleHelpTitle?: string
@@ -33,9 +33,15 @@ export function AcmCatalogPageHeader({
   description?: string
   navigation?: ReactNode
   actions?: ReactNode
-}) {
+}>) {
   const navigate = useNavigate()
   const isXlOrLarger = useWindowSize() >= WindowSize.xl
+  const getPaddingBottom = () => {
+    if (navigation) {
+      return isXlOrLarger ? 'var(--pf-t--global--spacer--sm)' : 'var(--pf-t--global--spacer--xs)'
+    }
+    return undefined
+  }
 
   return (
     <div
@@ -51,11 +57,7 @@ export function AcmCatalogPageHeader({
               hasBodyWrapper={false}
               style={{
                 backgroundColor: 'transparent',
-                paddingBottom: navigation
-                  ? isXlOrLarger
-                    ? 'var(--pf-t--global--spacer--sm)'
-                    : 'var(--pf-t--global--spacer--xs)'
-                  : undefined,
+                paddingBottom: getPaddingBottom(),
               }}
             >
               {breadcrumbs && (
@@ -77,7 +79,7 @@ export function AcmCatalogPageHeader({
                           breadcrumb.to && !breadcrumb.target
                             ? (event) => {
                                 event.preventDefault()
-                                navigate(breadcrumb.to!)
+                                void navigate(breadcrumb.to!)
                               }
                             : undefined
                         }

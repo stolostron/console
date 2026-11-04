@@ -17,7 +17,7 @@ export enum WindowSize {
   '2xl',
 }
 
-const toPixels = (value: string) => (value.endsWith('rem') ? parseFloat(value) * 16 : parseFloat(value))
+const toPixels = (value: string) => (value.endsWith('rem') ? Number.parseFloat(value) * 16 : Number.parseFloat(value))
 const breakpoints = [breakpointXs, breakpointSm, breakpointMd, breakpointLg, breakpointXl, breakpoint2xl].map((token) =>
   toPixels(token.value)
 )

@@ -14,7 +14,7 @@ export function AcmCatalog({
   isSelected,
   selectItem,
   unselectItem,
-}: {
+}: Readonly<{
   items: ICatalogCard[]
   keyFn: (card: ICatalogCard) => string
   itemToCardFn: (card: ICatalogCard) => ICatalogCard
@@ -24,7 +24,7 @@ export function AcmCatalog({
   isSelected?: (card: ICatalogCard) => boolean
   selectItem?: (card: ICatalogCard) => void
   unselectItem?: (card: ICatalogCard) => void
-}) {
+}>) {
   return (
     <AcmCatalogGrid size={cardWidth}>
       {items.map((item) => {

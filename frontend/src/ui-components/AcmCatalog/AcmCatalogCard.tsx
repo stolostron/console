@@ -32,11 +32,11 @@ import { useState } from 'react'
 import { useTranslation } from '~/lib/acm-i18next'
 import { CatalogCardItemType, CatalogItemAction, ICatalogCard, ICatalogCardListItem } from './catalogTypes'
 
-function CardList({ items, icon }: { items: ICatalogCardListItem[]; icon?: React.ReactNode }) {
+function CardList({ items, icon }: Readonly<{ items: ICatalogCardListItem[]; icon?: React.ReactNode }>) {
   return (
     <List isPlain>
       {items.map((item, index) => (
-        <ListItem key={index} icon={item.icon ?? icon} style={{ opacity: 0.85 }}>
+        <ListItem key={`CardList-${index}`} icon={item.icon ?? icon} style={{ opacity: 0.85 }}>
           {item.text}
           {item.help && (
             <Popover headerContent={item.helpTitle} bodyContent={item.help}>
@@ -65,13 +65,13 @@ export function AcmCatalogCard({
   showSelect = false,
   selected = false,
   onSelect,
-}: {
+}: Readonly<{
   card: ICatalogCard
   itemActions?: CatalogItemAction[]
   showSelect?: boolean
   selected?: boolean
   onSelect?: () => void
-}) {
+}>) {
   const { t } = useTranslation()
   const [isOpen, setIsOpen] = useState(false)
   const disabled = !card.onClick
@@ -121,7 +121,7 @@ export function AcmCatalogCard({
                         <DropdownList>
                           {itemActions?.map((action, index) =>
                             'isSeparator' in action ? (
-                              <Divider key={index} component="li" />
+                              <Divider key={`DropdownList-divider-${index}`} component="li" />
                             ) : (
                               <DropdownItem
                                 key={action.label}
@@ -179,7 +179,7 @@ export function AcmCatalogCard({
           </SplitItem>
           {card.badgeList
             ? card.badgeList.map(({ badge, badgeColor }, index) => (
-                <SplitItem key={index}>
+                <SplitItem key={`badgelist-item-${index}`}>
                   <Label color={badgeColor}>{badge}</Label>
                 </SplitItem>
               ))
@@ -203,13 +203,16 @@ export function AcmCatalogCard({
           <DescriptionList>
             {card.items.map((item, index) =>
               item.type === CatalogCardItemType.Description ? (
-                <DescriptionList key={index}>
+                <DescriptionList key={`descriptionlist-${index}`}>
                   <DescriptionListGroup>
                     <span style={{ opacity: 0.9 }}>{item.description}</span>
                   </DescriptionListGroup>
                 </DescriptionList>
               ) : (
-                <DescriptionList key={index} orientation={item.horizontal ? { sm: 'horizontal' } : undefined}>
+                <DescriptionList
+                  key={`descriptionlist-${index}`}
+                  orientation={item.horizontal ? { sm: 'horizontal' } : undefined}
+                >
                   <DescriptionListGroup>
                     <DescriptionListTerm>{item.title}</DescriptionListTerm>
                     <DescriptionListDescription>

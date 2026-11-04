@@ -27,14 +27,14 @@ export function AcmCatalogView({
   onBack,
   onCancel,
   customCatalogSection,
-}: {
+}: Readonly<{
   items: ICatalogCard[]
   itemKeyFn: (card: ICatalogCard) => string
   itemToCardFn: (card: ICatalogCard) => ICatalogCard
   onBack?: () => void
   onCancel?: () => void
   customCatalogSection?: ReactNode
-}) {
+}>) {
   const { t } = useTranslation()
   const paginationTitles = usePaginationTitles()
   const [page, setPage] = useState(1)

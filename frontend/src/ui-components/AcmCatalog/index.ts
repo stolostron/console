@@ -2,6 +2,6 @@
 
 export { AcmCatalog } from './AcmCatalog'
 export { AcmCatalogCard } from './AcmCatalogCard'
-export { AcmCatalogView } from './AcmCatalogView'
 export { AcmCatalogPageHeader } from './AcmCatalogPageHeader'
+export { AcmCatalogView } from './AcmCatalogView'
 export * from './catalogTypes'
