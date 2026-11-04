@@ -12,6 +12,19 @@ import { ClusterRoleBinding, ClusterRoleBindingKind, Group, RbacApiVersion, User
 import Clusters from '../../../Clusters'
 import { managedClusterSetsState } from '../../../../../../atoms'
 import { nockClusterList, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
+import { useGroupIdentity, useGroupsSearch, useHasHubGroups } from '../../../../../UserManagement/Identities/Groups/useGroupsSearch'
+
+jest.mock('../../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
+  useHasHubGroups: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useHasHubGroups (Search)')
+  }),
+  useGroupIdentity: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useGroupIdentity (Search)')
+  }),
+  useGroupsSearch: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useGroupsSearch (Search)')
+  }),
+}))
 
 const mockUser1: User = {
   kind: 'User',
@@ -176,5 +189,27 @@ describe('Cluster Sets User management', () => {
 
     await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
     await verifyModalContent(expectedText)
+  })
+
+  test('Add Access Groups tab uses listGroups and does not call Search hooks', async () => {
+    const mockUser = mockUser1
+    const mockGroup = {
+      ...mockGroupWithUsers,
+      users: mockGroupWithUsers.users.filter((user): user is string => user !== undefined),
+    }
+    const mockClusterRoleBinding = mockClusterRoleBinding1
+
+    await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
+    await clickByText('Add user or group')
+    await waitForText('Identities')
+    await clickByText('Groups')
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: `Select ${mockGroup.metadata.name}` })).toBeInTheDocument()
+    })
+
+    expect(useHasHubGroups).not.toHaveBeenCalled()
+    expect(useGroupIdentity).not.toHaveBeenCalled()
+    expect(useGroupsSearch).not.toHaveBeenCalled()
   })
 })

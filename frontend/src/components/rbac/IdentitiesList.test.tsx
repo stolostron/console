@@ -125,6 +125,8 @@ jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
       data-testid="groups-table"
       data-arelinks={props.areLinksDisplayed}
       data-additionalgroups={JSON.stringify((props.additionalGroups ?? []).map((g: any) => g.metadata.name))}
+      data-hubgroups={JSON.stringify((props.groups ?? []).map((g: any) => g.metadata.name))}
+      data-groupsloading={String(!!props.groupsLoading)}
       data-iscreatebuttondisplayed={String(!!props.isCreateButtonDisplayed)}
       data-createbuttontext={props.createButtonText ?? ''}
     >
@@ -144,6 +146,12 @@ jest.mock('../../routes/UserManagement/Identities/Groups/GroupsTable', () => ({
         props.additionalGroups?.map((g: any) => (
           <button key={g.metadata.name} onClick={() => props.setSelectedGroup(g)}>
             Select {g.metadata.name}
+          </button>
+        ))}
+      {props.setSelectedGroup &&
+        props.groups?.map((g: any) => (
+          <button key={`hub-${g.metadata.name}`} onClick={() => props.setSelectedGroup(g)}>
+            Select hub {g.metadata.name}
           </button>
         ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create Group Action</button>}
@@ -709,6 +717,52 @@ describe('IdentitiesList', () => {
       expect(mockOnGroupSelect).toHaveBeenCalledTimes(3)
       expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
         expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
+  })
+
+  describe('hub Groups path (listGroups / non-Search)', () => {
+    test('should pass hub groups to GroupsTable and skip Search hooks', async () => {
+      render(<Component groups={mockGroups} groupsLoading={false} />)
+
+      expect(mockUseHasHubGroups).not.toHaveBeenCalled()
+      expect(mockUseGroupIdentity).not.toHaveBeenCalled()
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('groups-table')).toBeInTheDocument()
+      })
+
+      const groupsTable = screen.getByTestId('groups-table')
+      expect(groupsTable).toHaveAttribute('data-hubgroups', JSON.stringify(['developers', 'ops-mra']))
+      expect(groupsTable).toHaveAttribute('data-groupsloading', 'false')
+    })
+
+    test('should resolve initial Group selection from hub groups', async () => {
+      render(
+        <Component
+          groups={mockGroups}
+          initialSelectedIdentity={{ kind: 'Group', name: 'developers' }}
+        />
+      )
+
+      await waitFor(() => {
+        expect(screen.getByText(/Selected: developers/)).toBeInTheDocument()
+      })
+      expect(mockUseGroupIdentity).not.toHaveBeenCalled()
+    })
+
+    test('should call onGroupSelect when selecting a hub group', async () => {
+      const mockOnGroupSelect = jest.fn()
+      render(<Component groups={mockGroups} onGroupSelect={mockOnGroupSelect} />)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Groups tab' }))
+      await waitFor(() => expect(screen.getByTestId('groups-table')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select hub developers' }))
+      expect(mockOnGroupSelect).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'developers' }) })
       )
     })
   })
