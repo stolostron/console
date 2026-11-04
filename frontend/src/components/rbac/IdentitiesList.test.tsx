@@ -12,6 +12,7 @@ import { IdentitiesList } from './IdentitiesList'
 jest.mock('../../routes/UserManagement/Identities/Users/useUsersSearch', () => ({
   useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
   useUserIdentity: jest.fn(),
+  useMraUserSubjects: jest.fn(() => []),
 }))
 
 jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () => ({
@@ -86,6 +87,8 @@ jest.mock('../../routes/UserManagement/Identities/Users/UsersTable', () => ({
       data-testid="users-table"
       data-arelinks={props.areLinksDisplayed}
       data-additionalusers={JSON.stringify((props.additionalUsers ?? []).map((u: any) => u.metadata.name))}
+      data-hubusers={JSON.stringify((props.users ?? []).map((u: any) => u.metadata.name))}
+      data-usersloading={String(!!props.usersLoading)}
       data-iscreatebuttondisplayed={String(!!props.isCreateButtonDisplayed)}
       data-createbuttontext={props.createButtonText ?? ''}
     >
@@ -105,6 +108,12 @@ jest.mock('../../routes/UserManagement/Identities/Users/UsersTable', () => ({
         props.additionalUsers?.map((u: any) => (
           <button key={u.metadata.name} onClick={() => props.setSelectedUser(u)}>
             Select {u.metadata.name}
+          </button>
+        ))}
+      {props.setSelectedUser &&
+        props.users?.map((u: any) => (
+          <button key={`hub-${u.metadata.name}`} onClick={() => props.setSelectedUser(u)}>
+            Select hub {u.metadata.name}
           </button>
         ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create User Action</button>}
@@ -710,6 +719,44 @@ describe('IdentitiesList', () => {
       expect(mockOnGroupSelect).toHaveBeenCalledTimes(3)
       expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
         expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
+  })
+
+  describe('hub Users path (listUsers / non-Search)', () => {
+    test('should pass hub users to UsersTable and skip Search hooks', async () => {
+      render(<Component users={mockUsers} usersLoading={false} />)
+
+      expect(mockUseHasHubUsers).not.toHaveBeenCalled()
+      expect(mockUseUserIdentity).not.toHaveBeenCalled()
+
+      await waitFor(() => {
+        expect(screen.getByTestId('users-table')).toBeInTheDocument()
+      })
+
+      const usersTable = screen.getByTestId('users-table')
+      expect(usersTable).toHaveAttribute('data-hubusers', JSON.stringify(['alice', 'bob-mra']))
+      expect(usersTable).toHaveAttribute('data-usersloading', 'false')
+    })
+
+    test('should resolve initial User selection from hub users', async () => {
+      render(<Component users={mockUsers} initialSelectedIdentity={{ kind: 'User', name: 'alice' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Selected: alice/)).toBeInTheDocument()
+      })
+      expect(mockUseUserIdentity).not.toHaveBeenCalled()
+    })
+
+    test('should call onUserSelect when selecting a hub user', async () => {
+      const mockOnUserSelect = jest.fn()
+      render(<Component users={mockUsers} onUserSelect={mockOnUserSelect} />)
+
+      await waitFor(() => expect(screen.getByTestId('users-table')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select hub alice' }))
+      expect(mockOnUserSelect).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'alice' }) })
       )
     })
   })

@@ -180,7 +180,7 @@ export function stitchUserPage(
   )
 }
 
-function useMraUserSubjects(): User[] {
+export function useMraUserSubjects(): User[] {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const mras = useSharedValue(multiclusterRoleAssignmentState)
   return useMemo(() => usersFromMulticlusterRoleAssignments(mras ?? [], new Set()), [mras])

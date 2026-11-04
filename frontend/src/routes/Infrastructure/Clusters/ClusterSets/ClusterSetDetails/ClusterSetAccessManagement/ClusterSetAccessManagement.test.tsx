@@ -12,6 +12,42 @@ import { ClusterRoleBinding, ClusterRoleBindingKind, Group, RbacApiVersion, User
 import Clusters from '../../../Clusters'
 import { managedClusterSetsState } from '../../../../../../atoms'
 import { nockClusterList, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
+import {
+  useHasHubUsers,
+  useUserIdentity,
+  useUsersSearch,
+} from '../../../../../UserManagement/Identities/Users/useUsersSearch'
+
+jest.mock('../../../../../UserManagement/Identities/Users/useUsersSearch', () => ({
+  useHasHubUsers: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useHasHubUsers (Search)')
+  }),
+  useUserIdentity: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useUserIdentity (Search)')
+  }),
+  useUsersSearch: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useUsersSearch (Search)')
+  }),
+  useMraUserSubjects: jest.fn(() => []),
+  preferSearchBackedUsers: jest.requireActual('../../../../../UserManagement/Identities/Users/useUsersSearch')
+    .preferSearchBackedUsers,
+}))
+
+// Groups Search path remains until ACM-50037; stub so Add Access can mount.
+jest.mock('../../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
+  useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
+  useGroupIdentity: jest.fn(() => undefined),
+  useGroupsSearch: jest.fn(() => ({
+    groups: [],
+    processedItemCount: 0,
+    loading: false,
+    refetch: jest.fn(),
+    fetchExport: jest.fn(),
+    emptyResult: false,
+  })),
+  useMraGroupSubjects: jest.fn(() => []),
+  preferSearchBackedGroups: (groups: unknown) => groups,
+}))
 
 const mockUser1: User = {
   kind: 'User',
@@ -176,5 +212,26 @@ describe('Cluster Sets User management', () => {
 
     await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
     await verifyModalContent(expectedText)
+  })
+
+  test('Add Access Users tab uses listUsers and does not call Search hooks', async () => {
+    const mockUser = mockUser1
+    const mockGroup = {
+      ...mockGroupWithUsers,
+      users: mockGroupWithUsers.users.filter((user): user is string => user !== undefined),
+    }
+    const mockClusterRoleBinding = mockClusterRoleBinding1
+
+    await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
+    await clickByText('Add user or group')
+    await waitForText('Identities')
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: `Select ${mockUser.metadata.name}` })).toBeInTheDocument()
+    })
+
+    expect(useHasHubUsers).not.toHaveBeenCalled()
+    expect(useUserIdentity).not.toHaveBeenCalled()
+    expect(useUsersSearch).not.toHaveBeenCalled()
   })
 })

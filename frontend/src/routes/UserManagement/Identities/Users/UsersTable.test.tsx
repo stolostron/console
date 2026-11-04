@@ -371,4 +371,53 @@ describe('UsersTable', () => {
       expect(screen.queryByRole('button', { name: 'Create user' })).not.toBeInTheDocument()
     })
   })
+
+  describe('hub Users path (listUsers / non-Search)', () => {
+    test('should render provided users without calling Search', async () => {
+      mockUseFleetSearch.mockClear()
+      mockUseSearchResultCountQuery.mockClear()
+
+      render(<Component users={mockUsers} usersLoading={false} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+        expect(screen.getByText('bob.levy')).toBeInTheDocument()
+      })
+
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+      expect(mockUseSearchResultCountQuery).not.toHaveBeenCalled()
+    })
+
+    test('should merge additionalUsers with hub users', async () => {
+      const additionalUser: User = {
+        apiVersion: 'user.openshift.io/v1',
+        kind: 'User',
+        metadata: { name: 'extra-user', uid: 'extra-user', creationTimestamp: '2023-04-01T00:00:00Z' },
+      }
+
+      render(<Component users={mockUsers} additionalUsers={[additionalUser]} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('extra-user')).toBeInTheDocument()
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+      })
+      expect(mockUseFleetSearch).not.toHaveBeenCalled()
+    })
+
+    test('should call setSelectedUser when a hub user radio is selected', async () => {
+      const mockSetSelectedUser = jest.fn()
+      render(<Component users={mockUsers} setSelectedUser={mockSetSelectedUser} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('alice.trask')).toBeInTheDocument()
+      })
+
+      const radio = screen.getByRole('radio', { name: 'Select alice.trask' })
+      radio.click()
+
+      expect(mockSetSelectedUser).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'alice.trask' }) })
+      )
+    })
+  })
 })

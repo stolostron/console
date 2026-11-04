@@ -5,7 +5,11 @@ import { useTranslation } from '../../lib/acm-i18next'
 import { Group, User } from '../../resources/rbac'
 import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
 import { useGroupIdentity, useHasHubGroups } from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
-import { useHasHubUsers, useUserIdentity } from '../../routes/UserManagement/Identities/Users/useUsersSearch'
+import {
+  useHasHubUsers,
+  useMraUserSubjects,
+  useUserIdentity,
+} from '../../routes/UserManagement/Identities/Users/useUsersSearch'
 import { UsersTable } from '../../routes/UserManagement/Identities/Users/UsersTable'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { IAcmTableButtonAction } from '../../ui-components/AcmTable/AcmTableTypes'
@@ -15,17 +19,76 @@ interface IdentitiesListProps {
   onUserSelect?: (user: User) => void
   onGroupSelect?: (group: Group) => void
   initialSelectedIdentity?: { kind: 'User' | 'Group'; name: string }
+  /**
+   * Hub Users from listUsers(). When provided, the Users tab skips Search
+   * (required for MCE Cluster Set access management).
+   */
+  users?: User[]
+  usersLoading?: boolean
+  usersError?: Error
 }
 
-export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIdentity }: IdentitiesListProps = {}) {
+export function IdentitiesList(props: IdentitiesListProps = {}) {
+  if (props.users !== undefined) {
+    return <IdentitiesListWithHubUsers {...props} users={props.users} />
+  }
+  return <IdentitiesListWithSearchUsers {...props} />
+}
+
+function IdentitiesListWithSearchUsers(props: IdentitiesListProps) {
+  const { hasUsers } = useHasHubUsers()
+  const initialUserName =
+    props.initialSelectedIdentity?.kind === 'User' ? props.initialSelectedIdentity.name : undefined
+  const initialUser = useUserIdentity(initialUserName)
+
+  return <IdentitiesListView {...props} hasUsers={hasUsers} initialUser={initialUser} />
+}
+
+function IdentitiesListWithHubUsers(props: IdentitiesListProps & { users: User[] }) {
+  const { users, usersLoading, usersError, initialSelectedIdentity } = props
+  const mraUsers = useMraUserSubjects()
+  const hasUsers = users.length > 0 || mraUsers.length > 0
+  const initialUser = useMemo(() => {
+    if (initialSelectedIdentity?.kind !== 'User') return undefined
+    return (
+      users.find((user) => user.metadata.name === initialSelectedIdentity.name) ??
+      mraUsers.find((user) => user.metadata.name === initialSelectedIdentity.name)
+    )
+  }, [initialSelectedIdentity, mraUsers, users])
+
+  return (
+    <IdentitiesListView
+      {...props}
+      hasUsers={hasUsers}
+      initialUser={initialUser}
+      hubUsers={users}
+      usersLoading={usersLoading}
+      usersError={usersError}
+    />
+  )
+}
+
+interface IdentitiesListViewProps extends IdentitiesListProps {
+  hasUsers: boolean
+  initialUser: User | undefined
+  hubUsers?: User[]
+}
+
+function IdentitiesListView({
+  onUserSelect,
+  onGroupSelect,
+  initialSelectedIdentity,
+  hasUsers,
+  initialUser,
+  hubUsers,
+  usersLoading,
+  usersError,
+}: IdentitiesListViewProps) {
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
-  const { hasUsers } = useHasHubUsers()
   const { hasGroups } = useHasHubGroups()
-  const initialUserName = initialSelectedIdentity?.kind === 'User' ? initialSelectedIdentity.name : undefined
-  const initialUser = useUserIdentity(initialUserName)
   const initialGroupName = initialSelectedIdentity?.kind === 'Group' ? initialSelectedIdentity.name : undefined
   const initialGroup = useGroupIdentity(initialGroupName)
 
@@ -145,6 +208,9 @@ export function IdentitiesList({ onUserSelect, onGroupSelect, initialSelectedIde
                 selectedUser={selectedUser}
                 setSelectedUser={handleOnUserSelect}
                 additionalUsers={additionalUsers}
+                users={hubUsers}
+                usersLoading={usersLoading}
+                usersError={usersError}
                 isCreateButtonDisplayed
                 createButtonText={isDirectAuthenticationEnabled ? t('Add user') : undefined}
                 onCreateClick={() => setShowCreatePreAuthorizedUser(true)}
