@@ -4,10 +4,12 @@ package informers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -376,7 +378,7 @@ func TestStaleDiscoveryCacheInvalidatedOnRetry(t *testing.T) {
 }
 
 type unavailableMapper struct {
-	invalidated atomic.Bool
+	invalidated atomic.Int32
 }
 
 func (m *unavailableMapper) ServerResourcesForGroupVersion(string) (*metav1.APIResourceList, error) {
@@ -384,20 +386,213 @@ func (m *unavailableMapper) ServerResourcesForGroupVersion(string) (*metav1.APIR
 }
 
 func (m *unavailableMapper) Invalidate() {
-	m.invalidated.Store(true)
+	m.invalidated.Add(1)
 }
 
-func TestUnavailableCRDDoesNotInvalidateCache(t *testing.T) {
+// An "unavailable" lookup is served from the cached discovery snapshot without
+// touching the API server, so it must still force one refetch; otherwise a pod
+// that cached a snapshot taken before the CRDs were established retries that
+// same snapshot forever and only a restart recovers it.
+func TestUnavailableCRDInvalidatesCache(t *testing.T) {
 	mapper := &unavailableMapper{}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	_ = StartSpecs(ctx, nil, mapper, []WatchSpec{watch("AnsibleJob", "tower.ansible.com/v1alpha1")})
 
-	time.Sleep(200 * time.Millisecond)
-	cancel()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if mapper.invalidated.Load() > 0 {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatal("expected Invalidate() to be called for an unavailable CRD")
+}
 
-	if mapper.invalidated.Load() {
-		t.Fatal("Invalidate() should not be called for unavailable CRDs")
+// waitAllSpecsFailed blocks until every spec has recorded a resolve error.
+// Coalescing must be asserted only once all specs have actually attempted: a
+// spec that has not run yet cannot have invalidated, so a fixed sleep risks
+// counting one invalidation and passing for the wrong reason.
+func waitAllSpecsFailed(t *testing.T, c *InformerCache, want int) {
+	t.Helper()
+	deadline := time.Now().Add(5 * time.Second)
+	for time.Now().Before(deadline) {
+		failed := 0
+		for _, s := range c.SpecStatuses() {
+			if s.Error != "" {
+				failed++
+			}
+		}
+		if failed == want {
+			return
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	t.Fatalf("not every spec recorded a resolve error; statuses=%+v", c.SpecStatuses())
+}
+
+// Many permanently missing specs (AnsibleJob with no AAP, ACM kinds on MCE)
+// must not refetch discovery once per spec per retry round.
+func TestUnavailableCRDRefreshIsCoalesced(t *testing.T) {
+	mapper := &unavailableMapper{}
+	specs := make([]WatchSpec, 0, 20)
+	for i := range 20 {
+		specs = append(specs, watch(fmt.Sprintf("Missing%d", i), "tower.ansible.com/v1alpha1"))
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, nil, mapper, specs)
+	waitAllSpecsFailed(t, c, len(specs))
+
+	if got := mapper.invalidated.Load(); got != 1 {
+		t.Fatalf("Invalidate() called %d times across %d unavailable specs; want 1", got, len(specs))
+	}
+}
+
+// recoveringMapper mimics a memory-cached discovery client whose snapshot was
+// taken while the CRD was still being established: every lookup fails with the
+// memory.ErrCacheNotFound shape ("not found") until Invalidate forces a
+// refetch, which then sees the kind that the API server was serving all along.
+type recoveringMapper struct {
+	mu    sync.Mutex
+	fresh bool
+}
+
+func (m *recoveringMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if !m.fresh {
+		return nil, errors.New("not found")
+	}
+	return &metav1.APIResourceList{GroupVersion: gv, APIResources: []metav1.APIResource{
+		{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}},
+	}}, nil
+}
+
+func (m *recoveringMapper) Invalidate() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.fresh = true
+}
+
+// ACM-50052: the spec must start its informer without a pod restart once the
+// stale discovery snapshot is refetched.
+func TestStaleDiscoverySnapshotRecoversWithoutRestart(t *testing.T) {
+	scheme := runtime.NewScheme()
+	listKinds := map[schema.GroupVersionResource]string{
+		{Version: "v1", Resource: "configmaps"}: "ConfigMapList",
+	}
+	cm := uObj("v1", "ConfigMap", "ns", "settings", "uid-1", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, cm)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, client, &recoveringMapper{}, []WatchSpec{watch("ConfigMap", "v1")})
+
+	waitSynced(t, c)
+	got := c.ListByKind("v1", "ConfigMap")
+	if len(got) != 1 || got[0].GetName() != "settings" {
+		t.Fatalf("store %+v; want the ConfigMap to be cached after discovery refresh", names(got))
+	}
+}
+
+// waveMapper fails the first firstWave lookups unconditionally and releases
+// them together, so every spec in the opening wave has already failed before
+// any Invalidate can land. Later lookups succeed once Invalidate has run.
+//
+// The wave decision is latched before the barrier rather than re-read after
+// it. Re-reading would let a sibling parked on the barrier be rescued by a
+// refresh that landed while it waited, which turns the test into a measure of
+// goroutine scheduling instead of the behavior under test.
+type waveMapper struct {
+	mu          sync.Mutex
+	entered     int
+	firstWave   int
+	allIn       chan struct{}
+	invalidated bool
+}
+
+func newWaveMapper(firstWave int) *waveMapper {
+	return &waveMapper{firstWave: firstWave, allIn: make(chan struct{})}
+}
+
+func (m *waveMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
+	m.mu.Lock()
+	if m.entered < m.firstWave {
+		m.entered++
+		if m.entered == m.firstWave {
+			close(m.allIn)
+		}
+		m.mu.Unlock()
+		<-m.allIn
+		return nil, errors.New("not found")
+	}
+	refreshed := m.invalidated
+	m.mu.Unlock()
+	if !refreshed {
+		return nil, errors.New("not found")
+	}
+	return &metav1.APIResourceList{GroupVersion: gv, APIResources: []metav1.APIResource{
+		{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}},
+		{Name: "secrets", Kind: "Secret", Namespaced: true, Verbs: []string{"list", "watch"}},
+	}}, nil
+}
+
+func (m *waveMapper) Invalidate() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.invalidated = true
+}
+
+// Only one of two simultaneously failing specs can win the Invalidate grant.
+// The loser must still re-resolve in the same round; if it waited for its next
+// retry it would sit unavailable for retryBase even though discovery was
+// refreshed moments earlier.
+func TestDeniedSpecReresolvesInSameRound(t *testing.T) {
+	scheme := runtime.NewScheme()
+	listKinds := map[schema.GroupVersionResource]string{
+		{Version: "v1", Resource: "configmaps"}: "ConfigMapList",
+		{Version: "v1", Resource: "secrets"}:    "SecretList",
+	}
+	cm := uObj("v1", "ConfigMap", "ns", "settings", "uid-1", nil)
+	sec := uObj("v1", "Secret", "ns", "token", "uid-2", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, cm, sec)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, client, newWaveMapper(2), []WatchSpec{
+		watch("ConfigMap", "v1"),
+		watch("Secret", "v1"),
+	})
+
+	waitSynced(t, c)
+	if got := c.ListByKind("v1", "ConfigMap"); len(got) != 1 {
+		t.Fatalf("ConfigMap store %+v; want 1 after the same-round refresh", names(got))
+	}
+	if got := c.ListByKind("v1", "Secret"); len(got) != 1 {
+		t.Fatalf("Secret store %+v; want 1 after the same-round refresh", names(got))
+	}
+}
+
+// Authored by @Ginxo in KevinFCormier/console#15.
+func TestDiscoveryRefreshAllowsAfterInterval(t *testing.T) {
+	mapper := &unavailableMapper{}
+	r := discoveryRefresh{last: time.Now()}
+	if r.request(mapper) {
+		t.Fatal("request within discoveryRefreshInterval must be denied")
+	}
+	if mapper.invalidated.Load() != 0 {
+		t.Fatal("denied request must not Invalidate")
+	}
+
+	r.last = time.Now().Add(-discoveryRefreshInterval - time.Millisecond)
+	if !r.request(mapper) {
+		t.Fatal("request after discoveryRefreshInterval must be granted")
+	}
+	if mapper.invalidated.Load() != 1 {
+		t.Fatalf("Invalidate() called %d times; want 1", mapper.invalidated.Load())
 	}
 }
 

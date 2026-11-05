@@ -39,9 +39,10 @@ type specRuntime struct {
 
 // InformerCache holds one SharedIndexInformer per WatchSpec.
 type InformerCache struct {
-	mu     sync.RWMutex
-	states []*specRuntime
-	sink   ResourceSink
+	mu      sync.RWMutex
+	states  []*specRuntime
+	sink    ResourceSink
+	refresh discoveryRefresh
 }
 
 // SetSink registers the SSE hub (or test collector). Call before StartCache.

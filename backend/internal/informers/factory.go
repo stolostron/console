@@ -8,6 +8,7 @@ import (
 	"time"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/dynamic/dynamicinformer"
 	"k8s.io/client-go/rest"
@@ -92,6 +93,43 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 	go c.logMemoryWhenReady(ctx)
 }
 
+// resolveGVR looks the spec's GVR up in discovery, forcing one refetch from
+// the API server when the cached lookup fails.
+//
+// mapper is a memory-cached discovery client: it snapshots the whole discovery
+// document on first use and only drops it on Invalidate. A pod that starts
+// while the hub is still establishing CRDs therefore caches a snapshot that is
+// missing them, and re-reading that same snapshot every retry round can never
+// succeed — the spec logs "informer spec unavailable" forever even though the
+// CRD now exists. Both failure shapes come straight out of that snapshot with
+// no API call: memory.ErrCacheNotFound ("not found") when the whole
+// groupVersion is absent, and errKindNotFound when the cached resource list
+// for a present groupVersion does not carry the kind.
+//
+// On failure every spec backed by a caching mapper re-resolves once. request
+// grants the Invalidate to at most one spec per discoveryRefreshInterval, and
+// the specs it denies still re-read: Invalidate runs while request holds its
+// throttle lock, so a denial means the winner's invalidation has already
+// completed and the second lookup joins that refetch instead of sleeping out
+// retryBase. The refetch itself happens inside the discovery client, which
+// collapses concurrent callers into a single fetch.
+//
+// The cost is one extra lookup per failing spec per round: a map read while
+// the cached document is valid, but a refetch attempt while it is not, which
+// is the state a refresh that failed leaves behind.
+func (c *InformerCache) resolveGVR(mapper ResourceMapper, st *specRuntime) (schema.GroupVersionResource, error) {
+	gvr, err := ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+	if err == nil {
+		return gvr, nil
+	}
+	if _, caching := mapper.(CacheInvalidator); !caching {
+		return gvr, err
+	}
+	// The grant decides who pays for the Invalidate, not who may re-read.
+	c.refresh.request(mapper)
+	return ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+}
+
 // runSpec resolves the GVR and starts a SharedIndexInformer for one WatchSpec.
 // GVR resolution failures retry until ctx is canceled. After the informer
 // starts, an initial cache-sync timeout waits for that same informer to sync
@@ -102,7 +140,7 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 		if ctx.Err() != nil {
 			return
 		}
-		gvr, err := ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
+		gvr, err := c.resolveGVR(mapper, st)
 		if err != nil {
 			st.setError(err)
 			if isUnavailable(err) {
@@ -112,9 +150,6 @@ func (c *InformerCache) runSpec(ctx context.Context, dyn dynamic.Interface, mapp
 			} else {
 				applog.Logger().Warn("informer GVR resolve failed; retrying",
 					"kind", st.spec.Kind, "apiVersion", st.spec.APIVersion, "error", err)
-				if inv, ok := mapper.(CacheInvalidator); ok {
-					inv.Invalidate()
-				}
 			}
 			if !waitRetry(ctx) {
 				return
