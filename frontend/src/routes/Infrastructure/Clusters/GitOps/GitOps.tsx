@@ -128,6 +128,8 @@ function GitOpsOverview({
   const names = getGitOpsClusterNames(resource.status)
   const agentEnabled = resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
   const agentMode = resource.spec?.gitopsAddon?.argoCDAgent?.mode ?? 'managed'
+  const agentModeLabel =
+    agentMode === 'autonomous' ? t('Autonomous') : agentMode === 'managed' ? t('Managed') : agentMode
   const actions = [
     {
       id: 'delete-gitops',
@@ -234,9 +236,7 @@ function GitOpsOverview({
                           <Label color={agentEnabled ? 'green' : 'grey'}>
                             {agentEnabled ? t('Enabled') : t('Disabled')}
                           </Label>
-                          {agentEnabled && (
-                            <Label color="green">{t(agentMode)}</Label>
-                          )}
+                          {agentEnabled && <Label color="green">{agentModeLabel}</Label>}
                         </DescriptionListDescription>
                       </DescriptionListGroup>
                     </DescriptionList>
