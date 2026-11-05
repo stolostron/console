@@ -498,6 +498,104 @@ func TestStaleDiscoverySnapshotRecoversWithoutRestart(t *testing.T) {
 	}
 }
 
+// waveMapper fails the first firstWave lookups unconditionally and releases
+// them together, so every spec in the opening wave has already failed before
+// any Invalidate can land. Later lookups succeed once Invalidate has run.
+//
+// The wave decision is latched before the barrier rather than re-read after
+// it. Re-reading would let a sibling parked on the barrier be rescued by a
+// refresh that landed while it waited, which turns the test into a measure of
+// goroutine scheduling instead of the behavior under test.
+type waveMapper struct {
+	mu          sync.Mutex
+	entered     int
+	firstWave   int
+	allIn       chan struct{}
+	invalidated bool
+}
+
+func newWaveMapper(firstWave int) *waveMapper {
+	return &waveMapper{firstWave: firstWave, allIn: make(chan struct{})}
+}
+
+func (m *waveMapper) ServerResourcesForGroupVersion(gv string) (*metav1.APIResourceList, error) {
+	m.mu.Lock()
+	if m.entered < m.firstWave {
+		m.entered++
+		if m.entered == m.firstWave {
+			close(m.allIn)
+		}
+		m.mu.Unlock()
+		<-m.allIn
+		return nil, errors.New("not found")
+	}
+	refreshed := m.invalidated
+	m.mu.Unlock()
+	if !refreshed {
+		return nil, errors.New("not found")
+	}
+	return &metav1.APIResourceList{GroupVersion: gv, APIResources: []metav1.APIResource{
+		{Name: "configmaps", Kind: "ConfigMap", Namespaced: true, Verbs: []string{"list", "watch"}},
+		{Name: "secrets", Kind: "Secret", Namespaced: true, Verbs: []string{"list", "watch"}},
+	}}, nil
+}
+
+func (m *waveMapper) Invalidate() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.invalidated = true
+}
+
+// Only one of two simultaneously failing specs can win the Invalidate grant.
+// The loser must still re-resolve in the same round; if it waited for its next
+// retry it would sit unavailable for retryBase even though discovery was
+// refreshed moments earlier.
+func TestDeniedSpecReresolvesInSameRound(t *testing.T) {
+	scheme := runtime.NewScheme()
+	listKinds := map[schema.GroupVersionResource]string{
+		{Version: "v1", Resource: "configmaps"}: "ConfigMapList",
+		{Version: "v1", Resource: "secrets"}:    "SecretList",
+	}
+	cm := uObj("v1", "ConfigMap", "ns", "settings", "uid-1", nil)
+	sec := uObj("v1", "Secret", "ns", "token", "uid-2", nil)
+	client := fake.NewSimpleDynamicClientWithCustomListKinds(scheme, listKinds, cm, sec)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	c := StartSpecs(ctx, client, newWaveMapper(2), []WatchSpec{
+		watch("ConfigMap", "v1"),
+		watch("Secret", "v1"),
+	})
+
+	waitSynced(t, c)
+	if got := c.ListByKind("v1", "ConfigMap"); len(got) != 1 {
+		t.Fatalf("ConfigMap store %+v; want 1 after the same-round refresh", names(got))
+	}
+	if got := c.ListByKind("v1", "Secret"); len(got) != 1 {
+		t.Fatalf("Secret store %+v; want 1 after the same-round refresh", names(got))
+	}
+}
+
+// Authored by @Ginxo in KevinFCormier/console#15.
+func TestDiscoveryRefreshAllowsAfterInterval(t *testing.T) {
+	mapper := &unavailableMapper{}
+	r := discoveryRefresh{last: time.Now()}
+	if r.request(mapper) {
+		t.Fatal("request within discoveryRefreshInterval must be denied")
+	}
+	if mapper.invalidated.Load() != 0 {
+		t.Fatal("denied request must not Invalidate")
+	}
+
+	r.last = time.Now().Add(-discoveryRefreshInterval - time.Millisecond)
+	if !r.request(mapper) {
+		t.Fatal("request after discoveryRefreshInterval must be granted")
+	}
+	if mapper.invalidated.Load() != 1 {
+		t.Fatalf("Invalidate() called %d times; want 1", mapper.invalidated.Load())
+	}
+}
+
 func TestAcquireStartSlotCanceled(t *testing.T) {
 	orig := startConcurrency
 	startConcurrency = 1
