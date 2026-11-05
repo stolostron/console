@@ -52,31 +52,9 @@ export function getGitChannelBranches(
 ) {
   const gitInfo = getGitInformation(channelPath)
   return getGitConnection(secretArgs, accessData)
-    .then((octokit) => {
-      octokit?.repos
-        .getBranch({ ...gitInfo, branch: 'main' })
-        .then(({ data }) => {
-          console.log(data)
-          return octokit.git.getTree({
-            ...gitInfo,
-            tree_sha: data.commit.sha,
-            recursive: 'true',
-          })
-        })
-        .then(({ data }) => {
-          console.log(
-            data.tree
-              ?.filter((item) => item.type === 'blob' || item.type === 'tree')
-              .map((item) => ({ path: item.path, type: item.type }))
-          )
-        })
-        .catch(handleGitError)
-
-      return octokit?.repos.listBranches(gitInfo).then(({ data }) => {
-        console.log(data)
-        return data ? data.map((branch) => branch.name) : []
-      })
-    })
+    .then((octokit) =>
+      octokit?.repos.listBranches(gitInfo).then(({ data }) => (data ? data.map((branch) => branch.name) : []))
+    )
     .catch((err) => {
       handleGitError(err)
       return []
@@ -105,10 +83,9 @@ export function getGitChannelPaths(
                 tree_sha: data?.commit?.sha || '',
                 recursive: 'true',
               })
-              .then(({ data: result }) => {
-                console.log(result.tree)
-                return result.tree ? result.tree.filter((item) => item.type === 'tree').map((item) => item.path) : []
-              })
+              .then(({ data: result }) =>
+                result.tree ? result.tree.filter((item) => item.type === 'tree').map((item) => item.path) : []
+              )
               .catch(handleGitError)
           }
         })
@@ -126,6 +103,15 @@ export async function getGitBranchPathDetails(
   secretArgs?: { secretRef?: string; namespace?: string },
   accessData?: { user?: string; accessToken?: string }
 ): Promise<GitBranchPathNode> {
+  let host = ''
+  try {
+    host = new URL(repoURL).hostname.toLowerCase()
+  } catch {
+    return { type: 'tree', path, children: [] }
+  }
+  if (host !== 'github.com' && host !== 'www.github.com') {
+    return { type: 'tree', path, children: [] }
+  }
   const gitInfo = getGitInformation(repoURL)
   const normalizedPath = path.replace(/^\/+|\/+$/g, '')
   const emptyTree = (): GitBranchPathNode => ({ type: 'tree', path, children: [] })

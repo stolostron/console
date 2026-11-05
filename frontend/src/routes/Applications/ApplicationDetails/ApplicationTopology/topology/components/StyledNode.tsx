@@ -178,8 +178,7 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   const { width, height } = element.getDimensions()
   const isLowDetail = detailsLevel === ScaleDetailsLevel.low
   // scaleNode already enlarges the node (and attachments) on hover at low detail.
-  const actionDecoratorScale =
-    isLowDetail && isNodeHovered ? 1 : getActionDecoratorScale(scale)
+  const actionDecoratorScale = isLowDetail && isNodeHovered ? 1 : getActionDecoratorScale(scale)
 
   return (
     <DefaultNode

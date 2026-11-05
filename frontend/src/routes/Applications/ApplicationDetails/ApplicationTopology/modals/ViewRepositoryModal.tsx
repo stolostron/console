@@ -101,7 +101,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
                 <Spinner size="xl" aria-label={t('Loading')} />
               </Bullseye>
             ) : selectedFile ? (
-              selectedFileLanguage !== Language.yaml ? (
+              selectedFileLanguage === Language.yaml ? (
                 <SyncEditor
                   editorTitle={getViewTitle(selectedFile.id)}
                   variant="toolbar"
