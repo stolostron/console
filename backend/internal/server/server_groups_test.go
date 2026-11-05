@@ -164,7 +164,7 @@ func waitGroupProbe(t *testing.T, s *groupListener, cfg *tls.Config, allowed boo
 	t.Fatal("TLS group update did not reach the listener")
 }
 
-func TestListenerNodeGroupParity(t *testing.T) {
+func TestListenerGroupFiltering(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
 		groups  []string
@@ -184,8 +184,9 @@ func TestListenerNodeGroupParity(t *testing.T) {
 					})
 				}
 			}
-			// RSA key exchange does not use a group, including for empty ecdhCurve.
-			requireGroupProbe(t, s, s.clientConfig(tls.VersionTLS12, tls.CurveP521, tls.TLS_RSA_WITH_AES_128_GCM_SHA256), true)
+			// RSA key exchange needs no group, but a group list that filters to
+			// nothing rejects every handshake (no Node-style RSA exception).
+			requireGroupProbe(t, s, s.clientConfig(tls.VersionTLS12, tls.CurveP521, tls.TLS_RSA_WITH_AES_128_GCM_SHA256), len(tc.allowed) > 0)
 		})
 	}
 }
@@ -234,7 +235,7 @@ func TestListenerGroupUpdates(t *testing.T) {
 	s.watch.Modify(groupProfile([]string{"future-group"}))
 	waitGroupProbe(t, s, p384, false)
 	requireGroupProbe(t, s, p256, false)
-	requireGroupProbe(t, s, s.clientConfig(tls.VersionTLS12, tls.CurveP256, tls.TLS_RSA_WITH_AES_128_GCM_SHA256), true)
+	requireGroupProbe(t, s, s.clientConfig(tls.VersionTLS12, tls.CurveP256, tls.TLS_RSA_WITH_AES_128_GCM_SHA256), false)
 
 	// Omitting groups restores the fixed fallback while preserving custom ciphers.
 	s.watch.Modify(groupProfile(nil))
