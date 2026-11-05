@@ -17,6 +17,7 @@ import {
   isGlobalClusterSet,
   listClusterRoleBindings,
   listGroups,
+  listUsers,
   RbacApiVersion,
   User,
 } from '../../../../../../resources'
@@ -65,15 +66,24 @@ export function ClusterSetAccessManagement() {
     startPolling: groupsStartPolling,
     stopPolling: groupsStopPolling,
   } = useQuery(listGroups)
+  const {
+    data: users,
+    loading: usersLoading,
+    error: usersError,
+    startPolling: usersStartPolling,
+    stopPolling: usersStopPolling,
+  } = useQuery(listUsers)
 
   useEffect(() => {
     startPolling()
     groupsStartPolling()
+    usersStartPolling()
     return () => {
       stopPolling()
       groupsStopPolling()
+      usersStopPolling()
     }
-  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling])
+  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling, usersStartPolling, usersStopPolling])
 
   let clusterRoleBindings: ClusterRoleBinding[] | undefined
   if (data) {
@@ -173,6 +183,9 @@ export function ClusterSetAccessManagement() {
             refresh()
             setAddModalOpen(false)
           }}
+          users={users ?? []}
+          usersLoading={usersLoading}
+          usersError={usersError}
           groups={groups ?? []}
           groupsLoading={groupsLoading}
           groupsError={groupsError}
@@ -267,6 +280,9 @@ function AddUsersModal(
   props: Readonly<{
     isOpen: boolean
     onClose: () => void
+    users: User[]
+    usersLoading: boolean
+    usersError?: Error
     groups: Group[]
     groupsLoading: boolean
     groupsError?: Error
@@ -324,6 +340,9 @@ function AddUsersModal(
                   onUserSelect={handleUserSelect}
                   onGroupSelect={handleGroupSelect}
                   initialSelectedIdentity={selectedIdentity}
+                  users={props.users}
+                  usersLoading={props.usersLoading}
+                  usersError={props.usersError}
                   groups={props.groups}
                   groupsLoading={props.groupsLoading}
                   groupsError={props.groupsError}

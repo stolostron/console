@@ -5,8 +5,26 @@ import { StateProvider } from '~/lib/state-provider'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../lib/nock-util'
 import { MulticlusterRoleAssignmentNamespace } from '../../../../resources'
 import { FlattenedRoleAssignment } from '../../../../resources/clients/model/flattened-role-assignment'
+import { User } from '../../../../resources/rbac'
 import { useSharedValue } from '../../../../shared-atoms'
+import { useUserDetailsContext } from './UserPage'
 import { UserRoleAssignments } from './UserRoleAssignments'
+
+jest.mock('./UserPage', () => ({
+  useUserDetailsContext: jest.fn(),
+}))
+
+const mockUseUserDetailsContext = useUserDetailsContext as jest.Mock
+
+const mockUser: User = {
+  apiVersion: 'user.openshift.io/v1',
+  kind: 'User',
+  metadata: {
+    name: 'mock-user-alice-trask',
+    uid: 'mock-user-alice-trask',
+    creationTimestamp: '2023-01-01T00:00:00Z',
+  },
+}
 
 const mockMulticlusterRoleAssignments = [
   {
@@ -49,7 +67,6 @@ const mockMulticlusterRoleAssignments = [
   },
 ]
 
-// Mock the translation hook
 jest.mock('../../../../lib/acm-i18next', () => ({
   useTranslation: () => ({
     t: (key: string) => {
@@ -63,18 +80,15 @@ jest.mock('../../../../lib/acm-i18next', () => ({
   }),
 }))
 
-// Mock the shared state
 jest.mock('../../../../shared-atoms', () => ({
   useSharedValue: jest.fn(),
   useSharedAtoms: jest.fn(() => ({
-    usersState: 'usersState',
     multiclusterRoleAssignmentState: 'multiclusterRoleAssignmentState',
     placementsState: 'placementsState',
     placementDecisionsState: 'placementDecisionsState',
   })),
 }))
 
-// Mock placement-client hooks
 jest.mock('../../../../resources/clients/placement-client', () => ({
   useFindPlacements: jest.fn(() => []),
   useGetPlacementClusters: jest.fn(() => [
@@ -93,13 +107,11 @@ jest.mock('../../../../resources/clients/placement-client', () => ({
   createForClusters: jest.fn(),
 }))
 
-// Mock placement-decision-client hooks
 jest.mock('../../../../resources/clients/placement-decision-client', () => ({
   useFindPlacementDecisions: jest.fn(() => []),
   useGetClustersFromPlacementDecision: jest.fn(() => []),
 }))
 
-// Mock RoleAssignments to show the key data we want to verify
 jest.mock('../../RoleAssignment/RoleAssignments', () => ({
   RoleAssignments: ({ roleAssignments, isLoading, hiddenColumns }: any) => (
     <div id="role-assignments">
@@ -134,17 +146,17 @@ describe('UserRoleAssignments', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
-
-    // Reset mocks before each test
     ;(useSharedValue as jest.Mock).mockReset()
+    mockUseUserDetailsContext.mockReturnValue({ user: mockUser })
   })
 
   it('renders UserRoleAssignments component with no user found', async () => {
+    mockUseUserDetailsContext.mockReturnValue({ user: undefined })
     ;(useSharedValue as jest.Mock).mockReturnValueOnce([]).mockReturnValueOnce([])
 
     render(<Component userId="non-existent-user" />)
     expect(screen.getByText('Loaded')).toBeInTheDocument()
-    expect(screen.getByText('0')).toBeInTheDocument() // No assignments
+    expect(screen.getByText('0')).toBeInTheDocument()
   })
 
   it('renders UserRoleAssignments component with user found', async () => {
@@ -157,16 +169,13 @@ describe('UserRoleAssignments', () => {
 
     render(<Component userId="mock-user-alice-trask" />)
 
-    // Verify the component renders without crashing
     expect(screen.getByText(/loaded/i)).toBeInTheDocument()
-
-    // Check that role assignments are rendered
-    expect(screen.getByText(/kubevirt\.io:edit/i)).toBeInTheDocument() // ClusterRole
-    expect(screen.getByText(/network-admin/i)).toBeInTheDocument() // ClusterRole
-    expect(screen.getAllByText(/development-cluster/i)).toHaveLength(2) // ClusterSet appears 2 times
-    expect(screen.getByText(/kubevirt-dev/i)).toBeInTheDocument() // Target namespace
-    expect(screen.getByText(/vm-dev/i)).toBeInTheDocument() // Target namespace
-    expect(screen.getByText(/networking-dev/i)).toBeInTheDocument() // Target namespace
+    expect(screen.getByText(/kubevirt\.io:edit/i)).toBeInTheDocument()
+    expect(screen.getByText(/network-admin/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/development-cluster/i)).toHaveLength(2)
+    expect(screen.getByText(/kubevirt-dev/i)).toBeInTheDocument()
+    expect(screen.getByText(/vm-dev/i)).toBeInTheDocument()
+    expect(screen.getByText(/networking-dev/i)).toBeInTheDocument()
   })
 
   it('renders without crashing when multicluster role assignment state is undefined', async () => {

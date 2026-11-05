@@ -5,6 +5,7 @@ import { StateProvider } from '~/lib/state-provider'
 import { Group, User } from '../../../../resources/rbac'
 import { GroupPage } from './GroupPage'
 import { useCurrentGroup } from './useCurrentGroup'
+import { useUsersByNames } from '../Users/useUsersSearch'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 
 jest.mock('../../../../lib/acm-i18next', () => ({
@@ -28,11 +29,15 @@ jest.mock('./useCurrentGroup', () => ({
   useCurrentGroup: jest.fn(),
 }))
 
+jest.mock('../Users/useUsersSearch', () => ({
+  useUsersByNames: jest.fn(),
+}))
+
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockUseCurrentGroup = useCurrentGroup as jest.MockedFunction<typeof useCurrentGroup>
+const mockUseUsersByNames = useUsersByNames as jest.MockedFunction<typeof useUsersByNames>
 
-const usersAtom = Symbol('usersState')
 const authAtom = Symbol('isDirectAuthenticationEnabledState')
 
 const mockGroup: Group = {
@@ -73,17 +78,16 @@ function Component({ groupId = 'kubevirt-admins-uid' }: { groupId?: string }) {
 describe('GroupPage', () => {
   beforeEach(() => {
     mockUseSharedAtoms.mockReturnValue({
-      usersState: usersAtom,
       isDirectAuthenticationEnabledState: authAtom,
     } as any)
 
     mockUseSharedValue.mockImplementation((atom: unknown) => {
-      if (atom === usersAtom) return mockUsers
       if (atom === authAtom) return false
       return undefined
     })
 
     mockUseCurrentGroup.mockReturnValue({ group: mockGroup, loaded: true })
+    mockUseUsersByNames.mockReturnValue({ users: mockUsers, loaded: true })
   })
 
   test('should render group page with data', async () => {
@@ -118,7 +122,6 @@ describe('GroupPage', () => {
 
   test('should hide YAML and Users tabs when isDirectAuthenticationEnabled', async () => {
     mockUseSharedValue.mockImplementation((atom: unknown) => {
-      if (atom === usersAtom) return mockUsers
       if (atom === authAtom) return true
       return undefined
     })
@@ -132,5 +135,14 @@ describe('GroupPage', () => {
       expect(screen.queryByRole('tab', { name: 'YAML' })).not.toBeInTheDocument()
       expect(screen.queryByRole('tab', { name: 'Users' })).not.toBeInTheDocument()
     })
+  })
+
+  test('should load group members via Search by name', async () => {
+    render(<Component />)
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1, name: 'kubevirt-admins' })).toBeInTheDocument()
+    })
+    expect(mockUseUsersByNames).toHaveBeenCalledWith(['admin1'])
   })
 })

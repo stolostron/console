@@ -108,6 +108,36 @@ jest.mock('../../../../UserManagement/Identities/Groups/useGroupsSearch', () => 
   })),
 }))
 
+jest.mock('../../../../UserManagement/Identities/Users/useUsersSearch', () => ({
+  useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
+  useUserIdentity: jest.fn(() => undefined),
+  useUsersByNames: jest.fn(() => ({ users: [], loaded: true })),
+  useMraUserSubjects: jest.fn(() => []),
+  preferSearchBackedUsers: (users: unknown) => users,
+  isSearchBackedUser: (user: { metadata?: { name?: string; uid?: string } }) => {
+    const name = user.metadata?.name
+    const uid = user.metadata?.uid
+    return Boolean(uid && name && uid !== name)
+  },
+  useUsersSearch: jest.fn(() => ({
+    users: [
+      {
+        kind: 'User',
+        apiVersion: 'user.openshift.io/v1',
+        metadata: { name: 'mock-user2', uid: 'e3d73187-dcf4-49a2-b0fb-d2805c5dd584' },
+        identities: ['myuser:mock-user2'],
+        groups: [],
+      },
+    ],
+    processedItemCount: 1,
+    loading: false,
+    error: undefined,
+    refetch: jest.fn(),
+    fetchExport: jest.fn().mockResolvedValue(undefined),
+    emptyResult: false,
+  })),
+}))
+
 jest.mock('@stolostron/multicluster-sdk/lib/api/useFleetSearch', () => ({
   useFleetSearch: jest.fn(() => [undefined, true, undefined, jest.fn()]),
 }))

@@ -5,12 +5,19 @@ import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { Group, User } from '../../resources/rbac'
 import { useGroupIdentity, useHasHubGroups } from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
-import { useMergedUsers } from '../../routes/UserManagement/Identities/useMergedIdentities'
+import { useHasHubUsers, useUserIdentity } from '../../routes/UserManagement/Identities/Users/useUsersSearch'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { IdentitiesList } from './IdentitiesList'
 
-jest.mock('../../routes/UserManagement/Identities/useMergedIdentities', () => ({
-  useMergedUsers: jest.fn(),
+jest.mock('../../routes/UserManagement/Identities/Users/useUsersSearch', () => ({
+  useHasHubUsers: jest.fn(() => ({ hasUsers: true, loaded: true })),
+  useUserIdentity: jest.fn(),
+  useMraUserSubjects: jest.fn(() => []),
+  isSearchBackedUser: (user: { metadata?: { name?: string; uid?: string } }) => {
+    const name = user.metadata?.name
+    const uid = user.metadata?.uid
+    return Boolean(uid && name && uid !== name)
+  },
 }))
 
 jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () => ({
@@ -25,7 +32,8 @@ jest.mock('../../routes/UserManagement/Identities/Groups/useGroupsSearch', () =>
   },
 }))
 
-const mockUseMergedUsers = useMergedUsers as jest.MockedFunction<typeof useMergedUsers>
+const mockUseHasHubUsers = useHasHubUsers as jest.Mock
+const mockUseUserIdentity = useUserIdentity as jest.Mock
 const mockUseHasHubGroups = useHasHubGroups as jest.Mock
 const mockUseGroupIdentity = useGroupIdentity as jest.Mock
 
@@ -71,17 +79,14 @@ jest.mock('../../shared-atoms', () => ({
 const mockUseSharedAtoms = useSharedAtoms as jest.MockedFunction<typeof useSharedAtoms>
 const mockUseSharedValue = useSharedValue as jest.MockedFunction<typeof useSharedValue>
 
-const usersAtom = Symbol('usersState')
 const isDirectAuthAtom = Symbol('isDirectAuthenticationEnabledState')
 
 function setupMocks(isDirectAuthenticationEnabled = false) {
   mockUseSharedAtoms.mockReturnValue({
-    usersState: usersAtom,
     isDirectAuthenticationEnabledState: isDirectAuthAtom,
   } as any)
 
   mockUseSharedValue.mockImplementation((atom: unknown) => {
-    if (atom === usersAtom) return []
     if (atom === isDirectAuthAtom) return isDirectAuthenticationEnabled
     return undefined
   })
@@ -94,6 +99,8 @@ jest.mock('../../routes/UserManagement/Identities/Users/UsersTable', () => ({
       data-testid="users-table"
       data-arelinks={props.areLinksDisplayed}
       data-additionalusers={JSON.stringify((props.additionalUsers ?? []).map((u: any) => u.metadata.name))}
+      data-hubusers={JSON.stringify((props.users ?? []).map((u: any) => u.metadata.name))}
+      data-usersloading={String(!!props.usersLoading)}
       data-iscreatebuttondisplayed={String(!!props.isCreateButtonDisplayed)}
       data-createbuttontext={props.createButtonText ?? ''}
     >
@@ -113,6 +120,12 @@ jest.mock('../../routes/UserManagement/Identities/Users/UsersTable', () => ({
         props.additionalUsers?.map((u: any) => (
           <button key={u.metadata.name} onClick={() => props.setSelectedUser(u)}>
             Select {u.metadata.name}
+          </button>
+        ))}
+      {props.setSelectedUser &&
+        props.users?.map((u: any) => (
+          <button key={`hub-${u.metadata.name}`} onClick={() => props.setSelectedUser(u)}>
+            Select hub {u.metadata.name}
           </button>
         ))}
       {props.onCreateClick && <button onClick={props.onCreateClick}>Create User Action</button>}
@@ -205,7 +218,8 @@ describe('IdentitiesList', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     setupMocks(false)
-    mockUseMergedUsers.mockReturnValue(mockUsers)
+    mockUseHasHubUsers.mockReturnValue({ hasUsers: true, loaded: true })
+    mockUseUserIdentity.mockImplementation((name?: string) => mockUsers.find((user) => user.metadata.name === name))
     mockUseHasHubGroups.mockReturnValue({ hasGroups: true, loaded: true })
     mockUseGroupIdentity.mockImplementation((name?: string) => mockGroups.find((group) => group.metadata.name === name))
   })
@@ -573,8 +587,9 @@ describe('IdentitiesList', () => {
     })
   })
 
-  test('should render without errors when useMergedUsers returns empty', () => {
-    mockUseMergedUsers.mockReturnValue([])
+  test('should render without errors when useHasHubUsers returns empty', () => {
+    mockUseHasHubUsers.mockReturnValue({ hasUsers: false, loaded: true })
+    mockUseUserIdentity.mockReturnValue(undefined)
     mockUseHasHubGroups.mockReturnValue({ hasGroups: false, loaded: true })
     mockUseGroupIdentity.mockReturnValue(undefined)
 
@@ -725,6 +740,44 @@ describe('IdentitiesList', () => {
       expect(mockOnGroupSelect).toHaveBeenCalledTimes(3)
       expect(mockOnGroupSelect).toHaveBeenLastCalledWith(
         expect.objectContaining({ metadata: expect.objectContaining({ name: 'new-pre-authorized-group' }) })
+      )
+    })
+  })
+
+  describe('hub Users path (listUsers / non-Search)', () => {
+    test('should pass hub users to UsersTable and skip Search hooks', async () => {
+      render(<Component users={mockUsers} usersLoading={false} />)
+
+      expect(mockUseHasHubUsers).not.toHaveBeenCalled()
+      expect(mockUseUserIdentity).not.toHaveBeenCalled()
+
+      await waitFor(() => {
+        expect(screen.getByTestId('users-table')).toBeInTheDocument()
+      })
+
+      const usersTable = screen.getByTestId('users-table')
+      expect(usersTable).toHaveAttribute('data-hubusers', JSON.stringify(['alice', 'bob-mra']))
+      expect(usersTable).toHaveAttribute('data-usersloading', 'false')
+    })
+
+    test('should resolve initial User selection from hub users', async () => {
+      render(<Component users={mockUsers} initialSelectedIdentity={{ kind: 'User', name: 'alice' }} />)
+
+      await waitFor(() => {
+        expect(screen.getByText(/Selected: alice/)).toBeInTheDocument()
+      })
+      expect(mockUseUserIdentity).not.toHaveBeenCalled()
+    })
+
+    test('should call onUserSelect when selecting a hub user', async () => {
+      const mockOnUserSelect = jest.fn()
+      render(<Component users={mockUsers} onUserSelect={mockOnUserSelect} />)
+
+      await waitFor(() => expect(screen.getByTestId('users-table')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Select hub alice' }))
+      expect(mockOnUserSelect).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ name: 'alice' }) })
       )
     })
   })
