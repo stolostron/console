@@ -95,6 +95,7 @@ func New(opts Options) *Handler {
 	return h
 }
 
+// authenticate validates the user token via Authn, or writes 401 when Authn is unset.
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) bool {
 	if h.Authn != nil {
 		_, ok := h.Authn(w, r)
@@ -154,6 +155,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_ = enc.Encode(results)
 }
 
+// crcToken returns a cached cloud.openshift.com pull-secret auth token, refreshing after TTL.
 func (h *Handler) crcToken(ctx context.Context) string {
 	h.crcMu.Lock()
 	if time.Now().Before(h.crcExpiry) {
@@ -174,6 +176,7 @@ func (h *Handler) crcToken(ctx context.Context) string {
 	return tok
 }
 
+// loadCRCToken reads cloud.openshift.com auth from the openshift-config pull-secret.
 func (h *Handler) loadCRCToken(ctx context.Context) string {
 	if h.Kube == nil {
 		return ""
@@ -194,6 +197,7 @@ func (h *Handler) loadCRCToken(ctx context.Context) string {
 	return cred.Auths["cloud.openshift.com"].Auth
 }
 
+// postChunk POSTs one Insights upgrade-risks request for up to chunkSize cluster IDs.
 func (h *Handler) postChunk(ctx context.Context, crcToken string, ids []string) (postResult, error) {
 	endpoint := defaultInsightsURL
 	if h.Endpoint != nil {
@@ -225,6 +229,7 @@ func (h *Handler) postChunk(ctx context.Context, crcToken string, ids []string) 
 	return postResult{StatusCode: resp.StatusCode, Body: out}, nil
 }
 
+// chunkIDs splits ids into contiguous slices of at most size.
 func chunkIDs(ids []string, size int) [][]string {
 	if len(ids) == 0 {
 		return nil

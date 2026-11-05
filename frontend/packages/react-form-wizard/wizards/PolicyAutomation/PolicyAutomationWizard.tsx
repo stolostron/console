@@ -62,7 +62,7 @@ export function PolicyAutomationWizard(props: {
           <div>
             {'Install the Operator through the following link: '}
             <Button
-              icon={<ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />}
+              icon={<ExternalLinkAltIcon />}
               isInline
               variant={ButtonVariant.link}
               onClick={() => window.open(openShiftConsoleUrl + buildSearchUrl('ansible automation platform'))}

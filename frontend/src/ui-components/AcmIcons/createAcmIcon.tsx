@@ -39,7 +39,7 @@ export function createAcmIcon({
 
     render() {
       const { title, className, ...props } = this.props
-      const classes = `pf-v5-svg${baseClassName ? ` ${baseClassName}` : ''}${className ? ` ${className}` : ''}`
+      const classes = `pf-v6-svg${baseClassName ? ` ${baseClassName}` : ''}${className ? ` ${className}` : ''}`
 
       const hasTitle = Boolean(title)
       const viewBox = [xOffset, yOffset, width, height].join(' ')

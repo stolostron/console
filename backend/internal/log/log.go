@@ -15,6 +15,7 @@ var (
 	level  slog.LevelVar
 )
 
+// init configures the default JSON slog logger from LOG_LEVEL.
 func init() {
 	SetLevel(os.Getenv("LOG_LEVEL"))
 	logger = slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
@@ -22,12 +23,14 @@ func init() {
 	}))
 }
 
+// Logger returns the process-wide JSON slog logger.
 func Logger() *slog.Logger {
 	mu.Lock()
 	defer mu.Unlock()
 	return logger
 }
 
+// SetLevel sets the slog level from a name (debug/info/warn/error; default debug).
 func SetLevel(name string) {
 	var l slog.Level
 	switch strings.ToLower(strings.TrimSpace(name)) {

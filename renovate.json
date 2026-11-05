@@ -93,19 +93,17 @@
       "groupSlug": "eslint"
     },
     {
-      "description": "Group webpack and build tooling packages into a single PR",
+      "description": "Group Rspack and build tooling packages into a single PR",
       "matchManagers": ["npm"],
       "matchPackageNames": [
-        "webpack",
-        "webpack-*",
+        "@rspack/**",
+        "@rsbuild/**",
+        "ts-checker-rspack-plugin",
+        "storybook-*-rsbuild",
         "*-webpack-plugin",
         "*-loader",
         "@svgr/webpack",
-        "@pmmmwh/react-refresh-webpack-plugin",
-        "fork-ts-checker-webpack-plugin",
-        "monaco-editor-webpack-plugin",
-        "mini-css-extract-plugin",
-        "copy-webpack-plugin"
+        "monaco-editor-webpack-plugin"
       ],
       "groupName": "build tools",
       "groupSlug": "build-tools"

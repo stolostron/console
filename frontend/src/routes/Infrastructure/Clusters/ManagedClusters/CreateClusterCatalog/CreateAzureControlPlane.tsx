@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CheckIcon, ExternalLinkAltIcon } from '@patternfly/react-icons'
+import { CheckIcon } from '@patternfly/react-icons'
 import {
   CatalogCardItemType,
   CatalogColor,
@@ -9,7 +9,7 @@ import {
 } from '@stolostron/react-data-view'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { DOC_LINKS } from '../../../../../lib/doc-util'
+import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
 import { NavigationPath, useBackCancelNavigation } from '../../../../../NavigationPath'
 import { AcmPage, AcmPageHeader, Provider } from '../../../../../ui-components'
 import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
@@ -66,9 +66,7 @@ export function CreateAzureControlPlane() {
         alertVariant: 'info',
         alertContent:
           !loaded || isHypershiftEnabled ? undefined : (
-            <a href={DOC_LINKS.HOSTED_ENABLE_FEATURE_AZURE} target="_blank" rel="noopener noreferrer">
-              {t('View documentation')} <ExternalLinkAltIcon />
-            </a>
+            <ViewDocumentationLink doclink={DOC_LINKS.HOSTED_ENABLE_FEATURE_AZURE} topPadding={false} />
           ),
         badgeList: [
           {

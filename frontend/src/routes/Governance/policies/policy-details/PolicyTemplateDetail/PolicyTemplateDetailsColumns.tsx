@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { Skeleton } from '@patternfly/react-core'
-import { ListItems } from '../../../../../ui-components'
+import { AcmButton, ListItems } from '../../../../../ui-components'
 import { generatePath, Link } from 'react-router'
 import { NavigationPath } from '../../../../../NavigationPath'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
@@ -27,7 +27,9 @@ export const addRowsForHasVapb = (
     cols.push({
       key: 'Validating Admission Policy Binding',
       value: (
-        <Link
+        <AcmButton
+          variant="link"
+          component={Link}
           to={generatePath(NavigationPath.discoveredPolicyDetails, {
             clusterName,
             apiVersion: 'v1',
@@ -37,9 +39,12 @@ export const addRowsForHasVapb = (
             templateNamespace: null,
           })}
           target="_blank"
+          isInline
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
         >
-          {vapbName} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-        </Link>
+          {vapbName}
+        </AcmButton>
       ),
     })
   } else if (vapbItems && vapbItems.length == 0 && !loading) {
@@ -56,13 +61,18 @@ export const addRowsForConstraint = (cols: ListItems[], clusterName: string, api
     cols.push({
       key: 'Constraint Template',
       value: (
-        <a
-          target="_blank"
-          rel="noopener noreferrer"
+        <AcmButton
+          variant="link"
+          component="a"
           href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ConstraintTemplate&apiversion=templates.gatekeeper.sh%2Fv1&name=${kind.toLowerCase()}`}
+          target="_blank"
+          rel="noreferrer"
+          isInline
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
         >
-          {kind.toLowerCase()} <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-        </a>
+          {kind.toLowerCase()}
+        </AcmButton>
       ),
     })
   }
@@ -84,14 +94,18 @@ export const addRowsForVapb = (cols: ListItems[], template: any, clusterName: st
       cols.push({
         key: 'Validating Admission Policy',
         value: (
-          <a
-            target="_blank"
-            rel="noopener noreferrer"
+          <AcmButton
+            variant="link"
+            component="a"
             href={`${NavigationPath.resourceYAML}?cluster=${clusterName}&kind=ValidatingAdmissionPolicy&apiversion=v1&name=${policyName}`}
+            target="_blank"
+            rel="noreferrer"
+            isInline
+            icon={<ExternalLinkAltIcon />}
+            iconPosition="right"
           >
             {policyName}
-            <ExternalLinkAltIcon style={{ verticalAlign: '-0.125em', marginLeft: '8px' }} />
-          </a>
+          </AcmButton>
         ),
       })
     } else {

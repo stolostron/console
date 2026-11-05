@@ -14,6 +14,7 @@ type Lister interface {
 // MapLister is a test double for Lister.
 type MapLister map[string][]unstructured.Unstructured
 
+// ListByKind returns cached objects for apiVersion|kind (test double).
 func (m MapLister) ListByKind(apiVersion, kind string) []unstructured.Unstructured {
 	if m == nil {
 		return nil

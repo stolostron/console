@@ -247,9 +247,10 @@ export function BatchUpgradeModal(props: {
                           href={`https://console.redhat.com/openshift/insights/advisor/clusters/${clusterID}?active_tab=update_risks`}
                           target="_blank"
                           style={{ padding: 0, fontSize: '14px' }}
+                          icon={<ExternalLinkAltIcon />}
+                          iconPosition="right"
                         >
                           {t('update.table.update.risk.link', { 0: insightsRiskCount })}
-                          <ExternalLinkAltIcon style={{ marginLeft: '8px' }} />
                         </AcmButton>
                       </div>
                     )}
@@ -316,7 +317,9 @@ export function BatchUpgradeModal(props: {
                             >
                               <span>{version}</span>
                               {hasWarning && (
-                                <ExclamationTriangleIcon style={{ color: 'var(--pf-v5-global--warning-color--100)' }} />
+                                <ExclamationTriangleIcon
+                                  style={{ color: 'var(--pf-t--global--icon--color--status--warning--default)' }}
+                                />
                               )}
                             </div>
                           </SelectOption>
@@ -329,7 +332,7 @@ export function BatchUpgradeModal(props: {
                           style={{
                             marginRight: '4px',
                             verticalAlign: 'middle',
-                            color: 'var(--pf-v5-global--warning-color--100)',
+                            color: 'var(--pf-t--global--icon--color--status--warning--default)',
                           }}
                         />
                         {t('Cluster version update risk detected for {{version}}', { version: selectedVersion })} -{' '}

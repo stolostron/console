@@ -107,7 +107,7 @@ The recommended way to run the console for development is as OpenShift Console d
     npm run plugins
     ```
 
-    This concurrently starts the Go backend, the frontend webpack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
+    This concurrently starts the Go backend, the frontend Rspack development server (serving both ACM and MCE plugins), and a local OpenShift Console container. The console will be available at **http://localhost:9000**.
 
 ### Options
 
@@ -288,13 +288,13 @@ This is caused by incompatibility between the Rosetta x86 emulation layer in the
 
 - **macOS 26 (Tahoe)**: Apple has fixed the underlying Rosetta issue, but podman 5.6+ ships with Rosetta disabled by default. You can re-enable it by following the instructions in the [Podman 5.6 release blog post](https://blog.podman.io/2025/08/podman-5-6-released-rosetta-status-update/).
 
-### `[webpack-cli] Failed to load './console/frontend/webpack.config.ts'`
+### `Failed to load './console/frontend/rspack.config.ts'`
 
 After executing the `npm start` command (either at the root level of the project or at `./frontend` folder) an error on `frontend` project is produced like
 
 ```text
-[start:frontend] [webpack-cli] Failed to load 'console/frontend/webpack.config.ts' config
-[start:frontend] [webpack-cli] Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'console/frontend/src/lib/supportedLanguages' imported from console/frontend/webpack.config.ts
+[start:frontend] Failed to load 'console/frontend/rspack.config.ts' config
+[start:frontend] Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'console/frontend/src/lib/supportedLanguages' imported from console/frontend/rspack.config.ts
 ```
 
 This is due to wrong node/npm set of versions. See [Prerequisites section](#prerequisites).
@@ -316,8 +316,8 @@ The application starts up apparently normally but the browser produces an error 
 In the logs there are errors like
 
 ```text
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO]
-[start:frontend] <e> [webpack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO]
+[start:frontend] <e> [rspack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/username to https://localhost:4000/ [EPROTO]
+[start:frontend] <e> [rspack-dev-server] [HPM] Error occurred while proxying request localhost:3000/multicloud/login to https://localhost:4000/ [EPROTO]
 ```
 
 And if the logs are inspected right after running `npm start` command an error is produced:

@@ -43,6 +43,7 @@ import (
 	"github.com/stolostron/console/backend/internal/vmproxy"
 )
 
+// main starts the console backend and exits non-zero on fatal startup errors.
 func main() {
 	if err := run(); err != nil {
 		applog.Logger().Error("process exit", "error", err)
@@ -50,6 +51,7 @@ func main() {
 	}
 }
 
+// run loads config, wires handlers and informers, and serves until SIGINT/SIGTERM.
 func run() error {
 	cfg := config.Load()
 	applog.SetLevel(cfg.LogLevel)
@@ -270,6 +272,7 @@ func setServiceAccountNamespacePath(path string) func() {
 	return func() { serviceAccountNamespacePath = prev }
 }
 
+// serviceAccountNamespace reads the projected namespace file, else NAMESPACE.
 func serviceAccountNamespace() string {
 	data, err := os.ReadFile(serviceAccountNamespacePath)
 	if err != nil {

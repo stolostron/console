@@ -103,6 +103,7 @@ type acceptJSON struct {
 	base http.RoundTripper
 }
 
+// RoundTrip sets Accept: application/json when missing, then delegates to the base transport.
 func (t acceptJSON) RoundTrip(req *http.Request) (*http.Response, error) {
 	r := req.Clone(req.Context())
 	if r.Header.Get("Accept") == "" {
@@ -115,12 +116,15 @@ func (t acceptJSON) RoundTrip(req *http.Request) (*http.Response, error) {
 	return base.RoundTrip(r)
 }
 
+// withAcceptJSON returns a shallow client copy whose transport defaults to
+// Accept: application/json when the request does not already set Accept.
 func withAcceptJSON(c *http.Client) *http.Client {
 	cp := *c
 	cp.Transport = acceptJSON{base: c.Transport}
 	return &cp
 }
 
+// oauth2Config builds the oauth2.Config for OpenShift OAuth (user:full) or OIDC (openid).
 func (h *Handler) oauth2Config(info Info) *oauth2.Config {
 	scopes := []string{"user:full"}
 	if h.oidcIssuerURL != "" {
@@ -139,6 +143,7 @@ func (h *Handler) oauth2Config(info Info) *oauth2.Config {
 	}
 }
 
+// endpoints returns cached discovery info and requires authorization_endpoint.
 func (h *Handler) endpoints(ctx context.Context) (Info, error) {
 	info, err := h.discoverCached(ctx)
 	if err != nil {
@@ -167,6 +172,7 @@ func (h *Handler) discoverCached(ctx context.Context) (Info, error) {
 	return info, nil
 }
 
+// discoverDefault GETs the well-known OAuth/OIDC document and decodes Info.
 func (h *Handler) discoverDefault(ctx context.Context) (Info, error) {
 	raw, err := DiscoveryURL(h.clusterAPIURL, h.oidcIssuerURL)
 	if err != nil {
@@ -274,6 +280,7 @@ func (h *Handler) Callback(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusFound)
 }
 
+// accessCookie formats the Set-Cookie value for acm-access-token-cookie.
 func accessCookie(token string, production bool) string {
 	secure := ""
 	if production {
@@ -282,6 +289,7 @@ func accessCookie(token string, production bool) string {
 	return auth.AccessTokenCookie + "=" + token + ";" + secure + " HttpOnly; Path=/"
 }
 
+// exchange trades an authorization code for an access_token (or id_token for OIDC).
 func (h *Handler) exchange(ctx context.Context, info Info, code string) (string, error) {
 	ctx = context.WithValue(ctx, oauth2.HTTPClient, h.client)
 	tok, err := h.oauth2Config(info).Exchange(ctx, code)
@@ -329,6 +337,7 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
+// clearSessionCookies expires connect.sid, the access-token cookie, and oauth_proxy_*.
 func clearSessionCookies(w http.ResponseWriter, host string) {
 	deleteCookie(w, connectSIDCookie, "")
 	deleteCookie(w, auth.AccessTokenCookie, "")
@@ -338,6 +347,7 @@ func clearSessionCookies(w http.ResponseWriter, host string) {
 	deleteCookie(w, oauthProxyCookie, "."+host)
 }
 
+// deleteCookie appends a max-age=0 Set-Cookie for name (optional Domain).
 func deleteCookie(w http.ResponseWriter, name, domain string) {
 	s := name + "=; Secure; HttpOnly; Path=/; max-age=0"
 	if domain != "" {
@@ -346,6 +356,7 @@ func deleteCookie(w http.ResponseWriter, name, domain string) {
 	w.Header().Add("Set-Cookie", s)
 }
 
+// userDynamicClient builds a dynamic client impersonating the user via Bearer token.
 func (h *Handler) userDynamicClient(bearer string) (dynamic.Interface, error) {
 	if h.userDynamic != nil {
 		return h.userDynamic(bearer)
@@ -356,6 +367,7 @@ func (h *Handler) userDynamicClient(bearer string) (dynamic.Interface, error) {
 	return dynamic.NewForConfig(auth.UserRESTConfig(h.restConfig, bearer))
 }
 
+// revokeDefault deletes the OpenShift OAuthAccessToken named tokenName as the user.
 func (h *Handler) revokeDefault(ctx context.Context, bearer, tokenName string) error {
 	dc, err := h.userDynamicClient(bearer)
 	if err != nil {

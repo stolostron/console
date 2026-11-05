@@ -43,7 +43,7 @@ import { ActionExtensionProps } from '../../plugin-extensions/properties'
 import { IResultStatuses } from '../../lib/useAggregates'
 
 export const mockArgoCD: IResource = {
-  apiVersion: 'argoproj.io/v1alpha1',
+  apiVersion: 'argoproj.io/v1beta1',
   kind: 'ArgoCD',
   metadata: {
     name: 'openshift-gitops',

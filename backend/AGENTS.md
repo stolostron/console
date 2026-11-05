@@ -102,6 +102,22 @@ Long-tail HTTP is always registered. Auth is GET `/api` (401 empty body). ROSA w
 
 `GET /events` framing: `id:` + `data:` (no space), gzip when `Accept-Encoding` includes gzip, keepalive `:\n\n` every 10s, snapshot `START` → `SETTINGS` → priority packets with `EOP` → `LOADED`, live `MODIFIED`/`DELETED` then `LOADED`. Creates and updates are both `MODIFIED` (not `ADDED`). Per-user RBAC: cluster-scoped `list` SSAR, then one SelfSubjectRulesReview per token+namespace (`deny-all` / `allow-all` / `allow-names`; empty OpenShift rules are deny-all). Cluster-scoped kinds that are not deny-all are confirmed with SSAR `get` so a RoleBinding in `default` cannot impersonate cluster access. Incomplete reviews fall back to namespaced `list` then `get`. **DELETED uses the same cascade.** A namespaced allow is remembered for the token and reused when a later delete is denied or returns NotFound because the namespace is gone. Cluster-scoped list allows are not remembered; that check still applies to the delete.
 
+## Go comments
+
+Use standard Go doc comments to ease the learning curve for readers new to this
+codebase. Prefer explaining *what* and *why* over restating the identifier.
+
+- **Exported** funcs, methods, types, and constants: always have a doc comment
+  that starts with the symbol name (`// Name …`).
+- **Unexported** helpers: add a short comment when behavior is non-obvious
+  (RBAC cascades, encoding quirks, env fallbacks, concurrency). Skip when the
+  name and signature are already self-explanatory (`base64DecodeASCII`, trivial
+  getters/setters, one-line `Error()` methods).
+- Keep comments adjacent to the declaration (no blank line between `//` and
+  `func`/`type`). Match existing style in packages like `internal/auth`.
+- Do not invent noisy comments (`// New creates a new X`) when the name alone
+  is enough — comment the parts that help someone learn Go or this domain.
+
 ## Shared artifacts
 
 `npm run setup` writes `backend/.env`.

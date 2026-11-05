@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { act, render, waitFor } from '@testing-library/react'
-import { clickElement } from '~/lib/test-util'
 import { axe } from 'jest-axe'
 import { Fragment } from 'react'
 import { AcmButton } from '../AcmButton/AcmButton'
@@ -190,6 +189,10 @@ describe('AcmAlert', () => {
 })
 
 describe('AcmToast', () => {
+  afterEach(() => {
+    jest.useRealTimers()
+  })
+
   test('renders a toast alert in alert group', async () => {
     const { getByText, queryAllByText, getByRole, container } = render(
       <AcmToastProvider>
@@ -234,10 +237,17 @@ describe('AcmToast', () => {
     await waitFor(() => expect(queryAllByText('Warning')).toHaveLength(1), { timeout: 1000 })
 
     expect(queryAllByText('Expiring')).toHaveLength(0)
-    await clickElement(getByText('Add Expiring'))
+    jest.useFakeTimers()
+    await act(async () => {
+      getByText('Add Expiring').click()
+    })
     await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(1))
-    await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0), { timeout: 10000 })
+    await act(async () => {
+      await jest.advanceTimersByTimeAsync(5150)
+    })
+    await waitFor(() => expect(queryAllByText('Expiring')).toHaveLength(0))
 
+    jest.useRealTimers()
     expect(await axe(container)).toHaveNoViolations()
 
     await act(async () => {
@@ -256,8 +266,6 @@ describe('AcmToast', () => {
       getByText('Clear Alerts').click()
     })
     await waitFor(() => expect(queryAllByText('Error')).toHaveLength(0), { timeout: 1000 })
-
-    await new Promise((resolve) => setTimeout(resolve, 1000))
   })
 
   test('renders alert', async () => {

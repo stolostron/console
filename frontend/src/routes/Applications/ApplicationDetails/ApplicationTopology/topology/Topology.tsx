@@ -308,14 +308,26 @@ export const Topology = ({
 
   // Structure-only key: pulse/status changes must not rebuild the model (that remounts shapes and
   // briefly drops the error pulse before it is re-applied).
-  const structureKey = JSON.stringify(
-    elements.nodes
+  const structureKey = JSON.stringify({
+    nodes: elements.nodes
       .map((node: any) => ({
         id: node.id,
         name: node.name,
       }))
-      .sort((a: any, b: any) => a.id.localeCompare(b.id))
-  )
+      .sort((a: any, b: any) => a.id.localeCompare(b.id)),
+    links: elements.links
+      .map((link: any) => ({
+        identity: link.id ?? `${link.source}_${link.target}`,
+        source: link.source,
+        target: link.target,
+        label: link.label,
+        type: link.type,
+      }))
+      .sort(
+        (a: any, b: any) =>
+          a.identity.localeCompare(b.identity) || a.source.localeCompare(b.source) || a.target.localeCompare(b.target)
+      ),
+  })
   const statusKey = JSON.stringify(
     elements.nodes
       .map((node: any) => ({
@@ -327,10 +339,12 @@ export const Topology = ({
   )
 
   useEffect(() => {
-    if (elements.nodes.length > 0) {
+    if (elements.nodes.length > 0 || controller.hasGraph()) {
       // Creates StyledNodes/StyledEdges; merge keeps existing element instances across refreshes.
       controller.fromModel(getLayoutModel(elements))
-      controller.getGraph()?.layout()
+      if (elements.nodes.length > 0) {
+        controller.getGraph()?.layout()
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [controller, structureKey])

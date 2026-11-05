@@ -155,6 +155,15 @@ func TestSetSinkNilCache(t *testing.T) {
 	}
 }
 
+// unsupportedWatchListTestClient opts this ListWatch out of WatchListClient.
+// watch.NewFake never emits the initial-events bookmark, so streaming sync
+// would hang; FakeDynamicClient in factory tests opts out the same way.
+type unsupportedWatchListTestClient struct{}
+
+func (unsupportedWatchListTestClient) IsWatchListSemanticsUnSupported() bool {
+	return true
+}
+
 func newTestInformer(t *testing.T, objs ...*unstructured.Unstructured) cache.SharedIndexInformer {
 	t.Helper()
 	lw := &cache.ListWatch{
@@ -169,9 +178,13 @@ func newTestInformer(t *testing.T, objs ...*unstructured.Unstructured) cache.Sha
 			return watchpkg.NewFake(), nil
 		},
 	}
-	inf := cache.NewSharedIndexInformer(lw, &unstructured.Unstructured{}, time.Hour, cache.Indexers{
-		cache.NamespaceIndex: cache.MetaNamespaceIndexFunc,
-	})
+	lwWithWatchListSemantics := cache.ToListWatcherWithWatchListSemantics(lw, unsupportedWatchListTestClient{})
+	inf := cache.NewSharedIndexInformer(
+		lwWithWatchListSemantics,
+		&unstructured.Unstructured{},
+		time.Hour,
+		cache.Indexers{cache.NamespaceIndex: cache.MetaNamespaceIndexFunc},
+	)
 	ctx, cancel := context.WithCancel(context.Background())
 	t.Cleanup(cancel)
 	go inf.Run(ctx.Done())

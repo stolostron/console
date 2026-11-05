@@ -63,6 +63,7 @@ func New(opts Options) http.Handler {
 	})
 }
 
+// authorize validates the user token via opts.Validate or AuthenticateRequest.
 func authorize(opts Options, w http.ResponseWriter, r *http.Request) bool {
 	if opts.Validate != nil {
 		token, ok := auth.RequireToken(w, r)
@@ -84,6 +85,7 @@ func authorize(opts Options, w http.ResponseWriter, r *http.Request) bool {
 	return ok
 }
 
+// rewritePath maps /managedclusterproxy/{cluster}/… to /{cluster}/… for the addon proxy.
 func rewritePath(stripped string) string {
 	trimmed := strings.TrimPrefix(stripped, "/")
 	parts := strings.Split(trimmed, "/")

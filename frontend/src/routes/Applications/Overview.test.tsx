@@ -6,7 +6,7 @@ import { StateProvider } from '~/lib/state-provider'
 import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
-import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement } from '~/lib/test-util'
+import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement, waitTimeout } from '~/lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
@@ -51,7 +51,7 @@ async function openRowAction(appName: string, actionName: string) {
 }
 
 const applicationAggregate = {
-  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc' } },
+  req: { page: 1, perPage: 10, search: '', filters: {}, sortBy: { index: 0, direction: 'asc', id: 'name' } },
   res: {
     page: 1,
     items: [
@@ -350,21 +350,26 @@ describe('Applications Page', () => {
     await clickElement(screen.getByTestId('export-search-result'))
     await clickElement(screen.getByText('Export all to CSV'))
 
-    await waitFor(() => {
-      const toastElement = screen.getByText(/Export successful/i)
-      expect(toastElement).toBeInTheDocument()
-    })
+    // The export path fetches every row before adding the toast, so give it the same timeout the rest
+    // of this suite uses rather than the 1s testing-library default.
+    await waitFor(
+      () => {
+        const toastElement = screen.getByText(/Export successful/i)
+        expect(toastElement).toBeInTheDocument()
+      },
+      { timeout: waitTimeout }
+    )
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Type,Namespace,Clusters,Labels,Health Status,Sync Status,Pod Status,Created\n' +
-          `"application-0","Subscription","namespace-0","Local",-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None",-,"-","-","-",-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None",-,"-","-","-",-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","None",-,"-","-","-",-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None",-,"-","-","-",-\n' +
-          '"authentication-operator","OpenShift","authentication-operator-ns","None","app=authentication-operator","-","-","-",-\n' +
-          '"authentication-operatorf","Flux","authentication-operator-ns","None","kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
+        'Name,Type,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
+          `"application-0","Subscription","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"applicationset-1","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
+          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
+          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,"app=authentication-operator","-","-","-",-\n' +
+          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,"kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
       ],
       { type: 'text/csv' }
     )

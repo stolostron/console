@@ -75,6 +75,7 @@ func New(opts Options) *Handler {
 	return h
 }
 
+// authenticate validates the user token via Authn, or writes 401 when Authn is unset.
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, bool) {
 	if h.Authn != nil {
 		return h.Authn(w, r)
@@ -83,6 +84,7 @@ func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, 
 	return "", false
 }
 
+// caPEM returns the current OCM CA bundle from GetCA.
 func (h *Handler) caPEM() []byte {
 	if h.GetCA != nil {
 		return h.GetCA()
@@ -90,6 +92,7 @@ func (h *Handler) caPEM() []byte {
 	return nil
 }
 
+// reverseProxy returns a cached ReverseProxy rebuilt when the target URL or CA changes.
 func (h *Handler) reverseProxy(target *url.URL, ca []byte) *httputil.ReverseProxy {
 	pem := string(ca)
 	key := target.String()

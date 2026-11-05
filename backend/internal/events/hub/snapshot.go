@@ -12,6 +12,7 @@ import (
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
+// modifiedEvent wraps a cached object as a MODIFIED SSE event (creates and updates share this type).
 func modifiedEvent(o informers.ForwardedObject) Event {
 	obj := o.Object.Object
 	if obj == nil {
@@ -20,6 +21,7 @@ func modifiedEvent(o informers.ForwardedObject) Event {
 	return Event{Type: TypeModified, Object: obj, GVR: o.GVR}
 }
 
+// splice takes up to n objects from the front of src and returns them as MODIFIED events.
 func splice(src *[]informers.ForwardedObject, n int) []Event {
 	if n <= 0 || len(*src) == 0 {
 		return nil
@@ -48,6 +50,7 @@ func sortByNamespace(items []informers.ForwardedObject) {
 	})
 }
 
+// packetize orders objects into priority packets with EOP markers (Node snapshot packetization).
 func packetize(objs []informers.ForwardedObject) []Event {
 	var clusters, agents, infos, policies, addons, rbac, other, remainder []informers.ForwardedObject
 	for _, o := range objs {
@@ -96,6 +99,7 @@ func packetize(objs []informers.ForwardedObject) []Event {
 	return out
 }
 
+// snapshotEvents builds the full unauthenticated snapshot from the informer cache (tests/debug).
 func (h *Hub) snapshotEvents() []Event {
 	var objs []informers.ForwardedObject
 	if h.cache != nil {
@@ -105,6 +109,7 @@ func (h *Hub) snapshotEvents() []Event {
 	return snapshotFromObjects(h.settings(), objs)
 }
 
+// snapshotFromObjects frames START → SETTINGS → priority packets → LOADED around objs.
 func snapshotFromObjects(settings map[string]string, objs []informers.ForwardedObject) []Event {
 	out := []Event{
 		{Type: TypeStart},
@@ -115,6 +120,7 @@ func snapshotFromObjects(settings map[string]string, objs []informers.ForwardedO
 	return out
 }
 
+// metaEvent builds a lightweight MODIFIED event from a ref for RBAC prefetch/Allow without full objects.
 func metaEvent(ref informers.ForwardedRef) Event {
 	meta := map[string]any{"name": ref.Name}
 	if ref.Namespace != "" {
@@ -135,6 +141,7 @@ var copyRef = func(ref informers.ForwardedRef) informers.ForwardedObject {
 	return ref.Copy()
 }
 
+// authorizeRefs prefetches cluster list SSARs then returns only objects the token may get.
 func authorizeRefs(ctx context.Context, token string, access AccessChecker, refs []informers.ForwardedRef) []informers.ForwardedObject {
 	if access == nil {
 		access = AllowAllAccess{}
@@ -160,6 +167,7 @@ func authorizeRefs(ctx context.Context, token string, access AccessChecker, refs
 	return allowed
 }
 
+// authorizedSnapshot is the per-user initial SSE snapshot after RBAC filtering and flap overlay.
 func (h *Handler) authorizedSnapshot(ctx context.Context, token string) []Event {
 	var refs []informers.ForwardedRef
 	if h.hub != nil && h.hub.cache != nil {
@@ -176,6 +184,7 @@ func (h *Handler) authorizedSnapshot(ctx context.Context, token string) []Event 
 	return snapshotFromObjects(settings, objs)
 }
 
+// applyFlapOverlay rewrites throttled Policy objects in the snapshot to match what live fan-out sends.
 func (h *Hub) applyFlapOverlay(objs []informers.ForwardedObject) {
 	if h == nil || h.flap == nil {
 		return

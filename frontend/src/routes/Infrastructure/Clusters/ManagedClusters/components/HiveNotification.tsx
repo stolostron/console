@@ -85,9 +85,10 @@ export function HiveNotification() {
               role="link"
               id="view-logs"
               className={logsButton}
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="right"
             >
               {t('view.logs')}
-              <ExternalLinkAltIcon style={{ marginLeft: '4px', verticalAlign: 'middle' }} />
             </AcmButton>
           </Fragment>
         }

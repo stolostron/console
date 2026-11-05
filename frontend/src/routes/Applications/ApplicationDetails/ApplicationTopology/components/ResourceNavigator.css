@@ -43,7 +43,7 @@
   --pf-v6-c-nav__link--m-current--BackgroundColor: #cce3f5;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav {
+:root:where(.pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav {
   --pf-v6-c-nav__link--m-current--BackgroundColor: #1f4b7a;
 }
 
@@ -55,12 +55,10 @@
   background-color: #cce3f5;
 }
 
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current,
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current:hover,
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
-  .resource-navigator.pf-v6-c-nav
-  .resource-navigator__item-row.pf-m-current,
-:root:where(.pf-v5-theme-dark, .pf-v6-theme-dark)
+:root:where(.pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current,
+:root:where(.pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .pf-v6-c-nav__link.pf-m-current:hover,
+:root:where(.pf-v6-theme-dark) .resource-navigator.pf-v6-c-nav .resource-navigator__item-row.pf-m-current,
+:root:where(.pf-v6-theme-dark)
   .resource-navigator.pf-v6-c-nav
   .resource-navigator__item--selected
   > .pf-v6-c-nav__link {

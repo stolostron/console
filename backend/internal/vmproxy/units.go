@@ -25,6 +25,7 @@ func parseLeadingInt(s string) (int, bool) {
 	return n, true
 }
 
+// convertNanocoresToMillicores converts metrics-server CPU strings (nanocores) to millicores.
 func convertNanocoresToMillicores(nanocoreString string) float64 {
 	n, ok := parseLeadingInt(nanocoreString)
 	if !ok {
@@ -33,6 +34,7 @@ func convertNanocoresToMillicores(nanocoreString string) float64 {
 	return float64(n) / 1_000_000
 }
 
+// convertKibibytesToMebibytes converts metrics-server memory strings (Ki) to MiB.
 func convertKibibytesToMebibytes(kibibyteString string) float64 {
 	n, ok := parseLeadingInt(kibibyteString)
 	if !ok {
@@ -41,6 +43,7 @@ func convertKibibytesToMebibytes(kibibyteString string) float64 {
 	return float64(n) / 1024
 }
 
+// convertBytesToGibibytes converts filesystem byte counts to GiB (0 for NaN).
 func convertBytesToGibibytes(bytes float64) float64 {
 	if math.IsNaN(bytes) {
 		return 0
@@ -48,6 +51,7 @@ func convertBytesToGibibytes(bytes float64) float64 {
 	return bytes / 1_073_741_824
 }
 
+// toMillicores parses a Kubernetes CPU request (cores or millicores with "m") into millicores.
 func toMillicores(cpuRequest string) (float64, error) {
 	trimmed := strings.TrimSpace(cpuRequest)
 	if trimmed == "" {
@@ -70,6 +74,7 @@ func toMillicores(cpuRequest string) (float64, error) {
 
 var memoryRE = regexp.MustCompile(`^(\d+(\.\d+)?)\s*([A-Za-z]+)?$`)
 
+// toMebibytes parses a Kubernetes memory request (binary or SI units) into MiB.
 func toMebibytes(memoryRequest string) (float64, error) {
 	trimmed := strings.TrimSpace(memoryRequest)
 	if trimmed == "" {
@@ -110,6 +115,7 @@ func toMebibytes(memoryRequest string) (float64, error) {
 	return bytes / (1024 * 1024), nil
 }
 
+// calUsagePercent returns usage/requested as a rounded percent (0 when invalid or requested is 0).
 func calUsagePercent(usage, requested float64) int {
 	if usage < 0 || requested < 0 || math.IsNaN(usage) || math.IsNaN(requested) {
 		return 0

@@ -44,6 +44,7 @@ type Handler struct {
 	base   *rest.Config
 }
 
+// NewHandler returns an SSE handler for GET /events/rbac.
 func NewHandler(store *Store, authn Authenticator, access AccessChecker) *Handler {
 	h := &Handler{store: store, authn: authn, access: access}
 	if a, ok := authn.(*APIAuth); ok {
@@ -52,6 +53,7 @@ func NewHandler(store *Store, authn Authenticator, access AccessChecker) *Handle
 	return h
 }
 
+// ServeHTTP streams ClusterRole watch events as uncompressed SSE after a filtered snapshot.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, flusher, ok := sse.Begin(w, r, h.authn, "rbac events unauthorized")
 	if !ok {
@@ -125,6 +127,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// see applies CanSeeDeleted for DELETED events and CanSee otherwise.
 func (h *Handler) see(ctx context.Context, token string, ev Event) (bool, error) {
 	if ev.Type == "DELETED" {
 		return h.access.CanSeeDeleted(ctx, token, ev.Role)
@@ -132,6 +135,7 @@ func (h *Handler) see(ctx context.Context, token string, ev Event) (bool, error)
 	return h.access.CanSee(ctx, token, ev.Role)
 }
 
+// writeSSE marshals payload as a single SSE data frame and flushes.
 func writeSSE(w http.ResponseWriter, flusher http.Flusher, payload watchPayload) error {
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -150,6 +154,7 @@ func writeSSE(w http.ResponseWriter, flusher http.Flusher, payload watchPayload)
 	return nil
 }
 
+// snapshot returns store roles, or a per-user ClusterRole list when the informer cache is empty.
 func (h *Handler) snapshot(ctx context.Context, token string) []*rbacv1.ClusterRole {
 	roles := h.store.List()
 	if len(roles) > 0 || h.base == nil {

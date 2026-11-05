@@ -12,3 +12,8 @@
 .pf-v6-svg .pf-v6-icon-rh-ui {
   display: none;
 }
+
+/* Keep wizard footer actions together when the wizard is rendered inside the OpenShift Quick Start Drawer. */
+.co-quick-start-drawer .pf-v6-c-wizard__footer .pf-v6-c-action-list {
+  justify-content: flex-start;
+}

@@ -10,14 +10,15 @@ import (
 // fuseThreshold is the maximum normalised edit-distance score for a match (Fuse.js 6.6.2 default).
 const fuseThreshold = 0.3
 
-// fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over name/namespace/clusters.
+// fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over the
+// application fields exposed as searchable table columns.
 func fuseFilter(items []App, pattern string) []App {
 	if pattern == "" {
 		return items
 	}
 	out := make([]App, 0, len(items))
 	for _, item := range items {
-		texts := []string{item.Transform.Name, item.Transform.Namespace}
+		texts := []string{item.Transform.Name, item.Transform.Namespace, item.Transform.Sources}
 		if len(item.Transform.Clusters) > 0 {
 			texts = append(texts, item.Transform.Clusters[0])
 		}

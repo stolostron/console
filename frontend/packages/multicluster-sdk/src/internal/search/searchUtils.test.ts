@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { convertStringToQuery, getCookie } from './searchUtils'
+import { convertStringToQuery, fetchWithCsrf, getCookie } from './searchUtils'
 
 describe('searchUtils', () => {
   describe('convertStringToQuery', () => {
@@ -218,6 +218,101 @@ describe('searchUtils', () => {
 
       const result = getCookie('testCookie')
       expect(result).toBeUndefined()
+    })
+
+    it('should return the last cookie when the name is duplicated', () => {
+      Object.defineProperty(document, 'cookie', {
+        value: 'csrf-token=old-token; other=1; csrf-token=new-token',
+        configurable: true,
+      })
+
+      expect(getCookie('csrf-token')).toBe('new-token')
+    })
+  })
+
+  describe('fetchWithCsrf', () => {
+    const originalFetch = global.fetch
+    const originalCookie = Object.getOwnPropertyDescriptor(document, 'cookie')
+    let cookie = ''
+
+    beforeEach(() => {
+      cookie = 'csrf-token=token-a'
+      Object.defineProperty(document, 'cookie', {
+        configurable: true,
+        get: () => cookie,
+      })
+    })
+
+    afterEach(() => {
+      global.fetch = originalFetch
+      if (originalCookie) Object.defineProperty(document, 'cookie', originalCookie)
+    })
+
+    function csrfDenied() {
+      return new Response('invalid CSRFToken: CSRF token does not match CSRF cookie\n', {
+        status: 403,
+        headers: { 'content-type': 'text/plain' },
+      })
+    }
+
+    it('retries a CSRF mismatch once with the rotated token', async () => {
+      let calls = 0
+      const sentTokens: Array<string | null> = []
+      const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        calls += 1
+        sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
+        if (calls === 1) {
+          cookie = 'csrf-token=token-b'
+          return csrfDenied()
+        }
+        return new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } })
+      })
+      global.fetch = fetchMock as typeof fetch
+
+      const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
+
+      expect(response.status).toBe(200)
+      expect(sentTokens).toEqual(['token-a', 'token-b'])
+    })
+
+    it('does not retry when the token is unchanged', async () => {
+      const fetchMock = jest.fn(async () => csrfDenied())
+      global.fetch = fetchMock as typeof fetch
+
+      const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
+
+      expect(response.status).toBe(403)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not retry a non-CSRF 403', async () => {
+      const fetchMock = jest.fn(async () => {
+        return new Response('{"message":"forbidden"}', {
+          status: 403,
+          headers: { 'content-type': 'application/json' },
+        })
+      })
+      global.fetch = fetchMock as typeof fetch
+
+      const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
+
+      expect(response.status).toBe(403)
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('sends the last csrf-token and does not retry a success', async () => {
+      cookie = 'csrf-token=old-token; csrf-token=new-token'
+      const sentTokens: Array<string | null> = []
+      const fetchMock = jest.fn(async (_input: RequestInfo | URL, init?: RequestInit) => {
+        sentTokens.push(new Headers(init?.headers).get('X-CSRFToken'))
+        return new Response('{"data":{}}', { status: 200, headers: { 'content-type': 'application/json' } })
+      })
+      global.fetch = fetchMock as typeof fetch
+
+      const response = await fetchWithCsrf('/proxy/search', { method: 'POST' })
+
+      expect(response.status).toBe(200)
+      expect(sentTokens).toEqual(['new-token'])
     })
   })
 })

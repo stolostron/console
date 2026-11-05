@@ -88,6 +88,7 @@ func New(opts Options) *Handler {
 	return h
 }
 
+// towerClient builds an HTTP client that does not follow redirects and uses tlsCfg.
 func towerClient(tlsCfg *tls.Config) *http.Client {
 	return &http.Client{
 		Timeout:   30 * time.Second,
@@ -98,6 +99,7 @@ func towerClient(tlsCfg *tls.Config) *http.Client {
 	}
 }
 
+// client returns the injectible Tower client, or the verify/skip TLS clients.
 func (h *Handler) client(skip bool) *http.Client {
 	if h.Tower != nil {
 		return h.Tower
@@ -108,6 +110,7 @@ func (h *Handler) client(skip bool) *http.Client {
 	return h.verify
 }
 
+// authenticate validates the user token via Authn, or writes 401 when Authn is unset.
 func (h *Handler) authenticate(w http.ResponseWriter, r *http.Request) (string, bool) {
 	if h.Authn != nil {
 		return h.Authn(w, r)
@@ -198,6 +201,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, _ = io.Copy(w, resp.Body)
 }
 
+// credential reads host, token, and insecureSkipVerify from a Secret using the user token.
 func (h *Handler) credential(ctx context.Context, userToken, ns, name string) (string, string, error) {
 	if h.KubeForUser == nil {
 		return "", "", errNoKube
@@ -218,6 +222,7 @@ var (
 	errRedirect = errors.New("ansibletower redirects are not followed")
 )
 
+// allowedPath reports whether path is on the AAP GET allowlist (Paths).
 func allowedPath(path string) bool {
 	for _, p := range Paths {
 		if path == p {
@@ -227,6 +232,7 @@ func allowedPath(path string) bool {
 	return false
 }
 
+// allowedResponseHeader reports response headers safe to forward from AAP.
 func allowedResponseHeader(name string) bool {
 	switch http.CanonicalHeaderKey(name) {
 	case "Content-Type", "Cache-Control", "Etag":

@@ -6,7 +6,7 @@ import { BrowserRouter as Router } from 'react-router'
 import TemplateEditor from './TemplateEditor'
 // loads mocked monaco from __mocks__
 import MonacoEditor from 'react-monaco-editor'
-import { clickElement, typeElement } from '~/lib/test-util'
+import { advanceTimersByTime, clickElement, typeElement } from '~/lib/test-util'
 
 // eslint-disable-next-line no-redeclare
 class ResizeObserver {
@@ -151,13 +151,17 @@ describe('TemplateEditor component', () => {
       })
     )
     let newValue = JSON.stringify([{ key: false }])
-    act(() => {
-      fireEvent.change(editor, {
-        target: { value: newValue },
+    jest.useFakeTimers()
+    try {
+      act(() => {
+        fireEvent.change(editor, {
+          target: { value: newValue },
+        })
       })
-    })
-    // wait for debounce
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+      await advanceTimersByTime(500)
+    } finally {
+      jest.useRealTimers()
+    }
 
     //undo
     await clickElement(
