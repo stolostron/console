@@ -24,6 +24,7 @@ export interface GitOpsCluster {
       enabled?: boolean
       argoCDAgent?: {
         enabled?: boolean
+        mode?: string
       }
     }
     argoServer?: {

@@ -52,11 +52,11 @@ describe('Cluster Management', () => {
       </PluginContext.Provider>
     )
     if (isACMAvailable) {
-      await screen.findByRole('heading', { name: 'No GitOps configuration' })
+      await screen.findByRole('heading', { name: 'No GitOps configuration set up' })
     } else {
       await waitForText('Cluster list')
     }
-    expect(screen.queryAllByRole('heading', { name: 'No GitOps configuration' })).toHaveLength(isACMAvailable ? 1 : 0)
+    expect(screen.queryAllByRole('heading', { name: 'No GitOps configuration set up' })).toHaveLength(isACMAvailable ? 1 : 0)
     expect(screen.queryAllByRole('tab', { name: 'GitOps' })).toHaveLength(isACMAvailable ? 1 : 0)
   })
 

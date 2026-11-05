@@ -36,6 +36,7 @@ import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmEmptyState, AcmPageContent } from '~/ui-components'
 import { DeleteGitOpsClusterModal } from '~/routes/Infrastructure/Clusters/GitOps/DeleteGitOpsClusterModal'
 import { getGitOpsClusterNames } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterStatus'
+import { ViewDocumentationLink, DOC_LINKS } from '~/lib/doc-util'
 
 const resourceKey = (resource: GitOpsCluster) => `${resource.metadata.namespace}/${resource.metadata.name}`
 
@@ -55,11 +56,11 @@ export default function GitOps() {
       <PageSection hasBodyWrapper={false}>
         {resources.length === 0 ? (
           <AcmEmptyState
-            title={t('No GitOps configuration')}
+            title={t('No GitOps configuration set up')}
             message={t(
-              'No GitOpsCluster resource is available. A GitOpsCluster connects OpenShift GitOps on the hub to selected managed clusters. View Applications to manage your applications.'
+              'Create a GitOpsCluster resource to connect managed clusters to GitOps and enable ApplicationSets deployment across your fleet.'
             )}
-            action={<Link to={NavigationPath.applications}>{t('Applications')}</Link>}
+            action={<ViewDocumentationLink doclink={DOC_LINKS.GITOPS_CLUSTER_AGENT_PULL} />}
           />
         ) : (
           <Stack hasGutter>
@@ -126,6 +127,7 @@ function GitOpsOverview({
   )
   const names = getGitOpsClusterNames(resource.status)
   const agentEnabled = resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
+  const agentMode = resource.spec?.gitopsAddon?.argoCDAgent?.mode ?? 'managed'
   const actions = [
     {
       id: 'delete-gitops',
@@ -159,7 +161,7 @@ function GitOpsOverview({
         </Flex>
         <Content component="p">
           {t(
-            'GitOpsCluster resource that connects OpenShift GitOps on the hub to selected managed clusters and defines the active pull model for new pull-based ApplicationSets.'
+            'The GitOpsCluster resource connects OpenShift GitOps on the hub to selected managed clusters and defines the active pull model for new pull-based ApplicationSets.'
           )}
         </Content>
       </StackItem>
@@ -210,7 +212,7 @@ function GitOpsOverview({
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>
-                    <DescriptionListTerm>{t('Placement selected clusters')}</DescriptionListTerm>
+                    <DescriptionListTerm>{t('Selected clusters')}</DescriptionListTerm>
                     <DescriptionListDescription>
                       {names === undefined ? t('Not available') : <GitOpsClusterLinks names={names} />}
                     </DescriptionListDescription>
@@ -232,6 +234,9 @@ function GitOpsOverview({
                           <Label color={agentEnabled ? 'green' : 'grey'}>
                             {agentEnabled ? t('Enabled') : t('Disabled')}
                           </Label>
+                          {agentEnabled && (
+                            <Label color="green">{t(agentMode)}</Label>
+                          )}
                         </DescriptionListDescription>
                       </DescriptionListGroup>
                     </DescriptionList>

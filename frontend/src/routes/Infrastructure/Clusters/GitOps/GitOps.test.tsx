@@ -134,7 +134,7 @@ describe('GitOps', () => {
 
   it('shows an empty state with Applications link and no create action', async () => {
     const { container } = renderGitOps([])
-    expect(screen.getByRole('heading', { name: 'No GitOps configuration' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'No GitOps configuration set up' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Applications' })).toHaveAttribute('href', NavigationPath.applications)
     expect(screen.queryByRole('button', { name: /Create/ })).not.toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
