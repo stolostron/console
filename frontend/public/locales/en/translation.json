@@ -1696,6 +1696,7 @@
   "Failed to get job names from Ansible": "Failed to get job names from Ansible",
   "Failed to initiate sync": "Failed to initiate sync",
   "Failed to initiate sync of {{name}}. Please try again.": "Failed to initiate sync of {{name}}. Please try again.",
+  "Failed to load repository file.": "Failed to load repository file.",
   "Failed to sync": "Failed to sync",
   "Failed to update Credentials": "Failed to update Credentials",
   "Failed to update placement": "Failed to update placement",

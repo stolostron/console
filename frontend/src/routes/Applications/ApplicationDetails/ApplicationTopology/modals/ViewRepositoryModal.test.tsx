@@ -1,15 +1,19 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
-import type { GitBranchPathNode } from '~/resources'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { axe } from 'jest-axe'
+import type { GitBranchPathNode, Secret } from '~/resources'
 import type { TopologyNode } from '../types'
 import { ViewRepositoryModal } from './ViewRepositoryModal'
 
 const mockGetGitBranchPathDetails = jest.fn()
-const mockSecrets: never[] = []
+const mockGetGitBlobContents = jest.fn()
+const mockSecrets: Secret[] = []
 
 jest.mock('~/resources', () => ({
   getGitBranchPathDetails: (...args: unknown[]) => mockGetGitBranchPathDetails(...args),
+  getGitBlobContents: (...args: unknown[]) => mockGetGitBlobContents(...args),
 }))
 
 jest.mock('~/shared-atoms', () => ({
@@ -18,7 +22,12 @@ jest.mock('~/shared-atoms', () => ({
 }))
 
 jest.mock('~/components/SyncEditor/SyncEditor', () => ({
-  SyncEditor: ({ editorTitle }: { editorTitle: string }) => <div id="sync-editor">{editorTitle}</div>,
+  SyncEditor: ({ editorTitle, code }: { editorTitle: string; code: string }) => (
+    <div id="sync-editor">
+      {editorTitle}
+      <pre>{code}</pre>
+    </div>
+  ),
 }))
 
 jest.mock('@patternfly/react-code-editor', () => ({
@@ -51,19 +60,19 @@ const repositoryNode = {
 const oneTree: GitBranchPathNode = {
   type: 'tree',
   path: 'apps',
-  children: [{ type: 'file', path: 'apps/one.md', contents: 'One' }],
+  children: [{ type: 'file', path: 'apps/one.md', url: 'https://api.github.com/repos/example/one/git/blobs/one' }],
 }
 
 const twoTree: GitBranchPathNode = {
   type: 'tree',
   path: 'charts',
-  children: [{ type: 'file', path: 'charts/two.md', contents: 'Two' }],
+  children: [{ type: 'file', path: 'charts/two.md', url: 'https://api.github.com/repos/example/two/git/blobs/two' }],
 }
 
 const yamlTree: GitBranchPathNode = {
   type: 'tree',
   path: 'apps',
-  children: [{ type: 'file', path: 'apps/one.yaml', contents: 'One' }],
+  children: [{ type: 'file', path: 'apps/one.yaml', url: 'https://api.github.com/repos/example/one/git/blobs/one' }],
 }
 
 function renderModal() {
@@ -72,7 +81,9 @@ function renderModal() {
 
 describe('ViewRepositoryModal', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    mockSecrets.length = 0
+    mockGetGitBlobContents.mockImplementation((url: string) => Promise.resolve(url.endsWith('/one') ? 'One' : 'Two'))
   })
 
   it('shows navigator and editor spinners until every repository source loads', () => {
@@ -111,7 +122,139 @@ describe('ViewRepositoryModal', () => {
 
     await screen.findByText('one.yaml')
     expect(await screen.findByTestId('sync-editor')).toHaveTextContent('main: apps/one.yaml')
+    expect(screen.getByTestId('sync-editor')).toHaveTextContent('One')
     expect(screen.queryByTestId('code-editor')).not.toBeInTheDocument()
+  })
+
+  it('loads only the selected blob and shows a spinner until its contents arrive', async () => {
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    let resolveContents!: (contents: string) => void
+    mockGetGitBlobContents.mockReturnValue(
+      new Promise<string>((resolve) => {
+        resolveContents = resolve
+      })
+    )
+
+    const { baseElement } = renderModal()
+
+    await screen.findByText('two.md')
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
+    expect(screen.queryByTestId('code-editor')).not.toBeInTheDocument()
+    expect(mockGetGitBlobContents).toHaveBeenCalledTimes(1)
+    expect(mockGetGitBlobContents).toHaveBeenCalledWith(
+      'https://api.github.com/repos/example/one/git/blobs/one',
+      undefined,
+      undefined
+    )
+    await act(async () => resolveContents('Selected contents'))
+    expect(screen.getByTestId('code-editor')).toHaveTextContent('Selected contents')
+    expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
+    expect(await axe(baseElement)).toHaveNoViolations()
+  })
+
+  it('replaces previously loaded contents with a spinner and supports empty files', async () => {
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    const user = userEvent.setup()
+    renderModal()
+    expect(await screen.findByTestId('code-editor')).toHaveTextContent('One')
+    let resolveContents!: (contents: string) => void
+    mockGetGitBlobContents.mockReturnValueOnce(
+      new Promise<string>((resolve) => {
+        resolveContents = resolve
+      })
+    )
+
+    await user.click(screen.getByText('two.md'))
+
+    expect(screen.getByLabelText('Loading')).toBeInTheDocument()
+    expect(screen.queryByTestId('code-editor')).not.toBeInTheDocument()
+    await act(async () => resolveContents(''))
+    expect(screen.getByTestId('code-editor')).toBeInTheDocument()
+    expect(screen.getByTestId('code-editor')).not.toHaveTextContent('One')
+    expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
+  })
+
+  it('uses the selected file repository credentials when switching between sources', async () => {
+    for (const name of ['one', 'two']) {
+      mockSecrets.push({
+        apiVersion: 'v1',
+        kind: 'Secret',
+        metadata: {
+          name,
+          namespace: 'argocd',
+          labels: { 'argocd.argoproj.io/secret-type': 'repository' },
+        },
+        data: {
+          url: Buffer.from(`https://github.com/example/${name}`).toString('base64'),
+          username: Buffer.from(`user-${name}`).toString('base64'),
+          password: Buffer.from(`token-${name}`).toString('base64'),
+        },
+      })
+    }
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    const user = userEvent.setup()
+    renderModal()
+    await screen.findByTestId('code-editor')
+    expect(mockGetGitBlobContents).toHaveBeenLastCalledWith(
+      'https://api.github.com/repos/example/one/git/blobs/one',
+      { secretRef: 'one', namespace: 'argocd' },
+      { user: 'user-one', accessToken: 'token-one' }
+    )
+
+    await user.click(screen.getByText('two.md'))
+
+    expect(await screen.findByText('Two')).toBeInTheDocument()
+    expect(mockGetGitBlobContents).toHaveBeenLastCalledWith(
+      'https://api.github.com/repos/example/two/git/blobs/two',
+      { secretRef: 'two', namespace: 'argocd' },
+      { user: 'user-two', accessToken: 'token-two' }
+    )
+  })
+
+  it.each(['resolve', 'reject'])('ignores a stale blob %s after selecting another file', async (outcome) => {
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    let resolveFirst!: (contents: string) => void
+    let rejectFirst!: (error: Error) => void
+    mockGetGitBlobContents.mockReturnValueOnce(
+      new Promise<string>((resolve, reject) => {
+        resolveFirst = resolve
+        rejectFirst = reject
+      })
+    )
+    const user = userEvent.setup()
+    renderModal()
+    await user.click(await screen.findByText('two.md'))
+    expect(await screen.findByTestId('code-editor')).toHaveTextContent('Two')
+    await act(async () => {
+      if (outcome === 'resolve') resolveFirst('Stale contents')
+      else rejectFirst(new Error('Stale error'))
+    })
+    expect(screen.getByTestId('code-editor')).toHaveTextContent('Two')
+    expect(screen.queryByText('Failed to load repository file.')).not.toBeInTheDocument()
+    expect(mockGetGitBlobContents).toHaveBeenCalledTimes(2)
+  })
+
+  it('keeps the tree visible after a blob fails and can load another file', async () => {
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    mockGetGitBlobContents.mockRejectedValueOnce(new Error('Rate limit exceeded'))
+    const user = userEvent.setup()
+    renderModal()
+    expect(await screen.findByText('Failed to load repository file.')).toBeInTheDocument()
+    expect(screen.getByLabelText('Repository files')).toBeInTheDocument()
+    expect(screen.queryByText('No files found')).not.toBeInTheDocument()
+    await user.click(screen.getByText('two.md'))
+    expect(await screen.findByTestId('code-editor')).toHaveTextContent('Two')
+    expect(screen.queryByText('Failed to load repository file.')).not.toBeInTheDocument()
   })
 
   it('shows the empty state when loaded repositories contain no files', async () => {

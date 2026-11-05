@@ -41,6 +41,7 @@ export type RepositoryNavigatorProps = {
 type SourceTreeState = { status: 'loading' } | { status: 'loaded'; node: GitBranchPathNode }
 
 function buildFileTreeItem(
+  repoURL: string,
   groupId: string,
   node: GitBranchPathNode,
   lookup: Map<string, RepositoryNavigatorFileItem>,
@@ -49,7 +50,7 @@ function buildFileTreeItem(
   const id = `${groupId}::${node.path}`
   const name = getGitPathBaseName(node.path)
   if (node.type === 'file') {
-    lookup.set(id, { id, path: node.path, contents: node.contents })
+    lookup.set(id, { id, path: node.path, url: node.url, repoURL })
     return { id, name, icon: <FileIcon aria-hidden /> }
   }
   return {
@@ -59,7 +60,7 @@ function buildFileTreeItem(
     expandedIcon: <FolderOpenIcon aria-hidden />,
     defaultExpanded: expandAll,
     children: sortGitBranchPathNodes(node.children).map((child) =>
-      buildFileTreeItem(groupId, child, lookup, expandAll)
+      buildFileTreeItem(repoURL, groupId, child, lookup, expandAll)
     ),
   }
 }
@@ -90,7 +91,7 @@ function buildSourceTreeItem(
 
   if (!rootNode || rootNode.type !== 'tree') {
     if (rootNode?.type === 'file') {
-      lookup.set(groupId, { id: groupId, path: rootNode.path, contents: rootNode.contents })
+      lookup.set(groupId, { id: groupId, path: rootNode.path, url: rootNode.url, repoURL: source.repoURL })
       return { id: groupId, name: groupName, icon: <FileIcon aria-hidden /> }
     }
     return { id: groupId, name: groupName, icon: <FolderIcon aria-hidden />, children: [] }
@@ -103,7 +104,7 @@ function buildSourceTreeItem(
     expandedIcon: <FolderOpenIcon aria-hidden />,
     defaultExpanded: true,
     children: sortGitBranchPathNodes(rootNode.children).map((child) =>
-      buildFileTreeItem(groupId, child, lookup, expandAll)
+      buildFileTreeItem(source.repoURL, groupId, child, lookup, expandAll)
     ),
   }
 }

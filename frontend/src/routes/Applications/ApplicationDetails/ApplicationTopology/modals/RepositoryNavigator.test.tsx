@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import type { GitBranchPathNode } from '~/resources'
 import type { TopologyNode } from '../types'
 import { RepositoryNavigator } from './RepositoryNavigator'
@@ -30,7 +31,9 @@ const repositoryNode = {
 const loadedTree: GitBranchPathNode = {
   type: 'tree',
   path: 'apps',
-  children: [{ type: 'file', path: 'apps/README.md', contents: '# Repository' }],
+  children: [
+    { type: 'file', path: 'apps/README.md', url: 'https://api.github.com/repos/example/repository/git/blobs/readme' },
+  ],
 }
 
 describe('RepositoryNavigator', () => {
@@ -54,11 +57,22 @@ describe('RepositoryNavigator', () => {
     const onLoadingChange = jest.fn()
     mockGetGitBranchPathDetails.mockResolvedValue(loadedTree)
 
-    render(<RepositoryNavigator node={repositoryNode} onSelectItem={onSelectItem} onLoadingChange={onLoadingChange} />)
+    const { container } = render(
+      <RepositoryNavigator node={repositoryNode} onSelectItem={onSelectItem} onLoadingChange={onLoadingChange} />
+    )
 
     expect(await screen.findByLabelText('Repository files')).toBeInTheDocument()
     expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument()
     await waitFor(() => expect(onLoadingChange).toHaveBeenLastCalledWith(false))
-    await waitFor(() => expect(onSelectItem).toHaveBeenCalled())
+    await waitFor(() =>
+      expect(onSelectItem).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: 'apps/README.md',
+          url: 'https://api.github.com/repos/example/repository/git/blobs/readme',
+          repoURL: 'https://github.com/example/repository',
+        })
+      )
+    )
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

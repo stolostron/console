@@ -1,15 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core'
+import { Alert, Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { FolderOpenIcon, GitAltIcon } from '@patternfly/react-icons'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmModal } from '~/ui-components'
+import { getGitBlobContents } from '~/resources'
+import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import type { TopologyNode } from '../types'
-import { getViewTitle } from '../helpers/repositoryNavigatorHelpers'
+import { findRepositorySecretAccess, getViewTitle } from '../helpers/repositoryNavigatorHelpers'
 import { ModalNavigatorLayout } from './ModalNavigatorLayout'
 import { RepositoryNavigator, type RepositoryNavigatorFileItem } from './RepositoryNavigator'
 import './ResourceNavigator.css'
@@ -42,6 +44,10 @@ function getLanguageForPath(path: string): Language {
   return EXTENSION_LANGUAGE_MAP[extension] ?? Language.plaintext
 }
 
+type FileContentsState =
+  | { file: RepositoryNavigatorFileItem; status: 'loaded'; contents: string }
+  | { file: RepositoryNavigatorFileItem; status: 'error' }
+
 export function ViewRepositoryModal(props: IViewRepositoryModalProps | { open: false }) {
   if (props.open === false) {
     return null
@@ -55,8 +61,33 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
   const [selectedFile, setSelectedFile] = useState<RepositoryNavigatorFileItem | undefined>(undefined)
   const [noFilesFound, setNoFilesFound] = useState(false)
   const [isRepositoryLoading, setIsRepositoryLoading] = useState(true)
+  const [fileContents, setFileContents] = useState<FileContentsState>()
+  const { secretsState } = useSharedAtoms()
+  const secrets = useSharedValue(secretsState)
+  const secretAccess = useMemo(
+    () => (selectedFile ? findRepositorySecretAccess(selectedFile.repoURL, secrets) : undefined),
+    [selectedFile, secrets]
+  )
+  const isFileLoading = !!selectedFile && fileContents?.file !== selectedFile
   const modalTitle = (node.name as string) || t('Repository')
   const selectedFileLanguage = selectedFile ? getLanguageForPath(selectedFile.path) : undefined
+
+  useEffect(() => {
+    if (!selectedFile) return
+    let cancelled = false
+    setFileContents(undefined)
+    getGitBlobContents(selectedFile.url, secretAccess?.secretArgs, secretAccess?.accessData).then(
+      (contents) => {
+        if (!cancelled) setFileContents({ file: selectedFile, status: 'loaded', contents })
+      },
+      () => {
+        if (!cancelled) setFileContents({ file: selectedFile, status: 'error' })
+      }
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [selectedFile, secretAccess])
 
   const handleSelectItem = useCallback((item: RepositoryNavigatorFileItem) => {
     setSelectedFile(item)
@@ -96,23 +127,25 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
           }
         >
           <div style={{ flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            {isRepositoryLoading || (!selectedFile && !noFilesFound) ? (
+            {isRepositoryLoading || isFileLoading || (!selectedFile && !noFilesFound) ? (
               <Bullseye>
                 <Spinner size="xl" aria-label={t('Loading')} />
               </Bullseye>
-            ) : selectedFile ? (
+            ) : fileContents?.status === 'error' ? (
+              <Alert variant="danger" isInline title={t('Failed to load repository file.')} />
+            ) : selectedFile && fileContents?.status === 'loaded' ? (
               selectedFileLanguage === Language.yaml ? (
                 <SyncEditor
                   editorTitle={getViewTitle(selectedFile.id)}
                   variant="toolbar"
-                  code={selectedFile.contents}
+                  code={fileContents.contents}
                   resources={null}
                   readonly
                   initialShowChanges={false}
                 />
               ) : (
                 <CodeEditor
-                  code={selectedFile.contents}
+                  code={fileContents.contents}
                   language={selectedFileLanguage}
                   isCopyEnabled
                   isFullHeight

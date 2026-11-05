@@ -13,7 +13,8 @@ export interface RepositorySource {
 export interface RepositoryNavigatorFileItem {
   id: string
   path: string
-  contents: string
+  url?: string
+  repoURL: string
 }
 
 export interface RepositorySecretAccess {

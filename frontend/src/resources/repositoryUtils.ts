@@ -94,7 +94,7 @@ export function getGitChannelPaths(
 }
 
 export type GitBranchPathNode =
-  { type: 'tree'; path: string; children: GitBranchPathNode[] } | { type: 'file'; path: string; contents: string }
+  { type: 'tree'; path: string; children: GitBranchPathNode[] } | { type: 'file'; path: string; url?: string }
 
 export async function getGitBranchPathDetails(
   repoURL: string,
@@ -149,25 +149,25 @@ export async function getGitBranchPathDetails(
       childrenByParent.set(parentPath, [...(childrenByParent.get(parentPath) ?? []), item])
     })
 
-    const buildNode = async (item: (typeof matchingItems)[number]): Promise<GitBranchPathNode> => {
+    const buildNode = (item: (typeof matchingItems)[number]): GitBranchPathNode => {
       if (item.type === 'blob') {
         return {
           type: 'file',
           path: item.path,
-          contents: item.url ? await getGitBlobContents(octokit, item.url) : '',
+          url: item.url,
         }
       }
 
-      const children = await Promise.all((childrenByParent.get(item.path) ?? []).map(buildNode))
+      const children = (childrenByParent.get(item.path) ?? []).map(buildNode)
       return { type: 'tree', path: item.path, children }
     }
 
     const rootItem = matchingItems.find((item) => item.path === normalizedPath)
     if (rootItem) {
-      return await buildNode(rootItem)
+      return buildNode(rootItem)
     }
 
-    const children = await Promise.all((childrenByParent.get(normalizedPath) ?? []).map(buildNode))
+    const children = (childrenByParent.get(normalizedPath) ?? []).map(buildNode)
     return { type: 'tree', path, children }
   } catch (error) {
     handleGitError(error)
@@ -184,7 +184,14 @@ function getGitParentPath(path: string) {
   return lastSlashIndex === -1 ? '' : path.substring(0, lastSlashIndex)
 }
 
-async function getGitBlobContents(octokit: Octokit, blobUrl: string) {
+export async function getGitBlobContents(
+  blobUrl: string | undefined,
+  secretArgs?: { secretRef?: string; namespace?: string },
+  accessData?: { user?: string; accessToken?: string }
+): Promise<string> {
+  if (!blobUrl) throw new Error('Missing Git blob URL')
+  const octokit = await getGitConnection(secretArgs, accessData)
+  if (!octokit) throw new Error('Unable to connect to GitHub')
   const { data } = await octokit.request(`GET ${new URL(blobUrl).pathname}`)
   const content = typeof data.content === 'string' ? data.content : ''
   if (data.encoding !== 'base64') return content
