@@ -4,8 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { Group, User } from '../../resources/rbac'
 import { GroupsTable } from '../../routes/UserManagement/Identities/Groups/GroupsTable'
-import { useGroupIdentity, useHasHubGroups } from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
 import {
+  isSearchBackedGroup,
+  useGroupIdentity,
+  useHasHubGroups,
+  useMraGroupSubjects,
+} from '../../routes/UserManagement/Identities/Groups/useGroupsSearch'
+import {
+  isSearchBackedUser,
   useHasHubUsers,
   useMraUserSubjects,
   useUserIdentity,
@@ -26,31 +32,61 @@ interface IdentitiesListProps {
   users?: User[]
   usersLoading?: boolean
   usersError?: Error
+  /**
+   * Hub Groups from listGroups(). When provided, the Groups tab skips Search
+   * (required for MCE Cluster Set access management).
+   */
+  groups?: Group[]
+  groupsLoading?: boolean
+  groupsError?: Error
 }
 
-type IdentitiesListBaseProps = Omit<IdentitiesListProps, 'users' | 'usersLoading' | 'usersError'>
+type IdentitiesListBaseProps = Omit<
+  IdentitiesListProps,
+  'users' | 'usersLoading' | 'usersError' | 'groups' | 'groupsLoading' | 'groupsError'
+>
+
+type UsersResolvedProps = IdentitiesListBaseProps & {
+  hasUsers: boolean
+  initialUser: User | undefined
+  hubUsers?: User[]
+  usersLoading?: boolean
+  usersError?: Error
+  groups?: Group[]
+  groupsLoading?: boolean
+  groupsError?: Error
+}
 
 export function IdentitiesList(props: Readonly<IdentitiesListProps> = {}) {
   const { users, usersLoading, usersError, ...listProps } = props
   if (users !== undefined) {
     return (
-      <IdentitiesListWithHubUsers {...listProps} users={users} usersLoading={usersLoading} usersError={usersError} />
+      <IdentitiesListWithHubUsers
+        {...listProps}
+        users={users}
+        usersLoading={usersLoading}
+        usersError={usersError}
+      />
     )
   }
   return <IdentitiesListWithSearchUsers {...listProps} />
 }
 
-function IdentitiesListWithSearchUsers(props: Readonly<IdentitiesListBaseProps>) {
+function IdentitiesListWithSearchUsers(
+  props: Readonly<Omit<IdentitiesListProps, 'users' | 'usersLoading' | 'usersError'>>
+) {
   const { hasUsers } = useHasHubUsers()
   const initialUserName =
     props.initialSelectedIdentity?.kind === 'User' ? props.initialSelectedIdentity.name : undefined
   const initialUser = useUserIdentity(initialUserName)
 
-  return <IdentitiesListView {...props} hasUsers={hasUsers} initialUser={initialUser} />
+  return <ResolveGroups {...props} hasUsers={hasUsers} initialUser={initialUser} />
 }
 
-function IdentitiesListWithHubUsers(props: Readonly<IdentitiesListProps & { users: User[] }>) {
-  const { users, usersLoading, usersError, initialSelectedIdentity } = props
+function IdentitiesListWithHubUsers(
+  props: Readonly<Omit<IdentitiesListProps, 'users'> & { users: User[] }>
+) {
+  const { users, usersLoading, usersError, initialSelectedIdentity, ...rest } = props
   const mraUsers = useMraUserSubjects()
   const hasUsers = users.length > 0 || mraUsers.length > 0
   const initialUser = useMemo(() => {
@@ -62,13 +98,67 @@ function IdentitiesListWithHubUsers(props: Readonly<IdentitiesListProps & { user
   }, [initialSelectedIdentity, mraUsers, users])
 
   return (
-    <IdentitiesListView
-      {...props}
+    <ResolveGroups
+      {...rest}
+      initialSelectedIdentity={initialSelectedIdentity}
       hasUsers={hasUsers}
       initialUser={initialUser}
       hubUsers={users}
       usersLoading={usersLoading}
       usersError={usersError}
+    />
+  )
+}
+
+function ResolveGroups(props: Readonly<UsersResolvedProps>) {
+  const { groups, groupsLoading, groupsError, ...rest } = props
+  if (groups !== undefined) {
+    return (
+      <IdentitiesListWithHubGroups
+        {...rest}
+        groups={groups}
+        groupsLoading={groupsLoading}
+        groupsError={groupsError}
+      />
+    )
+  }
+  return <IdentitiesListWithSearchGroups {...rest} />
+}
+
+function IdentitiesListWithSearchGroups(
+  props: Readonly<Omit<UsersResolvedProps, 'groups' | 'groupsLoading' | 'groupsError'>>
+) {
+  const { hasGroups } = useHasHubGroups()
+  const initialGroupName =
+    props.initialSelectedIdentity?.kind === 'Group' ? props.initialSelectedIdentity.name : undefined
+  const initialGroup = useGroupIdentity(initialGroupName)
+
+  return <IdentitiesListView {...props} hasGroups={hasGroups} initialGroup={initialGroup} />
+}
+
+function IdentitiesListWithHubGroups(
+  props: Readonly<Omit<UsersResolvedProps, 'groups'> & { groups: Group[] }>
+) {
+  const { groups, groupsLoading, groupsError, initialSelectedIdentity, ...rest } = props
+  const mraGroups = useMraGroupSubjects()
+  const hasGroups = groups.length > 0 || mraGroups.length > 0
+  const initialGroup = useMemo(() => {
+    if (initialSelectedIdentity?.kind !== 'Group') return undefined
+    return (
+      groups.find((group) => group.metadata.name === initialSelectedIdentity.name) ??
+      mraGroups.find((group) => group.metadata.name === initialSelectedIdentity.name)
+    )
+  }, [groups, initialSelectedIdentity, mraGroups])
+
+  return (
+    <IdentitiesListView
+      {...rest}
+      initialSelectedIdentity={initialSelectedIdentity}
+      hasGroups={hasGroups}
+      initialGroup={initialGroup}
+      hubGroups={groups}
+      groupsLoading={groupsLoading}
+      groupsError={groupsError}
     />
   )
 }
@@ -79,6 +169,11 @@ interface IdentitiesListViewProps extends IdentitiesListBaseProps {
   hubUsers?: User[]
   usersLoading?: boolean
   usersError?: Error
+  hasGroups: boolean
+  initialGroup: Group | undefined
+  hubGroups?: Group[]
+  groupsLoading?: boolean
+  groupsError?: Error
 }
 
 function IdentitiesListView({
@@ -90,14 +185,16 @@ function IdentitiesListView({
   hubUsers,
   usersLoading,
   usersError,
+  hasGroups,
+  initialGroup,
+  hubGroups,
+  groupsLoading,
+  groupsError,
 }: Readonly<IdentitiesListViewProps>) {
   const { t } = useTranslation()
 
   const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuthenticationEnabled = useSharedValue(isDirectAuthenticationEnabledState)
-  const { hasGroups } = useHasHubGroups()
-  const initialGroupName = initialSelectedIdentity?.kind === 'Group' ? initialSelectedIdentity.name : undefined
-  const initialGroup = useGroupIdentity(initialGroupName)
 
   const [activeTabKey, setActiveTabKey] = useState<string | number>(
     initialSelectedIdentity?.kind === 'Group' ? 'groups' : 'users'
@@ -112,9 +209,28 @@ function IdentitiesListView({
   useEffect(() => {
     if (!initialSelectedIdentity) return
 
-    if (initialSelectedIdentity.kind === 'User' && initialUser && !selectedUser) {
-      setSelectedUser(initialUser)
-    } else if (initialGroup && !selectedGroup) {
+    if (initialSelectedIdentity.kind === 'User') {
+      if (!initialUser) return
+      const shouldSelectInitialUser =
+        !selectedUser ||
+        (selectedUser.metadata.name === initialUser.metadata.name &&
+          !isSearchBackedUser(selectedUser) &&
+          isSearchBackedUser(initialUser))
+      if (shouldSelectInitialUser) {
+        setSelectedUser(initialUser)
+      }
+      return
+    }
+
+    if (!initialGroup) return
+
+    const shouldSelectInitialGroup =
+      !selectedGroup ||
+      (selectedGroup.metadata.name === initialGroup.metadata.name &&
+        !isSearchBackedGroup(selectedGroup) &&
+        isSearchBackedGroup(initialGroup))
+
+    if (shouldSelectInitialGroup) {
       setSelectedGroup(initialGroup)
     }
   }, [initialGroup, initialSelectedIdentity, initialUser, selectedGroup, selectedUser])
@@ -241,6 +357,9 @@ function IdentitiesListView({
                 selectedGroup={selectedGroup}
                 setSelectedGroup={handleOnGroupSelect}
                 additionalGroups={additionalGroups}
+                groups={hubGroups}
+                groupsLoading={groupsLoading}
+                groupsError={groupsError}
                 isCreateButtonDisplayed
                 createButtonText={isDirectAuthenticationEnabled ? t('Add group') : undefined}
                 onCreateClick={() => setShowCreatePreAuthorizedGroup(true)}

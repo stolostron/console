@@ -7,7 +7,8 @@ import { render, waitFor } from '@testing-library/react'
 import { nockCreate, nockIgnoreApiPaths, nockPatch } from '../../../../../lib/nock-util'
 import { BatchChannelSelectModal } from './BatchChannelSelectModal'
 import { MemoryRouter } from 'react-router'
-import { clickElement } from '~/lib/test-util'
+import { COMPLETE_DELAY_MS } from '~/components/BulkActionModal'
+import { advanceTimersByTime, clickElement, clickElementWithFakeTimers } from '~/lib/test-util'
 const mockClusterNoAvailable: Cluster = {
   name: 'cluster-0-no-available',
   displayName: 'cluster-0-no-available',
@@ -259,29 +260,37 @@ describe('BatchChannelSelectModal', () => {
     expect(isClosed).toBe(true)
   })
   it('should show loading when click select, and select button should be disabled when loading', async () => {
-    let isClosed = false
-    const { getByText, queryByText } = render(
-      <MemoryRouter>
-        <BatchChannelSelectModal
-          clusters={allClusters}
-          open={true}
-          close={() => {
-            isClosed = true
-          }}
-        />
-      </MemoryRouter>
-    )
-    const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
-    expect(getByText('Save')).toBeTruthy()
-    await clickElement(getByText('Save'))
-    await waitFor(() => expect(queryByText('Saving')).toBeTruthy())
-    await clickElement(getByText('Saving')) // do additional click. make sure not calling update again
-    await clickElement(getByText('Saving'))
-    await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
-    await waitFor(() => expect(queryByText('Saving')).toBeFalsy(), {
-      timeout: 5000,
-    })
-    await waitFor(() => expect(isClosed).toBe(true))
+    // Fake timers keep the modal in its processing state until we advance them. BulkActionModal
+    // waits COMPLETE_DELAY_MS after the requests settle before leaving the processing state, so with
+    // real timers the double-click below races that timeout and fails on a loaded machine.
+    jest.useFakeTimers()
+    try {
+      let isClosed = false
+      const { getByRole, queryByText } = render(
+        <MemoryRouter>
+          <BatchChannelSelectModal
+            clusters={allClusters}
+            open={true}
+            close={() => {
+              isClosed = true
+            }}
+          />
+        </MemoryRouter>
+      )
+      const mockNockUpgrade2 = nockPatch(clusterCuratorReady2, getPatchUpdate('stable-2.3'))
+      await clickElementWithFakeTimers(getByRole('button', { name: 'Save' }))
+      const savingButton = getByRole('button', { name: /Saving/ })
+      expect(savingButton).toBeDisabled()
+      // additional clicks while loading must not submit again
+      await clickElementWithFakeTimers(savingButton)
+      await clickElementWithFakeTimers(savingButton)
+      await waitFor(() => expect(mockNockUpgrade2.isDone()).toBeTruthy())
+      await advanceTimersByTime(COMPLETE_DELAY_MS)
+      await waitFor(() => expect(queryByText('Saving')).toBeFalsy())
+      await waitFor(() => expect(isClosed).toBe(true))
+    } finally {
+      jest.useRealTimers()
+    }
   })
 
   it('should close modal if click cancel', async () => {

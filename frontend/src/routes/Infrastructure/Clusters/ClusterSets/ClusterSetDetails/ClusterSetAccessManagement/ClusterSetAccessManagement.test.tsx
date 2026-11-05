@@ -17,6 +17,11 @@ import {
   useUserIdentity,
   useUsersSearch,
 } from '../../../../../UserManagement/Identities/Users/useUsersSearch'
+import {
+  useGroupIdentity,
+  useGroupsSearch,
+  useHasHubGroups,
+} from '../../../../../UserManagement/Identities/Groups/useGroupsSearch'
 
 jest.mock('../../../../../UserManagement/Identities/Users/useUsersSearch', () => ({
   useHasHubUsers: jest.fn(() => {
@@ -31,22 +36,24 @@ jest.mock('../../../../../UserManagement/Identities/Users/useUsersSearch', () =>
   useMraUserSubjects: jest.fn(() => []),
   preferSearchBackedUsers: jest.requireActual('../../../../../UserManagement/Identities/Users/useUsersSearch')
     .preferSearchBackedUsers,
+  isSearchBackedUser: jest.requireActual('../../../../../UserManagement/Identities/Users/useUsersSearch')
+    .isSearchBackedUser,
 }))
 
-// Groups Search path remains until ACM-50037; stub so Add Access can mount.
 jest.mock('../../../../../UserManagement/Identities/Groups/useGroupsSearch', () => ({
-  useHasHubGroups: jest.fn(() => ({ hasGroups: true, loaded: true })),
-  useGroupIdentity: jest.fn(() => undefined),
-  useGroupsSearch: jest.fn(() => ({
-    groups: [],
-    processedItemCount: 0,
-    loading: false,
-    refetch: jest.fn(),
-    fetchExport: jest.fn(),
-    emptyResult: false,
-  })),
+  useHasHubGroups: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useHasHubGroups (Search)')
+  }),
+  useGroupIdentity: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useGroupIdentity (Search)')
+  }),
+  useGroupsSearch: jest.fn(() => {
+    throw new Error('Cluster Set Add Access must not call useGroupsSearch (Search)')
+  }),
   useMraGroupSubjects: jest.fn(() => []),
-  preferSearchBackedGroups: (groups: unknown) => groups,
+  preferSearchBackedGroups: (groups: Group[]) => groups,
+  isSearchBackedGroup: jest.requireActual('../../../../../UserManagement/Identities/Groups/useGroupsSearch')
+    .isSearchBackedGroup,
 }))
 
 const mockUser1: User = {
@@ -233,5 +240,27 @@ describe('Cluster Sets User management', () => {
     expect(useHasHubUsers).not.toHaveBeenCalled()
     expect(useUserIdentity).not.toHaveBeenCalled()
     expect(useUsersSearch).not.toHaveBeenCalled()
+  })
+
+  test('Add Access Groups tab uses listGroups and does not call Search hooks', async () => {
+    const mockUser = mockUser1
+    const mockGroup = {
+      ...mockGroupWithUsers,
+      users: mockGroupWithUsers.users.filter((user): user is string => user !== undefined),
+    }
+    const mockClusterRoleBinding = mockClusterRoleBinding1
+
+    await renderComponent(mockUser, mockGroup, mockClusterRoleBinding)
+    await clickByText('Add user or group')
+    await waitForText('Identities')
+    await clickByText('Groups')
+
+    await waitFor(() => {
+      expect(screen.getByRole('radio', { name: `Select ${mockGroup.metadata.name}` })).toBeInTheDocument()
+    })
+
+    expect(useHasHubGroups).not.toHaveBeenCalled()
+    expect(useGroupIdentity).not.toHaveBeenCalled()
+    expect(useGroupsSearch).not.toHaveBeenCalled()
   })
 })

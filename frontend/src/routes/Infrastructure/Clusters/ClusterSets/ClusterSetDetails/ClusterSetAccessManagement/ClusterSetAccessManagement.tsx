@@ -59,7 +59,13 @@ export function ClusterSetAccessManagement() {
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
   const { data, refresh, error, startPolling, stopPolling } = useQuery(listClusterRoleBindings)
-  const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
+  const {
+    data: groups,
+    loading: groupsLoading,
+    error: groupsError,
+    startPolling: groupsStartPolling,
+    stopPolling: groupsStopPolling,
+  } = useQuery(listGroups)
   const {
     data: users,
     loading: usersLoading,
@@ -180,6 +186,9 @@ export function ClusterSetAccessManagement() {
           users={users ?? []}
           usersLoading={usersLoading}
           usersError={usersError}
+          groups={groups ?? []}
+          groupsLoading={groupsLoading}
+          groupsError={groupsError}
         />
         <AcmTable<ClusterRoleBinding>
           aria-label={t('Cluster set access table')}
@@ -274,6 +283,9 @@ function AddUsersModal(
     users: User[]
     usersLoading: boolean
     usersError?: Error
+    groups: Group[]
+    groupsLoading: boolean
+    groupsError?: Error
   }>
 ) {
   const { t } = useTranslation()
@@ -331,6 +343,9 @@ function AddUsersModal(
                   users={props.users}
                   usersLoading={props.usersLoading}
                   usersError={props.usersError}
+                  groups={props.groups}
+                  groupsLoading={props.groupsLoading}
+                  groupsError={props.groupsError}
                 />
               </div>
               <AcmSelect

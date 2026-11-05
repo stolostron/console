@@ -203,7 +203,8 @@ export function stitchGroupPage(
   )
 }
 
-function useMraGroupSubjects(): Group[] {
+/** Group subjects from MulticlusterRoleAssignments (no Search). */
+export function useMraGroupSubjects(): Group[] {
   const { multiclusterRoleAssignmentState } = useSharedAtoms()
   const mras = useSharedValue(multiclusterRoleAssignmentState)
   return useMemo(() => groupsFromMulticlusterRoleAssignments(mras ?? [], new Set()), [mras])
