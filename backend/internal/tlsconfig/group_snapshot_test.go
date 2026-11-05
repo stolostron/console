@@ -49,8 +49,8 @@ func mutateGroupSnapshot(s *Settings) {
 	if len(s.unknownGroups) > 0 {
 		s.unknownGroups[0] = "changed"
 	}
-	if len(s.excludedCurves) > 0 {
-		s.excludedCurves[0] = tls.CurveP521
+	if len(s.excludedGroups) > 0 {
+		s.excludedGroups[0] = "changed"
 	}
 	if len(s.rejectedGroups) > 0 {
 		s.rejectedGroups[0] = "changed"
@@ -111,7 +111,7 @@ func TestFromProfileGroupDiagnostics(t *testing.T) {
 	}}, true)
 	if s.noUsableCurves || !slices.Equal(s.Curves, []tls.CurveID{tls.CurveP256}) ||
 		!slices.Equal(s.unknownGroups, []string{"future-group"}) ||
-		!slices.Equal(s.excludedCurves, []tls.CurveID{tls.X25519}) {
+		!slices.Equal(s.excludedGroups, []string{"X25519"}) {
 		t.Fatalf("unexpected mixed-group policy and diagnostics: %+v", s)
 	}
 }

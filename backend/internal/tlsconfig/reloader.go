@@ -115,8 +115,8 @@ func (r *Reloader) Apply(s Settings) bool {
 	if len(s.unknownGroups) > 0 {
 		applog.Logger().Warn("TLS security profile contains unknown groups", "groups", s.unknownGroups)
 	}
-	if len(s.excludedCurves) > 0 {
-		applog.Logger().Debug("TLS groups excluded by FIPS policy", "curves", s.excludedCurves)
+	if len(s.excludedGroups) > 0 {
+		applog.Logger().Warn("TLS groups excluded by FIPS policy", "groups", s.excludedGroups)
 	}
 	if s.noUsableCurves {
 		applog.Logger().Error("TLS security profile has no usable groups", "groups", s.rejectedGroups)

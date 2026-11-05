@@ -6,6 +6,8 @@ import (
 	"crypto/tls"
 	"slices"
 	"testing"
+
+	configv1 "github.com/openshift/api/config/v1"
 )
 
 func TestLookupCipherOpenSSLAndIANA(t *testing.T) {
@@ -41,7 +43,7 @@ func TestMapCiphersSkipsTLS13AndUnknown(t *testing.T) {
 
 func TestMapCiphersOldProfileIncludesLegacyRSA(t *testing.T) {
 	t.Parallel()
-	got := mapCiphers(builtin["Old"].ciphers)
+	got := mapCiphers(configv1.TLSProfiles[configv1.TLSProfileOldType].Ciphers)
 	if len(got) == 0 {
 		t.Fatal("Old profile should map at least one TLS 1.2 cipher")
 	}
