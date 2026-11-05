@@ -75,11 +75,11 @@ export function OnboardingModal(props: IOnboardingModalProps) {
         </GridItem>
         <GridItem span={9}>
           <div>
-            <span className="pf-v6-u-color-100" style={{ fontSize: '24px' }}>
+            <span className="pf-v6-u-text-color-regular" style={{ fontSize: '24px' }}>
               <Trans i18nKey="Managing clusters <bold>just got easier</bold>" components={{ bold: <strong /> }} />
             </span>
           </div>
-          <div className="pf-v6-u-color-400" style={{ fontSize: '14px', paddingTop: '8px' }}>
+          <div className="pf-v6-u-text-color-subtle" style={{ fontSize: '14px', paddingTop: '8px' }}>
             <Content component="small" style={{ marginBlockEnd: '0px' }}>
               {t('Create and manage a fleet of clusters with ease using this all clusters view.')}
             </Content>
@@ -87,7 +87,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
               {t('To access a single cluster you can select it from the cluster list table.')}
             </Content>
           </div>
-          <div className="pf-v6-u-color-100" style={{ fontSize: '16px', paddingTop: '1em' }}>
+          <div className="pf-v6-u-text-color-regular" style={{ fontSize: '16px', paddingTop: '1em' }}>
             {t('How would you like to create your cluster?')}
           </div>
         </GridItem>
@@ -99,7 +99,7 @@ export function OnboardingModal(props: IOnboardingModalProps) {
               <Card id={card.id} key={card.id}>
                 <CardBody style={{ minHeight: '160px' }}>
                   <div
-                    className="pf-v6-u-color-100"
+                    className="pf-v6-u-text-color-regular"
                     style={{
                       position: 'absolute',
                       top: '50%',

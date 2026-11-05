@@ -87,6 +87,7 @@ func (r *Resolver) HostPortWithoutHostOverride(ctx context.Context) (host, port 
 	return ServiceHost(r.namespace(ctx)), inClusterPort
 }
 
+// namespace returns the cached MCE target namespace, or DefaultNamespace on failure.
 func (r *Resolver) namespace(ctx context.Context) string {
 	if r == nil {
 		return DefaultNamespace
@@ -114,6 +115,7 @@ func (r *Resolver) namespace(ctx context.Context) string {
 	return ns
 }
 
+// fetchNamespace reads the MultiClusterEngine target namespace; ok is false when the client fails.
 func (r *Resolver) fetchNamespace(ctx context.Context) (string, bool) {
 	dc, err := r.dynamicClient()
 	if err != nil {
@@ -131,6 +133,7 @@ func (r *Resolver) fetchNamespace(ctx context.Context) (string, bool) {
 	return ns, true
 }
 
+// dynamicClient returns Dynamic, or builds one from Hub (and optional Client).
 func (r *Resolver) dynamicClient() (dynamic.Interface, error) {
 	if r != nil && r.Dynamic != nil {
 		return r.Dynamic, nil
@@ -155,6 +158,7 @@ func TargetURL(host, port string) (*url.URL, error) {
 	return url.Parse("https://" + netJoinHostPort(host, port))
 }
 
+// netJoinHostPort joins host:port, bracketing IPv6 literals.
 func netJoinHostPort(host, port string) string {
 	if strings.Contains(host, ":") && !strings.HasPrefix(host, "[") {
 		return "[" + host + "]:" + port
@@ -162,6 +166,7 @@ func netJoinHostPort(host, port string) string {
 	return host + ":" + port
 }
 
+// hostnamePort extracts host and port from u, defaulting 80/443 when the port is empty.
 func hostnamePort(u *url.URL) (host, port string) {
 	host = u.Hostname()
 	port = u.Port()

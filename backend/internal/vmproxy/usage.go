@@ -83,6 +83,7 @@ type filesystemType struct {
 	} `json:"items"`
 }
 
+// usage serves GET /vmResourceUsage/cluster/.../namespace/... aggregated CPU/memory/storage.
 func (h *Handler) usage(w http.ResponseWriter, r *http.Request, token, path string) {
 	cluster, namespace, ok := parseUsagePath(path)
 	if !ok || cluster == "" || namespace == "" {
@@ -108,6 +109,7 @@ func (h *Handler) usage(w http.ResponseWriter, r *http.Request, token, path stri
 	_, _ = w.Write(enc)
 }
 
+// parseUsagePath extracts cluster and namespace from /vmResourceUsage/cluster/.../namespace/....
 func parseUsagePath(path string) (cluster, namespace string, ok bool) {
 	const prefix = "/vmResourceUsage/cluster/"
 	if !strings.HasPrefix(path, prefix) {
@@ -123,6 +125,7 @@ func parseUsagePath(path string) (cluster, namespace string, ok bool) {
 	return cluster, namespace, true
 }
 
+// aggregateUsage sums virt-launcher pod metrics and per-VMI filesystem usage for a namespace.
 func (h *Handler) aggregateUsage(ctx context.Context, base, cluster, namespace, token string) (*usageResponse, error) {
 	query := "?" + url.Values{"labelSelector": {"kubevirt.io=virt-launcher"}}.Encode()
 	c := url.PathEscape(cluster)
@@ -163,6 +166,7 @@ func (h *Handler) aggregateUsage(ctx context.Context, base, cluster, namespace, 
 	return out, nil
 }
 
+// singleVmiUsage builds CPU/memory/storage usage for one virt-launcher pod and its VMI.
 func (h *Handler) singleVmiUsage(ctx context.Context, base, cluster, namespace, token string, metric podMetric, pod podType, found bool) (*vmiUsage, error) {
 	vmiName := metric.Metadata.Labels["vm.kubevirt.io/name"]
 	if !found || vmiName == "" {
@@ -220,6 +224,7 @@ func (h *Handler) singleVmiUsage(ctx context.Context, base, cluster, namespace, 
 	}, nil
 }
 
+// getJSON GETs rawURL with the bearer token and unmarshals a 2xx JSON body into dest.
 func (h *Handler) getJSON(ctx context.Context, rawURL, token string, dest any) error {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, rawURL, nil)
 	if err != nil {

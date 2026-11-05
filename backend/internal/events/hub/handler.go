@@ -41,6 +41,7 @@ type Handler struct {
 	id     string
 }
 
+// NewHandler serves GET /events with the given hub, authenticator, and access checker.
 func NewHandler(h *Hub, authn Authenticator, access AccessChecker) *Handler {
 	if access == nil {
 		access = AllowAllAccess{}
@@ -48,6 +49,7 @@ func NewHandler(h *Hub, authn Authenticator, access AccessChecker) *Handler {
 	return &Handler{hub: h, authn: authn, access: access, id: randomID(instanceIDLen)}
 }
 
+// randomID returns an n-character id used as the watch cookie value for this handler instance.
 func randomID(n int) string {
 	const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789"
 	b := make([]byte, n)
@@ -63,6 +65,7 @@ func randomID(n int) string {
 	return string(b)
 }
 
+// ServeHTTP authenticates, streams an authorized snapshot, then live events with keepalive pings.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	token, flusher, ok := sse.Begin(w, r, h.authn, "events unauthorized")
 	if !ok {
@@ -126,6 +129,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// writeFiltered applies per-user RBAC then writes the event; SSAR errors are logged and skipped.
 func (h *Handler) writeFiltered(ctx context.Context, token string, enc *streamEncoder, ev Event) error {
 	allowed, err := h.access.Allow(ctx, token, ev)
 	if err != nil {
@@ -138,6 +142,7 @@ func (h *Handler) writeFiltered(ctx context.Context, token string, enc *streamEn
 	return writeEvent(enc, h.hub.assignID(ev), shouldFlushEvent(ev))
 }
 
+// shouldFlushEvent is true for EOP/LOADED so the browser sees packet boundaries promptly.
 func shouldFlushEvent(ev Event) bool {
 	switch ev.Type {
 	case TypeEOP, TypeLoaded:
@@ -147,6 +152,7 @@ func shouldFlushEvent(ev Event) bool {
 	}
 }
 
+// marshalEvent encodes the SSE data JSON (SETTINGS keeps settings; others keep object).
 func marshalEvent(ev Event) ([]byte, error) {
 	switch ev.Type {
 	case TypeSettings:
@@ -166,6 +172,7 @@ func marshalEvent(ev Event) ([]byte, error) {
 	}
 }
 
+// writeEvent formats one SSE frame; flush is true for packet/stream markers.
 func writeEvent(enc *streamEncoder, ev Event, flush bool) error {
 	body, err := marshalEvent(ev)
 	if err != nil {

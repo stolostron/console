@@ -229,8 +229,7 @@ function setupBeforeEach(): void {
   window.pendingNocks = []
 }
 
-async function setupAfterEach(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 100))
+function setupAfterEach(): void {
   expect(missingNocks).hasNoMissingNocks()
   expect(missingNocks).hasNoPendingNocks()
 }

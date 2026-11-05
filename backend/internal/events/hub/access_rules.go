@@ -56,6 +56,7 @@ type rulesInflight struct {
 	status subjectRulesStatus
 }
 
+// clusterScoped reports whether kind is cluster-scoped (uses the injected informers helper).
 func (a *SSARAccess) clusterScoped(kind string) bool {
 	if a != nil && a.isClusterScoped != nil {
 		return a.isClusterScoped(kind)
@@ -63,6 +64,7 @@ func (a *SSARAccess) clusterScoped(kind string) bool {
 	return false
 }
 
+// rulesNamespaceFor picks the SelfSubjectRulesReview namespace: default for cluster-scoped kinds.
 func rulesNamespaceFor(kind, namespace string, clusterScoped bool) string {
 	if clusterScoped {
 		return clusterScopedRulesNamespace
@@ -73,6 +75,7 @@ func rulesNamespaceFor(kind, namespace string, clusterScoped bool) string {
 	return clusterScopedRulesNamespace
 }
 
+// ruleGrantsKindAccess reports whether a ResourceRule allows get/list/watch of group/resource.
 func ruleGrantsKindAccess(rule authzv1.ResourceRule, group, resource string) (allowAll bool, names []string) {
 	if !slices.Contains(rule.Verbs, "*") && !slices.Contains(rule.Verbs, "get") &&
 		!slices.Contains(rule.Verbs, "list") && !slices.Contains(rule.Verbs, "watch") {
@@ -90,6 +93,7 @@ func ruleGrantsKindAccess(rule authzv1.ResourceRule, group, resource string) (al
 	return false, rule.ResourceNames
 }
 
+// evaluateKindGetAccess classifies SSRR rules as deny-all, allow-all, allow-names, or incomplete.
 func evaluateKindGetAccess(rules subjectRulesStatus, group, resource string) kindGetAccess {
 	if rules.evaluationError != "" {
 		if len(rules.resourceRules) == 0 {
@@ -123,6 +127,7 @@ func evaluateKindGetAccess(rules subjectRulesStatus, group, resource string) kin
 	return kindGetAccess{typ: kindAccessDenyAll}
 }
 
+// getSubjectRules returns cached SelfSubjectRulesReview status for token+namespace, with singleflight.
 func (a *SSARAccess) getSubjectRules(ctx context.Context, token, namespace string) subjectRulesStatus {
 	now := time.Now()
 	th := hashToken(token)
@@ -165,6 +170,7 @@ func (a *SSARAccess) getSubjectRules(ctx context.Context, token, namespace strin
 	return status
 }
 
+// fetchSubjectRules calls the apiserver; failures mark incomplete so callers fall back to SSAR.
 func (a *SSARAccess) fetchSubjectRules(ctx context.Context, token, th, namespace string) subjectRulesStatus {
 	client, err := a.clientFor(token, th)
 	if err != nil {
@@ -188,6 +194,7 @@ func (a *SSARAccess) fetchSubjectRules(ctx context.Context, token, th, namespace
 	}
 }
 
+// resolveKindGetAccess caches the deny/allow/names/incomplete decision for a kind in a namespace.
 func (a *SSARAccess) resolveKindGetAccess(ctx context.Context, token, kind, namespace, group, resource string) kindGetAccess {
 	ns := rulesNamespaceFor(kind, namespace, a.clusterScoped(kind))
 	key := kindAccessKey{namespace: ns, group: group, resource: resource}
@@ -217,6 +224,7 @@ func (a *SSARAccess) resolveKindGetAccess(ctx context.Context, token, kind, name
 	return access
 }
 
+// applyKindGetAccess turns a kindGetAccess classification into an allow/deny (or SSAR fallback).
 func (a *SSARAccess) applyKindGetAccess(
 	ctx context.Context,
 	token string,
@@ -241,6 +249,7 @@ func (a *SSARAccess) applyKindGetAccess(
 	}
 }
 
+// canGetResource is the SSRR cascade after cluster list fails; cluster-scoped non-deny always confirms with get.
 func (a *SSARAccess) canGetResource(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
 	access := a.resolveKindGetAccess(ctx, token, kind, namespace, group, resource)
 	if a.clusterScoped(kind) && access.typ != kindAccessDenyAll {

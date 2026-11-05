@@ -174,10 +174,12 @@ describe('Policy Set Card controlled dropdown and selection (ACM-30324)', () => 
   beforeEach(() => {
     // openDetails scrolls the card into view via getElementById + scrollIntoView (setTimeout 400ms)
     Element.prototype.scrollIntoView = jest.fn()
+    jest.useFakeTimers()
   })
 
-  afterEach(async () => {
-    await new Promise((resolve) => setTimeout(resolve, 500))
+  afterEach(() => {
+    jest.advanceTimersByTime(400)
+    jest.useRealTimers()
     Element.prototype.scrollIntoView = originalScrollIntoView
   })
 

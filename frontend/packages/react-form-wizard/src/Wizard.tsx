@@ -419,11 +419,9 @@ function MyFooter(props: WizardFooterProps) {
               </Button>
             </ActionListGroup>
             <ActionListGroup>
-              <div className="pf-v6-c-wizard__footer-cancel">
-                <Button variant="link" onClick={onClose}>
-                  {cancelButtonText}
-                </Button>
-              </div>
+              <Button variant="link" onClick={onClose}>
+                {cancelButtonText}
+              </Button>
             </ActionListGroup>
           </ActionList>
         </WizardFooterWrapper>
@@ -469,11 +467,9 @@ function MyFooter(props: WizardFooterProps) {
             </ActionListItem>
           </ActionListGroup>
           <ActionListGroup>
-            <div className="pf-v6-c-wizard__footer-cancel">
-              <Button variant="link" onClick={onClose}>
-                {cancelButtonText}
-              </Button>
-            </div>
+            <Button variant="link" onClick={onClose}>
+              {cancelButtonText}
+            </Button>
           </ActionListGroup>
         </ActionList>
       </WizardFooterWrapper>

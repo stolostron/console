@@ -67,6 +67,7 @@ func OCMServiceToken(ctx context.Context, client *http.Client, clientID, clientS
 	return tok.AccessToken, nil
 }
 
+// base64DecodeASCII decodes a standard or raw base64 string; returns value unchanged on failure.
 func base64DecodeASCII(value string) string {
 	if value == "" {
 		return ""

@@ -286,8 +286,7 @@ describe('Add Policy to policy set', () => {
     )
     await clickElement(screen.getByRole('option', { name: 'policy-set-with-1-placement' }))
     await clickElement(screen.getByRole('button', { name: 'Add' }))
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    expect(isClosed).toBe(true)
+    await waitFor(() => expect(isClosed).toBe(true))
   })
 })
 

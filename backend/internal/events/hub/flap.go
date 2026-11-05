@@ -45,6 +45,7 @@ type flapConfig struct {
 	interval  time.Duration
 }
 
+// defaultFlapConfig reads FLAP_* / THROTTLING_CHECK_INTERVAL env overrides with built-in defaults.
 func defaultFlapConfig() flapConfig {
 	return flapConfig{
 		threshold: envIntOr(os.Getenv("FLAP_THRESHOLD"), defaultFlapThreshold),
@@ -56,6 +57,7 @@ func defaultFlapConfig() flapConfig {
 	}
 }
 
+// envIntOr parses an int env value; empty, zero, or invalid falls back.
 func envIntOr(raw string, fallback int) int {
 	n, err := strconv.Atoi(raw)
 	if err != nil || n == 0 {
@@ -64,6 +66,7 @@ func envIntOr(raw string, fallback int) int {
 	return n
 }
 
+// envMSOr parses a millisecond duration env value; empty, zero, or invalid falls back.
 func envMSOr(raw string, fallback time.Duration) time.Duration {
 	n, err := strconv.Atoi(raw)
 	if err != nil || n == 0 {
@@ -105,6 +108,7 @@ type flapState struct {
 	rootDirty map[string]struct{}
 }
 
+// newFlapState builds Policy flap tracking state, clamping invalid cfg fields to defaults.
 func newFlapState(cfg flapConfig) *flapState {
 	if cfg.threshold <= 0 {
 		cfg.threshold = defaultFlapThreshold
@@ -145,6 +149,7 @@ func flapKey(kind, namespace, name string) string {
 	return kind + "/" + namespace + "/" + name
 }
 
+// kindNSName extracts kind and metadata name/namespace from an unstructured object map.
 func kindNSName(obj map[string]any) (kind, namespace, name string) {
 	kind, _ = obj["kind"].(string)
 	meta, _ := obj["metadata"].(map[string]any)
@@ -156,6 +161,7 @@ func kindNSName(obj map[string]any) (kind, namespace, name string) {
 	return kind, namespace, name
 }
 
+// replicatedRoot parses policy.open-cluster-management.io/root-policy as namespace.name.
 func replicatedRoot(obj map[string]any) (namespace, name string, ok bool) {
 	meta, _ := obj["metadata"].(map[string]any)
 	labels, _ := meta["labels"].(map[string]any)
@@ -167,6 +173,7 @@ func replicatedRoot(obj map[string]any) (namespace, name string, ok bool) {
 	return raw[:dot], raw[dot+1:], true
 }
 
+// clusterOf returns the managed-cluster name label, falling back to the Policy namespace.
 func clusterOf(obj map[string]any) string {
 	_, namespace, _ := kindNSName(obj)
 	meta, _ := obj["metadata"].(map[string]any)
@@ -177,6 +184,7 @@ func clusterOf(obj map[string]any) string {
 	return namespace
 }
 
+// rankOfCompliant maps a Policy compliant string to a severity rank for flap status projection.
 func rankOfCompliant(value any) int {
 	text, _ := value.(string)
 	switch text {
@@ -189,6 +197,7 @@ func rankOfCompliant(value any) int {
 	}
 }
 
+// violationRank is the worst compliant rank across status, per-cluster rows, and recent history.
 func violationRank(obj map[string]any) int {
 	status, _ := obj["status"].(map[string]any)
 	if status == nil {
@@ -209,6 +218,7 @@ func violationRank(obj map[string]any) int {
 	return rank
 }
 
+// historyViolation is true when details or recent history still show NonCompliant.
 func historyViolation(status map[string]any) bool {
 	details, _ := status["details"].([]any)
 	for _, detail := range details {
@@ -232,6 +242,7 @@ func historyViolation(status map[string]any) bool {
 	return false
 }
 
+// projectViolation forces NonCompliant on the object so throttled SSE matches the violation just seen.
 func projectViolation(obj map[string]any) {
 	status, _ := obj["status"].(map[string]any)
 	if status == nil {
@@ -259,6 +270,7 @@ func copyClusters(in map[string]struct{}) map[string]struct{} {
 	return out
 }
 
+// projectRootClusters marks listed clusters NonCompliant on a root Policy status while replicas flap.
 func projectRootClusters(obj map[string]any, clusters map[string]struct{}) {
 	if obj == nil || len(clusters) == 0 {
 		return
@@ -299,6 +311,7 @@ func projectRootClusters(obj map[string]any, clusters map[string]struct{}) {
 	status["status"] = list
 }
 
+// copyStatus deep-copies src.status onto dst so a more severe throttled snapshot can be replayed.
 func copyStatus(dst, src map[string]any) {
 	status, ok := src["status"]
 	if !ok || dst == nil {
@@ -314,6 +327,7 @@ func copyStatus(dst, src map[string]any) {
 	}
 }
 
+// specKey is a stable JSON fingerprint of Policy.spec; a change clears throttle state.
 func specKey(obj map[string]any) string {
 	spec := obj["spec"]
 	if spec == nil {
@@ -326,6 +340,7 @@ func specKey(obj map[string]any) string {
 	return string(raw)
 }
 
+// formatFlappingMessage is the warn log when a Policy first enters throttle.
 func formatFlappingMessage(kind, namespace, name string, cfg flapConfig) string {
 	windowMinutes := int(math.Max(1, math.Round(cfg.window.Minutes())))
 	timesPerMinute := int(math.Max(1, math.Round(float64(time.Minute)/float64(cfg.cooldown))))
@@ -335,6 +350,7 @@ func formatFlappingMessage(kind, namespace, name string, cfg flapConfig) string 
 	)
 }
 
+// formatFlappingRecoveredMessage is the warn log when throttle clears after cooldown.
 func formatFlappingRecoveredMessage(kind, namespace, name string) string {
 	return fmt.Sprintf("%s %s in namespace %s is no longer being throttled; policy updates will resume normally.", kind, name, namespace)
 }
@@ -434,6 +450,7 @@ func (s *flapState) shouldThrottle(obj map[string]any, now time.Time, gvr schema
 	return false
 }
 
+// recover clears throttle after cooldown (and TTL) and returns Policies to republish as MODIFIED.
 func (s *flapState) recover(now time.Time) []recoveredEvent {
 	if s == nil {
 		return nil
@@ -472,6 +489,7 @@ func (s *flapState) recover(now time.Time) []recoveredEvent {
 	return out
 }
 
+// noteRootLocked updates root-Policy conflict tracking for a replicated Policy. Caller holds mu.
 func (s *flapState) noteRootLocked(entry *flapEntry, violating bool) {
 	if entry == nil || !entry.trackedRoot {
 		return
@@ -483,6 +501,7 @@ func (s *flapState) noteRootLocked(entry *flapEntry, violating bool) {
 	s.releaseRootLocked(entry)
 }
 
+// claimRootLocked marks the replica's cluster as conflicting on its root Policy. Caller holds mu.
 func (s *flapState) claimRootLocked(entry *flapEntry) {
 	if entry.rootKey == "" || entry.cluster == "" {
 		return
@@ -499,6 +518,7 @@ func (s *flapState) claimRootLocked(entry *flapEntry) {
 	s.rootDirty[entry.rootKey] = struct{}{}
 }
 
+// releaseRootLocked clears the replica's cluster from root conflict sets. Caller holds mu.
 func (s *flapState) releaseRootLocked(entry *flapEntry) {
 	if entry == nil || !entry.trackedRoot || entry.rootKey == "" || entry.cluster == "" {
 		return
@@ -514,6 +534,7 @@ func (s *flapState) releaseRootLocked(entry *flapEntry) {
 	s.rootDirty[entry.rootKey] = struct{}{}
 }
 
+// rememberRoot caches a non-replicated (hub) Policy so dirty-root overlays can republish it.
 func (s *flapState) rememberRoot(obj map[string]any, gvr schema.GroupVersionResource) {
 	if s == nil || obj == nil {
 		return
@@ -555,6 +576,7 @@ func (s *flapState) forget(obj map[string]any) {
 	delete(s.rootDirty, rootKey)
 }
 
+// decorateRoot rewrites a root Policy's cluster status when replicated children are still conflicting.
 func (s *flapState) decorateRoot(obj map[string]any) {
 	if s == nil || obj == nil {
 		return
@@ -572,6 +594,7 @@ func (s *flapState) decorateRoot(obj map[string]any) {
 	projectRootClusters(obj, clusters)
 }
 
+// takeDirtyRoots returns root Policies whose conflict sets changed since the last publish.
 func (s *flapState) takeDirtyRoots() []recoveredEvent {
 	if s == nil {
 		return nil
@@ -637,6 +660,7 @@ func (h *Hub) Start(ctx context.Context) {
 	go h.monitorThrottle(ctx)
 }
 
+// monitorThrottle periodically recovers Policies that left the flap window.
 func (h *Hub) monitorThrottle(ctx context.Context) {
 	interval := h.flap.cfg.interval
 	applog.Logger().Info("throttling check started", "interval", interval)
@@ -653,6 +677,7 @@ func (h *Hub) monitorThrottle(ctx context.Context) {
 	}
 }
 
+// publishRecovered pushes recovered Policies and dirty root overlays as MODIFIED (+ LOADED).
 func (h *Hub) publishRecovered(now time.Time) {
 	if h == nil || h.flap == nil {
 		return

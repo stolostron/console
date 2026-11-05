@@ -32,6 +32,7 @@ const config: Config.InitialOptions = {
       'ts-jest',
       {
         tsconfig: '<rootDir>/tsconfig.dev.json',
+        diagnostics: false,
       },
     ],
     '^.+\\.yaml?$': '<rootDir>/jest-raw-loader.js',

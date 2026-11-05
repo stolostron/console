@@ -17,7 +17,6 @@ import {
   managedClusterInfosState,
   managedClustersState,
   nodePoolsState,
-  policyreportState,
 } from '../../../../../../atoms'
 import { nockAggegateRequest, nockGet, nockIgnoreApiPaths, nockIgnoreRBAC } from '../../../../../../lib/nock-util'
 import { clickByText, waitForNocks, waitForText, clickElement } from '~/lib/test-util'
@@ -47,6 +46,11 @@ import { HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
 import { AcmToastGroup, AcmToastProvider } from '../../../../../../ui-components'
 import { axe } from 'jest-axe'
 import { ClusterDetailsContext } from '../ClusterDetails'
+
+jest.mock('../../../../../../hooks/usePolicyReports', () => ({
+  useClusterPolicyReport: () => ({ policyReport: undefined, isLoading: false, isError: false }),
+  usePolicyReportsList: () => ({ policyReports: [], isLoading: false, isError: false }),
+}))
 
 const kubeConfigSecret: Secret = {
   apiVersion: SecretApiVersion,
@@ -98,7 +102,6 @@ describe('ClusterOverview with AWS hypershift cluster', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -146,7 +149,6 @@ describe('ClusterOverview with BM hypershift cluster', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -196,7 +198,6 @@ describe('ClusterOverview with BM hypershift cluster no namespace', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -244,7 +245,6 @@ describe('ClusterOverview with AWS hypershift cluster no hypershift', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -286,7 +286,6 @@ describe('ClusterOverview with AWS hypershift cluster no hostedCluster', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -330,7 +329,6 @@ describe('ClusterOverview with regional hub cluster information', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -374,7 +372,6 @@ describe('ClusterOverview with regional hub cluster information with hostedClust
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -466,7 +463,6 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -512,7 +508,6 @@ describe('ClusterOverview channel display for hypershift clusters', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -846,7 +841,6 @@ describe('ClusterOverview automation template', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -884,7 +878,6 @@ describe('ClusterOverview automation template', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -943,7 +936,6 @@ describe('ClusterOverview hypershift hook status', () => {
     render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -1025,7 +1017,6 @@ describe('ClusterOverview description display', () => {
     const { container } = render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -1081,7 +1072,6 @@ describe('ClusterOverview description display', () => {
     const { container } = render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])
@@ -1147,7 +1137,6 @@ describe('ClusterOverview labels truncation', () => {
     const { container } = render(
       <StateProvider
         initializeStore={(store) => {
-          store.set(policyreportState, [])
           store.set(managedClustersState, [])
           store.set(clusterDeploymentsState, [])
           store.set(managedClusterInfosState, [])

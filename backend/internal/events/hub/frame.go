@@ -17,6 +17,7 @@ func FormatSSE(id string, data []byte) []byte {
 	return buf
 }
 
+// pingFrame is an SSE comment keepalive (`:\n\n`) sent when the stream is idle.
 func pingFrame() []byte {
 	return []byte(":\n\n")
 }

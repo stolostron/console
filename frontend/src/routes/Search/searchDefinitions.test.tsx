@@ -1,13 +1,16 @@
 /* Copyright Contributors to the Open Cluster Management project */
 // Copyright (c) 2021 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
-import { render } from '@testing-library/react'
-import { t as t } from '~/lib/test-helpers'
+import { MockedProvider, MockedResponse } from '@apollo/client/testing'
+import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
+import { t } from '~/lib/test-helpers'
 import { clusterManagementAddonsState, configMapsState, managedClusterInfosState } from '../../atoms'
 import { ConfigMapApiVersion, ConfigMapKind } from '../../resources'
 import { ManagedClusterInfoApiVersion, ManagedClusterInfoKind } from '../../resources/managed-cluster-info'
+import { SearchResultItemsDocument } from './search-sdk/search-sdk'
 import {
   CreateApplicationTopologyLink,
   CreateDetailsLink,
@@ -687,6 +690,50 @@ test('Correctly returns empty CreateExternalVMLink', () => {
   expect(baseElement).toMatchSnapshot()
 })
 
+function clusterConsoleSearchMock(item: Record<string, string>, items: Record<string, string>[]): MockedResponse {
+  return {
+    request: {
+      query: SearchResultItemsDocument,
+      variables: {
+        input: [
+          {
+            keywords: [],
+            filters: [
+              { property: 'kind', values: ['Cluster'] },
+              { property: 'name', values: [item.cluster] },
+              ...(item.managedHub ? [{ property: 'managedHub', values: [item.managedHub] }] : []),
+            ],
+            limit: 10,
+          },
+        ],
+      },
+    },
+    result: {
+      data: {
+        searchResult: [
+          {
+            items,
+            __typename: 'SearchResult',
+          },
+        ],
+      },
+    },
+    maxUsageCount: Number.POSITIVE_INFINITY,
+  }
+}
+
+function renderVMLaunchLinks(item: Record<string, string>, mocks: MockedResponse[] = []) {
+  return render(
+    <StateProvider>
+      <MemoryRouter>
+        <MockedProvider mocks={mocks}>
+          <VMLaunchLinks item={item} t={t} />
+        </MockedProvider>
+      </MemoryRouter>
+    </StateProvider>
+  )
+}
+
 test('Correctly returns VMLaunchLinks', () => {
   const item = {
     cluster: 'testCluster',
@@ -729,11 +776,85 @@ test('Correctly returns VMLaunchLinks', () => {
       }}
     >
       <MemoryRouter>
-        <VMLaunchLinks item={item} t={t} />
+        <MockedProvider mocks={[clusterConsoleSearchMock(item, [])]}>
+          <VMLaunchLinks item={item} t={t} />
+        </MockedProvider>
       </MemoryRouter>
     </StateProvider>
   )
   expect(baseElement).toMatchSnapshot()
+})
+
+test('VM launch links use the managed cluster console URL from search', async () => {
+  const user = userEvent.setup()
+  const item = {
+    cluster: 'spoke-cluster',
+    name: 'testVM',
+    namespace: 'vm-ns',
+    managedHub: 'leaf-hub',
+  }
+  renderVMLaunchLinks(item, [
+    clusterConsoleSearchMock(item, [
+      {
+        name: 'spoke-cluster',
+        managedHub: 'leaf-hub',
+        consoleURL: 'https://spoke.example.com/',
+      },
+    ]),
+  ])
+
+  await user.click(screen.getByRole('button', { name: 'Launch links' }))
+
+  const details = await screen.findByRole('link', { name: 'Virtual machine details' })
+  const consoleLink = screen.getByRole('link', { name: 'Virtual machine console' })
+  expect(details).toHaveAttribute('href', 'https://spoke.example.com/k8s/ns/vm-ns/kubevirt.io~v1~VirtualMachine/testVM')
+  expect(consoleLink).toHaveAttribute(
+    'href',
+    'https://spoke.example.com/k8s/ns/vm-ns/kubevirt.io~v1~VirtualMachine/testVM/console'
+  )
+})
+
+test('VM launch links fall back to the local cluster console URL when search has no match', async () => {
+  const user = userEvent.setup()
+  const item = {
+    cluster: 'testCluster',
+    name: 'testVM',
+    namespace: 'testVM',
+  }
+  render(
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(managedClusterInfosState, [
+          {
+            apiVersion: ManagedClusterInfoApiVersion,
+            kind: ManagedClusterInfoKind,
+            metadata: {
+              name: 'testCluster',
+              namespace: 'testCluster',
+            },
+            status: {
+              consoleURL: 'https://testCluster.com',
+              conditions: [],
+              version: '1.17',
+            },
+          },
+        ])
+      }}
+    >
+      <MemoryRouter>
+        <MockedProvider mocks={[clusterConsoleSearchMock(item, [])]}>
+          <VMLaunchLinks item={item} t={t} />
+        </MockedProvider>
+      </MemoryRouter>
+    </StateProvider>
+  )
+
+  await user.click(screen.getByRole('button', { name: 'Launch links' }))
+
+  expect(await screen.findByRole('link', { name: 'Virtual machine details' })).toHaveAttribute(
+    'href',
+    'https://testCluster.com/k8s/ns/testVM/kubevirt.io~v1~VirtualMachine/testVM'
+  )
 })
 
 test('Correctly returns VirtualMachineSnapshot indications', () => {

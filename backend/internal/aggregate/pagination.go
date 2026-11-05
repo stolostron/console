@@ -13,6 +13,7 @@ type FilterSelections map[string][]string
 // SortBy matches the frontend table sort payload.
 type SortBy struct {
 	Index     *int   `json:"index,omitempty"`
+	ID        string `json:"id,omitempty"`
 	Direction string `json:"direction,omitempty"`
 }
 
@@ -72,8 +73,10 @@ func (h *Handler) paginate(w http.ResponseWriter, r *http.Request, token string)
 		if req.Search != "" {
 			items = fuseFilter(items, req.Search)
 		}
-		if req.SortBy != nil && req.SortBy.Index != nil && *req.SortBy.Index >= 0 {
-			items = sortApplications(*req.SortBy.Index, req.SortBy.Direction == "desc", items)
+		if req.SortBy != nil {
+			if sortIndex, ok := sortColumnIndex(req.SortBy); ok {
+				items = sortApplications(sortIndex, req.SortBy.Direction == "desc", items)
+			}
 		}
 		if perPage <= 0 {
 			perPage = itemCount

@@ -69,6 +69,17 @@ export function dedupeColumnIdsPreserveOrder(ids: string[]): string[] {
 }
 
 /**
+ * Appends newly shipped column ids (present in `defaultOrderIds` but missing from `savedOrder`)
+ * to the end of the saved order. Does not reorder existing saved ids or insert new ids between
+ * neighbors — users keep their dragged order until they Restore defaults.
+ */
+export function mergeNewColumnIdsIntoOrder(savedOrder: string[], defaultOrderIds: string[]): string[] {
+  const result = dedupeColumnIdsPreserveOrder(savedOrder.filter(Boolean))
+  const newIds = defaultOrderIds.filter((id) => id && !result.includes(id))
+  return newIds.length === 0 ? result : [...result, ...newIds]
+}
+
+/**
  * Builds the initial selected column id list from localStorage and current table column definitions.
  *
  * When the product adds new manageable columns after a user has already saved preferences, ids that

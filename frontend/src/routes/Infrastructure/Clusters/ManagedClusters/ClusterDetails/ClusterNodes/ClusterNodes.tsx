@@ -154,12 +154,18 @@ export function NodesPoolsTable() {
         cell: (node: NodeInfo) => {
           const hasOcpConsole = cluster?.distribution?.ocp?.version && cluster.consoleURL
           return hasOcpConsole ? (
-            <a href={`${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`} target="_blank" rel="noreferrer">
-              <span style={{ marginRight: '8px' }}>
-                <ExternalLinkAltIcon />
-              </span>
+            <AcmButton
+              variant="link"
+              component="a"
+              href={`${cluster!.consoleURL}/k8s/cluster/nodes/${node.name}`}
+              target="_blank"
+              rel="noreferrer"
+              isInline
+              icon={<ExternalLinkAltIcon />}
+              iconPosition="left"
+            >
               {node.name}
-            </a>
+            </AcmButton>
           ) : (
             getSearchLink(node)
           )

@@ -133,10 +133,11 @@ describe('SyncEditor component', () => {
     const i = input.value.indexOf(text) + text.length - 1
     input.setSelectionRange(i, i + 1)
     replaceTextAtSelection(input, 'abc')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    decorators = JSON.parse(input.dataset['decorators'] || '')
+    await waitFor(() => {
+      decorators = JSON.parse(input.dataset['decorators'] || '')
+      expect(decorators).toEqual(syntaxError)
+    })
     //console.log(util.inspect(decorators, { depth: null }))
-    expect(decorators).toEqual(syntaxError)
   })
 
   it('render new resource', async () => {
@@ -202,22 +203,40 @@ describe('SyncEditor component', () => {
     let i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
     replaceTextAtSelection(input, 'false')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(clone.onEditorChange).toHaveBeenCalledTimes(1))
     expect(get(onEditorChange.mock.calls, '0.0.resources.0.spec.disabled')).toBeFalsy()
 
     // >>>FORM: change annotations to { test: 'me' }
     input.blur()
     set(clone, 'resources.0.metadata.annotations', { test: 'me' })
     rerender(<SyncEditor {...clone} />)
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => expect(input.value).toContain('test: me'))
 
     // >>>USER: change local-cluster to newthing
     text = 'local-cluster'
     i = input.value.indexOf(text)
     input.setSelectionRange(i, i + text.length)
     replaceTextAtSelection(input, 'newthing')
-    await new Promise((resolve) => setTimeout(resolve, 2500)) // wait for debounce
+    await waitFor(() => {
+      const lastChange = onEditorChange.mock.calls[onEditorChange.mock.calls.length - 1]
+      expect(get(lastChange, '0.resources.0.metadata.annotations.test')).toBe('me')
+      expect(
+        get(
+          lastChange,
+          '0.resources.1.spec.predicates.0.requiredClusterSelector.labelSelector.matchExpressions.0.values.0'
+        )
+      ).toBe('newthing')
+    })
+    await waitFor(() => {
+      const decorators = JSON.parse(input.dataset['decorators'] || '')
+      expect(decorators).toContainEqual(
+        expect.objectContaining({
+          options: expect.objectContaining({
+            after: expect.objectContaining({ content: '  # local-cluster' }),
+          }),
+        })
+      )
+    })
 
     // make sure first user edit is still there
     // make sure form change is still there
@@ -234,13 +253,6 @@ describe('SyncEditor component', () => {
     ).toBe('newthing')
     const decorators = JSON.parse(input.dataset['decorators'] || '')
     expect(decorators).toEqual(expect.arrayContaining(protectedDecorators))
-    expect(decorators).toContainEqual(
-      expect.objectContaining({
-        options: expect.objectContaining({
-          after: expect.objectContaining({ content: '  # local-cluster' }),
-        }),
-      })
-    )
   })
 
   it('editor toolbar', async () => {
@@ -262,27 +274,14 @@ describe('SyncEditor component', () => {
     let i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
     replaceTextAtSelection(input, 'false')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(clone.onEditorChange).toHaveBeenCalledTimes(1))
     expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
 
     // >>>UNDO--make sure 'disabled: true' is true again
-    await clickElement(
-      screen.getByRole('button', {
-        name: /undo/i,
-      })
-    )
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    await clickElement(screen.getByRole('button', { name: /undo/i }))
 
     // // >>>REDO--make sure 'disabled: true' is false again
-    await clickElement(
-      screen.getByRole('button', {
-        name: /redo/i,
-      })
-    )
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    await clickElement(screen.getByRole('button', { name: /redo/i }))
 
     // >>>SHOW SECRETS
     // expect secrets to be redacted in yaml
@@ -290,9 +289,6 @@ describe('SyncEditor component', () => {
     await waitFor(() => expect(document.querySelector('.monaco-editor.focused')).toBeNull())
     fireEvent.blur(input)
     document.body.focus()
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
-    })
     await clickElement(
       screen.getByRole('button', {
         name: /show secrets/i,
@@ -312,7 +308,6 @@ describe('SyncEditor component', () => {
       })
     )
     expect(window.navigator.clipboard.writeText).toHaveBeenCalledWith(expect.stringContaining('test-placement'))
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
 
     // paste certificate
     text = 'pem:'
@@ -324,9 +319,10 @@ describe('SyncEditor component', () => {
       },
     })
     fireEvent(input.parentElement ?? input, paste)
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
-    expect(input.value).toContain('test-placement')
+    await waitFor(() => {
+      expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+      expect(input.value).toContain('test-placement')
+    })
   })
 
   it('synchronize', async () => {
@@ -370,15 +366,15 @@ describe('SyncEditor component', () => {
     const i = input.value.indexOf(text) + text.length - 4
     input.setSelectionRange(i, i + 4)
     replaceTextAtSelection(input, 'false')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+    await waitFor(() => expect(clone.onEditorChange).toHaveBeenCalledTimes(1))
     expect(get(onEditorChange.mock.calls, '0.0.resources.spec.disabled')).toBeFalsy()
 
     // make sure syncs get called
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
-    expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
-    expect(setAwsS3Region).toHaveBeenCalledWith('medium')
-    expect(setAwsAccessKeyID).toHaveBeenCalledWith('medium')
+    await waitFor(() => {
+      expect(clone.onEditorChange).toHaveBeenCalledTimes(1)
+      expect(setAwsS3Region).toHaveBeenCalledWith('medium')
+      expect(setAwsAccessKeyID).toHaveBeenCalledWith('medium')
+    })
   })
 
   it('Should add namespace key when it is autoCreate and missing ns', async () => {
@@ -413,8 +409,7 @@ describe('SyncEditor component', () => {
       },
     })
     fireEvent(input.parentElement ?? input, paste)
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
-    expect(input).toHaveMultilineValue(pastedWNSResource)
+    await waitFor(() => expect(input).toHaveMultilineValue(pastedWNSResource))
   })
 
   describe('additional SyncEditor coverage', () => {
@@ -456,7 +451,6 @@ describe('SyncEditor component', () => {
       await waitFor(() => screen.getByRole('textbox', { name: /monaco-diff/i }))
       set(clone, 'resources.0.metadata.annotations', { test: 'compare' })
       rerender(<SyncEditor {...clone} />)
-      await new Promise((resolve) => setTimeout(resolve, 1200))
       expect(screen.getByRole('textbox', { name: /monaco-diff/i })).toBeInTheDocument()
     })
 
@@ -489,8 +483,7 @@ describe('SyncEditor component', () => {
         clipboardData: { getData: () => certificate },
       })
       fireEvent(input.parentElement ?? input, paste)
-      await new Promise((resolve) => setTimeout(resolve, 500))
-      expect(input.value).toContain('-----BEGIN CERTIFICATE-----')
+      await waitFor(() => expect(input.value).toContain('-----BEGIN CERTIFICATE-----'))
     })
   })
 

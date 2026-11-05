@@ -197,6 +197,7 @@ func StripMulticloud(path string) string {
 	return path
 }
 
+// isProbe reports health-check paths that skip request logging.
 func isProbe(path string) bool {
 	switch path {
 	case "/livenessProbe", "/readinessProbe", "/ping":
@@ -206,6 +207,7 @@ func isProbe(path string) bool {
 	}
 }
 
+// isEventStream reports SSE paths that must not wrap the ResponseWriter (flush/hijack).
 func isEventStream(path string) bool {
 	switch path {
 	case "/events", "/events/rbac":
@@ -215,10 +217,12 @@ func isEventStream(path string) bool {
 	}
 }
 
+// isWebSocket reports Upgrade: websocket so logging does not wrap a hijacked connection.
 func isWebSocket(r *http.Request) bool {
 	return strings.EqualFold(r.Header.Get("Upgrade"), "websocket")
 }
 
+// registerAliased mounts h at each pattern and under /multicloud.
 func registerAliased(r chi.Router, h http.Handler, patterns ...string) {
 	for _, pattern := range patterns {
 		r.Handle(pattern, h)
@@ -226,6 +230,7 @@ func registerAliased(r chi.Router, h http.Handler, patterns ...string) {
 	}
 }
 
+// registerAliasedGet mounts GET handlers at each pattern and under /multicloud.
 func registerAliasedGet(r chi.Router, h http.Handler, patterns ...string) {
 	for _, pattern := range patterns {
 		r.Get(pattern, h.ServeHTTP)
@@ -233,6 +238,7 @@ func registerAliasedGet(r chi.Router, h http.Handler, patterns ...string) {
 	}
 }
 
+// registerAliasedPost mounts POST handlers at each pattern and under /multicloud.
 func registerAliasedPost(r chi.Router, h http.Handler, patterns ...string) {
 	for _, pattern := range patterns {
 		r.Post(pattern, h.ServeHTTP)
@@ -240,6 +246,7 @@ func registerAliasedPost(r chi.Router, h http.Handler, patterns ...string) {
 	}
 }
 
+// registerStatelessProxies mounts managed-cluster, metrics, and VM proxy routes when configured.
 func registerStatelessProxies(r chi.Router, o *handlerOptions) {
 	if o.mcProxy != nil {
 		registerAliased(r, o.mcProxy, "/managedclusterproxy/*")
@@ -265,6 +272,7 @@ func registerStatelessProxies(r chi.Router, o *handlerOptions) {
 	}
 }
 
+// registerK8sProxyRoutes mounts hub kube-apiserver passthrough for /api, /apis, and /version.
 func registerK8sProxyRoutes(r chi.Router, h http.Handler) {
 	for _, pattern := range []string{
 		"/api", "/api/*",
@@ -358,6 +366,7 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	return r, nil
 }
 
+// registerOAuth mounts /configure and optional standalone login/callback/logout under prefix.
 func registerOAuth(r chi.Router, prefix string, h *oauth.Handler, login bool) {
 	r.Get(prefix+"/configure", h.Configure)
 	if !login {
@@ -369,6 +378,7 @@ func registerOAuth(r chi.Router, prefix string, h *oauth.Handler, login bool) {
 	r.Get(prefix+"/logout/", h.Logout)
 }
 
+// stripPathHandler clones the request with /multicloud removed from the path before calling h.
 func stripPathHandler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		r2 := r.Clone(r.Context())
@@ -377,6 +387,7 @@ func stripPathHandler(h http.Handler) http.Handler {
 	})
 }
 
+// registerUserRoutes mounts /authenticated, /username, and /userpreference when configured.
 func registerUserRoutes(r chi.Router, o *handlerOptions) {
 	if o.user == nil {
 		return
@@ -386,6 +397,7 @@ func registerUserRoutes(r chi.Router, o *handlerOptions) {
 	registerAliased(r, h, "/userpreference")
 }
 
+// registerClusterInfoRoutes mounts hub/cluster-info GET and POST routes when configured.
 func registerClusterInfoRoutes(r chi.Router, o *handlerOptions) {
 	if o.clusterInfo == nil {
 		return
@@ -402,6 +414,7 @@ func registerClusterInfoRoutes(r chi.Router, o *handlerOptions) {
 	registerAliased(r, h, "/operatorCheck")
 }
 
+// notFoundHandler serves static GETs for known asset paths; otherwise writes 404.
 func notFoundHandler(staticH http.Handler) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		stripped := StripMulticloud(r.URL.Path)
@@ -415,6 +428,7 @@ func notFoundHandler(staticH http.Handler) http.HandlerFunc {
 	}
 }
 
+// requestLogger logs method, path, status, and duration; probes, SSE, and WebSocket skip the wrapper.
 func requestLogger(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		stripped := StripMulticloud(r.URL.Path)
@@ -442,11 +456,13 @@ type statusRecorder struct {
 	status int
 }
 
+// WriteHeader records the status for logging before forwarding to the underlying writer.
 func (s *statusRecorder) WriteHeader(code int) {
 	s.status = code
 	s.ResponseWriter.WriteHeader(code)
 }
 
+// Hijack implements http.Hijacker so WebSocket upgrades work through the status recorder.
 func (s *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	h, ok := s.ResponseWriter.(http.Hijacker)
 	if !ok {
@@ -455,12 +471,14 @@ func (s *statusRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return h.Hijack()
 }
 
+// Flush implements http.Flusher when the underlying writer supports it.
 func (s *statusRecorder) Flush() {
 	if f, ok := s.ResponseWriter.(http.Flusher); ok {
 		f.Flush()
 	}
 }
 
+// Unwrap returns the underlying ResponseWriter for middleware that needs the raw writer.
 func (s *statusRecorder) Unwrap() http.ResponseWriter { return s.ResponseWriter }
 
 // ListenAndServe binds the listener first, then runs optional onListening hooks

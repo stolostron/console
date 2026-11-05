@@ -138,7 +138,7 @@ describe('add credentials page', () => {
         name: /show secrets/i,
       })
     )
-    await new Promise((resolve) => setTimeout(resolve, 1200)) // wait for debounce
+    await waitFor(() => expect(input.value).not.toContain('*****'))
     const changeYaml = async (path: string, text: string) => {
       const i = input.value.indexOf(path) + path.length
       input.setSelectionRange(i, i)
@@ -146,9 +146,15 @@ describe('add credentials page', () => {
     }
     await changeYaml('aws_access_key_id=', 'a')
     await changeYaml('aws_secret_access_key=', 'e')
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => {
+      expect(input.value).toContain('aws_access_key_id=abcd')
+      expect(input.value).toContain('aws_secret_access_key=efgh')
+    })
     await clickElement(screen.getByRole('switch', { name: /yaml/i }))
-    await new Promise((resolve) => setTimeout(resolve, 500)) // wait for debounce
+    await waitFor(() => {
+      expect(screen.getByTestId('aws_access_key_id')).toHaveValue('abcd')
+      expect(screen.getByTestId('aws_secret_access_key')).toHaveValue('efgh')
+    })
 
     await clickByText('Next')
 

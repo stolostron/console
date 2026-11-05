@@ -17,6 +17,7 @@ import (
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
+// fineGrainedRBAC reports whether MultiClusterHub has fine-grained RBAC enabled.
 func (h *Handler) fineGrainedRBAC(ctx context.Context) bool {
 	if h.opts.FineGrained != nil {
 		ok, err := h.opts.FineGrained(ctx)
@@ -35,6 +36,7 @@ func (h *Handler) fineGrainedRBAC(ctx context.Context) bool {
 	return ok
 }
 
+// hubDynamic returns the hub dynamic client (injected or built from RESTConfig).
 func (h *Handler) hubDynamic() (dynamic.Interface, error) {
 	if h.opts.HubDynamic != nil {
 		return h.opts.HubDynamic, nil
@@ -45,6 +47,7 @@ func (h *Handler) hubDynamic() (dynamic.Interface, error) {
 	return dynamic.NewForConfig(h.opts.RESTConfig)
 }
 
+// canCreateMCA reports whether the user may create ManagedClusterActions in the cluster namespace.
 func (h *Handler) canCreateMCA(ctx context.Context, userToken, namespace string) bool {
 	client, err := h.userKube(userToken)
 	if err != nil {
@@ -68,6 +71,7 @@ func (h *Handler) canCreateMCA(ctx context.Context, userToken, namespace string)
 	return review.Status.Allowed
 }
 
+// vmActorToken reads the managed-cluster vm-actor Secret token used when MCA create is allowed.
 func (h *Handler) vmActorToken(ctx context.Context, namespace string) (string, bool) {
 	if h.saKube == nil {
 		return "", false
@@ -84,6 +88,7 @@ func (h *Handler) vmActorToken(ctx context.Context, namespace string) (string, b
 	return token, true
 }
 
+// userKube builds a Kubernetes client impersonating the browser token (or uses the inject).
 func (h *Handler) userKube(token string) (kubernetes.Interface, error) {
 	if h.opts.UserKube != nil {
 		return h.opts.UserKube(token)

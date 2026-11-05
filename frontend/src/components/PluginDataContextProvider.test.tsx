@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 import { ProviderProps } from 'react'
 import { MemoryRouter } from 'react-router'
 import { nockRequest } from '../lib/nock-util'
@@ -29,9 +29,7 @@ describe('PluginDataContextProvider', () => {
         <TestPluginDataContextProvider value={pluginData} />
       </MemoryRouter>
     )
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    // await waitForText('Loading')
-    expect(pluginData.load).toHaveBeenCalled()
+    await waitFor(() => expect(pluginData.load).toHaveBeenCalled())
   })
   it('renders LoadData when requested', async () => {
     const mockGlobalHubReq: any = { isGlobalHub: true }

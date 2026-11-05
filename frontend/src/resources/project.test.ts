@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { waitFor } from '@testing-library/react'
 import { createProject, ProjectProperties } from './project'
 import { createResource, replaceResource } from './utils/resource-request'
 import { NamespaceApiVersion, NamespaceKind } from '.'
@@ -189,18 +190,17 @@ describe('createProject', () => {
     // The main promise should resolve with the project
     await expect(result.promise).resolves.toEqual(mockProject)
 
-    // Wait a bit to ensure the labels update promise has time to execute
-    await new Promise((resolve) => setTimeout(resolve, 10))
-
     // Verify that replaceResource was called to update namespace with labels
-    expect(mockReplaceResource).toHaveBeenCalledWith({
-      apiVersion: NamespaceApiVersion,
-      kind: NamespaceKind,
-      metadata: {
-        ...mockProject.metadata,
-        labels,
-      },
-    })
+    await waitFor(() =>
+      expect(mockReplaceResource).toHaveBeenCalledWith({
+        apiVersion: NamespaceApiVersion,
+        kind: NamespaceKind,
+        metadata: {
+          ...mockProject.metadata,
+          labels,
+        },
+      })
+    )
   })
 
   it('should filter out undefined property values', () => {
