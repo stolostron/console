@@ -10,7 +10,10 @@ import (
 
 const (
 	// resyncPeriod 0 matches Node startWatching: no periodic full relist.
-	resyncPeriod    = 0
+	resyncPeriod = 0
+	// retryBase is the GVR/sync retry wait. discoveryRefreshInterval must stay
+	// strictly below this so each retry round can still grant one discovery
+	// refetch; lower retryBase only together with that constant.
 	retryBase       = 60 * time.Second
 	retryJitter     = 10 * time.Second
 	syncGiveUpAfter = 45 * time.Second

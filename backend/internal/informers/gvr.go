@@ -39,8 +39,12 @@ type discoveryRefresh struct {
 
 // request invalidates mapper's cached discovery and reports whether it did.
 // It returns false when mapper does not cache, or when another spec already
-// forced a refetch within discoveryRefreshInterval — the caller should then
-// keep the failure it already has and wait for its next retry.
+// forced a refetch within discoveryRefreshInterval.
+//
+// Invalidate runs while the throttle lock is held, deliberately: a denied
+// caller blocks until the winner's invalidation has completed, so "denied"
+// also means "the document is already being refreshed". That is what lets
+// resolveGVR re-read immediately on a denial instead of waiting a retry round.
 func (r *discoveryRefresh) request(mapper ResourceMapper) bool {
 	inv, ok := mapper.(CacheInvalidator)
 	if !ok {

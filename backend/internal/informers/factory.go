@@ -106,17 +106,27 @@ func StartCache(ctx context.Context, c *InformerCache, dyn dynamic.Interface, ma
 // groupVersion is absent, and errKindNotFound when the cached resource list
 // for a present groupVersion does not carry the kind.
 //
-// Re-resolving only after a granted refresh is what makes recovery reliable.
-// No lock spans the two lookups: the grant serializes the invalidation
-// decision, and the refetch itself happens inside the discovery client, so a
-// racing spec may be the call that triggers it. Either way the winner cannot
-// be served the snapshot it just invalidated, and that one refetch repopulates
-// the shared document, so throttled specs pick it up on their next attempt.
+// On failure every spec backed by a caching mapper re-resolves once. request
+// grants the Invalidate to at most one spec per discoveryRefreshInterval, and
+// the specs it denies still re-read: Invalidate runs while request holds its
+// throttle lock, so a denial means the winner's invalidation has already
+// completed and the second lookup joins that refetch instead of sleeping out
+// retryBase. The refetch itself happens inside the discovery client, which
+// collapses concurrent callers into a single fetch.
+//
+// The cost is one extra lookup per failing spec per round: a map read while
+// the cached document is valid, but a refetch attempt while it is not, which
+// is the state a refresh that failed leaves behind.
 func (c *InformerCache) resolveGVR(mapper ResourceMapper, st *specRuntime) (schema.GroupVersionResource, error) {
 	gvr, err := ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
-	if err == nil || !c.refresh.request(mapper) {
+	if err == nil {
+		return gvr, nil
+	}
+	if _, caching := mapper.(CacheInvalidator); !caching {
 		return gvr, err
 	}
+	// The grant decides who pays for the Invalidate, not who may re-read.
+	c.refresh.request(mapper)
 	return ResolveGVR(mapper, st.spec.APIVersion, st.spec.Kind)
 }
 
