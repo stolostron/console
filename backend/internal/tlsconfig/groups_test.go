@@ -144,7 +144,9 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 			} else if err != nil {
 				t.Fatal(err)
 			}
-			if !slices.Equal(got.Curves, tc.curves) || !slices.Equal(got.Unknown, tc.unknown) || !slices.Equal(got.Excluded, tc.excluded) {
+			if !slices.Equal(got.Curves, tc.curves) ||
+				!slices.Equal(got.Unknown, tc.unknown) ||
+				!slices.Equal(got.Excluded, tc.excluded) {
 				t.Fatalf("got %+v; want curves %v, unknown %v, excluded %v", got, tc.curves, tc.unknown, tc.excluded)
 			}
 		})

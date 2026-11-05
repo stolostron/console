@@ -145,10 +145,10 @@ func (s Settings) clone() Settings {
 
 // settingsEqual reports whether two Settings are identical for Apply short-circuiting.
 func settingsEqual(a, b Settings) bool {
-	return a.MinVersion == b.MinVersion &&
-		a.MaxVersion == b.MaxVersion &&
-		a.noUsableCurves == b.noUsableCurves &&
-		slices.Equal(a.CipherSuites, b.CipherSuites) &&
+	if a.MinVersion != b.MinVersion || a.MaxVersion != b.MaxVersion || a.noUsableCurves != b.noUsableCurves {
+		return false
+	}
+	return slices.Equal(a.CipherSuites, b.CipherSuites) &&
 		slices.Equal(a.Curves, b.Curves) &&
 		slices.Equal(a.rejectedGroups, b.rejectedGroups) &&
 		slices.Equal(a.unknownGroups, b.unknownGroups) &&
