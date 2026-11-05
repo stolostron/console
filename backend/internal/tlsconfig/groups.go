@@ -19,32 +19,35 @@ var errNoUsableTLSGroups = errors.New("TLS profile has no usable groups")
 type groupCandidate struct {
 	Curves   []tls.CurveID
 	Unknown  []configv1.TLSGroup
-	Excluded []tls.CurveID
+	Excluded []configv1.TLSGroup
 }
 
-// groupsForProfile resolves Node-compatible defaults before conversion and FIPS
-// filtering. Callers must handle diagnostics and errors before publishing: an
-// empty tls.Config.CurvePreferences would select Go defaults, widening policy.
-func groupsForProfile(p SecurityProfile, fips bool) (groupCandidate, error) {
-	spec, _ := resolveSpec(p)
-	names := spec.groups
-	if len(names) == 0 {
-		names = builtin["Intermediate"].groups
+// groupsForProfile resolves unset groups to the Intermediate default before
+// conversion and FIPS filtering. Callers must handle diagnostics and errors
+// before publishing: an empty tls.Config.CurvePreferences would select Go
+// defaults, widening policy.
+func groupsForProfile(spec *configv1.TLSProfileSpec, fips bool) (groupCandidate, error) {
+	groups := spec.Groups
+	if len(groups) == 0 {
+		groups = configv1.TLSProfiles[configv1.TLSProfileIntermediateType].Groups
 	}
-	groups := make([]configv1.TLSGroup, len(names))
-	for i, name := range names {
-		groups[i] = configv1.TLSGroup(name)
-	}
-
+	candidate := groupCandidate{}
+	// Diagnose unknown names against the administrator's full list; FIPS
+	// filtering below must not hide them.
 	curves, unknown := librarycrypto.TLSGroupsToCurveIDs(groups)
-	candidate := groupCandidate{Unknown: unknown}
-	for _, curve := range curves {
-		if fips && !fipsPermitsCurve(curve) {
-			if !slices.Contains(candidate.Excluded, curve) {
-				candidate.Excluded = append(candidate.Excluded, curve)
+	candidate.Unknown = unknown
+	if fips {
+		// library-go keeps only FIPS-approved groups (the NIST curves).
+		// Report recognized groups it dropped; unknown names stay in Unknown.
+		approved := librarycrypto.FIPSApprovedTLSGroups(groups)
+		for _, group := range groups {
+			if _, recognized := librarycrypto.TLSGroupToCurveID(group); recognized && !slices.Contains(approved, group) {
+				candidate.Excluded = append(candidate.Excluded, group)
 			}
-			continue
 		}
+		curves, _ = librarycrypto.TLSGroupsToCurveIDs(approved)
+	}
+	for _, curve := range curves {
 		if !slices.Contains(candidate.Curves, curve) {
 			candidate.Curves = append(candidate.Curves, curve)
 		}
@@ -53,15 +56,4 @@ func groupsForProfile(p SecurityProfile, fips bool) (groupCandidate, error) {
 		return candidate, errNoUsableTLSGroups
 	}
 	return candidate, nil
-}
-
-// fipsPermitsCurve preserves the Node policy allowlist. This is a policy check;
-// conversion alone does not establish runtime support or FIPS approval.
-func fipsPermitsCurve(curve tls.CurveID) bool {
-	switch curve {
-	case tls.CurveP256, tls.CurveP384, tls.CurveP521, tls.SecP256r1MLKEM768, tls.SecP384r1MLKEM1024:
-		return true
-	default:
-		return false
-	}
 }

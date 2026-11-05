@@ -30,15 +30,15 @@ func TestGroupsForProfileDefaults(t *testing.T) {
 		for _, fips := range []bool{false, true} {
 			mode := "non-FIPS"
 			want := []tls.CurveID{tls.X25519MLKEM768, tls.X25519, tls.CurveP256, tls.CurveP384}
-			var excluded []tls.CurveID
+			var excluded []configv1.TLSGroup
 			if fips {
 				mode = "FIPS"
 				want = []tls.CurveID{tls.CurveP256, tls.CurveP384}
-				excluded = []tls.CurveID{tls.X25519MLKEM768, tls.X25519}
+				excluded = []configv1.TLSGroup{"X25519MLKEM768", "X25519"}
 			}
 			t.Run(profile.name+"/"+mode, func(t *testing.T) {
 				t.Parallel()
-				got, err := groupsForProfile(profile.profile, fips)
+				got, err := groupsForProfile(resolveSpec(profile.profile), fips)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -58,7 +58,7 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 		fips     bool
 		curves   []tls.CurveID
 		unknown  []configv1.TLSGroup
-		excluded []tls.CurveID
+		excluded []configv1.TLSGroup
 		wantErr  bool
 	}{
 		{
@@ -78,14 +78,18 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 			},
 		},
 		{
-			name: "FIPS policy filters only prohibited recognized groups",
+			// library-go's FIPS allowlist keeps only the NIST curves; the
+			// ML-KEM hybrids are excluded alongside X25519.
+			name: "FIPS policy keeps only NIST curves",
 			groups: []string{
 				"X25519", "secp256r1", "secp384r1", "secp521r1",
 				"X25519MLKEM768", "SecP256r1MLKEM768", "SecP384r1MLKEM1024",
 			},
-			fips:     true,
-			curves:   []tls.CurveID{tls.CurveP256, tls.CurveP384, tls.CurveP521, tls.SecP256r1MLKEM768, tls.SecP384r1MLKEM1024},
-			excluded: []tls.CurveID{tls.X25519, tls.X25519MLKEM768},
+			fips:   true,
+			curves: []tls.CurveID{tls.CurveP256, tls.CurveP384, tls.CurveP521},
+			excluded: []configv1.TLSGroup{
+				"X25519", "X25519MLKEM768", "SecP256r1MLKEM768", "SecP384r1MLKEM1024",
+			},
 		},
 		{
 			name:    "unknown names remain visible alongside recognized IDs",
@@ -99,7 +103,7 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 			fips:     true,
 			curves:   []tls.CurveID{tls.CurveP384},
 			unknown:  []configv1.TLSGroup{"future-group"},
-			excluded: []tls.CurveID{tls.X25519},
+			excluded: []configv1.TLSGroup{"X25519"},
 		},
 		{
 			name:    "all unknown does not receive unset fallback",
@@ -111,7 +115,7 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 			name:     "all excluded does not receive unset fallback",
 			groups:   []string{"X25519MLKEM768", "X25519"},
 			fips:     true,
-			excluded: []tls.CurveID{tls.X25519MLKEM768, tls.X25519},
+			excluded: []configv1.TLSGroup{"X25519MLKEM768", "X25519"},
 			wantErr:  true,
 		},
 		{
@@ -119,7 +123,7 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 			groups:   []string{"future-group", "X25519"},
 			fips:     true,
 			unknown:  []configv1.TLSGroup{"future-group"},
-			excluded: []tls.CurveID{tls.X25519},
+			excluded: []configv1.TLSGroup{"X25519"},
 			wantErr:  true,
 		},
 		{
@@ -132,7 +136,7 @@ func TestGroupsForProfileExplicit(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 			profile := SecurityProfile{Type: "Custom", Custom: &CustomSpec{Groups: tc.groups}}
-			got, err := groupsForProfile(profile, tc.fips)
+			got, err := groupsForProfile(resolveSpec(profile), tc.fips)
 			if tc.wantErr {
 				if !errors.Is(err, errNoUsableTLSGroups) {
 					t.Fatalf("error %v; want %v", err, errNoUsableTLSGroups)
@@ -151,36 +155,36 @@ func TestGroupsForProfileOwnsSlices(t *testing.T) {
 	t.Parallel()
 	input := []string{"secp256r1", "future-group", "X25519"}
 	profile := SecurityProfile{Type: "Custom", Custom: &CustomSpec{Groups: input}}
-	first, err := groupsForProfile(profile, true)
+	first, err := groupsForProfile(resolveSpec(profile), true)
 	if err != nil {
 		t.Fatal(err)
 	}
-	second, err := groupsForProfile(profile, true)
+	second, err := groupsForProfile(resolveSpec(profile), true)
 	if err != nil {
 		t.Fatal(err)
 	}
 	first.Curves[0] = tls.CurveP521
 	first.Unknown[0] = "changed"
-	first.Excluded[0] = tls.CurveP384
+	first.Excluded[0] = "changed"
 	if !slices.Equal(input, []string{"secp256r1", "future-group", "X25519"}) {
 		t.Fatalf("conversion mutated caller input: %v", input)
 	}
 	input[0], input[1], input[2] = "secp384r1", "changed", "secp521r1"
 	if !slices.Equal(second.Curves, []tls.CurveID{tls.CurveP256}) ||
 		!slices.Equal(second.Unknown, []configv1.TLSGroup{"future-group"}) ||
-		!slices.Equal(second.Excluded, []tls.CurveID{tls.X25519}) {
+		!slices.Equal(second.Excluded, []configv1.TLSGroup{"X25519"}) {
 		t.Fatalf("candidate changed through another owner: %+v", second)
 	}
 }
 
 func TestGroupsForProfileDoesNotMutateDefaults(t *testing.T) {
 	t.Parallel()
-	first, err := groupsForProfile(SecurityProfile{}, false)
+	first, err := groupsForProfile(resolveSpec(SecurityProfile{}), false)
 	if err != nil {
 		t.Fatal(err)
 	}
 	first.Curves[0] = tls.CurveP521
-	second, err := groupsForProfile(SecurityProfile{}, false)
+	second, err := groupsForProfile(resolveSpec(SecurityProfile{}), false)
 	if err != nil {
 		t.Fatal(err)
 	}

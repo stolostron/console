@@ -64,7 +64,7 @@ func TestFromProfileBuiltins(t *testing.T) {
 	}
 }
 
-func TestIntermediateOmitsTLS13AndDHECiphers(t *testing.T) {
+func TestIntermediateOmitsTLS13Ciphers(t *testing.T) {
 	t.Parallel()
 	s := fromProfile(SecurityProfile{Type: "Intermediate"}, false)
 	want := []uint16{
@@ -197,22 +197,27 @@ func TestSettingsEqual(t *testing.T) {
 	}
 }
 
-func TestNodeParityMinVersions(t *testing.T) {
+func TestMinTLSVersionNames(t *testing.T) {
 	t.Parallel()
-	// Contract vs Node TLS_VERSION_MAP / BUILTIN_SPECS.
-	if got := tlsVersion("VersionTLS10"); got != tls.VersionTLS10 {
-		t.Fatalf("TLS10 0x%x", got)
+	cases := []struct {
+		name string
+		want uint16
+	}{
+		{"VersionTLS10", tls.VersionTLS10},
+		{"VersionTLS11", tls.VersionTLS11},
+		{"VersionTLS12", tls.VersionTLS12},
+		{"VersionTLS13", tls.VersionTLS13},
+		// OpenShift default for an unset or unrecognized name.
+		{"", tls.VersionTLS12},
+		{"VersionTLS99", tls.VersionTLS12},
 	}
-	if got := tlsVersion("VersionTLS11"); got != tls.VersionTLS11 {
-		t.Fatalf("TLS11 0x%x", got)
-	}
-	if got := tlsVersion("VersionTLS12"); got != tls.VersionTLS12 {
-		t.Fatalf("TLS12 0x%x", got)
-	}
-	if got := tlsVersion("VersionTLS13"); got != tls.VersionTLS13 {
-		t.Fatalf("TLS13 0x%x", got)
-	}
-	if got := tlsVersion(""); got != tls.VersionTLS12 {
-		t.Fatalf("empty 0x%x want TLS1.2", got)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+			s := fromProfile(SecurityProfile{Type: "Custom", Custom: &CustomSpec{MinTLSVersion: tc.name}}, false)
+			if s.MinVersion != tc.want {
+				t.Fatalf("MinVersion 0x%x want 0x%x", s.MinVersion, tc.want)
+			}
+		})
 	}
 }
