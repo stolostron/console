@@ -64,6 +64,8 @@ func TestFromProfileBuiltins(t *testing.T) {
 	}
 }
 
+// TestIntermediateOmitsTLS13Ciphers checks that TLS 1.3-only suite names are
+// mapped but omitted from tls.Config.CipherSuites, which Go cannot configure.
 func TestIntermediateOmitsTLS13Ciphers(t *testing.T) {
 	t.Parallel()
 	s := fromProfile(SecurityProfile{Type: "Intermediate"}, false)
@@ -197,6 +199,8 @@ func TestSettingsEqual(t *testing.T) {
 	}
 }
 
+// TestMinTLSVersionNames checks version-name mapping through fromProfile,
+// including the OpenShift default (TLS 1.2) for unset or unrecognized names.
 func TestMinTLSVersionNames(t *testing.T) {
 	t.Parallel()
 	cases := []struct {
