@@ -126,7 +126,8 @@ function GitOpsOverview({
       (!placement.spec.clusterSets?.length || placement.spec.clusterSets.includes(binding.spec.clusterSet))
   )
   const names = getGitOpsClusterNames(resource.status)
-  const agentEnabled = resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
+  const agentEnabled =
+    resource.spec?.gitopsAddon?.enabled === true && resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
   const agentMode = resource.spec?.gitopsAddon?.argoCDAgent?.mode ?? 'managed'
   const agentModeLabel =
     agentMode === 'autonomous' ? t('Autonomous') : agentMode === 'managed' ? t('Managed') : agentMode
