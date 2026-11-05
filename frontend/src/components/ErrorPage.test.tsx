@@ -38,18 +38,18 @@ describe('ErrorPage access-restricted helpers', () => {
     expect((normalized as ResourceError).code).toBe(ResourceErrorCode.Forbidden)
   })
 
-  test('getErrorInfo uses Access Restricted warning for Forbidden', () => {
+  test('getErrorInfo uses Access Restricted copy with error severity for Forbidden', () => {
     const info = getErrorInfo(new ResourceError(ResourceErrorCode.Forbidden, 'raw details'), t)
     expect(info.title).toBe('Access Restricted')
     expect(info.message).toBe(accessMessage)
-    expect(info.type).toBe('warning')
+    expect(info.type).toBe('danger')
   })
 
-  test('getErrorInfo uses Access Restricted warning for Unauthorized', () => {
+  test('getErrorInfo uses Access Restricted copy with error severity for Unauthorized', () => {
     const info = getErrorInfo(new ResourceError(ResourceErrorCode.Unauthorized), t)
     expect(info.title).toBe('Access Restricted')
     expect(info.message).toBe(accessMessage)
-    expect(info.type).toBe('warning')
+    expect(info.type).toBe('danger')
   })
 
   test('getErrorInfo keeps danger for non-authz failures', () => {

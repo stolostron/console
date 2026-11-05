@@ -152,8 +152,10 @@ export function getErrorInfo(error: unknown, t: TFunction): AcmAlertInfo {
     </ExpandableSection>
   ) : undefined
 
+  // Keep error severity for ACM surfaces: user-initiated actions that fail due to
+  // RBAC still failed to complete. Soften title/message only (Access Restricted).
   return {
-    type: isAccessRestrictedError(normalized) ? 'warning' : 'danger',
+    type: 'danger',
     title,
     message,
     actions,

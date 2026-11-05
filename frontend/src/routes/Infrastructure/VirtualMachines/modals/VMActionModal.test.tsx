@@ -64,7 +64,7 @@ describe('handleVMActions access-restricted toasts', () => {
     jest.clearAllMocks()
   })
 
-  test('shows Access Restricted warning toast for Forbidden errors', async () => {
+  test('shows Access Restricted error toast for Forbidden errors', async () => {
     ;(fetchRetry as jest.Mock).mockRejectedValueOnce(
       new Error('plans.forklift.konveyor.io is forbidden: User "GK0X" cannot list resource "plans"')
     )
@@ -77,7 +77,7 @@ describe('handleVMActions access-restricted toasts', () => {
           title: 'Access Restricted',
           message:
             'You do not have the required permissions to perform this action. Please contact your OpenShift administrator if you need access to this resource.',
-          type: 'warning',
+          type: 'danger',
         })
       )
     )
