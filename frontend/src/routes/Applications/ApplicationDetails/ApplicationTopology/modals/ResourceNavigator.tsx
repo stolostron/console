@@ -20,7 +20,7 @@ import './ResourceNavigator.css'
 export const ResourceKindDecorator: FC<ResourceKindDecoratorProps> = ({ shape, className, size = 58 }) => {
   return (
     <div className="resource-kind-decorator__icon-container">
-      <svg width={size} height={size} viewBox="0 0 58 58" style={{ display: 'block' }}>
+      <svg width={size} height={size} viewBox="0 0 58 58" style={{ display: 'block' }} aria-hidden="true">
         <circle cx="29" cy="29" r="25" className={'pf-topology__node__background'} stroke="#a7a7a7" strokeWidth="1" />
         <use href={`#nodeIcon_${shape}`} className={`${className} detailsIcon`} />
       </svg>

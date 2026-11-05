@@ -200,14 +200,14 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
       onContextMenu={data.showContextMenu ? onContextMenu : undefined}
       contextMenuOpen={contextMenuOpen}
       labelIcon={LabelIcon && <LabelIcon noVerticalAlign />}
-      attachments={renderDecorators(
+      attachments={renderDecorators({
         element,
-        passedData,
+        data: passedData,
         getShapeDecoratorCenter,
         refreshResources,
-        t,
+        translate: t,
         showNodeActions,
-        {
+        nodeActions: {
           onViewLogs,
           onEditYaml,
           onEditApplications,
@@ -217,8 +217,8 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
           setDecoratorFocused,
         },
         actionDecoratorScale,
-        !isLowDetail
-      )}
+        showStatusAndCountDecorators: !isLowDetail,
+      })}
     >
       {(isNodeHovered || detailsLevel !== ScaleDetailsLevel.low) && (
         <use href={`#nodeIcon_${data.shape}`} width={width} height={height} />
@@ -227,22 +227,22 @@ const StyledNode: React.FunctionComponent<StyledNodeProps> = ({
   )
 }
 
-const renderDecorators = (
-  element: Node,
+interface RenderDecoratorsOptions {
+  element: Node
   data: {
     statusIcon?: { icon: string; classType: string; width: number; height: number }
     specs?: any
-  },
+  }
   getShapeDecoratorCenter?: (
     quadrant: TopologyQuadrant,
     node: Node
   ) => {
     x: number
     y: number
-  },
-  refreshResources?: () => void,
-  translate?: (key: string) => string,
-  showNodeActions?: boolean,
+  }
+  refreshResources?: () => void
+  translate?: (key: string) => string
+  showNodeActions?: boolean
   nodeActions?: {
     onViewLogs?: (node: TopologyNode) => void
     onEditYaml?: (node: TopologyNode) => void
@@ -251,10 +251,22 @@ const renderDecorators = (
     setDecoratorHover?: (hovered: boolean) => void
     dismissDecoratorHover?: () => void
     setDecoratorFocused?: (focused: boolean) => void
-  },
+  }
+  actionDecoratorScale?: number
+  showStatusAndCountDecorators?: boolean
+}
+
+const renderDecorators = ({
+  element,
+  data,
+  getShapeDecoratorCenter,
+  refreshResources,
+  translate,
+  showNodeActions,
+  nodeActions,
   actionDecoratorScale = 1,
-  showStatusAndCountDecorators = true
-): React.ReactNode => {
+  showStatusAndCountDecorators = true,
+}: RenderDecoratorsOptions): React.ReactNode => {
   const { statusIcon, specs } = data
   const topologyNode = getTopologyNodeDataFromElement(element)
   const { showLogs, showEditYaml } = getTopologyNodeActionVisibility(topologyNode.type, topologyNode.specs)
@@ -377,72 +389,72 @@ const renderNodeActionDecorators = (
   const decorators: React.ReactNode[] = []
   if (showSyncRefresh && refreshResources) {
     decorators.push(
-      renderActionDecorator(
+      renderActionDecorator({
         element,
-        TopologyQuadrant.upperLeft,
-        getActionIconArtwork('sync'),
-        translate?.('Sync resources') ?? 'Sync resources',
-        () => refreshResources(),
+        quadrant: TopologyQuadrant.upperLeft,
+        icon: getActionIconArtwork('sync'),
+        ariaLabel: translate?.('Sync resources') ?? 'Sync resources',
+        onClick: () => refreshResources(),
         getShapeDecoratorCenter,
         setDecoratorHover,
-        actionDecoratorScale
-      )
+        scale: actionDecoratorScale,
+      })
     )
   }
   if (showLogs && nodeActions?.onViewLogs) {
     decorators.push(
-      renderActionDecorator(
+      renderActionDecorator({
         element,
-        TopologyQuadrant.lowerLeft,
-        getActionIconArtwork('logs'),
-        translate?.('Logs') ?? 'Logs',
-        () => nodeActions.onViewLogs?.(topologyNode),
+        quadrant: TopologyQuadrant.lowerLeft,
+        icon: getActionIconArtwork('logs'),
+        ariaLabel: translate?.('Logs') ?? 'Logs',
+        onClick: () => nodeActions.onViewLogs?.(topologyNode),
         getShapeDecoratorCenter,
         setDecoratorHover,
-        actionDecoratorScale
-      )
+        scale: actionDecoratorScale,
+      })
     )
   }
   if (showAppPicker && nodeActions?.onEditApplications) {
     decorators.push(
-      renderActionDecorator(
+      renderActionDecorator({
         element,
-        TopologyQuadrant.lowerLeft,
-        getActionIconArtwork('argoApp'),
-        translate?.('Edit Application YAML') ?? 'Edit Application YAML',
-        () => nodeActions.onEditApplications?.(topologyNode),
+        quadrant: TopologyQuadrant.lowerLeft,
+        icon: getActionIconArtwork('argoApp'),
+        ariaLabel: translate?.('Edit Application YAML') ?? 'Edit Application YAML',
+        onClick: () => nodeActions.onEditApplications?.(topologyNode),
         getShapeDecoratorCenter,
         setDecoratorHover,
-        actionDecoratorScale
-      )
+        scale: actionDecoratorScale,
+      })
     )
   }
   if (showEditYaml && nodeActions?.onEditYaml) {
     decorators.push(
-      renderActionDecorator(
+      renderActionDecorator({
         element,
-        TopologyQuadrant.lowerRight,
-        getActionIconArtwork('edit'),
-        translate?.('Edit YAML') ?? 'Edit YAML',
-        () => nodeActions.onEditYaml?.(topologyNode),
+        quadrant: TopologyQuadrant.lowerRight,
+        icon: getActionIconArtwork('edit'),
+        ariaLabel: translate?.('Edit YAML') ?? 'Edit YAML',
+        onClick: () => nodeActions.onEditYaml?.(topologyNode),
         getShapeDecoratorCenter,
         setDecoratorHover,
-        actionDecoratorScale
-      )
+        scale: actionDecoratorScale,
+      })
     )
   }
   if (showViewRepo && nodeActions?.onViewRepo) {
     decorators.push(
-      renderActionDecorator(
+      renderActionDecorator({
         element,
-        TopologyQuadrant.lowerRight,
-        getActionIconArtwork('viewRepo'),
-        translate?.('View repository') ?? 'View repository',
-        () => nodeActions.onViewRepo?.(topologyNode),
+        quadrant: TopologyQuadrant.lowerRight,
+        icon: getActionIconArtwork('viewRepo'),
+        ariaLabel: translate?.('View repository') ?? 'View repository',
+        onClick: () => nodeActions.onViewRepo?.(topologyNode),
         getShapeDecoratorCenter,
         setDecoratorHover,
-        actionDecoratorScale
-      )
+        scale: actionDecoratorScale,
+      })
     )
   }
   if (decorators.length === 0) {
@@ -534,12 +546,12 @@ const ActionIconDecorator: React.FunctionComponent<{
   )
 }
 
-const renderActionDecorator = (
-  element: Node,
-  quadrant: TopologyQuadrant,
-  icon: React.ReactNode,
-  ariaLabel: string,
-  onClick: () => void,
+interface RenderActionDecoratorOptions {
+  element: Node
+  quadrant: TopologyQuadrant
+  icon: React.ReactNode
+  ariaLabel: string
+  onClick: () => void
   getShapeDecoratorCenter?: (
     quadrant: TopologyQuadrant,
     node: Node,
@@ -547,10 +559,21 @@ const renderActionDecorator = (
   ) => {
     x: number
     y: number
-  },
-  setDecoratorHover?: (hovered: boolean) => void,
-  scale = 1
-): React.ReactNode => {
+  }
+  setDecoratorHover?: (hovered: boolean) => void
+  scale?: number
+}
+
+const renderActionDecorator = ({
+  element,
+  quadrant,
+  icon,
+  ariaLabel,
+  onClick,
+  getShapeDecoratorCenter,
+  setDecoratorHover,
+  scale = 1,
+}: RenderActionDecoratorOptions): React.ReactNode => {
   const { x, y } = getShapeDecoratorCenter
     ? getShapeDecoratorCenter(quadrant, element)
     : getDefaultShapeDecoratorCenter(quadrant, element)

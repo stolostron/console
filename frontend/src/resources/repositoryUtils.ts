@@ -4,7 +4,7 @@ import { getSecret } from '.'
 
 async function getRepoSecret(secretArgs?: { secretRef?: string; namespace?: string }) {
   const repoSecret = { user: '', accessToken: '' }
-  if (secretArgs && secretArgs.secretRef && secretArgs.namespace) {
+  if (secretArgs?.secretRef && secretArgs.namespace) {
     const { secretRef, namespace } = secretArgs
     await getSecret({ name: secretRef, namespace: namespace })
       .promise.then((response) => ({
@@ -24,7 +24,7 @@ async function getGitConnection(
   secretArgs?: { secretRef?: string; namespace?: string },
   accessData?: { user?: string; accessToken?: string }
 ) {
-  if (accessData && accessData.user && accessData.accessToken) {
+  if (accessData?.user && accessData.accessToken) {
     const authBaseUrl = 'https://api.github.com'
     const authOptions = {
       baseUrl: authBaseUrl,
@@ -61,36 +61,29 @@ export function getGitChannelBranches(
     })
 }
 
-export function getGitChannelPaths(
+export async function getGitChannelPaths(
   channelPath: string,
   branch: string,
   secretArgs?: { secretRef?: string; namespace?: string },
   accessData?: { user?: string; accessToken?: string }
 ) {
   const gitInfo = getGitInformation(channelPath)
-  return getGitConnection(secretArgs, accessData)
-    .then((octokit) =>
-      octokit?.repos
-        .getBranch({
-          ...gitInfo,
-          branch,
-        })
-        .then(({ data }) => {
-          if (data?.commit?.sha != undefined) {
-            return octokit.git
-              .getTree({
-                ...gitInfo,
-                tree_sha: data?.commit?.sha || '',
-                recursive: 'true',
-              })
-              .then(({ data: result }) =>
-                result.tree ? result.tree.filter((item) => item.type === 'tree').map((item) => item.path) : []
-              )
-              .catch(handleGitError)
-          }
-        })
-    )
-    .catch(handleGitError)
+  try {
+    const octokit = await getGitConnection(secretArgs, accessData)
+    if (!octokit) return
+
+    const { data } = await octokit.repos.getBranch({ ...gitInfo, branch })
+    if (data?.commit?.sha == undefined) return
+
+    const { data: result } = await octokit.git.getTree({
+      ...gitInfo,
+      tree_sha: data.commit.sha || '',
+      recursive: 'true',
+    })
+    return result.tree ? result.tree.filter((item) => item.type === 'tree').map((item) => item.path) : []
+  } catch (error) {
+    handleGitError(error)
+  }
 }
 
 export type GitBranchPathNode =
@@ -113,7 +106,11 @@ export async function getGitBranchPathDetails(
     return { type: 'tree', path, children: [] }
   }
   const gitInfo = getGitInformation(repoURL)
-  const normalizedPath = path.replace(/^\/+|\/+$/g, '')
+  let pathStart = 0
+  let pathEnd = path.length
+  while (pathStart < pathEnd && path[pathStart] === '/') pathStart++
+  while (pathEnd > pathStart && path[pathEnd - 1] === '/') pathEnd--
+  const normalizedPath = path.slice(pathStart, pathEnd)
   const emptyTree = (): GitBranchPathNode => ({ type: 'tree', path, children: [] })
 
   try {
@@ -196,7 +193,7 @@ export async function getGitBlobContents(
   const content = typeof data.content === 'string' ? data.content : ''
   if (data.encoding !== 'base64') return content
   const binary = window.atob(content)
-  return new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)))
+  return new TextDecoder().decode(Uint8Array.from(binary, (character) => character.codePointAt(0)!))
 }
 
 function getGitInformation(path: string) {

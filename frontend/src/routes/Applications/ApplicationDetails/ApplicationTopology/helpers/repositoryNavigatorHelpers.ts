@@ -33,7 +33,7 @@ export function getGitPathBaseName(path: string): string {
     return path
   }
   const segments = path.split('/')
-  return segments[segments.length - 1] || path
+  return segments.at(-1) || path
 }
 
 /** Extracts the git/Helm sources (repoURL/path/targetRevision/chart) from a repo (`git`/`chart`) topology node. */
@@ -77,7 +77,7 @@ export function getRepositorySourceGroupId(source: RepositorySource): string {
 /** Builds the SyncEditor title from the revision and last segment of a selected file id. */
 export function getViewTitle(id: string): string {
   const parts = id.split('::')
-  return [parts[1], parts[parts.length - 1]].join(': ')
+  return [parts[1], parts.at(-1)].join(': ')
 }
 
 /** Display label for a repository source's top-level navigator item. Excludes the repo URL. */

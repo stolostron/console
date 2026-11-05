@@ -4,7 +4,7 @@ import { Alert, Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfl
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { FolderOpenIcon, GitAltIcon } from '@patternfly/react-icons'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
 import { AcmModal } from '~/ui-components'
@@ -40,7 +40,7 @@ const EXTENSION_LANGUAGE_MAP: Record<string, Language> = {
 
 function getLanguageForPath(path: string): Language {
   const segments = path.split('.')
-  const extension = segments.length > 1 ? segments[segments.length - 1].toLowerCase() : ''
+  const extension = segments.length > 1 ? segments.at(-1)!.toLowerCase() : ''
   return EXTENSION_LANGUAGE_MAP[extension] ?? Language.plaintext
 }
 
@@ -101,6 +101,64 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
     setIsRepositoryLoading(isLoading)
   }, [])
 
+  let content: ReactNode = null
+  if (isRepositoryLoading || isFileLoading || (!selectedFile && !noFilesFound)) {
+    content = (
+      <Bullseye>
+        <Spinner size="xl" aria-label={t('Loading')} />
+      </Bullseye>
+    )
+  } else if (fileContents?.status === 'error') {
+    content = <Alert variant="danger" isInline title={t('Failed to load repository file.')} />
+  } else if (selectedFile && fileContents?.status === 'loaded') {
+    if (selectedFileLanguage === Language.yaml) {
+      content = (
+        <SyncEditor
+          editorTitle={getViewTitle(selectedFile.id)}
+          variant="toolbar"
+          code={fileContents.contents}
+          resources={null}
+          readonly
+          initialShowChanges={false}
+        />
+      )
+    } else {
+      content = (
+        <CodeEditor
+          code={fileContents.contents}
+          language={selectedFileLanguage}
+          isCopyEnabled
+          isFullHeight
+          isLineNumbersVisible
+          isReadOnly
+          options={{
+            theme: getTheme(),
+            wordWrap: 'wordWrapColumn',
+            scrollBeyondLastLine: true,
+            smoothScrolling: true,
+            glyphMargin: true,
+            tabSize: 2,
+            scrollbar: {
+              verticalScrollbarSize: 17,
+              horizontalScrollbarSize: 17,
+            },
+            minimap: {
+              enabled: false,
+            },
+          }}
+        />
+      )
+    }
+  } else if (noFilesFound) {
+    content = (
+      <Bullseye>
+        <EmptyState titleText={t('No files found')} variant="sm" icon={FolderOpenIcon}>
+          <EmptyStateBody>{t('This repository does not contain any files to display.')}</EmptyStateBody>
+        </EmptyState>
+      </Bullseye>
+    )
+  }
+
   return (
     <AcmModal
       id="view-repository-modal"
@@ -126,56 +184,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
             />
           }
         >
-          <div style={{ flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            {isRepositoryLoading || isFileLoading || (!selectedFile && !noFilesFound) ? (
-              <Bullseye>
-                <Spinner size="xl" aria-label={t('Loading')} />
-              </Bullseye>
-            ) : fileContents?.status === 'error' ? (
-              <Alert variant="danger" isInline title={t('Failed to load repository file.')} />
-            ) : selectedFile && fileContents?.status === 'loaded' ? (
-              selectedFileLanguage === Language.yaml ? (
-                <SyncEditor
-                  editorTitle={getViewTitle(selectedFile.id)}
-                  variant="toolbar"
-                  code={fileContents.contents}
-                  resources={null}
-                  readonly
-                  initialShowChanges={false}
-                />
-              ) : (
-                <CodeEditor
-                  code={fileContents.contents}
-                  language={selectedFileLanguage}
-                  isCopyEnabled
-                  isFullHeight
-                  isLineNumbersVisible
-                  isReadOnly
-                  options={{
-                    theme: getTheme(),
-                    wordWrap: 'wordWrapColumn',
-                    scrollBeyondLastLine: true,
-                    smoothScrolling: true,
-                    glyphMargin: true,
-                    tabSize: 2,
-                    scrollbar: {
-                      verticalScrollbarSize: 17,
-                      horizontalScrollbarSize: 17,
-                    },
-                    minimap: {
-                      enabled: false,
-                    },
-                  }}
-                />
-              )
-            ) : noFilesFound ? (
-              <Bullseye>
-                <EmptyState titleText={t('No files found')} variant="sm" icon={FolderOpenIcon}>
-                  <EmptyStateBody>{t('This repository does not contain any files to display.')}</EmptyStateBody>
-                </EmptyState>
-              </Bullseye>
-            ) : null}
-          </div>
+          <div style={{ flexGrow: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>{content}</div>
         </ModalNavigatorLayout>
       </div>
     </AcmModal>

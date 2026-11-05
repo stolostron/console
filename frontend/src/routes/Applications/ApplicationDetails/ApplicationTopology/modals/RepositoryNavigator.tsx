@@ -89,7 +89,7 @@ function buildSourceTreeItem(
     return undefined
   }
 
-  if (!rootNode || rootNode.type !== 'tree') {
+  if (rootNode?.type !== 'tree') {
     if (rootNode?.type === 'file') {
       lookup.set(groupId, { id: groupId, path: rootNode.path, url: rootNode.url, repoURL: source.repoURL })
       return { id: groupId, name: groupName, icon: <FileIcon aria-hidden /> }
@@ -170,7 +170,7 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
       const groupId = getRepositorySourceGroupId(source)
       setTreeBySource((prev) => ({ ...prev, [groupId]: { status: 'loading' } }))
       const secretAccess = findRepositorySecretAccess(source.repoURL, secretsRef.current)
-      getGitBranchPathDetails(
+      void getGitBranchPathDetails(
         source.repoURL,
         source.targetRevision,
         source.path,

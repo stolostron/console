@@ -1,7 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
-import { ActionList, ActionListGroup, ActionListItem, Alert, AlertGroup, Button, Spinner } from '@patternfly/react-core'
+import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
+  Alert,
+  AlertGroup,
+  Button,
+  Flex,
+  FlexItem,
+  Spinner,
+} from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import cloneDeep from 'lodash/cloneDeep'
 import jsYaml from 'js-yaml'
@@ -10,7 +20,10 @@ import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor
 import { useTranslation } from '~/lib/acm-i18next'
 import { PluginContext } from '~/lib/PluginContext'
 import { canUser } from '~/lib/rbac-util'
-import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
+import type {
+  ResourceKindDecoratorProps,
+  TopologyNode,
+} from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { getGroupFromApiVersion, getResource } from '~/resources/utils'
 import { fleetCanUser } from '~/resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '~/resources/utils/fleet-resource-request'
@@ -48,6 +61,18 @@ export function EditYamlModal(props: IEditYamlModalProps | { open: false }) {
   }
 
   return <EditYamlModalContent {...props} />
+}
+
+function EditYamlModalTitle({ shape, className }: Readonly<ResourceKindDecoratorProps>) {
+  const { t } = useTranslation()
+  return (
+    <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+      <FlexItem>
+        <ResourceKindDecorator shape={shape} className={className} size={39} />
+      </FlexItem>
+      <FlexItem>{t('Edit YAML')}</FlexItem>
+    </Flex>
+  )
 }
 
 function EditYamlModalContent({
@@ -310,20 +335,11 @@ function EditYamlModalContent({
 
   const { shape: editorIconShape = 'other', className: editorIconClassName = 'default' } =
     typeToShapeMap[String(type) as keyof typeof typeToShapeMap] || {}
-  const EditorTitleIcon = useMemo(
-    () =>
-      function EditYamlModalTitleIcon() {
-        return <ResourceKindDecorator shape={editorIconShape} className={editorIconClassName} size={39} />
-      },
-    [editorIconShape, editorIconClassName]
-  )
-
   return (
     <AcmModal
       id="edit-yaml-modal"
       isOpen={true}
-      title={t('Edit YAML')}
-      titleIconVariant={EditorTitleIcon}
+      title={<EditYamlModalTitle shape={editorIconShape} className={editorIconClassName} />}
       aria-label={t('Edit YAML')}
       showClose={true}
       onClose={close}
