@@ -61,12 +61,7 @@ export function IdentitiesList(props: Readonly<IdentitiesListProps> = {}) {
   const { users, usersLoading, usersError, ...listProps } = props
   if (users !== undefined) {
     return (
-      <IdentitiesListWithHubUsers
-        {...listProps}
-        users={users}
-        usersLoading={usersLoading}
-        usersError={usersError}
-      />
+      <IdentitiesListWithHubUsers {...listProps} users={users} usersLoading={usersLoading} usersError={usersError} />
     )
   }
   return <IdentitiesListWithSearchUsers {...listProps} />
@@ -83,9 +78,7 @@ function IdentitiesListWithSearchUsers(
   return <ResolveGroups {...props} hasUsers={hasUsers} initialUser={initialUser} />
 }
 
-function IdentitiesListWithHubUsers(
-  props: Readonly<Omit<IdentitiesListProps, 'users'> & { users: User[] }>
-) {
+function IdentitiesListWithHubUsers(props: Readonly<Omit<IdentitiesListProps, 'users'> & { users: User[] }>) {
   const { users, usersLoading, usersError, initialSelectedIdentity, ...rest } = props
   const mraUsers = useMraUserSubjects()
   const hasUsers = users.length > 0 || mraUsers.length > 0
@@ -114,12 +107,7 @@ function ResolveGroups(props: Readonly<UsersResolvedProps>) {
   const { groups, groupsLoading, groupsError, ...rest } = props
   if (groups !== undefined) {
     return (
-      <IdentitiesListWithHubGroups
-        {...rest}
-        groups={groups}
-        groupsLoading={groupsLoading}
-        groupsError={groupsError}
-      />
+      <IdentitiesListWithHubGroups {...rest} groups={groups} groupsLoading={groupsLoading} groupsError={groupsError} />
     )
   }
   return <IdentitiesListWithSearchGroups {...rest} />
@@ -136,9 +124,7 @@ function IdentitiesListWithSearchGroups(
   return <IdentitiesListView {...props} hasGroups={hasGroups} initialGroup={initialGroup} />
 }
 
-function IdentitiesListWithHubGroups(
-  props: Readonly<Omit<UsersResolvedProps, 'groups'> & { groups: Group[] }>
-) {
+function IdentitiesListWithHubGroups(props: Readonly<Omit<UsersResolvedProps, 'groups'> & { groups: Group[] }>) {
   const { groups, groupsLoading, groupsError, initialSelectedIdentity, ...rest } = props
   const mraGroups = useMraGroupSubjects()
   const hasGroups = groups.length > 0 || mraGroups.length > 0
