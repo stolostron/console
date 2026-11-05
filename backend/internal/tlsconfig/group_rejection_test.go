@@ -82,7 +82,13 @@ func TestNoUsableGroupsRejectsHandshakes(t *testing.T) {
 				{"TLS12 RSA", tls.VersionTLS12, tls.VersionTLS12, tls.TLS_RSA_WITH_AES_128_GCM_SHA256},
 			} {
 				t.Run(tc.name, func(t *testing.T) {
-					cfg := &tls.Config{RootCAs: roots, ServerName: "localhost", MinVersion: tc.min, MaxVersion: tc.max, CurvePreferences: []tls.CurveID{tls.CurveP256}}
+					cfg := &tls.Config{
+						RootCAs:          roots,
+						ServerName:       "localhost",
+						MinVersion:       tc.min,
+						MaxVersion:       tc.max,
+						CurvePreferences: []tls.CurveID{tls.CurveP256},
+					}
 					if tc.cipher != 0 {
 						cfg.CipherSuites = []uint16{tc.cipher}
 					}

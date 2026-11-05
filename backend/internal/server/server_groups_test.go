@@ -71,7 +71,8 @@ func startGroupListener(t *testing.T, profile *unstructured.Unstructured) *group
 		t.Fatal("invalid test certificate")
 	}
 	gvr := schema.GroupVersionResource{Group: "config.openshift.io", Version: "v1", Resource: "apiservers"}
-	dyn := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(), map[schema.GroupVersionResource]string{gvr: "APIServerList"}, profile)
+	dyn := fake.NewSimpleDynamicClientWithCustomListKinds(runtime.NewScheme(),
+		map[schema.GroupVersionResource]string{gvr: "APIServerList"}, profile)
 	fw := k8swatch.NewRaceFreeFake()
 	watching := make(chan struct{})
 	var once sync.Once
@@ -148,7 +149,8 @@ func (s *groupListener) probe(cfg *tls.Config) error {
 func requireGroupProbe(t *testing.T, s *groupListener, cfg *tls.Config, allowed bool) {
 	t.Helper()
 	if err := s.probe(cfg); (err == nil) != allowed {
-		t.Fatalf("TLS %x, group %v, ciphers %v: allowed=%v, error=%v", cfg.MinVersion, cfg.CurvePreferences, cfg.CipherSuites, allowed, err)
+		t.Fatalf("TLS %x, group %v, ciphers %v: allowed=%v, error=%v",
+			cfg.MinVersion, cfg.CurvePreferences, cfg.CipherSuites, allowed, err)
 	}
 }
 
@@ -183,13 +185,17 @@ func TestListenerGroupFiltering(t *testing.T) {
 			for _, version := range []uint16{tls.VersionTLS12, tls.VersionTLS13} {
 				for _, curve := range []tls.CurveID{tls.CurveP256, tls.CurveP384, tls.CurveP521} {
 					t.Run(fmt.Sprintf("%x/%s", version, curve), func(t *testing.T) {
-						requireGroupProbe(t, s, s.clientConfig(version, curve, tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256), slices.Contains(tc.allowed, curve))
+						requireGroupProbe(t, s,
+							s.clientConfig(version, curve, tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256),
+							slices.Contains(tc.allowed, curve))
 					})
 				}
 			}
 			// RSA key exchange needs no group, but a group list that filters to
 			// nothing rejects every handshake (no Node-style RSA exception).
-			requireGroupProbe(t, s, s.clientConfig(tls.VersionTLS12, tls.CurveP521, tls.TLS_RSA_WITH_AES_128_GCM_SHA256), len(tc.allowed) > 0)
+			requireGroupProbe(t, s,
+				s.clientConfig(tls.VersionTLS12, tls.CurveP521, tls.TLS_RSA_WITH_AES_128_GCM_SHA256),
+				len(tc.allowed) > 0)
 		})
 	}
 }
