@@ -2,7 +2,7 @@
 
 import { Octokit } from '@octokit/rest'
 import { TextDecoder } from 'util'
-import { getGitBlobContents, getGitBranchPathDetails } from './repositoryUtils'
+import { getGitBlobContents, getGitBranchPathDetails, type GitBranchPathNode } from './repositoryUtils'
 
 jest.mock('@octokit/rest')
 jest.mock('~/resources', () => ({ getSecret: jest.fn() }))
@@ -84,6 +84,113 @@ describe('getGitBranchPathDetails', () => {
       url: blobURL,
     })
     expect(mockRequest).not.toHaveBeenCalled()
+  })
+
+  describe('truncated recursive listings', () => {
+    const readme: GitBranchPathNode = { type: 'file', path: 'apps/nested/README.md', url: blobURL }
+    const nested: GitBranchPathNode = { type: 'tree', path: 'apps/nested', children: [readme] }
+    const apps: GitBranchPathNode = { type: 'tree', path: 'apps', children: [nested] }
+    const completeTrees = {
+      'root-tree': {
+        tree: [
+          { type: 'tree', path: 'apps', sha: 'apps-tree' },
+          { type: 'tree', path: 'apps-other', sha: 'nested-tree' },
+          { type: 'blob', path: 'root.md', url: `${blobURL}-root` },
+          { type: 'commit', path: 'submodule', sha: 'submodule-commit' },
+        ],
+      },
+      'apps-tree': { tree: [{ type: 'tree', path: 'nested', sha: 'nested-tree' }] },
+      'nested-tree': { tree: [{ type: 'blob', path: 'README.md', url: blobURL }] },
+    }
+    let activeRequests: number
+    let maximumActiveRequests: number
+
+    beforeEach(() => {
+      activeRequests = 0
+      maximumActiveRequests = 0
+      mockGetTree.mockImplementation(async ({ tree_sha }: { tree_sha: keyof typeof completeTrees }) => {
+        activeRequests++
+        maximumActiveRequests = Math.max(maximumActiveRequests, activeRequests)
+        await Promise.resolve()
+        activeRequests--
+        const data = completeTrees[tree_sha]
+        if (!data) throw new Error(`Unexpected tree: ${tree_sha}`)
+        return { data: { ...data, truncated: false } }
+      })
+      mockGetTree.mockResolvedValueOnce({
+        data: {
+          sha: 'root-tree',
+          truncated: true,
+          // The omitted sibling and root file must be discovered from a fresh non-recursive root listing.
+          tree: [
+            { type: 'tree', path: 'apps', sha: 'apps-tree' },
+            { type: 'tree', path: 'apps/nested', sha: 'nested-tree' },
+            { type: 'blob', path: 'apps/nested/README.md', url: blobURL },
+          ],
+        },
+      })
+    })
+
+    it('rebuilds the full tree with sequential non-recursive requests, retaining repeated subtree paths', async () => {
+      expect(await getGitBranchPathDetails(repoURL, 'main', '')).toEqual({
+        type: 'tree',
+        path: '',
+        children: [
+          apps,
+          {
+            type: 'tree',
+            path: 'apps-other',
+            children: [{ type: 'file', path: 'apps-other/README.md', url: blobURL }],
+          },
+          { type: 'file', path: 'root.md', url: `${blobURL}-root` },
+        ],
+      })
+      expect(mockGetTree).toHaveBeenCalledTimes(5)
+      expect(mockGetTree).toHaveBeenNthCalledWith(2, {
+        owner: 'example',
+        repo: 'repository',
+        tree_sha: 'root-tree',
+      })
+      for (const [request] of mockGetTree.mock.calls.slice(1)) {
+        expect(request).not.toHaveProperty('recursive')
+      }
+      expect(maximumActiveRequests).toBe(1)
+      expect(mockRequest).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      { path: '/apps/', expected: apps, requests: 4 },
+      { path: '/apps/nested/', expected: nested, requests: 4 },
+      { path: '/apps/nested/README.md/', expected: readme, requests: 4 },
+      { path: 'root.md', expected: { type: 'file', path: 'root.md', url: `${blobURL}-root` }, requests: 2 },
+      { path: 'missing', expected: { type: 'tree', path: 'missing', children: [] }, requests: 2 },
+    ])('retrieves $path without traversing unrelated folders', async ({ path, expected, requests }) => {
+      expect(await getGitBranchPathDetails(repoURL, 'main', path)).toEqual(expected)
+      expect(mockGetTree).toHaveBeenCalledTimes(requests)
+      expect(mockRequest).not.toHaveBeenCalled()
+    })
+
+    it.each(['failure', 'truncated'])('discards partial results on a non-recursive subtree %s', async (outcome) => {
+      const log = jest.spyOn(console, 'log').mockImplementation(() => {})
+      mockGetTree.mockImplementation(async ({ tree_sha }: { tree_sha: keyof typeof completeTrees }) => {
+        if (tree_sha === 'nested-tree') {
+          if (outcome === 'failure') throw new Error('Subtree unavailable')
+          return { data: { ...completeTrees[tree_sha], truncated: true } }
+        }
+        return { data: completeTrees[tree_sha] }
+      })
+      try {
+        expect(await getGitBranchPathDetails(repoURL, 'main', 'apps')).toEqual({
+          type: 'tree',
+          path: 'apps',
+          children: [],
+        })
+        expect(log).toHaveBeenCalledTimes(1)
+        expect(mockRequest).not.toHaveBeenCalled()
+      } finally {
+        log.mockRestore()
+      }
+    })
   })
 })
 

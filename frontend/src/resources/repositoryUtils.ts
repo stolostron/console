@@ -89,6 +89,8 @@ export async function getGitChannelPaths(
 export type GitBranchPathNode =
   { type: 'tree'; path: string; children: GitBranchPathNode[] } | { type: 'file'; path: string; url?: string }
 
+type GitTreeEntry = Awaited<ReturnType<Octokit['git']['getTree']>>['data']['tree'][number]
+
 export async function getGitBranchPathDetails(
   repoURL: string,
   revision: string,
@@ -132,8 +134,11 @@ export async function getGitBranchPathDetails(
       recursive: 'true',
     })
 
-    type GitTreeItem = NonNullable<typeof treeData.tree>[number] & { path: string; type: 'tree' | 'blob' }
-    const matchingItems = (treeData.tree ?? []).filter(
+    const treeItems = treeData.truncated
+      ? await getGitSubtreeItems(octokit, gitInfo, treeData.sha || branchData.commit.sha, normalizedPath)
+      : (treeData.tree ?? [])
+    type GitTreeItem = GitTreeEntry & { path: string; type: 'tree' | 'blob' }
+    const matchingItems = treeItems.filter(
       (item): item is GitTreeItem =>
         item.path !== undefined &&
         (item.type === 'tree' || item.type === 'blob') &&
@@ -170,6 +175,38 @@ export async function getGitBranchPathDetails(
     handleGitError(error)
     return emptyTree()
   }
+}
+
+async function getGitSubtreeItems(
+  octokit: Octokit,
+  gitInfo: { owner: string; repo: string },
+  treeSha: string,
+  path: string
+): Promise<GitTreeEntry[]> {
+  const items: GitTreeEntry[] = []
+  const pendingTrees = [{ sha: treeSha, path: '' }]
+
+  // Fetch one subtree at a time to avoid a burst of requests for large repositories.
+  while (pendingTrees.length > 0) {
+    const subtree = pendingTrees.pop()!
+    // Omit recursive entirely: GitHub enables recursion for any supplied value, including "false".
+    const { data } = await octokit.git.getTree({ ...gitInfo, tree_sha: subtree.sha })
+    if (data.truncated) throw new Error('GitHub returned a truncated non-recursive tree')
+
+    for (const item of data.tree ?? []) {
+      if (item.path === undefined) continue
+      const itemPath = subtree.path ? `${subtree.path}/${item.path}` : item.path
+      const withinPath = isGitPathWithinPath(itemPath, path)
+      if (withinPath) items.push({ ...item, path: itemPath })
+
+      if (item.type === 'tree' && (withinPath || isGitPathWithinPath(path, itemPath))) {
+        if (!item.sha) throw new Error('GitHub tree entry is missing its SHA')
+        pendingTrees.push({ sha: item.sha, path: itemPath })
+      }
+    }
+  }
+
+  return items
 }
 
 function isGitPathWithinPath(itemPath: string, path: string) {
