@@ -196,7 +196,7 @@ function GitOpsOverview({
                           {placementName}
                         </Link>
                       ) : (
-                        t('Not available')
+                        '-'
                       )}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
@@ -210,14 +210,14 @@ function GitOpsOverview({
                           ))}
                         </List>
                       ) : (
-                        t('Not available')
+                        '-'
                       )}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                   <DescriptionListGroup>
                     <DescriptionListTerm>{t('Selected clusters')}</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {names === undefined ? t('Not available') : <GitOpsClusterLinks names={names} />}
+                      {names === undefined ? '-' : <GitOpsClusterLinks names={names} />}
                     </DescriptionListDescription>
                   </DescriptionListGroup>
                 </DescriptionList>

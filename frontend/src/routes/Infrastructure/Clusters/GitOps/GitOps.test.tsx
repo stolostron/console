@@ -125,7 +125,7 @@ describe('GitOps', () => {
     expect(screen.getByText('Disabled')).toBeInTheDocument()
     expect(screen.queryByRole('link')).not.toBeInTheDocument()
     expect(screen.queryByText('actual-binding')).not.toBeInTheDocument()
-    expect(screen.getAllByText('Not available')).toHaveLength(3)
+    expect(screen.getAllByText('-')).toHaveLength(3)
   })
 
   it('includes all namespace bindings when the Placement does not restrict cluster sets', () => {
@@ -186,13 +186,13 @@ describe('GitOps', () => {
       },
     ])
     expect(screen.queryByRole('term', { name: 'Status' })).not.toBeInTheDocument()
-    expect(screen.getByText('Not available')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'weekly' })).not.toBeInTheDocument()
   })
 
   it('does not link truncated cluster names or report an incomplete list as empty', () => {
     renderGitOps([{ ...resource, status: { phase: 'successful', message: 'Added managed clusters [week...' } }])
-    expect(screen.getByText('Not available')).toBeInTheDocument()
+    expect(screen.getByText('-')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'week' })).not.toBeInTheDocument()
     expect(screen.queryByText('None')).not.toBeInTheDocument()
   })
