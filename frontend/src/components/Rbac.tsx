@@ -134,7 +134,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
               return action
             }
           } catch {
-            return action
+            return { ...action, isAriaDisabled: false }
           }
         })
       )

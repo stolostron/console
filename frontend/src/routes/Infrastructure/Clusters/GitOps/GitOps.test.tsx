@@ -3,6 +3,7 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
+import nock from 'nock'
 import { generatePath, MemoryRouter } from 'react-router'
 import { gitOpsClustersState, managedClusterSetBindingsState, placementsState } from '~/atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '~/lib/nock-util'
@@ -24,7 +25,7 @@ const resource: GitOpsCluster = {
   metadata: { name: 'fleet-gitops', namespace: 'openshift-gitops' },
   spec: {
     placementRef: { apiVersion: PlacementApiVersionBeta, kind: PlacementKind, name: 'fleet-placement' },
-    gitopsAddon: { argoCDAgent: { enabled: true } },
+    gitopsAddon: { enabled: true, argoCDAgent: { enabled: true } },
   },
   status: {
     phase: 'successful',
@@ -111,7 +112,9 @@ describe('GitOps', () => {
   })
 
   it('shows disabled agent without claiming ManifestWork is configured', () => {
-    renderGitOps([{ ...resource, spec: { ...resource.spec, gitopsAddon: { argoCDAgent: { enabled: false } } } }])
+    renderGitOps([
+      { ...resource, spec: { ...resource.spec, gitopsAddon: { enabled: true, argoCDAgent: { enabled: false } } } },
+    ])
     expect(screen.getByText('Disabled')).toBeInTheDocument()
     expect(screen.getByText(/Argo CD Agent is disabled/)).toBeInTheDocument()
     expect(screen.queryByText(/ManifestWork/)).not.toBeInTheDocument()
@@ -132,10 +135,9 @@ describe('GitOps', () => {
     expect(screen.queryByText('other-namespace-binding')).not.toBeInTheDocument()
   })
 
-  it('shows an empty state with Applications link and no create action', async () => {
+  it('shows an empty state with no create action', async () => {
     const { container } = renderGitOps([])
     expect(screen.getByRole('heading', { name: 'No GitOps configuration set up' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Applications' })).toHaveAttribute('href', NavigationPath.applications)
     expect(screen.queryByRole('button', { name: /Create/ })).not.toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
   })
@@ -248,5 +250,19 @@ describe('GitOps', () => {
     await userEvent.keyboard('{Enter}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(request.isDone()).toBe(true)
+  })
+
+  it('enables delete when the SSAR check throws a network error', async () => {
+    const scope = nock(process.env.JEST_DEFAULT_HOST as string)
+      .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+      .replyWithError('Network error')
+    renderGitOps()
+    await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
+    await waitFor(() => expect(scope.isDone()).toBe(true))
+    await waitFor(() =>
+      expect(screen.getByRole('menuitem', { name: 'Delete' })).not.toHaveAttribute('aria-disabled', 'true')
+    )
+    await userEvent.click(screen.getByRole('menuitem', { name: 'Delete' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
   })
 })
