@@ -164,6 +164,9 @@ func waitGroupProbe(t *testing.T, s *groupListener, cfg *tls.Config, allowed boo
 	t.Fatal("TLS group update did not reach the listener")
 }
 
+// TestListenerGroupFiltering exercises the production listener end to end:
+// configured groups constrain TLS 1.2 and TLS 1.3 handshakes, and a group
+// list that filters to nothing rejects every handshake, including RSA.
 func TestListenerGroupFiltering(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
