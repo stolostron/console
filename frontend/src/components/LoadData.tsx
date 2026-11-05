@@ -49,7 +49,6 @@ import {
   DiscoveryConfigKind,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  GroupKind,
   HelmReleaseApiVersion,
   HelmReleaseKind,
   HostedClusterApiVersion,
@@ -142,7 +141,6 @@ import {
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
-  groupsState,
   helmReleaseState,
   hostedClustersState,
   infraEnvironmentsState,
@@ -233,7 +231,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setDiscoveredClusters = useSetAtom(discoveredClusterState)
   const setDiscoveryConfigs = useSetAtom(discoveryConfigState)
   const setGitOpsClustersState = useSetAtom(gitOpsClustersState)
-  const setGroups = useSetAtom(groupsState)
   const setHelmReleases = useSetAtom(helmReleaseState)
   const setHostedClustersState = useSetAtom(hostedClustersState)
   const setInfraEnvironments = useSetAtom(infraEnvironmentsState)
@@ -361,7 +358,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(ClusterExtensionApiVersion, ClusterExtensionKind, setClusterExtensionsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
-    addSetter(UserApiVersion, GroupKind, setGroups)
     addSetter(UserApiVersion, UserKind, setUsers)
 
     return { setters, mappers, caches }
@@ -390,7 +386,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setDiscoveredClusters,
     setDiscoveryConfigs,
     setGitOpsClustersState,
-    setGroups,
     setHelmReleases,
     setHostedClustersState,
     setInfraEnvironments,
