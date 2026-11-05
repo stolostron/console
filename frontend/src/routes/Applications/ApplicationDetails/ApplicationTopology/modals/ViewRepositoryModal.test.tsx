@@ -21,6 +21,16 @@ jest.mock('~/components/SyncEditor/SyncEditor', () => ({
   SyncEditor: ({ editorTitle }: { editorTitle: string }) => <div id="sync-editor">{editorTitle}</div>,
 }))
 
+jest.mock('@patternfly/react-code-editor', () => ({
+  ...jest.requireActual('@patternfly/react-code-editor'),
+  CodeEditor: ({ code, language }: { code: string; language: string }) => (
+    <div id="code-editor">
+      <span>{language}</span>
+      <pre>{code}</pre>
+    </div>
+  ),
+}))
+
 jest.mock('./ResourceNavigator', () => ({
   ResourceKindDecorator: () => <div data-testid="resource-kind-icon" />,
 }))
@@ -50,6 +60,12 @@ const twoTree: GitBranchPathNode = {
   children: [{ type: 'file', path: 'charts/two.md', contents: 'Two' }],
 }
 
+const yamlTree: GitBranchPathNode = {
+  type: 'tree',
+  path: 'apps',
+  children: [{ type: 'file', path: 'apps/one.yaml', contents: 'One' }],
+}
+
 function renderModal() {
   return render(<ViewRepositoryModal open close={jest.fn()} node={repositoryNode} />)
 }
@@ -70,7 +86,7 @@ describe('ViewRepositoryModal', () => {
     expect(screen.queryByTestId('sync-editor')).not.toBeInTheDocument()
   })
 
-  it('shows the selected file after every repository source loads', async () => {
+  it('shows a PatternFly code editor for a selected non-YAML file after every repository source loads', async () => {
     mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
       repoURL.includes('/one') ? Promise.resolve(oneTree) : Promise.resolve(twoTree)
     )
@@ -78,8 +94,24 @@ describe('ViewRepositoryModal', () => {
     renderModal()
 
     await screen.findByText('one.md')
-    expect(await screen.findByTestId('sync-editor')).toHaveTextContent('main: apps/one.md')
+    expect(await screen.findByTestId('code-editor')).toHaveTextContent('markdown')
+    expect(screen.getByTestId('code-editor')).toHaveTextContent('One')
+    expect(screen.queryByTestId('sync-editor')).not.toBeInTheDocument()
     await waitFor(() => expect(screen.queryByLabelText('Loading')).not.toBeInTheDocument())
+  })
+
+  it('shows the synchronization editor for a selected YAML file', async () => {
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      repoURL.includes('/one')
+        ? Promise.resolve(yamlTree)
+        : Promise.resolve({ type: 'tree', path: 'charts', children: [] })
+    )
+
+    renderModal()
+
+    await screen.findByText('one.yaml')
+    expect(await screen.findByTestId('sync-editor')).toHaveTextContent('main: apps/one.yaml')
+    expect(screen.queryByTestId('code-editor')).not.toBeInTheDocument()
   })
 
   it('shows the empty state when loaded repositories contain no files', async () => {

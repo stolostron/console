@@ -154,8 +154,13 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
   const secrets = useSharedValue(secretsState)
   const [searchValue, setSearchValue] = useState('')
   const sources = useMemo(() => buildRepositorySources(node), [node])
+  const secretsRef = useRef(secrets)
+  secretsRef.current = secrets
+  const matchingSecretKey = useMemo(
+    () => JSON.stringify(sources.map((source) => findRepositorySecretAccess(source.repoURL, secrets))),
+    [sources, secrets]
+  )
   const [treeBySource, setTreeBySource] = useState<Record<string, SourceTreeState>>({})
-  const itemLookupRef = useRef<Map<string, RepositoryNavigatorFileItem>>(new Map())
 
   useEffect(() => {
     let cancelled = false
@@ -163,7 +168,7 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
     sources.forEach((source) => {
       const groupId = getRepositorySourceGroupId(source)
       setTreeBySource((prev) => ({ ...prev, [groupId]: { status: 'loading' } }))
-      const secretAccess = findRepositorySecretAccess(source.repoURL, secrets)
+      const secretAccess = findRepositorySecretAccess(source.repoURL, secretsRef.current)
       getGitBranchPathDetails(
         source.repoURL,
         source.targetRevision,
@@ -179,7 +184,7 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
     return () => {
       cancelled = true
     }
-  }, [sources, secrets])
+  }, [sources, matchingSecretKey])
 
   // Decide whether to auto-expand every folder only once all sources have finished loading, so the
   // file count used for the threshold check reflects the complete repository tree.
@@ -200,7 +205,7 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
     onLoadingChange?.(!allSourcesLoaded)
   }, [allSourcesLoaded, onLoadingChange])
 
-  const treeData = useMemo<TreeViewDataItem[]>(() => {
+  const { treeData, itemLookup } = useMemo(() => {
     const lookup = new Map<string, RepositoryNavigatorFileItem>()
     const query = searchValue.trim().toLowerCase()
     const items = sources
@@ -208,8 +213,7 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
         buildSourceTreeItem(source, treeBySource[getRepositorySourceGroupId(source)], query, lookup, expandAllFolders)
       )
       .filter((item): item is TreeViewDataItem => item !== undefined)
-    itemLookupRef.current = lookup
-    return items
+    return { treeData: items, itemLookup: lookup }
   }, [sources, treeBySource, searchValue, expandAllFolders])
 
   const hasAutoSelectedRef = useRef(false)
@@ -226,14 +230,14 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
     if (stillLoading) {
       return
     }
-    const firstFile = findFirstFileItem(treeData, itemLookupRef.current)
+    const firstFile = findFirstFileItem(treeData, itemLookup)
     if (firstFile) {
       hasAutoSelectedRef.current = true
       onSelectItem(firstFile)
     } else {
       onNoFilesFound?.()
     }
-  }, [sources, treeBySource, treeData, selectedItemId, onSelectItem, onNoFilesFound])
+  }, [sources, treeBySource, treeData, itemLookup, selectedItemId, onSelectItem, onNoFilesFound])
 
   const activeItems = useMemo<TreeViewDataItem[]>(() => {
     if (!selectedItemId) {
@@ -245,11 +249,11 @@ export const RepositoryNavigator: FC<RepositoryNavigatorProps> = ({
 
   const handleSelect = useCallback(
     (_event: React.MouseEvent, item: TreeViewDataItem) => {
-      if (item.id && itemLookupRef.current.has(item.id)) {
-        onSelectItem(itemLookupRef.current.get(item.id)!)
+      if (item.id && itemLookup.has(item.id)) {
+        onSelectItem(itemLookup.get(item.id)!)
       }
     },
-    [onSelectItem]
+    [itemLookup, onSelectItem]
   )
 
   return (

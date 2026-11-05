@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import type { FC } from 'react'
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { SearchInput, TreeView, type TreeViewDataItem } from '@patternfly/react-core'
 import { useTranslation } from '~/lib/acm-i18next'
 import type { PulseColor, ResourceKindDecoratorProps } from '../types'
@@ -65,9 +65,7 @@ export function ResourceNavigator({ groups, selectedItemId, onSelectItem }: Read
 
   const filteredGroups = useMemo(() => filterNavigatorGroups(groups, searchValue), [groups, searchValue])
 
-  const itemLookupRef = useRef<Map<string, ResourceNavigatorItem>>(new Map())
-
-  const treeData = useMemo<TreeViewDataItem[]>(() => {
+  const { treeData, itemLookup } = useMemo(() => {
     const lookup = new Map<string, ResourceNavigatorItem>()
     const data = filteredGroups.map<TreeViewDataItem>((group) => ({
       id: group.groupId,
@@ -84,8 +82,7 @@ export function ResourceNavigator({ groups, selectedItemId, onSelectItem }: Read
         }
       }),
     }))
-    itemLookupRef.current = lookup
-    return data
+    return { treeData: data, itemLookup: lookup }
   }, [filteredGroups])
 
   const activeItems = useMemo<TreeViewDataItem[]>(() => {
@@ -99,11 +96,11 @@ export function ResourceNavigator({ groups, selectedItemId, onSelectItem }: Read
 
   const handleSelect = useCallback(
     (_event: React.MouseEvent, item: TreeViewDataItem) => {
-      if (item.id && itemLookupRef.current.has(item.id)) {
-        onSelectItem(itemLookupRef.current.get(item.id)!)
+      if (item.id && itemLookup.has(item.id)) {
+        onSelectItem(itemLookup.get(item.id)!)
       }
     },
-    [onSelectItem]
+    [itemLookup, onSelectItem]
   )
 
   return (

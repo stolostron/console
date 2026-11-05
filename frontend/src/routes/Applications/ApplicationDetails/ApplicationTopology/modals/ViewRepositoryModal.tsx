@@ -2,7 +2,7 @@
 
 import { Bullseye, EmptyState, EmptyStateBody, Spinner } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
-import { Language } from '@patternfly/react-code-editor'
+import { CodeEditor, Language } from '@patternfly/react-code-editor'
 import { FolderOpenIcon, GitAltIcon } from '@patternfly/react-icons'
 import { useCallback, useState } from 'react'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
@@ -13,6 +13,7 @@ import { getViewTitle } from '../helpers/repositoryNavigatorHelpers'
 import { ModalNavigatorLayout } from './ModalNavigatorLayout'
 import { RepositoryNavigator, type RepositoryNavigatorFileItem } from './RepositoryNavigator'
 import './ResourceNavigator.css'
+import { getTheme } from '~/components/theme'
 
 export interface IViewRepositoryModalProps {
   close: () => void
@@ -55,6 +56,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
   const [noFilesFound, setNoFilesFound] = useState(false)
   const [isRepositoryLoading, setIsRepositoryLoading] = useState(true)
   const modalTitle = (node.name as string) || t('Repository')
+  const selectedFileLanguage = selectedFile ? getLanguageForPath(selectedFile.path) : undefined
 
   const handleSelectItem = useCallback((item: RepositoryNavigatorFileItem) => {
     setSelectedFile(item)
@@ -99,15 +101,40 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
                 <Spinner size="xl" aria-label={t('Loading')} />
               </Bullseye>
             ) : selectedFile ? (
-              <SyncEditor
-                editorTitle={getViewTitle(selectedFile.id)}
-                variant="toolbar"
-                code={selectedFile.contents}
-                resources={null}
-                language={getLanguageForPath(selectedFile.path)}
-                readonly
-                initialShowChanges={false}
-              />
+              selectedFileLanguage !== Language.yaml ? (
+                <SyncEditor
+                  editorTitle={getViewTitle(selectedFile.id)}
+                  variant="toolbar"
+                  code={selectedFile.contents}
+                  resources={null}
+                  readonly
+                  initialShowChanges={false}
+                />
+              ) : (
+                <CodeEditor
+                  code={selectedFile.contents}
+                  language={selectedFileLanguage}
+                  isCopyEnabled
+                  isFullHeight
+                  isLineNumbersVisible
+                  isReadOnly
+                  options={{
+                    theme: getTheme(),
+                    wordWrap: 'wordWrapColumn',
+                    scrollBeyondLastLine: true,
+                    smoothScrolling: true,
+                    glyphMargin: true,
+                    tabSize: 2,
+                    scrollbar: {
+                      verticalScrollbarSize: 17,
+                      horizontalScrollbarSize: 17,
+                    },
+                    minimap: {
+                      enabled: false,
+                    },
+                  }}
+                />
+              )
             ) : noFilesFound ? (
               <Bullseye>
                 <EmptyState titleText={t('No files found')} variant="sm" icon={FolderOpenIcon}>

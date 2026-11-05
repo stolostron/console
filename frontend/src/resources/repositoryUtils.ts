@@ -136,7 +136,9 @@ export async function getGitBranchPathDetails(
       return emptyTree()
     }
 
-    const { data: branchData } = await octokit.repos.getBranch({ ...gitInfo, branch: revision })
+    const resolvedRevision =
+      revision === 'HEAD' ? (await octokit.repos.get({ ...gitInfo })).data.default_branch : revision
+    const { data: branchData } = await octokit.repos.getBranch({ ...gitInfo, branch: resolvedRevision })
     if (!branchData.commit.sha) {
       return emptyTree()
     }
@@ -199,7 +201,9 @@ function getGitParentPath(path: string) {
 async function getGitBlobContents(octokit: Octokit, blobUrl: string) {
   const { data } = await octokit.request(`GET ${new URL(blobUrl).pathname}`)
   const content = typeof data.content === 'string' ? data.content : ''
-  return data.encoding === 'base64' ? window.atob(content) : content
+  if (data.encoding !== 'base64') return content
+  const binary = window.atob(content)
+  return new TextDecoder().decode(Uint8Array.from(binary, (c) => c.charCodeAt(0)))
 }
 
 function getGitInformation(path: string) {
