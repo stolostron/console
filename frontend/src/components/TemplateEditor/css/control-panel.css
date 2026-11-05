@@ -163,7 +163,7 @@
   margin: 0 6px;
   width: 16px;
   height: 16px;
-  fill: var(--pf-v5-global--Color--100);
+  fill: var(--pf-t--global--text--color--regular);
   transition: all 100ms;
   transform: rotate(90deg);
 }
@@ -471,10 +471,6 @@
   margin-bottom: 8px;
   position: relative;
 }
-.temptifly-controls-add-combobox .pf-v6-c-select,
-.creation-view-controls-add-combobox .pf-v6-c-select {
-  background-color: white;
-}
 .temptifly-controls-table-container,
 .creation-view-controls-table-container {
   margin-bottom: 20px;
@@ -625,51 +621,6 @@
   font-size: 0.875rem;
   padding-bottom: 0.5rem;
 }
-.temptifly-controls-textbox .pf-v6-c-select,
-.creation-view-controls-textbox .pf-v6-c-select,
-.temptifly-controls-multiselect .pf-v6-c-select,
-.creation-view-controls-multiselect .pf-v6-c-select,
-.temptifly-controls-singleselect .pf-v6-c-select,
-.creation-view-controls-singleselect .pf-v6-c-select,
-.temptifly-controls-combobox .pf-v6-c-select,
-.creation-view-controls-combobox .pf-v6-c-select,
-.temptifly-controls-treeselect .pf-v6-c-select,
-.creation-view-controls-treeselect .pf-v6-c-select,
-.temptifly-controls-select .pf-v6-c-select,
-.creation-view-controls-select .pf-v6-c-select,
-.temptifly-controls-textarea .pf-v6-c-select,
-.creation-view-controls-textarea .pf-v6-c-select,
-.temptifly-controls-number .pf-v6-c-select,
-.creation-view-controls-number .pf-v6-c-select,
-.temptifly-controls-cards .pf-v6-c-select,
-.creation-view-controls-cards .pf-v6-c-select,
-.temptifly-controls-skeleton .pf-v6-c-select,
-.creation-view-controls-skeleton .pf-v6-c-select {
-  background-color: white;
-}
-.temptifly-controls-textbox .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-textbox .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-multiselect .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-multiselect .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-singleselect .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-singleselect .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-combobox .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-combobox .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-treeselect .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-treeselect .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-select .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-select .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-textarea .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-textarea .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-number .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-number .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-cards .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-cards .pf-v6-c-select .pf-v6-c-select__menu,
-.temptifly-controls-skeleton .pf-v6-c-select .pf-v6-c-select__menu,
-.creation-view-controls-skeleton .pf-v6-c-select .pf-v6-c-select__menu {
-  padding-left: 0;
-  margin-left: 0;
-}
 .temptifly-controls textarea.pf-v6-c-form-control,
 .creation-view-controls textarea.pf-v6-c-form-control {
   min-height: 100px;
@@ -715,15 +666,15 @@
 .temptifly-controls .creation-view-group-container,
 .creation-view-controls .creation-view-group-container {
   position: relative;
-  border: 1px solid var(--pf-v5-global--BorderColor--300);
-  background-color: var(--pf-v5-global--BackgroundColor--light-200);
+  border: 1px solid var(--pf-t--global--border--color--subtle);
+  background-color: var(--pf-t--global--background--color--secondary--default);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   padding: 10px;
   margin: 10px 0;
 }
 .creation-view-controls .creation-view-group-subcontainer {
-  border: 1px solid var(--pf-v5-global--BorderColor--300);
-  background-color: var(--pf-v5-global--BackgroundColor--light-100);
+  border: 1px solid var(--pf-t--global--border--color--subtle);
+  background-color: var(--pf-t--global--background--color--primary--default);
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.4);
   padding: 10px;
   margin-bottom: 3px;
@@ -741,8 +692,6 @@
 .creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-v6-c-form__label-text {
   font-weight: bold;
 }
-.temptifly-controls .creation-view-group-container .pf-v6-c-select__toggle .pf-v6-c-badge.pf-m-read,
-.creation-view-controls .creation-view-group-container .pf-v6-c-select__toggle .pf-v6-c-badge.pf-m-read,
 .temptifly-controls .creation-view-group-container .pf-v6-c-form-control .pf-v6-c-badge.pf-m-read,
 .creation-view-controls .creation-view-group-container .pf-v6-c-form-control .pf-v6-c-badge.pf-m-read {
   background-color: darkgray;
@@ -818,11 +767,8 @@
   margin-left: 0px;
 }
 
-.temptifly .pf-v6-c-wizard .pf-v6-c-tile {
-  --pf-v5-c-tile--TranslateY: none;
-  --pf-v5-c-tile--Transition: none;
-}
-
+/* PatternFly 6 dropped the tile lift animation, so there is no TranslateY/Transition variable
+   left to neutralize. The ::after reset below already covers what remains. */
 .temptifly .pf-v6-c-wizard .pf-v6-c-tile::after {
   transition: none;
   transform: none;

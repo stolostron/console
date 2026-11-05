@@ -17,6 +17,7 @@ import {
   isGlobalClusterSet,
   listClusterRoleBindings,
   listGroups,
+  listUsers,
   RbacApiVersion,
   User,
 } from '../../../../../../resources'
@@ -58,16 +59,31 @@ export function ClusterSetAccessManagement() {
   const [addModalOpen, setAddModalOpen] = useState<boolean>(false)
 
   const { data, refresh, error, startPolling, stopPolling } = useQuery(listClusterRoleBindings)
-  const { data: groups, startPolling: groupsStartPolling, stopPolling: groupsStopPolling } = useQuery(listGroups)
+  const {
+    data: groups,
+    loading: groupsLoading,
+    error: groupsError,
+    startPolling: groupsStartPolling,
+    stopPolling: groupsStopPolling,
+  } = useQuery(listGroups)
+  const {
+    data: users,
+    loading: usersLoading,
+    error: usersError,
+    startPolling: usersStartPolling,
+    stopPolling: usersStopPolling,
+  } = useQuery(listUsers)
 
   useEffect(() => {
     startPolling()
     groupsStartPolling()
+    usersStartPolling()
     return () => {
       stopPolling()
       groupsStopPolling()
+      usersStopPolling()
     }
-  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling])
+  }, [groupsStartPolling, groupsStopPolling, startPolling, stopPolling, usersStartPolling, usersStopPolling])
 
   let clusterRoleBindings: ClusterRoleBinding[] | undefined
   if (data) {
@@ -167,6 +183,12 @@ export function ClusterSetAccessManagement() {
             refresh()
             setAddModalOpen(false)
           }}
+          users={users ?? []}
+          usersLoading={usersLoading}
+          usersError={usersError}
+          groups={groups ?? []}
+          groupsLoading={groupsLoading}
+          groupsError={groupsError}
         />
         <AcmTable<ClusterRoleBinding>
           aria-label={t('Cluster set access table')}
@@ -254,7 +276,18 @@ export function ClusterSetAccessManagement() {
   )
 }
 
-function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
+function AddUsersModal(
+  props: Readonly<{
+    isOpen: boolean
+    onClose: () => void
+    users: User[]
+    usersLoading: boolean
+    usersError?: Error
+    groups: Group[]
+    groupsLoading: boolean
+    groupsError?: Error
+  }>
+) {
   const { t } = useTranslation()
   const { clusterSet } = useClusterSetDetailsContext()
   const [selectedIdentity, setSelectedIdentity] = useState<{ kind: 'User' | 'Group'; name: string } | undefined>()
@@ -307,6 +340,12 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
                   onUserSelect={handleUserSelect}
                   onGroupSelect={handleGroupSelect}
                   initialSelectedIdentity={selectedIdentity}
+                  users={props.users}
+                  usersLoading={props.usersLoading}
+                  usersError={props.usersError}
+                  groups={props.groups}
+                  groupsLoading={props.groupsLoading}
+                  groupsError={props.groupsError}
                 />
               </div>
               <AcmSelect
@@ -318,7 +357,7 @@ function AddUsersModal(props: { isOpen: boolean; onClose: () => void }) {
                 placeholder={t('access.select.role')}
                 value={role}
                 onChange={(role) => setRole(role)}
-                style={{ marginTop: 'var(--pf-v5-global--spacer--md)' }}
+                style={{ marginTop: 'var(--pf-t--global--spacer--md)' }}
               >
                 {clusterSet &&
                   getUserRoles().map((userRole) => (

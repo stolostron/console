@@ -1,11 +1,11 @@
 .pf-v6-c-truncate {
-  --pf-v5-c-truncate--MinWidth: 12ch;
-  --pf-v5-c-truncate__start--MinWidth: 6ch;
+  --pf-v6-c-truncate--MinWidth: 12ch;
+  --pf-v6-c-truncate__start--MinWidth: 6ch;
 
   display: inline-grid;
   grid-auto-flow: column;
   align-items: baseline;
-  min-width: var(--pf-v5-c-truncate--MinWidth);
+  min-width: var(--pf-v6-c-truncate--MinWidth);
 }
 
 .pf-v6-c-truncate__start,
@@ -16,7 +16,7 @@
 }
 
 .pf-v6-c-truncate__start {
-  min-width: var(--pf-v5-c-truncate__start--MinWidth);
+  min-width: var(--pf-v6-c-truncate__start--MinWidth);
 }
 
 .pf-v6-c-truncate__end {

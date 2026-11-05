@@ -1,9 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { useMemo } from 'react'
 import { MulticlusterRoleAssignment } from '../../../resources/multicluster-role-assignment'
 import { Group, GroupKind, User, UserApiVersion, UserKind } from '../../../resources/rbac'
-import { useSharedValue, useSharedAtoms } from '../../../shared-atoms'
-import { compareStrings } from '../../../ui-components'
 import { IdentityItem } from './IdentityTableHelper'
 
 function identityFromMra(mra: MulticlusterRoleAssignment): IdentityItem {
@@ -48,17 +45,4 @@ export function groupsFromMulticlusterRoleAssignments(
   existingNames: Set<string>
 ): Group[] {
   return identitiesFromMras(mras, GroupKind, existingNames) as Group[]
-}
-
-export function useMergedUsers(): User[] {
-  const { usersState, multiclusterRoleAssignmentState } = useSharedAtoms()
-  const rbacUsers = useSharedValue(usersState)
-  const mras = useSharedValue(multiclusterRoleAssignmentState)
-  return useMemo(() => {
-    const existingNames = new Set(rbacUsers?.map((u) => u.metadata.name).filter(Boolean) as string[])
-    const mraUsers = usersFromMulticlusterRoleAssignments(mras ?? [], existingNames)
-    return [...(rbacUsers ?? []), ...mraUsers].sort((a, b) =>
-      compareStrings(a.metadata.name ?? '', b.metadata.name ?? '')
-    )
-  }, [rbacUsers, mras])
 }

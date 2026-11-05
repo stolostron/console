@@ -8,6 +8,7 @@ import { NavigationPath } from '../../../../NavigationPath'
 import { ResourceError, ResourceErrorCode } from '../../../../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../../../../shared-atoms'
 import { AcmButton, AcmPage, AcmPageHeader, AcmSecondaryNav } from '../../../../ui-components'
+import { useUsersByNames } from '../Users/useUsersSearch'
 import { useCurrentGroup } from './useCurrentGroup'
 import { GroupDetailsContext } from './useGroupDetailsContext'
 
@@ -17,9 +18,9 @@ const GroupPage = () => {
   const location = useLocation()
 
   const { group, loaded, error } = useCurrentGroup()
-  const { usersState, isDirectAuthenticationEnabledState } = useSharedAtoms()
-  const users = useSharedValue(usersState)
+  const { isDirectAuthenticationEnabledState } = useSharedAtoms()
   const isDirectAuth = useSharedValue(isDirectAuthenticationEnabledState)
+  const { users, loaded: usersLoaded } = useUsersByNames(group?.users)
 
   const groupDetailsContext = useMemo<GroupDetailsContext>(
     () => ({
@@ -40,7 +41,7 @@ const GroupPage = () => {
     </AcmButton>
   )
 
-  if (!loaded) {
+  if (!loaded || (group && !usersLoaded)) {
     return <LoadingPage />
   }
 

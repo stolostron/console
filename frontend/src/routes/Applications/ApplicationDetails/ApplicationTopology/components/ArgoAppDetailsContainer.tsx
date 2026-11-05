@@ -622,6 +622,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
           <Pagination
             itemCount={displayArgoAppList.length}
             perPage={perPage}
+            perPageOptions={[]}
             page={page}
             widgetId="argoappdetails-pagination-options-menu-top"
             onFirstClick={this.handleFirstClick}
@@ -642,6 +643,7 @@ class ArgoAppDetailsContainer extends Component<ArgoAppDetailsContainerProps, Ar
           <Pagination
             itemCount={displayArgoAppList.length}
             perPage={perPage}
+            perPageOptions={[]}
             page={page}
             widgetId="argoappdetails-pagination-options-menu-bottom"
             onFirstClick={this.handleFirstClick}

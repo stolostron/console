@@ -11,7 +11,7 @@ const meta: Meta<typeof GlobalScopeSelection> = {
     docs: {
       description: {
         component:
-          'GlobalScopeSelection displays a Panel with a light gray background using PatternFly global background color (--pf-v5-global--BackgroundColor--200) containing a message indicating that a role assignment will apply to all resources in Advanced Cluster Management. The component uses PatternFly Panel components for consistent styling.',
+          'GlobalScopeSelection displays a Panel with a light gray background using PatternFly global background color (--pf-t--global--background--color--secondary--default) containing a message indicating that a role assignment will apply to all resources in Advanced Cluster Management. The component uses PatternFly Panel components for consistent styling.',
       },
     },
   },
@@ -26,7 +26,7 @@ export const Default: Story = {
     docs: {
       description: {
         story:
-          'The default GlobalScopeSelection component with a light gray background using PatternFly global CSS variable (--pf-v5-global--BackgroundColor--200). It displays a fixed message explaining the global scope of the role assignment within a Panel structure.',
+          'The default GlobalScopeSelection component with a light gray background using PatternFly global CSS variable (--pf-t--global--background--color--secondary--default). It displays a fixed message explaining the global scope of the role assignment within a Panel structure.',
       },
     },
   },

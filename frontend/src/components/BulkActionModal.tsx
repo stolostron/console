@@ -66,7 +66,8 @@ export interface ItemError<T> {
 
 // Small post-processing delay to let UI (progress bar/toasts) settle before closing the modal.
 // Tune if UX requires more/less time; keep minimal to avoid test flakiness.
-const COMPLETE_DELAY_MS = 200
+// Exported so unit tests can advance fake timers by the same amount.
+export const COMPLETE_DELAY_MS = 200
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
 export function BulkActionModal<T = unknown>(props: BulkActionModalProps<T> | { open: false }) {

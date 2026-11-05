@@ -49,7 +49,6 @@ import {
   DiscoveryConfigKind,
   GitOpsClusterApiVersion,
   GitOpsClusterKind,
-  GroupKind,
   HelmReleaseApiVersion,
   HelmReleaseKind,
   HostedClusterApiVersion,
@@ -91,8 +90,6 @@ import {
   PolicyAutomationApiVersion,
   PolicyAutomationKind,
   PolicyKind,
-  PolicyReportApiVersion,
-  PolicyReportKind,
   PolicySetApiVersion,
   PolicySetKind,
   RbacApiVersion,
@@ -144,7 +141,6 @@ import {
   discoveredClusterState,
   discoveryConfigState,
   gitOpsClustersState,
-  groupsState,
   helmReleaseState,
   hostedClustersState,
   infraEnvironmentsState,
@@ -170,7 +166,6 @@ import {
   placementsState,
   policiesState,
   policyAutomationState,
-  policyreportState,
   policySetsState,
   searchOperatorState,
   secretsState,
@@ -236,7 +231,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setDiscoveredClusters = useSetAtom(discoveredClusterState)
   const setDiscoveryConfigs = useSetAtom(discoveryConfigState)
   const setGitOpsClustersState = useSetAtom(gitOpsClustersState)
-  const setGroups = useSetAtom(groupsState)
   const setHelmReleases = useSetAtom(helmReleaseState)
   const setHostedClustersState = useSetAtom(hostedClustersState)
   const setInfraEnvironments = useSetAtom(infraEnvironmentsState)
@@ -263,7 +257,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setPlacementsState = useSetAtom(placementsState)
   const setPoliciesState = useSetAtom(policiesState)
   const setPolicyAutomationState = useSetAtom(policyAutomationState)
-  const setPolicyReports = useSetAtom(policyreportState)
   const setPolicySetsState = useSetAtom(policySetsState)
   const setSearchOperator = useSetAtom(searchOperatorState)
   const setSecrets = useSetAtom(secretsState)
@@ -354,7 +347,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)
     addSetter(PolicyAutomationApiVersion, PolicyAutomationKind, setPolicyAutomationState)
-    addSetter(PolicyReportApiVersion, PolicyReportKind, setPolicyReports)
     addSetter(PolicySetApiVersion, PolicySetKind, setPolicySetsState)
     addSetter(RbacApiVersion, ClusterRoleKind, setVMClusterRoles)
     addSetter(SearchOperatorApiVersion, SearchOperatorKind, setSearchOperator)
@@ -366,7 +358,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(ClusterExtensionApiVersion, ClusterExtensionKind, setClusterExtensionsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
-    addSetter(UserApiVersion, GroupKind, setGroups)
     addSetter(UserApiVersion, UserKind, setUsers)
 
     return { setters, mappers, caches }
@@ -395,7 +386,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setDiscoveredClusters,
     setDiscoveryConfigs,
     setGitOpsClustersState,
-    setGroups,
     setHelmReleases,
     setHostedClustersState,
     setInfraEnvironments,
@@ -416,7 +406,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setPlacementsState,
     setPoliciesState,
     setPolicyAutomationState,
-    setPolicyReports,
     setPolicySetsState,
     setSearchOperator,
     setSecrets,
