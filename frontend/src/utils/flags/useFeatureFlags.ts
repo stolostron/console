@@ -20,7 +20,7 @@ const useFeatureFlags = (setFeatureFlag: SetFeatureFlag) => {
   useEffect(() => {
     if (mchComponents && !loading) {
       Object.entries(FEATURE_FLAGS).forEach(([featureFlag, componentName]) =>
-        setFeatureFlag(featureFlag, mchComponents.find((e) => e.name === componentName)?.enabled || false)
+        setFeatureFlag(featureFlag, mchComponents.find((e) => e?.name === componentName)?.enabled || false)
       )
     }
   }, [mchComponents, loading, setFeatureFlag])
