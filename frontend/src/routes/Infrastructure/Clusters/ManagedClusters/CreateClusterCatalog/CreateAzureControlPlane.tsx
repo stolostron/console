@@ -1,12 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon } from '@patternfly/react-icons'
-import {
-  CatalogCardItemType,
-  CatalogColor,
-  DataViewStringContext,
-  ICatalogCard,
-  ItemView,
-} from '@stolostron/react-data-view'
+import { CatalogCardItemType, CatalogColor, ICatalogCard, AcmCatalogView } from '~/ui-components/AcmCatalog'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../lib/doc-util'
@@ -16,7 +10,6 @@ import { getTypedCreateClusterPath } from '../ClusterInfrastructureType'
 import { useIsHypershiftEnabled } from '../../../../../hooks/use-hypershift-enabled'
 import { HypershiftDiagramExpand } from './common/HypershiftDiagramExpand'
 import { Icon } from '@patternfly/react-core'
-import { useDataViewStrings } from '../../../../../lib/dataViewStrings'
 
 export function CreateAzureControlPlane() {
   const [t] = useTranslation()
@@ -125,8 +118,6 @@ export function CreateAzureControlPlane() {
     return newBreadcrumbs
   }, [t])
 
-  const dataViewStrings = useDataViewStrings()
-
   return (
     <AcmPage
       header={
@@ -137,23 +128,21 @@ export function CreateAzureControlPlane() {
         />
       }
     >
-      <DataViewStringContext.Provider value={dataViewStrings}>
-        <ItemView
-          items={cards}
-          itemKeyFn={keyFn}
-          itemToCardFn={(card) => card}
-          onBack={back(NavigationPath.createCluster)}
-          onCancel={cancel(NavigationPath.clusters)}
-          customCatalogSection={
-            <HypershiftDiagramExpand
-              isDiagramExpanded={isDiagramExpanded}
-              onDiagramToggle={onDiagramToggle}
-              setIsMouseOverControlPlaneLink={setIsMouseOverControlPlaneLink}
-              t={t}
-            />
-          }
-        />
-      </DataViewStringContext.Provider>
+      <AcmCatalogView
+        items={cards}
+        itemKeyFn={keyFn}
+        itemToCardFn={(card) => card}
+        onBack={back(NavigationPath.createCluster)}
+        onCancel={cancel(NavigationPath.clusters)}
+        customCatalogSection={
+          <HypershiftDiagramExpand
+            isDiagramExpanded={isDiagramExpanded}
+            onDiagramToggle={onDiagramToggle}
+            setIsMouseOverControlPlaneLink={setIsMouseOverControlPlaneLink}
+            t={t}
+          />
+        }
+      />
     </AcmPage>
   )
 }

@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
+import { ICatalogBreadcrumb } from '~/ui-components/AcmCatalog'
 import { NavigationPath } from '../../../../../../NavigationPath'
 
 export const breadcrumbs = (hcType: string, t: any) => {

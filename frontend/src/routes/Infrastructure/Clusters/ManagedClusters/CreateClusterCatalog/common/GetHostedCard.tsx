@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { CheckIcon } from '@patternfly/react-icons'
-import { CatalogCardItemType, ICatalogCard } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogCard } from '~/ui-components/AcmCatalog'
 import type { TFunction } from 'i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../lib/doc-util'
 import { Icon } from '@patternfly/react-core'

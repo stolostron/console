@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
-import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
+import { ICatalogBreadcrumb } from '~/ui-components/AcmCatalog'
 import { Fragment } from 'react'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'
 import { DOC_LINKS, ViewDocumentationLink } from '../../../../../../../../lib/doc-util'

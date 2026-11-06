@@ -2,7 +2,7 @@
 
 import { CodeBlock, CodeBlockCode, Content, ContentVariants } from '@patternfly/react-core'
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
-import { ICatalogBreadcrumb } from '@stolostron/react-data-view'
+import { ICatalogBreadcrumb } from '~/ui-components/AcmCatalog'
 import { Fragment, useState } from 'react'
 import { useProjects } from '../../../../../../../../hooks/useProjects'
 import { useTranslation } from '../../../../../../../../lib/acm-i18next'

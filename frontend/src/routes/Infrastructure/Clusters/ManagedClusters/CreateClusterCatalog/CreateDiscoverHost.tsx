@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, PageHeader } from '@stolostron/react-data-view'
+import { CatalogCardItemType, ICatalogBreadcrumb, ICatalogCard, AcmCatalogPageHeader } from '~/ui-components/AcmCatalog'
 import { useMemo } from 'react'
 import { useLocation } from 'react-router'
 import { useTranslation } from '../../../../../lib/acm-i18next'
@@ -76,7 +76,7 @@ export function CreateDiscoverHost() {
   return (
     <GetControlPlane
       pageHeader={
-        <PageHeader
+        <AcmCatalogPageHeader
           title={t('Hosts')}
           description={t('Choose an option based on your hosts.')}
           breadcrumbs={breadcrumbs}
