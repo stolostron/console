@@ -144,6 +144,11 @@ export function StatusField(props: { cluster: Cluster }) {
     case ClusterStatus.creating:
     case ClusterStatus.destroying:
     case ClusterStatus.provisionfailed:
+      // When preserveOnDelete is set, Hive skips the uninstall job entirely (no ClusterDeprovision
+      // or pod is ever created), so a "View logs" link would never have anything to open.
+      if (props.cluster?.status === ClusterStatus.destroying && props.cluster.hive?.preserveOnDelete) {
+        break
+      }
       hasAction = true
       if (isHybrid) {
         Action = () => (
