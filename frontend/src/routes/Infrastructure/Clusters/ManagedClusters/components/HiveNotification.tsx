@@ -98,7 +98,7 @@ export function HiveNotification() {
   )
 }
 
-export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
+export function launchLogs(cluster: Cluster, configMaps: ConfigMap[], onLogsUnavailable?: () => void) {
   const openShiftConsoleConfig = configMaps.find((configmap) => configmap.metadata.name === 'console-public')
   const openShiftConsoleUrl = openShiftConsoleConfig?.data?.consoleURL
   if (cluster && cluster.name && cluster.namespace && openShiftConsoleUrl) {
@@ -107,8 +107,12 @@ export function launchLogs(cluster: Cluster, configMaps: ConfigMap[]) {
       const podName = job?.metadata.name || ''
       if (podName) {
         window.open(`${openShiftConsoleUrl}/k8s/ns/${cluster.namespace}/pods/${podName}/logs`)
+      } else {
+        onLogsUnavailable?.()
       }
     })
+  } else {
+    onLogsUnavailable?.()
   }
 }
 

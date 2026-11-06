@@ -2108,6 +2108,8 @@
   "Log in to OpenShift Container Platform": "Log in to OpenShift Container Platform",
   "Log in to the ROSA CLI with your Red Hat account and create AWS account roles and policies.": "Log in to the ROSA CLI with your Red Hat account and create AWS account roles and policies.",
   "Logs": "Logs",
+  "Logs for this cluster are not currently available.": "Logs for this cluster are not currently available.",
+  "Logs unavailable": "Logs unavailable",
   "low": "low",
   "Low": "Low",
   "M-series": "M-series",

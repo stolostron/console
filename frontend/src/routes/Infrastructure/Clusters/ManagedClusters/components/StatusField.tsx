@@ -1,7 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { useContext } from 'react'
 import { type AnsibleHookRun, getLatestAnsibleHook } from '~/resources'
 import { Cluster, ClusterStatus, getClusterStatusLabel, getClusterStatusType } from '../../../../../resources/utils'
-import { AcmButton, AcmInlineStatus, Provider } from '../../../../../ui-components'
+import { AcmButton, AcmInlineStatus, AcmToastContext, Provider } from '../../../../../ui-components'
 import { ExternalLinkAltIcon, DownloadIcon } from '@patternfly/react-icons'
 import { Trans, useTranslation } from '../../../../../lib/acm-i18next'
 import { Link, generatePath, useLocation } from 'react-router'
@@ -51,6 +52,7 @@ const CLUSTER_STATUS_MESSAGE_I18N_KEYS: Record<ClusterStatus, string> = {
 export function StatusField(props: { cluster: Cluster }) {
   const { t } = useTranslation()
   const location = useLocation()
+  const toastContext = useContext(AcmToastContext)
   const { ansibleJobState, ansibleWorkflowState, configMapsState, clusterCuratorsState } = useSharedAtoms()
   const configMaps = useSharedValue(configMapsState)
   const ansibleJobs = useSharedValue(ansibleJobState)
@@ -174,7 +176,16 @@ export function StatusField(props: { cluster: Cluster }) {
           <AcmButton
             style={{ padding: 0, fontSize: 'inherit' }}
             key={props.cluster.name}
-            onClick={() => launchLogs(props.cluster, configMaps)}
+            onClick={() =>
+              launchLogs(props.cluster, configMaps, () =>
+                toastContext.addAlert({
+                  title: t('Logs unavailable'),
+                  message: t('Logs for this cluster are not currently available.'),
+                  type: 'info',
+                  autoClose: true,
+                })
+              )
+            }
             variant="link"
             role="link"
             icon={<ExternalLinkAltIcon />}
