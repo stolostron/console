@@ -189,6 +189,7 @@ import { usePageActivity } from '../lib/usePageActivity'
 
 type StateSetter<Value> = (value: Value | ((currentValue: Value) => Value)) => void
 
+/** Boots shared Recoil/Jotai state from the hub SSE event stream and related polls. */
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
     useContext(PluginDataContext)
