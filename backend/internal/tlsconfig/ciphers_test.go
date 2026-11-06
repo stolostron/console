@@ -6,6 +6,8 @@ import (
 	"crypto/tls"
 	"slices"
 	"testing"
+
+	configv1 "github.com/openshift/api/config/v1"
 )
 
 func TestLookupCipherOpenSSLAndIANA(t *testing.T) {
@@ -41,7 +43,7 @@ func TestMapCiphersSkipsTLS13AndUnknown(t *testing.T) {
 
 func TestMapCiphersOldProfileIncludesLegacyRSA(t *testing.T) {
 	t.Parallel()
-	got := mapCiphers(builtin["Old"].ciphers)
+	got := mapCiphers(configv1.TLSProfiles[configv1.TLSProfileOldType].Ciphers)
 	if len(got) == 0 {
 		t.Fatal("Old profile should map at least one TLS 1.2 cipher")
 	}
@@ -54,32 +56,6 @@ func TestMapCiphersOldProfileIncludesLegacyRSA(t *testing.T) {
 	}
 	if !foundRSA {
 		t.Fatalf("Old profile ciphers %v missing RSA GCM", got)
-	}
-}
-
-func TestFilterCurvesNonFIPS(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"X25519MLKEM768", "X25519", "secp256r1", "bogus"}, false)
-	want := []tls.CurveID{tls.X25519MLKEM768, tls.X25519, tls.CurveP256}
-	if !slices.Equal(got, want) {
-		t.Fatalf("curves %v want %v", got, want)
-	}
-}
-
-func TestFilterCurvesFIPSExcludesX25519(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"X25519MLKEM768", "X25519", "secp521r1"}, true)
-	want := []tls.CurveID{tls.CurveP521}
-	if !slices.Equal(got, want) {
-		t.Fatalf("FIPS curves %v want %v", got, want)
-	}
-}
-
-func TestFilterCurvesDeduplicates(t *testing.T) {
-	t.Parallel()
-	got := filterCurves([]string{"secp256r1", "secp256r1"}, false)
-	if len(got) != 1 || got[0] != tls.CurveP256 {
-		t.Fatalf("dedup curves %v", got)
 	}
 }
 

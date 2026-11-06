@@ -24,8 +24,7 @@ const (
 )
 
 var (
-	errNoCertificate   = errors.New("tls certificate not loaded")
-	errNoAllowedGroups = errors.New("tls security profile has no usable groups")
+	errNoCertificate = errors.New("tls certificate not loaded")
 )
 
 // Reloader holds the live TLS settings and certificate. Handshakes read via
@@ -63,7 +62,12 @@ func (r *Reloader) GetConfigForClient(*tls.ClientHelloInfo) (*tls.Config, error)
 	}
 	r.mu.RUnlock()
 	if s.noUsableCurves {
-		return nil, errNoAllowedGroups
+		// An explicit group list that filters to nothing must reject every
+		// handshake: crypto/tls treats empty CurvePreferences as its defaults,
+		// which would offer groups the profile did not configure. This follows
+		// the OpenShift TLS curves enhancement instead of Node's TLS 1.2 RSA
+		// key-exchange exception.
+		return nil, errNoUsableTLSGroups
 	}
 	cfg := &tls.Config{
 		MinVersion:       s.MinVersion,
@@ -107,6 +111,12 @@ func (r *Reloader) Apply(s Settings) bool {
 			"curves", len(s.Curves),
 		)
 		return false
+	}
+	if len(s.unknownGroups) > 0 {
+		applog.Logger().Warn("TLS security profile contains unknown groups", "groups", s.unknownGroups)
+	}
+	if len(s.excludedGroups) > 0 {
+		applog.Logger().Warn("TLS groups excluded by FIPS policy", "groups", s.excludedGroups)
 	}
 	if s.noUsableCurves {
 		applog.Logger().Error("TLS security profile has no usable groups", "groups", s.rejectedGroups)

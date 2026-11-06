@@ -3,9 +3,13 @@
 package tlsconfig
 
 import (
-	"crypto/fips140"
 	"crypto/tls"
 	"slices"
+
+	configv1 "github.com/openshift/api/config/v1"
+	librarycrypto "github.com/openshift/library-go/pkg/crypto"
+
+	applog "github.com/stolostron/console/backend/internal/log"
 )
 
 // SecurityProfile is apiserver.spec.tlsSecurityProfile (config.openshift.io/v1).
@@ -21,7 +25,7 @@ type CustomSpec struct {
 	Groups        []string
 }
 
-// Settings is the Go tls.Config slice of a profile (Node toNodeTLSOptions).
+// Settings is the Go tls.Config slice of a profile.
 type Settings struct {
 	MinVersion   uint16
 	MaxVersion   uint16
@@ -32,126 +36,41 @@ type Settings struct {
 	// allow groups the profile did not configure.
 	noUsableCurves bool
 	rejectedGroups []string
-}
-
-type builtinSpec struct {
-	minTLSVersion string
-	ciphers       []string
-	groups        []string
-}
-
-// Built-in OpenShift profiles from oc explain apiserver.spec.tlsSecurityProfile
-// (same lists as backend-node/src/lib/tlsProfileWatch.ts).
-var builtin = map[string]builtinSpec{
-	"Old": {
-		minTLSVersion: "VersionTLS10",
-		ciphers: []string{
-			"TLS_AES_128_GCM_SHA256",
-			"TLS_AES_256_GCM_SHA384",
-			"TLS_CHACHA20_POLY1305_SHA256",
-			"ECDHE-ECDSA-AES128-GCM-SHA256",
-			"ECDHE-RSA-AES128-GCM-SHA256",
-			"ECDHE-ECDSA-AES256-GCM-SHA384",
-			"ECDHE-RSA-AES256-GCM-SHA384",
-			"ECDHE-ECDSA-CHACHA20-POLY1305",
-			"ECDHE-RSA-CHACHA20-POLY1305",
-			"DHE-RSA-AES128-GCM-SHA256",
-			"DHE-RSA-AES256-GCM-SHA384",
-			"DHE-RSA-CHACHA20-POLY1305",
-			"ECDHE-ECDSA-AES128-SHA256",
-			"ECDHE-RSA-AES128-SHA256",
-			"ECDHE-ECDSA-AES128-SHA",
-			"ECDHE-RSA-AES128-SHA",
-			"ECDHE-ECDSA-AES256-SHA384",
-			"ECDHE-RSA-AES256-SHA384",
-			"ECDHE-ECDSA-AES256-SHA",
-			"ECDHE-RSA-AES256-SHA",
-			"DHE-RSA-AES128-SHA256",
-			"DHE-RSA-AES256-SHA256",
-			"AES128-GCM-SHA256",
-			"AES256-GCM-SHA384",
-			"AES128-SHA256",
-			"AES256-SHA256",
-			"AES128-SHA",
-			"AES256-SHA",
-			"DES-CBC3-SHA",
-		},
-		groups: []string{"X25519MLKEM768", "X25519", "secp256r1", "secp384r1"},
-	},
-	"Intermediate": {
-		minTLSVersion: "VersionTLS12",
-		ciphers: []string{
-			"TLS_AES_128_GCM_SHA256",
-			"TLS_AES_256_GCM_SHA384",
-			"TLS_CHACHA20_POLY1305_SHA256",
-			"ECDHE-ECDSA-AES128-GCM-SHA256",
-			"ECDHE-RSA-AES128-GCM-SHA256",
-			"ECDHE-ECDSA-AES256-GCM-SHA384",
-			"ECDHE-RSA-AES256-GCM-SHA384",
-			"ECDHE-ECDSA-CHACHA20-POLY1305",
-			"ECDHE-RSA-CHACHA20-POLY1305",
-			"DHE-RSA-AES128-GCM-SHA256",
-			"DHE-RSA-AES256-GCM-SHA384",
-		},
-		groups: []string{"X25519MLKEM768", "X25519", "secp256r1", "secp384r1"},
-	},
-	"Modern": {
-		minTLSVersion: "VersionTLS13",
-		ciphers:       []string{"TLS_AES_128_GCM_SHA256", "TLS_AES_256_GCM_SHA384", "TLS_CHACHA20_POLY1305_SHA256"},
-		groups:        []string{"X25519MLKEM768", "X25519", "secp256r1", "secp384r1"},
-	},
-}
-
-// tlsVersion maps an OpenShift VersionTLS* string to a crypto/tls version constant.
-func tlsVersion(name string) uint16 {
-	switch name {
-	case "VersionTLS10":
-		return tls.VersionTLS10
-	case "VersionTLS11":
-		return tls.VersionTLS11
-	case "VersionTLS12":
-		return tls.VersionTLS12
-	case "VersionTLS13":
-		return tls.VersionTLS13
-	default:
-		return tls.VersionTLS12
-	}
+	unknownGroups  []string
+	excludedGroups []string
 }
 
 // IntermediateSettings is the default before the APIServer watch returns and
-// when the CR is missing (Node: spec?.type ?? 'Intermediate').
+// when the CR is missing (OpenShift defaults to Intermediate).
 func IntermediateSettings() Settings {
-	return FromProfile(SecurityProfile{Type: "Intermediate"})
+	return FromProfile(SecurityProfile{Type: string(configv1.TLSProfileIntermediateType)})
 }
 
 // FromProfile maps an OpenShift TLS security profile to Go settings.
 func FromProfile(p SecurityProfile) Settings {
-	return fromProfile(p, fips140.Enabled())
+	return fromProfile(p, librarycrypto.IsFIPSEnabled())
 }
 
-// fromProfile converts a security profile to Settings, applying FIPS curve filtering.
+// fromProfile converts a security profile to Settings, applying FIPS group filtering.
 func fromProfile(p SecurityProfile, fips bool) Settings {
-	spec, minName := resolveSpec(p)
-	min := tlsVersion(minName)
-	ciphers := spec.ciphers
+	spec := resolveSpec(p)
+	min := minTLSVersionOrDefault(string(spec.MinTLSVersion))
+	ciphers := spec.Ciphers
 	// OpenShift: custom + TLS 1.3 cannot set custom ciphers; use Modern.
-	if p.Type == "Custom" && min == tls.VersionTLS13 {
-		ciphers = builtin["Modern"].ciphers
+	if p.Type == string(configv1.TLSProfileCustomType) && min == tls.VersionTLS13 {
+		ciphers = configv1.TLSProfiles[configv1.TLSProfileModernType].Ciphers
 	}
-	explicitGroups := len(spec.groups) > 0
-	groups := spec.groups
-	if !explicitGroups {
-		groups = builtin["Intermediate"].groups
-	}
-	curves := filterCurves(groups, fips)
+	candidate, err := groupsForProfile(spec, fips)
 	s := Settings{
-		MinVersion:   min,
-		CipherSuites: mapCiphers(ciphers),
-		Curves:       curves,
+		MinVersion:     min,
+		CipherSuites:   mapCiphers(ciphers),
+		Curves:         candidate.Curves,
+		excludedGroups: groupNames(candidate.Excluded),
 	}
-	if explicitGroups && len(curves) == 0 {
+	s.unknownGroups = groupNames(candidate.Unknown)
+	if err != nil {
 		s.noUsableCurves = true
-		s.rejectedGroups = slices.Clone(spec.groups)
+		s.rejectedGroups = groupNames(spec.Groups)
 	}
 	if min == tls.VersionTLS13 {
 		s.MaxVersion = tls.VersionTLS13
@@ -159,24 +78,58 @@ func fromProfile(p SecurityProfile, fips bool) Settings {
 	return s
 }
 
-// resolveSpec selects the cipher/group lists and min TLS version for a profile type.
-func resolveSpec(p SecurityProfile) (builtinSpec, string) {
-	if p.Type == "Custom" && p.Custom != nil {
-		minName := p.Custom.MinTLSVersion
-		if minName == "" {
-			minName = "VersionTLS12"
+// resolveSpec selects the OpenShift API profile spec for a profile type:
+// named profiles resolve from configv1.TLSProfiles, Custom uses its inline
+// spec, and anything else falls back to Intermediate. The returned spec is
+// shared for named profiles and must not be mutated.
+func resolveSpec(p SecurityProfile) *configv1.TLSProfileSpec {
+	if p.Type == string(configv1.TLSProfileCustomType) && p.Custom != nil {
+		min := p.Custom.MinTLSVersion
+		if min == "" {
+			min = string(configv1.VersionTLS12)
 		}
-		return builtinSpec{
-			minTLSVersion: minName,
-			ciphers:       p.Custom.Ciphers,
-			groups:        p.Custom.Groups,
-		}, minName
+		return &configv1.TLSProfileSpec{
+			MinTLSVersion: configv1.TLSProtocolVersion(min),
+			Ciphers:       p.Custom.Ciphers,
+			Groups:        toTLSGroups(p.Custom.Groups),
+		}
 	}
-	spec, ok := builtin[p.Type]
-	if !ok {
-		spec = builtin["Intermediate"]
+	spec, ok := configv1.TLSProfiles[configv1.TLSProfileType(p.Type)]
+	if !ok || spec == nil {
+		spec = configv1.TLSProfiles[configv1.TLSProfileIntermediateType]
 	}
-	return spec, spec.minTLSVersion
+	return spec
+}
+
+// minTLSVersionOrDefault maps an OpenShift VersionTLS* name to a crypto/tls
+// version via library-go, falling back to the OpenShift default (TLS 1.2) for
+// unrecognized names instead of failing the profile.
+func minTLSVersionOrDefault(name string) uint16 {
+	version, err := librarycrypto.TLSVersion(name)
+	if err != nil {
+		applog.Logger().Warn("Unknown minTLSVersion in TLS security profile; using OpenShift default",
+			"minTLSVersion", name)
+		return librarycrypto.DefaultTLSVersion()
+	}
+	return version
+}
+
+// toTLSGroups converts group names to the OpenShift API TLSGroup type.
+func toTLSGroups(names []string) []configv1.TLSGroup {
+	groups := make([]configv1.TLSGroup, len(names))
+	for i, name := range names {
+		groups[i] = configv1.TLSGroup(name)
+	}
+	return groups
+}
+
+// groupNames converts OpenShift API groups back to plain names for logging.
+func groupNames(groups []configv1.TLSGroup) []string {
+	names := make([]string, len(groups))
+	for i, group := range groups {
+		names[i] = string(group)
+	}
+	return names
 }
 
 // clone returns a deep copy so callers can mutate slices without racing the reloader.
@@ -185,15 +138,19 @@ func (s Settings) clone() Settings {
 	out.CipherSuites = slices.Clone(s.CipherSuites)
 	out.Curves = slices.Clone(s.Curves)
 	out.rejectedGroups = slices.Clone(s.rejectedGroups)
+	out.unknownGroups = slices.Clone(s.unknownGroups)
+	out.excludedGroups = slices.Clone(s.excludedGroups)
 	return out
 }
 
 // settingsEqual reports whether two Settings are identical for Apply short-circuiting.
 func settingsEqual(a, b Settings) bool {
-	return a.MinVersion == b.MinVersion &&
-		a.MaxVersion == b.MaxVersion &&
-		a.noUsableCurves == b.noUsableCurves &&
-		slices.Equal(a.CipherSuites, b.CipherSuites) &&
+	if a.MinVersion != b.MinVersion || a.MaxVersion != b.MaxVersion || a.noUsableCurves != b.noUsableCurves {
+		return false
+	}
+	return slices.Equal(a.CipherSuites, b.CipherSuites) &&
 		slices.Equal(a.Curves, b.Curves) &&
-		slices.Equal(a.rejectedGroups, b.rejectedGroups)
+		slices.Equal(a.rejectedGroups, b.rejectedGroups) &&
+		slices.Equal(a.unknownGroups, b.unknownGroups) &&
+		slices.Equal(a.excludedGroups, b.excludedGroups)
 }

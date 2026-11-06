@@ -104,8 +104,19 @@ func TestWatchAppliesListThenModified(t *testing.T) {
 	stub := &stubLW{list: list, watcher: fw, watchCh: started}
 	r := NewReloader()
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go runWatch(ctx, stub, r)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		runWatch(ctx, stub, r)
+	}()
+	defer func() {
+		cancel()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("watch did not stop")
+		}
+	}()
 	select {
 	case <-started:
 	case <-time.After(2 * time.Second):
@@ -173,8 +184,19 @@ func TestWatchErrorEventRetries(t *testing.T) {
 	stub := &stubLW{list: list, watcher: fw, watchCh: started}
 	r := NewReloader()
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancel()
-	go runWatch(ctx, stub, r)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		runWatch(ctx, stub, r)
+	}()
+	defer func() {
+		cancel()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("watch did not stop")
+		}
+	}()
 	select {
 	case <-started:
 	case <-time.After(2 * time.Second):
@@ -257,8 +279,19 @@ func TestWatchExpiredRelistsWithoutBackoff(t *testing.T) {
 	stub := &relistLW{list: list, second: secondList}
 	r := NewReloader()
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	go runWatch(ctx, stub, r)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		runWatch(ctx, stub, r)
+	}()
+	defer func() {
+		cancel()
+		select {
+		case <-done:
+		case <-time.After(2 * time.Second):
+			t.Error("watch did not stop")
+		}
+	}()
 
 	select {
 	case <-secondList:
