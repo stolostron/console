@@ -6,6 +6,7 @@ import (
 	"testing"
 )
 
+// TestDefaultWatchSpecsCount checks DefaultWatchSpecs size and polled/cacheOnly/selector counts.
 func TestDefaultWatchSpecsCount(t *testing.T) {
 	specs := DefaultWatchSpecs()
 	if len(specs) != 66 {
@@ -87,6 +88,7 @@ func TestShouldForward(t *testing.T) {
 	}
 }
 
+// TestDefaultWatchSpecsShouldForwardCount checks how many DefaultWatchSpecs forward to SSE clients.
 func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
 	var forward, skip int
 	for _, s := range DefaultWatchSpecs() {
@@ -117,6 +119,7 @@ func TestSelectorQueryOrder(t *testing.T) {
 	}
 }
 
+// TestClusterScopedKindsMatchNode checks cluster-scoped watch kinds against IsClusterScopedKind.
 func TestClusterScopedKindsMatchNode(t *testing.T) {
 	var n int
 	for _, spec := range DefaultWatchSpecs() {
