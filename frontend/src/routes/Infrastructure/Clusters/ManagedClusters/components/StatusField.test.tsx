@@ -96,6 +96,47 @@ describe('ScaleClusterAlert', () => {
   })
 })
 
+describe('StatusField destroying status', () => {
+  const destroyingCluster: Cluster = {
+    ...cluster,
+    status: ClusterStatus.destroying,
+    isHypershift: false,
+  }
+
+  const renderStatusField = (testCluster: Cluster) =>
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [])
+          store.set(ansibleJobState, [])
+        }}
+      >
+        <MemoryRouter>
+          <StatusField cluster={testCluster} />
+        </MemoryRouter>
+      </StateProvider>
+    )
+
+  it('does not show a View logs link when preserveOnDelete is set', async () => {
+    const { container } = renderStatusField({
+      ...destroyingCluster,
+      hive: { ...destroyingCluster.hive, preserveOnDelete: true },
+    })
+    await waitForText('Destroying')
+    await clickByText('Destroying')
+    expect(screen.queryByText('View logs')).not.toBeInTheDocument()
+    expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('shows a View logs link when preserveOnDelete is not set', async () => {
+    const { container } = renderStatusField(destroyingCluster)
+    await waitForText('Destroying')
+    await clickByText('Destroying')
+    await waitForText('View logs')
+    expect(await axe(container)).toHaveNoViolations()
+  })
+})
+
 describe('StatusField ansible hooks', () => {
   const posthookCluster: Cluster = {
     ...cluster,
