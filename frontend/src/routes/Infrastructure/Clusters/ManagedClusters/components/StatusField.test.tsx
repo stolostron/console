@@ -1,11 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { ansibleJobState, ansibleWorkflowState, configMapsState } from '../../../../../atoms'
-import { clickByText, waitForText, clickElement } from '~/lib/test-util'
+import { clickByText, waitForText, clickElement, waitForNock } from '~/lib/test-util'
+import { nockIgnoreApiPaths, nockNamespacedList } from '~/lib/nock-util'
+import { mockOpenShiftConsoleConfigMap } from '~/lib/test-metadata'
 import { Cluster, ClusterStatus } from '../../../../../resources/utils'
 import {
   type AnsibleJob,
@@ -13,7 +15,10 @@ import {
   AnsibleJobKind,
   type AnsibleWorkflow,
   AnsibleWorkflowKind,
+  PodApiVersion,
+  PodKind,
 } from '~/resources'
+import { AcmToastContext } from '../../../../../ui-components'
 import { StatusField } from './StatusField'
 
 const cluster: Cluster = {
@@ -164,5 +169,60 @@ describe('StatusField ansible hooks', () => {
     await clickByText('View logs')
     expect(window.open).toHaveBeenCalledWith('/#/jobs/workflow/post')
     expect(await axe(container)).toHaveNoViolations()
+  })
+})
+
+describe('StatusField destroying status', () => {
+  beforeEach(() => nockIgnoreApiPaths())
+
+  // Regression test for ACM-49555: clicking "View logs" for a Destroying cluster with no
+  // deprovision pod (e.g. ClusterDeployment.spec.preserveOnDelete=true skips the uninstall
+  // job) must surface feedback instead of silently doing nothing.
+  it('shows a toast instead of silently doing nothing when no deprovision pod is found', async () => {
+    window.open = jest.fn()
+    const mockAddAlert = jest.fn()
+    const destroyingCluster: Cluster = {
+      ...cluster,
+      status: ClusterStatus.destroying,
+      isHypershift: false,
+      provider: undefined,
+    }
+    const podScope = nockNamespacedList(
+      {
+        apiVersion: PodApiVersion,
+        kind: PodKind,
+        metadata: { namespace: destroyingCluster.namespace },
+      },
+      [],
+      [
+        `hive.openshift.io/cluster-deployment-name=${destroyingCluster.name}`,
+        `job-name=${destroyingCluster.name}-uninstall`,
+      ]
+    )
+
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(configMapsState, [mockOpenShiftConsoleConfigMap])
+          store.set(ansibleJobState, [])
+        }}
+      >
+        <AcmToastContext.Provider value={{ addAlert: mockAddAlert } as any}>
+          <MemoryRouter>
+            <StatusField cluster={destroyingCluster} />
+          </MemoryRouter>
+        </AcmToastContext.Provider>
+      </StateProvider>
+    )
+
+    await waitForText('Destroying')
+    await clickByText('Destroying')
+    await waitForText('View logs')
+    await clickByText('View logs')
+    await waitForNock(podScope)
+    await waitFor(() =>
+      expect(mockAddAlert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Logs unavailable' }))
+    )
+    expect(window.open).not.toHaveBeenCalled()
   })
 })
