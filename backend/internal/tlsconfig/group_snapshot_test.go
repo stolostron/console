@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"testing"
 )
 
@@ -71,6 +72,14 @@ func TestReloaderConcurrentGroupSnapshots(t *testing.T) {
 	r := NewReloader()
 	r.Apply(profiles[0])
 	var workers sync.WaitGroup
+	// Worker goroutines must not call t.Error directly (races with the test
+	// goroutine returning); record the first failure and report it once.
+	var failed atomic.Bool
+	fail := func(msg string) {
+		if failed.CompareAndSwap(false, true) {
+			t.Error(msg)
+		}
+	}
 	workers.Go(func() {
 		for i := 0; i < 50; i++ {
 			r.Apply(profiles[i%2])
@@ -79,22 +88,25 @@ func TestReloaderConcurrentGroupSnapshots(t *testing.T) {
 	for range 3 {
 		workers.Go(func() {
 			for range 50 {
+				if failed.Load() {
+					return
+				}
 				snapshot := r.Settings()
 				if !settingsEqual(snapshot, profiles[0]) && !settingsEqual(snapshot, profiles[1]) {
-					t.Error("Settings returned a partial profile update")
+					fail("Settings returned a partial profile update")
 					return
 				}
 				mutateGroupSnapshot(&snapshot)
 				cfg, err := r.GetConfigForClient(nil)
 				if err != nil {
-					t.Error(err)
+					fail(err.Error())
 					return
 				}
 				match := func(s Settings) bool {
 					return slices.Equal(cfg.CurvePreferences, s.Curves) && slices.Equal(cfg.CipherSuites, s.CipherSuites)
 				}
 				if !match(profiles[0]) && !match(profiles[1]) {
-					t.Error("handshake saw a partial profile update")
+					fail("handshake saw a partial profile update")
 					return
 				}
 				cfg.CurvePreferences[0] = tls.CurveP521
