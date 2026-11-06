@@ -10,6 +10,7 @@ import { ISyncArgoCDModalProps, SyncArgoCDModal } from '~/routes/Applications/co
 import { EditAppSetModal, IEditAppSetModalProps } from './modals/EditAppSetModal'
 import { EditYamlModal, IEditYamlModalProps } from './modals/EditYamlModal'
 import { ILogsModalProps, LogsModal } from './modals/LogsModal'
+import { IViewRepositoryModalProps, ViewRepositoryModal } from './modals/ViewRepositoryModal'
 import { processResourceActionLink } from './helpers/diagram-helpers'
 import { getDiagramElements } from './model/topology'
 import type { TopologyAlert } from './analysis/analyzeTopology'
@@ -267,6 +268,11 @@ export function ApplicationTopologyPageContent() {
   const [logsModalProps, setLogsModalProps] = useState<ILogsModalProps | { open: false }>({
     open: false,
   })
+  const [viewRepositoryModalProps, setViewRepositoryModalProps] = useState<IViewRepositoryModalProps | { open: false }>(
+    {
+      open: false,
+    }
+  )
 
   const handleEditAppSet = useCallback(
     (node: TopologyNode) => {
@@ -308,6 +314,14 @@ export function ApplicationTopologyPageContent() {
     },
     [hubClusterName, handleResourceUpdateSuccess]
   )
+
+  const handleViewRepo = useCallback((node: TopologyNode) => {
+    setViewRepositoryModalProps({
+      open: true,
+      close: () => setViewRepositoryModalProps({ open: false }),
+      node,
+    })
+  }, [])
 
   const handleViewLogs = useCallback(
     (node: TopologyNode) => {
@@ -366,6 +380,7 @@ export function ApplicationTopologyPageContent() {
       <EditAppSetModal {...editAppSetModalProps} />
       <EditYamlModal {...editYamlModalProps} />
       <LogsModal {...logsModalProps} />
+      <ViewRepositoryModal {...viewRepositoryModalProps} />
       <DrawerShapes />
       <Topology
         elements={elements}
@@ -389,6 +404,7 @@ export function ApplicationTopologyPageContent() {
         onEditYaml={handleEditYaml}
         onEditApplications={handleEditApplications}
         onViewLogs={handleViewLogs}
+        onViewRepo={handleViewRepo}
         onSyncResources={handleSyncResources}
         onLaunchArgo={handleLaunchArgo}
       />

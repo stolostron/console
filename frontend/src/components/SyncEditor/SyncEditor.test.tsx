@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { SyncEditor, SyncEditorProps, ValidationStatus } from './SyncEditor'
+import { Language } from '@patternfly/react-code-editor'
 import { SYNC_EDITOR_SHOW_CHANGES_STORAGE_KEY } from './SyncEditorToolbar'
 import * as MonacoEditorReact from '@monaco-editor/react'
 import { render, screen, waitFor, fireEvent, createEvent, act } from '@testing-library/react'
@@ -172,6 +173,15 @@ describe('SyncEditor component', () => {
     // console.log(util.inspect(decorators, { depth: null }))
     const decorators = JSON.parse(input.dataset['decorators'] || '')
     expect(decorators).toEqual(existingResourceDecorators)
+  })
+
+  it('uses the provided editor language', async () => {
+    render(<SyncEditor {...propsExistingResource} language={Language.json} />)
+
+    const input = screen.getByRole('textbox', {
+      name: /monaco/i,
+    }) as HTMLTextAreaElement
+    expect(input).toHaveAttribute('data-language', 'json')
   })
 
   it('yaml/form edit syncing', async () => {

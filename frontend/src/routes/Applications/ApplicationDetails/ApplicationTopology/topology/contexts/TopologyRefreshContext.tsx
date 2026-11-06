@@ -7,6 +7,7 @@ export type TopologyRefreshContextValue = {
   onViewLogs?: (node: TopologyNode) => void
   onEditYaml?: (node: TopologyNode) => void
   onEditApplications?: (node: TopologyNode) => void
+  onViewRepo?: (node: TopologyNode) => void
 }
 
 export const TopologyRefreshContext = createContext<TopologyRefreshContextValue>({})

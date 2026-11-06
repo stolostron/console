@@ -16,7 +16,8 @@ import { AcmAlert, AcmButton, AcmLoadingPage, AcmModal, AcmSelect } from '~/ui-c
 import { createResourceURL } from '../helpers/diagram-helpers'
 import type { ResourceAction } from '../types'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
-import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
+import { ModalNavigatorLayout } from './ModalNavigatorLayout'
+import { ResourceNavigator } from './ResourceNavigator'
 import {
   buildPodNavigatorGroups,
   findInitialNavigatorSelection,
@@ -112,26 +113,16 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
       position="top"
       hasNoBodyWrapper
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '70vh',
-          minHeight: 0,
-          overflow: 'hidden',
-          paddingTop: 'var(--pf-t--global--spacer--sm)',
-          paddingLeft: 'var(--pf-t--global--spacer--lg)',
-          paddingRight: 'var(--pf-t--global--spacer--lg)',
-          paddingBottom: 'var(--pf-t--global--spacer--lg)',
-        }}
-      >
-        <TopologyModalNavigatorLayout
+      <div className="resource-modal-body resource-modal-body--padded-bottom">
+        <ModalNavigatorLayout
           showNavigator={showNavigator}
-          navigatorProps={{
-            groups: navigatorGroups,
-            selectedItemId,
-            onSelectItem: handleNavigatorSelect,
-          }}
+          navigator={
+            <ResourceNavigator
+              groups={navigatorGroups}
+              selectedItemId={selectedItemId}
+              onSelectItem={handleNavigatorSelect}
+            />
+          }
         >
           <TopologyLogsViewer
             key={selectedItemId ?? node.id}
@@ -139,7 +130,7 @@ function LogsModalContent({ close, node, processActionLink, hubClusterName }: Re
             renderResourceURLLink={renderResourceURLLink}
             showPodSelect={!showNavigator}
           />
-        </TopologyModalNavigatorLayout>
+        </ModalNavigatorLayout>
       </div>
     </AcmModal>
   )
@@ -390,7 +381,7 @@ function TopologyLogsViewer({
     logsContent = (
       <LogViewer
         ref={logViewerRef}
-        height={isFullscreen ? '100%' : 'calc(70vh - 200px)'}
+        height="100%"
         data={logsError ? '' : logs}
         theme="dark"
         isTextWrapped={wrapLines}

@@ -306,6 +306,33 @@ describe('decorate', () => {
     expect(applied.some((d) => d.options.linesDecorationsClassName === 'customLineDecoration')).toBe(true)
   })
 
+  it('does not add change decorations when the editor is readonly', () => {
+    const { editor, deltaDecorations } = createEditor()
+    const change = {
+      parsed: {},
+      mappings: { name: { $r: 2, $l: 1 } },
+    } as unknown as DecorateChangeArg
+
+    decorate(
+      false,
+      true,
+      editor,
+      monaco,
+      [],
+      [{ $t: 'C', $a: 'name', $f: 'changed-name' }],
+      change,
+      [{ $t: 'N', $a: 'name', $f: null }],
+      [],
+      [],
+      '',
+      undefined,
+      true
+    )
+
+    const applied = deltaDecorations.mock.calls[0][1] as { options: { linesDecorationsClassName?: string } }[]
+    expect(applied.some((d) => d.options.linesDecorationsClassName)).toBe(false)
+  })
+
   it('does not annotate a previous secret value, even when the secret is revealed', () => {
     const { editor, deltaDecorations } = createEditor()
     const tokenPath = ['Secret', 0, 'stringData', 'token']
