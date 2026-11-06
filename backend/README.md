@@ -21,5 +21,6 @@ rm -rf backend/.env backend/certs/ && npm run setup && npm run ci:backend
 ```
 
 See [AGENTS.md](AGENTS.md) for layout, architecture, and commands.
+See [REFERENCES.md](REFERENCES.md) for a table that links paths and constants to their files.
 
 Go listens on `BACKEND_PORT` (default 4000).
