@@ -38,12 +38,14 @@ func splice(src *[]informers.ForwardedObject, n int) []Event {
 	return out
 }
 
+// sortByName orders forwarded objects by metadata.name for stable snapshot packets.
 func sortByName(items []informers.ForwardedObject) {
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Object.GetName() < items[j].Object.GetName()
 	})
 }
 
+// sortByNamespace orders forwarded objects by metadata.namespace for stable snapshot packets.
 func sortByNamespace(items []informers.ForwardedObject) {
 	sort.Slice(items, func(i, j int) bool {
 		return items[i].Object.GetNamespace() < items[j].Object.GetNamespace()
@@ -65,7 +67,7 @@ func packetize(objs []informers.ForwardedObject) []Event {
 			infos = append(infos, o)
 		case "ManagedClusterAddOn":
 			addons = append(addons, o)
-		case "MulticlusterRoleAssignment", "User":
+		case "MulticlusterRoleAssignment":
 			rbac = append(rbac, o)
 		case "Search", "Secret":
 			other = append(other, o)

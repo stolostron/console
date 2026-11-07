@@ -6,10 +6,11 @@ import (
 	"testing"
 )
 
+// TestDefaultWatchSpecsCount checks DefaultWatchSpecs size and polled/cacheOnly/selector counts.
 func TestDefaultWatchSpecsCount(t *testing.T) {
 	specs := DefaultWatchSpecs()
-	if len(specs) != 67 {
-		t.Fatalf("got %d specs, want 67", len(specs))
+	if len(specs) != 66 {
+		t.Fatalf("got %d specs, want 66", len(specs))
 	}
 	var polled, cacheOnly, withSel int
 	for _, s := range specs {
@@ -87,6 +88,7 @@ func TestShouldForward(t *testing.T) {
 	}
 }
 
+// TestDefaultWatchSpecsShouldForwardCount checks how many DefaultWatchSpecs forward to SSE clients.
 func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
 	var forward, skip int
 	for _, s := range DefaultWatchSpecs() {
@@ -96,8 +98,8 @@ func TestDefaultWatchSpecsShouldForwardCount(t *testing.T) {
 			skip++
 		}
 	}
-	if forward != 63 {
-		t.Fatalf("forward=%d want 63", forward)
+	if forward != 62 {
+		t.Fatalf("forward=%d want 62", forward)
 	}
 	if skip != 4 {
 		t.Fatalf("skip=%d want 4 (2 polled + 2 cacheOnly)", skip)
@@ -117,6 +119,7 @@ func TestSelectorQueryOrder(t *testing.T) {
 	}
 }
 
+// TestClusterScopedKindsMatchNode checks cluster-scoped watch kinds against IsClusterScopedKind.
 func TestClusterScopedKindsMatchNode(t *testing.T) {
 	var n int
 	for _, spec := range DefaultWatchSpecs() {
@@ -124,11 +127,11 @@ func TestClusterScopedKindsMatchNode(t *testing.T) {
 			n++
 		}
 	}
-	if n != 15 {
-		t.Fatalf("cluster-scoped specs=%d want 15", n)
+	if n != 14 {
+		t.Fatalf("cluster-scoped specs=%d want 14", n)
 	}
 	for _, kind := range []string{
-		"ManagedCluster", "Namespace", "StorageClass", "User",
+		"ManagedCluster", "Namespace", "StorageClass",
 		"ClusterManagementAddOn", "AgentServiceConfig", "Authentication",
 		"Infrastructure", "CertificateSigningRequest", "ManagedClusterSet",
 		"ClusterExtension", "ClusterImageSet", "MultiClusterEngine", "ClusterVersion",

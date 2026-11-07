@@ -58,7 +58,6 @@ import {
   Subscription,
   SubscriptionOperator,
   SubscriptionReport,
-  User,
 } from './resources'
 import type { AnsibleWorkflow, ClusterExtension } from './resources'
 
@@ -126,7 +125,6 @@ export const subscriptionOperatorsState = AtomArray<SubscriptionOperator>()
 export const clusterExtensionsState = AtomArray<ClusterExtension>()
 export const subscriptionReportsState = AtomArray<SubscriptionReport>()
 export const subscriptionsState = AtomArray<Subscription>()
-export const usersState = AtomArray<User>()
 export const vmClusterRolesState = AtomArray<ClusterRole>()
 
 export const settingsState = atom<Settings>({})

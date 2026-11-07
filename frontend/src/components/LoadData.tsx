@@ -109,8 +109,6 @@ import {
   ClusterExtensionKind,
   SubscriptionReportApiVersion,
   SubscriptionReportKind,
-  UserApiVersion,
-  UserKind,
   ServiceApiVersion,
   ServiceKind,
 } from '../resources'
@@ -180,7 +178,6 @@ import {
   clusterExtensionsState,
   subscriptionReportsState,
   subscriptionsState,
-  usersState,
   vmClusterRolesState,
   WatchEvent,
 } from '../atoms'
@@ -192,6 +189,7 @@ import { usePageActivity } from '../lib/usePageActivity'
 
 type StateSetter<Value> = (value: Value | ((currentValue: Value) => Value)) => void
 
+/** Boots shared Recoil/Jotai state from the hub SSE event stream and related polls. */
 export function LoadData(props: { children?: ReactNode }) {
   const { loadCompleted, setLoadStarted, setLoadCompleted, setIsStreamIdle, setIsReconnecting, mounted } =
     useContext(PluginDataContext)
@@ -268,7 +266,6 @@ export function LoadData(props: { children?: ReactNode }) {
   const setClusterExtensionsState = useSetAtom(clusterExtensionsState)
   const setSubscriptionReportsState = useSetAtom(subscriptionReportsState)
   const setSubscriptionsState = useSetAtom(subscriptionsState)
-  const setUsers = useSetAtom(usersState)
 
   const { setters, mappers, caches } = useMemo(() => {
     const setters: Record<string, Record<string, StateSetter<any[]>>> = {}
@@ -358,7 +355,6 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(SubscriptionOperatorApiVersion, SubscriptionOperatorKind, setSubscriptionOperatorsState)
     addSetter(ClusterExtensionApiVersion, ClusterExtensionKind, setClusterExtensionsState)
     addSetter(SubscriptionReportApiVersion, SubscriptionReportKind, setSubscriptionReportsState)
-    addSetter(UserApiVersion, UserKind, setUsers)
 
     return { setters, mappers, caches }
   }, [
@@ -416,7 +412,6 @@ export function LoadData(props: { children?: ReactNode }) {
     setClusterExtensionsState,
     setSubscriptionReportsState,
     setSubscriptionsState,
-    setUsers,
   ])
 
   const stopStream = useCallback(() => {

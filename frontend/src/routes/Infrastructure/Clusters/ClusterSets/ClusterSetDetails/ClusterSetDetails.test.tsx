@@ -15,7 +15,6 @@ import {
   managedClustersState,
   submarinerConfigsState,
   hostedClustersState,
-  usersState,
 } from '../../../../../atoms'
 import {
   nockClusterList,
@@ -1598,7 +1597,6 @@ const Component = (props: { isGlobal?: boolean }) => (
       store.set(submarinerConfigsState, [mockSubmarinerConfig])
       store.set(clusterPoolsState, [])
       store.set(hostedClustersState, [mockHostedClusterKubeVirt, mockHostedClusterBaremetal])
-      store.set(usersState, [mockUser])
     }}
   >
     <MemoryRouter
