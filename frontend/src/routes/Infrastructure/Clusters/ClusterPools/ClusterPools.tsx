@@ -44,7 +44,7 @@ import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterC
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
 import { getMappedClusterPoolClusters } from '../ClusterSets/components/useClusters'
-import { ClusterLocationLine } from '~/components/Clusters/ClusterLocation'
+import { ClusterLocationLine } from '~/components/Clusters/ClusterLocationLine'
 import { ClusterLocation, getClusterLocation } from '~/lib/cluster-location'
 
 export default function ClusterPoolsPage() {
@@ -157,27 +157,20 @@ export function determineProvider(clusterPool: ClusterPool) {
 
 export function getClusterPoolLocation(pool: ClusterPool): ClusterLocation {
   const location = getClusterLocation(pool.metadata.labels)
-  if (!location.region) {
-    const platform = pool.spec?.platform
-    const region = platform?.aws?.region ?? platform?.gcp?.region ?? platform?.azure?.region
-    if (region) location.region = region
-  }
-  return location
+  if (location.region) return location
+  const platform = pool.spec?.platform
+  const region = platform?.aws?.region || platform?.gcp?.region || platform?.azure?.region
+  return region ? { ...location, region } : location
 }
 
 export function ClusterPoolName(props: { clusterPool: ClusterPool }) {
   const provider = determineProvider(props.clusterPool)
-  const { region, zone, datacenter } = getClusterPoolLocation(props.clusterPool)
-  const labels: Record<string, string> = {}
-  if (region) labels.region = region
-  if (zone) labels.zone = zone
-  if (datacenter) labels.datacenter = datacenter
   return (
     <div>
       <span style={{ whiteSpace: 'nowrap' }}>
         {provider && <AcmInlineProvider iconOnly provider={provider} />} {props.clusterPool.metadata.name}
       </span>
-      <ClusterLocationLine labels={labels} />
+      <ClusterLocationLine location={getClusterPoolLocation(props.clusterPool)} />
     </div>
   )
 }

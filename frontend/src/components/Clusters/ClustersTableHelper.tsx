@@ -67,7 +67,8 @@ import {
 import { SearchOperator } from '../../ui-components/AcmSearchInput'
 import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
 import { HighlightSearchText } from '../HighlightSearchText'
-import { ClusterLocationLine } from './ClusterLocation'
+import { ClusterLocationLine } from './ClusterLocationLine'
+import { getClusterLocation } from '~/lib/cluster-location'
 import { DEFAULT_MAX_VISIBLE_LABELS, getOverflowLabelKeys } from './labelCollapse'
 
 const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
@@ -128,7 +129,7 @@ export function useClusterNameColumn(
             <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
           </Content>
         )}
-        <ClusterLocationLine labels={cluster.labels} />
+        <ClusterLocationLine location={getClusterLocation(cluster.labels)} />
       </>
     ),
     exportContent: (cluster) => cluster.displayName,
