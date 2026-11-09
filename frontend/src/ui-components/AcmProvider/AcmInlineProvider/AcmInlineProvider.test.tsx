@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import { AcmInlineProvider } from './AcmInlineProvider'
 import { Provider, ProviderLongTextMap } from '../'
@@ -12,5 +12,12 @@ describe('AcmInlineProvider', () => {
       expect(queryAllByText(ProviderLongTextMap[provider])).toBeTruthy()
       expect(await axe(container)).toHaveNoViolations()
     })
+  })
+
+  test('iconOnly hides the long text and exposes an accessible label', async () => {
+    const { container } = render(<AcmInlineProvider provider={Provider.aws} iconOnly />)
+    expect(screen.queryByText(ProviderLongTextMap[Provider.aws])).not.toBeInTheDocument()
+    expect(screen.getByLabelText(ProviderLongTextMap[Provider.aws])).toBeInTheDocument()
+    expect(await axe(container)).toHaveNoViolations()
   })
 })
