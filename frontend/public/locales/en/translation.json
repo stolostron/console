@@ -828,6 +828,7 @@
   "cluster.create.ocp.image": "Release image",
   "cluster.create.ocp.singleNode": "Single Node OpenShift",
   "cluster.decision.resource.requeue.time.description": "Sets the time delay in seconds before the application set controller triggers a refresh of the cluster resource decision generator to detect placement decision changes and update the resulting applications.",
+  "cluster.location.datacenter": "Datacenter",
   "cluster.openConsole": "Open cluster console",
   "clusterClaim.cluster.name": "Cluster name",
   "clusterClaim.create.message": "Claiming a cluster from <bold>{{clusterPoolName}}</bold> will remove one of the available clusters from the pool and a new cluster will be created to replace it.",
