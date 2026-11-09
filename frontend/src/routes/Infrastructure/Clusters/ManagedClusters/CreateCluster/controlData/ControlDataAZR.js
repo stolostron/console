@@ -17,6 +17,7 @@ import {
   onImageChange,
   proxyControlData,
   reverseImageSet,
+  locationControls,
 } from './ControlDataHelpers'
 import { getAlphanumericValidator, getNumericValidator } from '../../../../../../components/TemplateEditor'
 
@@ -577,6 +578,7 @@ export const getControlDataAZR = (
       cacheUserValueKey: 'create.cluster.region',
       reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ...locationControls(t),
     ///////////////////////  architecture  /////////////////////////////////////
     ...architectureData(t),
     ///////////////////////  control plane pool  /////////////////////////////////////
