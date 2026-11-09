@@ -147,10 +147,11 @@ export interface ArgoWizardProps {
   isPullModel?: boolean
   repoSecrets?: Secret[]
   isModal?: boolean
+  preferClustersGenerator?: boolean
 }
 
 export function ArgoWizard(props: ArgoWizardProps) {
-  const { resources, isPullModel = false } = props
+  const { resources, isPullModel = false, preferClustersGenerator = false } = props
   const applicationSet: any = resources?.find((resource) => resource.kind === ApplicationSetKind)
   const source = applicationSet?.spec.template.spec.source
   const sources = applicationSet?.spec.template.spec.sources
@@ -377,19 +378,29 @@ export function ArgoWizard(props: ArgoWizardProps) {
             kind: 'ApplicationSet',
             metadata: { name: '', namespace: '' },
             spec: {
-              generators: [
-                {
-                  clusterDecisionResource: {
-                    configMapRef: 'acm-placement',
-                    labelSelector: {
-                      matchLabels: {
-                        'cluster.open-cluster-management.io/placement': '-placement',
+              generators: preferClustersGenerator
+                ? [
+                    {
+                      clusters: {
+                        selector: {
+                          matchLabels: {},
+                        },
                       },
                     },
-                    requeueAfterSeconds: 180,
-                  },
-                },
-              ],
+                  ]
+                : [
+                    {
+                      clusterDecisionResource: {
+                        configMapRef: 'acm-placement',
+                        labelSelector: {
+                          matchLabels: {
+                            'cluster.open-cluster-management.io/placement': '-placement',
+                          },
+                        },
+                        requeueAfterSeconds: 180,
+                      },
+                    },
+                  ],
               template: {
                 metadata: {
                   name: '-{{name}}',

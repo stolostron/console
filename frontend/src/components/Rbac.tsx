@@ -106,7 +106,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
       // finds action in the flattened array that includes both the top-level and the nested actions
       const action = actionsWithFlyoutActions.find((a) => a.id === id)
       // single item action
-      if (action?.click) {
+      if (action?.click && !action.isAriaDisabled && !action.isDisabled) {
         action.click(props.item)
       }
     },
@@ -134,7 +134,7 @@ export function RbacDropdown<T = unknown>(props: RbacDropdownProps<T>) {
               return action
             }
           } catch {
-            return action
+            return { ...action, isAriaDisabled: false }
           }
         })
       )

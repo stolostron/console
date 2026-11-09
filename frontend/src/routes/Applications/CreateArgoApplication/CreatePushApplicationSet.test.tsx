@@ -410,6 +410,51 @@ describe('Create Argo Application Set', () => {
     await waitForNocks(createGitAppSetNocks)
   })
 
+  test('defaults to the Clusters generator when Argo CD Agent mode is enabled', async () => {
+    const agentEnabledGitOpsCluster: GitOpsCluster = {
+      ...gitOpsCluster,
+      spec: { ...gitOpsCluster.spec, gitopsAddon: { enabled: true, argoCDAgent: { enabled: true, mode: 'managed' } } },
+    }
+    const AddApplicationSetWithAgentMode = () => (
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [mockPlacement])
+          store.set(gitOpsClustersState, [agentEnabledGitOpsCluster])
+          store.set(channelsState, [channelGit, channelHelm])
+          store.set(namespacesState, [namespace])
+          store.set(secretsState, [])
+          store.set(managedClusterSetsState, [clusterSet])
+          store.set(managedClusterSetBindingsState, [clusterSetBinding])
+          store.set(subscriptionOperatorsState, gitOpsOperators)
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+          <Routes>
+            <Route path={NavigationPath.createApplicationArgo} element={<CreatePushApplicationSet />} />
+          </Routes>
+        </MemoryRouter>
+      </StateProvider>
+    )
+    const initialNocks = [
+      nockList(
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'applicationsets',
+        },
+        [argoAppSetGit]
+      ),
+    ]
+    render(<AddApplicationSetWithAgentMode />)
+    await waitForNocks(initialNocks)
+
+    await typeByTestId('name', argoAppSetGit!.metadata!.name!)
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByText(agentEnabledGitOpsCluster!.spec!.argoServer!.argoNamespace)
+    await clickByText('Next')
+
+    await waitForText('Clusters Generator', true)
+  })
+
   test('can create an Application Set with Helm', async () => {
     nockList(
       {

@@ -3,13 +3,16 @@
 import { render, screen, waitFor, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
+import { gitOpsClustersState, managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
 import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
 import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement, waitTimeout } from '~/lib/test-util'
 import {
   ApplicationKind,
   ApplicationSetKind,
+  GitOpsCluster,
+  GitOpsClusterApiVersion,
+  GitOpsClusterKind,
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterKind,
@@ -107,6 +110,18 @@ const hubCluster: ManagedCluster = {
 
 const mockClusters = [hubCluster]
 
+const mockGitOpsCluster: GitOpsCluster = {
+  apiVersion: GitOpsClusterApiVersion,
+  kind: GitOpsClusterKind,
+  metadata: { name: 'gitops-cluster', namespace: 'openshift-gitops' },
+  spec: { gitopsAddon: { enabled: false } },
+}
+
+const mockAgentEnabledGitOpsCluster: GitOpsCluster = {
+  ...mockGitOpsCluster,
+  spec: { gitopsAddon: { enabled: true, argoCDAgent: { enabled: true, mode: 'managed' } } },
+}
+
 describe('Applications Page', () => {
   beforeEach(async () => {
     localStorage.removeItem('acm-table-filter.applicationTable')
@@ -120,6 +135,7 @@ describe('Applications Page', () => {
           store.set(subscriptionsState, mockSubscriptions)
           store.set(placementDecisionsState, mockPlacementsDecisions)
           store.set(managedClustersState, mockClusters)
+          store.set(gitOpsClustersState, [mockGitOpsCluster])
         }}
       >
         <AcmToastProvider>
@@ -316,17 +332,17 @@ describe('Applications Page', () => {
     expect(screen.getByTestId('location-display')).toHaveTextContent(route)
   })
 
-  test('create dropdown navigates to argo pull model', async () => {
+  test('create dropdown navigates to argo pull model (ManifestWork pull model when agent mode is off)', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - Pull model'))
+    await clickElement(screen.getByText('Argo CD ManifestWork Pull model ApplicationSet'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
   })
 
   test('create dropdown navigates to argo push model', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - Push model'))
+    await clickElement(screen.getByText('Argo CD Push model ApplicationSet'))
     expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
@@ -335,6 +351,13 @@ describe('Applications Page', () => {
     await clickElement(screen.getByRole('button', { name: /create application/i }))
     await clickElement(within(screen.getByRole('menu')).getByText('Subscription'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/subscription')
+  })
+
+  test('create dropdown navigates to the GitOps configuration tab', async () => {
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    await clickElement(screen.getByText('Set up GitOps configuration for Argo CD Agent Pull'))
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/infrastructure/clusters/gitops')
   })
 
   test('export button should produce a file for download', async () => {
@@ -376,6 +399,57 @@ describe('Applications Page', () => {
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^applicationsoverview-[\d]+\.csv$/)
   })
 })
+
+function renderOverviewWithGitOpsClusters(gitOpsClusters: GitOpsCluster[]) {
+  nockIgnoreRBAC()
+  nockIgnoreApiPaths()
+  nockAggegateRequest('applications', applicationAggregate.req, applicationAggregate.res)
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+  render(
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionsState, mockSubscriptions)
+        store.set(placementDecisionsState, mockPlacementsDecisions)
+        store.set(managedClustersState, mockClusters)
+        store.set(gitOpsClustersState, gitOpsClusters)
+      }}
+    >
+      <AcmToastProvider>
+        <AcmToastGroup />
+        <MemoryRouter>
+          <PluginContext.Provider
+            value={{
+              ...defaultPlugin,
+              acmExtensions: acmExtension,
+            }}
+          >
+            <LocationDisplay />
+            <Overview />
+          </PluginContext.Provider>
+        </MemoryRouter>
+      </AcmToastProvider>
+    </StateProvider>
+  )
+}
+
+describe('Create application dropdown - GitOps agent mode', () => {
+  test('pull model item is labeled "Agent pull model" when Argo CD Agent mode is enabled', async () => {
+    renderOverviewWithGitOpsClusters([mockAgentEnabledGitOpsCluster])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    expect(screen.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
+  })
+
+  test('pull model item is disabled when there is no GitOpsCluster configured', async () => {
+    renderOverviewWithGitOpsClusters([])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    expect(screen.getByRole('menuitem', { name: /ManifestWork pull model/i })).toHaveAttribute('aria-disabled', 'true')
+  })
+})
+
 describe('Create application dropdown', () => {
   test('Create application button should be disabled when unauthorized', async () => {
     ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => false)

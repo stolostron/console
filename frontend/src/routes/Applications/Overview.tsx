@@ -2,6 +2,8 @@
 
 import {
   Content,
+  Flex,
+  FlexItem,
   Label,
   PageSection,
   Popover,
@@ -10,6 +12,8 @@ import {
   StackItem,
   ToolbarItem,
 } from '@patternfly/react-core'
+import { RhUiLongArrowRightIcon } from '@patternfly/react-icons'
+import textStyles from '@patternfly/react-styles/css/utilities/Text/text'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
@@ -46,7 +50,7 @@ import {
   Subscription,
 } from '../../resources'
 import { filterLabelFn, getISOStringTimestamp } from '../../resources/utils'
-import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '../../shared-atoms'
 import {
   AcmButton,
   AcmDropdown,
@@ -1002,6 +1006,11 @@ export default function ApplicationsOverview() {
   const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
   const canCreateApplicationSet = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationSetDefinition))
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
+  const { gitOpsClustersState } = useSharedAtoms()
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const hasGitOpsCluster = gitOpsClusters.length > 0
+  const { isArgoCDAgentModeEnabledValue } = useSharedSelectors()
+  const isArgoCDAgentModeEnabled = useSharedValue(isArgoCDAgentModeEnabledValue)
 
   const rowActionResolver = useCallback(
     (resource: IResource<ApplicationStatus>) => {
@@ -1216,40 +1225,65 @@ export default function ApplicationsOverview() {
             void navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
             void navigate(NavigationPath.createApplicationArgoPullModel)
+          } else if (id === 'configure-gitops') {
+            void navigate(NavigationPath.gitOps)
           } else {
             void navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}
+        menuWidth="min(40rem, calc(100vw - 2rem))"
         dropdownItems={[
           {
-            id: 'psuedo.group.label',
-            isAriaDisabled: true,
-            text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
-          },
-          {
             id: 'create-argo-pull-model',
-            text: t('Argo CD ApplicationSet - Pull model'),
-            description: t(
-              'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
-            ),
-            isDisabled: !canCreateApplicationSet,
-            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
+            text: isArgoCDAgentModeEnabled
+              ? t('Argo CD Agent Pull model ApplicationSet')
+              : t('Argo CD ManifestWork Pull model ApplicationSet'),
+            description: isArgoCDAgentModeEnabled
+              ? t(
+                  'Deploy applications across managed clusters using Argo CD Agent pull mode. Managed clusters pull directly from Git using the Argo CD Agent.'
+                )
+              : t(
+                  'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
+                ),
+            isDisabled: !canCreateApplicationSet || !hasGitOpsCluster,
+            tooltip: !canCreateApplicationSet
+              ? t('rbac.unauthorized')
+              : !hasGitOpsCluster
+                ? t('Create a GitOps configuration before creating a pull model application.')
+                : '',
           },
           {
             id: 'create-argo',
-            text: t('Argo CD ApplicationSet - Push model'),
-            description: t(
-              'Hub cluster pushes application resources to managed clusters requiring credentials for each cluster.'
-            ),
+            text: t('Argo CD Push model ApplicationSet'),
+            description: t('Push application resources from the hub cluster out to managed clusters.'),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-subscription',
             text: <DeprecatedTitle title={t('Subscription')} />,
+            description: t('Distribute subscription resources from the hub to managed clusters'),
             isDisabled: !canCreateApplication,
             tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
+          },
+          {
+            id: 'configure-gitops',
+            separator: true,
+            text: (
+              <Flex
+                component="span"
+                className={textStyles.textColorLink}
+                justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                alignItems={{ default: 'alignItemsCenter' }}
+                flexWrap={{ default: 'nowrap' }}
+              >
+                <FlexItem component="span">{t('Set up GitOps configuration for Argo CD Agent Pull')}</FlexItem>
+                <FlexItem component="span">
+                  <RhUiLongArrowRightIcon aria-hidden />
+                </FlexItem>
+              </Flex>
+            ),
           },
         ]}
         isKebab={false}
@@ -1257,7 +1291,7 @@ export default function ApplicationsOverview() {
         isPrimary={true}
       />
     ),
-    [canCreateApplication, canCreateApplicationSet, navigate, t]
+    [canCreateApplication, canCreateApplicationSet, hasGitOpsCluster, isArgoCDAgentModeEnabled, navigate, t]
   )
 
   const compareAppTypesLink = useMemo(
@@ -1268,19 +1302,27 @@ export default function ApplicationsOverview() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Pull model')}</Content>
+                <Content component="p">
+                  {isArgoCDAgentModeEnabled
+                    ? t('Argo CD Agent Pull model ApplicationSet')
+                    : t('Argo CD ManifestWork Pull model ApplicationSet')}
+                </Content>
               </span>
               <span>
                 <Content component="p">
-                  {t(
-                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
-                  )}
+                  {isArgoCDAgentModeEnabled
+                    ? t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )
+                    : t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )}
                 </Content>
               </span>
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Push model')}</Content>
+                <Content component="p">{t('Argo CD Push model ApplicationSet')}</Content>
               </span>
               <span>
                 <Content component="p">
@@ -1314,7 +1356,7 @@ export default function ApplicationsOverview() {
         </AcmButton>
       </Popover>
     ),
-    [t]
+    [isArgoCDAgentModeEnabled, t]
   )
 
   const additionalToolbarItems = useMemo(
