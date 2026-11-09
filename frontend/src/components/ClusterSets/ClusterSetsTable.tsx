@@ -1,7 +1,14 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmInlineProvider, AcmLabels, AcmTable } from '../../ui-components'
-import { Provider, ProviderLongTextMap } from '~/ui-components'
+import {
+  AcmButton,
+  AcmEmptyState,
+  AcmInlineProvider,
+  AcmLabels,
+  AcmTable,
+  Provider,
+  ProviderLongTextMap,
+} from '~/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useMemo, useState } from 'react'
