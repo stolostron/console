@@ -112,7 +112,12 @@ export async function getGitBranchPathDetails(
   let pathEnd = path.length
   while (pathStart < pathEnd && path[pathStart] === '/') pathStart++
   while (pathEnd > pathStart && path[pathEnd - 1] === '/') pathEnd--
-  const normalizedPath = path.slice(pathStart, pathEnd)
+  let normalizedPath = path.slice(pathStart, pathEnd)
+  if (normalizedPath === '.') {
+    normalizedPath = ''
+  } else if (normalizedPath.startsWith('./')) {
+    normalizedPath = normalizedPath.slice(2)
+  }
   const emptyTree = (): GitBranchPathNode => ({ type: 'tree', path, children: [] })
 
   try {

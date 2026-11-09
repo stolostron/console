@@ -41,7 +41,6 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   editableUidSiblings?: boolean
   syncs?: unknown
   readonly?: boolean
-  language?: Language
   mock?: boolean
   autoCreateNs?: boolean
   onClose?: () => void
@@ -69,7 +68,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     syncs,
     filters,
     readonly,
-    language,
     mock,
     autoCreateNs,
     onStatusChange,
@@ -916,7 +914,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           isLineNumbersVisible={true}
           isReadOnly={readonly}
           onChange={editorChange}
-          language={language ?? Language.yaml}
+          language={Language.yaml}
           customControls={variant === 'toolbar' ? toolbarControls : undefined}
           onEditorDidMount={onEditorDidMount}
           showEditor={!showDiffView}

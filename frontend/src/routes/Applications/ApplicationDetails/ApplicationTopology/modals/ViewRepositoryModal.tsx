@@ -11,7 +11,11 @@ import { AcmModal } from '~/ui-components'
 import { getGitBlobContents } from '~/resources'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import type { TopologyNode } from '../types'
-import { findRepositorySecretAccess, getViewTitle } from '../helpers/repositoryNavigatorHelpers'
+import {
+  findRepositorySecretAccess,
+  getViewTitle,
+  type RepositorySecretAccess,
+} from '../helpers/repositoryNavigatorHelpers'
 import { ModalNavigatorLayout } from './ModalNavigatorLayout'
 import { RepositoryNavigator, type RepositoryNavigatorFileItem } from './RepositoryNavigator'
 import './ResourceNavigator.css'
@@ -68,6 +72,11 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
     () => (selectedFile ? findRepositorySecretAccess(selectedFile.repoURL, secrets) : undefined),
     [selectedFile, secrets]
   )
+  const secretAccessKey = JSON.stringify(secretAccess)
+  const stableSecretAccess = useMemo<RepositorySecretAccess | undefined>(
+    () => (secretAccessKey ? (JSON.parse(secretAccessKey) as RepositorySecretAccess) : undefined),
+    [secretAccessKey]
+  )
   const isFileLoading = !!selectedFile && fileContents?.file !== selectedFile
   const modalTitle = (node.name as string) || t('Repository')
   const selectedFileLanguage = selectedFile ? getLanguageForPath(selectedFile.path) : undefined
@@ -76,7 +85,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
     if (!selectedFile) return
     let cancelled = false
     setFileContents(undefined)
-    getGitBlobContents(selectedFile.url, secretAccess?.secretArgs, secretAccess?.accessData).then(
+    getGitBlobContents(selectedFile.url, stableSecretAccess?.secretArgs, stableSecretAccess?.accessData).then(
       (contents) => {
         if (!cancelled) setFileContents({ file: selectedFile, status: 'loaded', contents })
       },
@@ -87,7 +96,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
     return () => {
       cancelled = true
     }
-  }, [selectedFile, secretAccess])
+  }, [selectedFile, stableSecretAccess])
 
   const handleSelectItem = useCallback((item: RepositoryNavigatorFileItem) => {
     setSelectedFile(item)

@@ -9,7 +9,7 @@ import { ViewRepositoryModal } from './ViewRepositoryModal'
 
 const mockGetGitBranchPathDetails = jest.fn()
 const mockGetGitBlobContents = jest.fn()
-const mockSecrets: Secret[] = []
+let mockSecrets: Secret[] = []
 
 jest.mock('~/resources', () => ({
   getGitBranchPathDetails: (...args: unknown[]) => mockGetGitBranchPathDetails(...args),
@@ -82,7 +82,7 @@ function renderModal() {
 describe('ViewRepositoryModal', () => {
   beforeEach(() => {
     jest.resetAllMocks()
-    mockSecrets.length = 0
+    mockSecrets = []
     mockGetGitBlobContents.mockImplementation((url: string) => Promise.resolve(url.endsWith('/one') ? 'One' : 'Two'))
   })
 
@@ -214,6 +214,56 @@ describe('ViewRepositoryModal', () => {
       'https://api.github.com/repos/example/two/git/blobs/two',
       { secretRef: 'two', namespace: 'argocd' },
       { user: 'user-two', accessToken: 'token-two' }
+    )
+  })
+
+  it('does not reload the selected blob when unrelated secrets change', async () => {
+    const matchingSecret: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        name: 'one',
+        namespace: 'argocd',
+        labels: { 'argocd.argoproj.io/secret-type': 'repository' },
+      },
+      data: {
+        url: Buffer.from('https://github.com/example/one').toString('base64'),
+        username: Buffer.from('user-one').toString('base64'),
+        password: Buffer.from('token-one').toString('base64'),
+      },
+    }
+    const unrelatedSecret: Secret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: { name: 'unrelated', namespace: 'other' },
+      data: { value: Buffer.from('unrelated').toString('base64') },
+    }
+    mockSecrets = [matchingSecret]
+    mockGetGitBranchPathDetails.mockImplementation((repoURL: string) =>
+      Promise.resolve(repoURL.includes('/one') ? oneTree : twoTree)
+    )
+    const { rerender } = renderModal()
+
+    await screen.findByTestId('code-editor')
+    expect(mockGetGitBlobContents).toHaveBeenCalledTimes(1)
+
+    mockSecrets = [matchingSecret, unrelatedSecret]
+    rerender(<ViewRepositoryModal open close={jest.fn()} node={repositoryNode} />)
+    await screen.findByTestId('code-editor')
+    expect(mockGetGitBlobContents).toHaveBeenCalledTimes(1)
+
+    mockSecrets = [
+      {
+        ...matchingSecret,
+        data: { ...matchingSecret.data, password: Buffer.from('token-two').toString('base64') },
+      },
+    ]
+    rerender(<ViewRepositoryModal open close={jest.fn()} node={repositoryNode} />)
+    await waitFor(() => expect(mockGetGitBlobContents).toHaveBeenCalledTimes(2))
+    expect(mockGetGitBlobContents).toHaveBeenLastCalledWith(
+      'https://api.github.com/repos/example/one/git/blobs/one',
+      { secretRef: 'one', namespace: 'argocd' },
+      { user: 'user-one', accessToken: 'token-two' }
     )
   })
 

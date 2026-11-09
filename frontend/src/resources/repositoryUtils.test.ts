@@ -60,6 +60,36 @@ describe('getGitBranchPathDetails', () => {
     expect(mockRequest).not.toHaveBeenCalled()
   })
 
+  it.each(['.', './apps/'])('normalizes the Argo CD path %s', async (path) => {
+    expect(await getGitBranchPathDetails(repoURL, 'main', path)).toEqual({
+      type: 'tree',
+      path: path === '.' ? '.' : 'apps',
+      children:
+        path === '.'
+          ? [
+              {
+                type: 'tree',
+                path: 'apps',
+                children: [
+                  {
+                    type: 'tree',
+                    path: 'apps/nested',
+                    children: [{ type: 'file', path: 'apps/nested/README.md', url: blobURL }],
+                  },
+                ],
+              },
+            ]
+          : [
+              {
+                type: 'tree',
+                path: 'apps/nested',
+                children: [{ type: 'file', path: 'apps/nested/README.md', url: blobURL }],
+              },
+            ],
+    })
+    expect(mockRequest).not.toHaveBeenCalled()
+  })
+
   it('keeps request counts constant for a repository-wide view', async () => {
     const tree = Array.from({ length: 100 }, (_, index) => ({
       type: 'blob',
