@@ -99,8 +99,9 @@ export function CreatePushApplicationSet() {
   const managedClusters = useSharedValue(managedClustersState)
   const clusterSets = useSharedValue(managedClusterSetsState)
   const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
-  const { ansibleCredentialsValue } = useSharedSelectors()
+  const { ansibleCredentialsValue, isArgoCDAgentModeEnabledValue } = useSharedSelectors()
   const secrets = useSharedValue(secretsState)
+  const isArgoCDAgentModeEnabled = useSharedValue(isArgoCDAgentModeEnabledValue)
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -167,6 +168,7 @@ export function CreatePushApplicationSet() {
       }
       timeZones={timeZones}
       repoSecrets={secrets}
+      preferClustersGenerator={isArgoCDAgentModeEnabled}
     />
   )
 }

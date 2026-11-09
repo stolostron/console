@@ -46,7 +46,7 @@ import {
   Subscription,
 } from '../../resources'
 import { filterLabelFn, getISOStringTimestamp } from '../../resources/utils'
-import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
+import { useSharedValue, useSharedAtoms, useSharedSelectors } from '../../shared-atoms'
 import {
   AcmButton,
   AcmDropdown,
@@ -1002,6 +1002,11 @@ export default function ApplicationsOverview() {
   const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
   const canCreateApplicationSet = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationSetDefinition))
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
+  const { gitOpsClustersState } = useSharedAtoms()
+  const gitOpsClusters = useSharedValue(gitOpsClustersState)
+  const hasGitOpsCluster = gitOpsClusters.length > 0
+  const { isArgoCDAgentModeEnabledValue } = useSharedSelectors()
+  const isArgoCDAgentModeEnabled = useSharedValue(isArgoCDAgentModeEnabledValue)
 
   const rowActionResolver = useCallback(
     (resource: IResource<ApplicationStatus>) => {
@@ -1216,6 +1221,8 @@ export default function ApplicationsOverview() {
             void navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
             void navigate(NavigationPath.createApplicationArgoPullModel)
+          } else if (id === 'configure-gitops') {
+            void navigate(NavigationPath.gitOps)
           } else {
             void navigate(NavigationPath.createApplicationSubscription)
           }
@@ -1229,12 +1236,22 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-argo-pull-model',
-            text: t('Argo CD ApplicationSet - Pull model'),
-            description: t(
-              'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
-            ),
-            isDisabled: !canCreateApplicationSet,
-            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
+            text: isArgoCDAgentModeEnabled
+              ? t('Argo CD ApplicationSet - Agent pull model')
+              : t('Argo CD ApplicationSet - ManifestWork pull model'),
+            description: isArgoCDAgentModeEnabled
+              ? t(
+                  'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories using the Argo CD Agent.'
+                )
+              : t(
+                  'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
+                ),
+            isDisabled: !canCreateApplicationSet || !hasGitOpsCluster,
+            tooltip: !canCreateApplicationSet
+              ? t('rbac.unauthorized')
+              : !hasGitOpsCluster
+                ? t('Create a GitOps configuration before creating a pull model application.')
+                : '',
           },
           {
             id: 'create-argo',
@@ -1251,13 +1268,18 @@ export default function ApplicationsOverview() {
             isDisabled: !canCreateApplication,
             tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
           },
+          {
+            id: 'configure-gitops',
+            text: t('Configure GitOps cluster'),
+            description: t('Set up the GitOpsCluster resource required for pull model applications.'),
+          },
         ]}
         isKebab={false}
         isPlain={false}
         isPrimary={true}
       />
     ),
-    [canCreateApplication, canCreateApplicationSet, navigate, t]
+    [canCreateApplication, canCreateApplicationSet, hasGitOpsCluster, isArgoCDAgentModeEnabled, navigate, t]
   )
 
   const compareAppTypesLink = useMemo(
@@ -1268,13 +1290,21 @@ export default function ApplicationsOverview() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Pull model')}</Content>
+                <Content component="p">
+                  {isArgoCDAgentModeEnabled
+                    ? t('Argo CD ApplicationSet - Agent pull model')
+                    : t('Argo CD ApplicationSet - ManifestWork pull model')}
+                </Content>
               </span>
               <span>
                 <Content component="p">
-                  {t(
-                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
-                  )}
+                  {isArgoCDAgentModeEnabled
+                    ? t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )
+                    : t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )}
                 </Content>
               </span>
             </div>
@@ -1314,7 +1344,7 @@ export default function ApplicationsOverview() {
         </AcmButton>
       </Popover>
     ),
-    [t]
+    [isArgoCDAgentModeEnabled, t]
   )
 
   const additionalToolbarItems = useMemo(
