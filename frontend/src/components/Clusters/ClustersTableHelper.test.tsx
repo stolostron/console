@@ -151,8 +151,12 @@ jest.mock('../BulkActionModal', () => ({
 }))
 
 // Mock HighlightSearchText
+const highlightSearchTextSpy = jest.fn()
 jest.mock('../HighlightSearchText', () => ({
-  HighlightSearchText: ({ text }: { text: string }) => <span>{text}</span>,
+  HighlightSearchText: (props: { text: string }) => {
+    highlightSearchTextSpy(props)
+    return <span>{props.text}</span>
+  },
 }))
 
 const mockCluster: Cluster = {
@@ -226,6 +230,7 @@ describe('ClustersTableHelper', () => {
   beforeEach(() => {
     gpuColumnTestState.observabilityInstalled = false
     gpuColumnTestState.metricsPoll = [{ data: { result: [] } }, undefined, false]
+    highlightSearchTextSpy.mockClear()
   })
 
   describe('getControlPlaneString', () => {
@@ -378,6 +383,39 @@ describe('ClustersTableHelper', () => {
       const consoleLink = screen.getByRole('link', { name: 'cluster.openConsole' })
       expect(consoleLink).toBeInTheDocument()
       expect(consoleLink).toHaveAttribute('href', 'https://console.example.com')
+    })
+
+    it('should render provider icon, name link and location line in name cell', () => {
+      const cluster = {
+        ...mockCluster,
+        provider: Provider.vmware,
+        labels: { region: 'USW1', zone: 'USW1B' },
+      }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={cluster} />)
+
+      expect(screen.getByRole('img', { name: 'VMware vSphere' })).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Test Cluster' })).toBeInTheDocument()
+      expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
+    })
+
+    it('should render only the name when cluster has no provider or labels', () => {
+      const cluster = { ...mockCluster, provider: undefined, labels: undefined }
+      const column = useClusterNameColumn(true)
+      const { container } = renderWithProviders(<TestColumnComponent column={column} cluster={cluster} />)
+
+      expect(screen.getByText('Test Cluster')).toBeInTheDocument()
+      expect(screen.queryByRole('img')).not.toBeInTheDocument()
+      expect(container.querySelector('small')).toBeNull()
+    })
+
+    it('should still pass the search term to HighlightSearchText for the name', () => {
+      const column: any = useClusterNameColumn(true)
+      renderWithProviders(<div>{column.cell({ ...mockCluster, provider: Provider.vmware }, 'Test')}</div>)
+
+      expect(highlightSearchTextSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ text: 'Test Cluster', searchText: 'Test', isLink: true })
+      )
     })
 
     it('should render cluster status column', () => {
