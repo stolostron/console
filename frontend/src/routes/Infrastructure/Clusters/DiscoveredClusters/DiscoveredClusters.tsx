@@ -221,7 +221,14 @@ export function DiscoveredClustersTable(props: {
       ],
       cell: (discoveredCluster) => (
         <span style={{ whiteSpace: 'nowrap' }} key="dcName">
-          <AcmInlineProvider iconOnly provider={getInfrastructureProvider(discoveredCluster.spec.cloudProvider)} />{' '}
+          {discoveredCluster.spec.cloudProvider && (
+            <>
+              <AcmInlineProvider
+                iconOnly
+                provider={getInfrastructureProvider(discoveredCluster.spec.cloudProvider)}
+              />{' '}
+            </>
+          )}
           <AcmButton
             variant="link"
             component="a"
