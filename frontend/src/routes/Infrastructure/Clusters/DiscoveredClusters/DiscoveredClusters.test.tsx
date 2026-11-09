@@ -56,6 +56,25 @@ describe('DiscoveredClusters', () => {
     await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
   })
 
+  test('name cell shows provider icon only, no location line', async () => {
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText(mockDiscoveredClusters[0].spec.displayName)
+    expect(screen.getAllByRole('img', { name: 'Amazon Web Services' }).length).toBeGreaterThan(0)
+    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
+  })
+
   test('No provider connections or discoveryconfig (Empty State 1)', async () => {
     const { queryAllByText } = await render(
       <StateProvider
