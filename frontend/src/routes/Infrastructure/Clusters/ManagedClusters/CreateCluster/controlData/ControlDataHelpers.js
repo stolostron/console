@@ -5,7 +5,6 @@ import jsYaml from 'js-yaml'
 import _ from 'lodash'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import {
-  getAlphanumericValidator,
   getCIDRValidator,
   getNoProxyValidator,
   getNumericValidator,
@@ -418,6 +417,14 @@ export const reverseStorageClass = (control, templateObject) => {
   return control
 }
 
+const LABEL_VALUE_REGEX = /^([A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?)?$/
+
+const getLabelValueValidator = (t) => ({
+  tester: { test: (value) => value.length <= 63 && LABEL_VALUE_REGEX.test(value) },
+  notification: t('creation.valid.labelValue'),
+  required: false,
+})
+
 export const locationControls = (t) => [
   {
     name: t('creation.ocp.zone'),
@@ -425,7 +432,7 @@ export const locationControls = (t) => [
     id: 'zone',
     type: 'text',
     active: '',
-    validation: getAlphanumericValidator(t),
+    validation: getLabelValueValidator(t),
     reverse: 'ClusterDeployment[0].metadata.labels.zone',
   },
   {
@@ -434,7 +441,7 @@ export const locationControls = (t) => [
     id: 'locationDatacenter',
     type: 'text',
     active: '',
-    validation: getAlphanumericValidator(t),
+    validation: getLabelValueValidator(t),
     reverse: 'ClusterDeployment[0].metadata.labels.datacenter',
   },
 ]

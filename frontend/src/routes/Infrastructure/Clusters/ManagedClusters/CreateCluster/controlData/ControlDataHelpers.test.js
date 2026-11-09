@@ -205,6 +205,15 @@ describe('location controls', () => {
       expect(control.validation.required).toBe(false)
       expect(control.validation.tester.test('us-east-1a')).toBe(true)
       expect(control.validation.tester.test('bad value!')).toBe(false)
+      expect(control.validation.tester.test('rack.1_a-b')).toBe(true)
+      expect(control.validation.tester.test('')).toBe(true)
+      // Kubernetes label values must start and end with an alphanumeric character
+      expect(control.validation.tester.test('-zone')).toBe(false)
+      expect(control.validation.tester.test('zone_')).toBe(false)
+      expect(control.validation.tester.test('.zone')).toBe(false)
+      // and be at most 63 characters
+      expect(control.validation.tester.test('a'.repeat(63))).toBe(true)
+      expect(control.validation.tester.test('a'.repeat(64))).toBe(false)
     }
   })
 
