@@ -159,7 +159,7 @@ export function getClusterPoolLocation(pool: ClusterPool): ClusterLocation {
   const location = getClusterLocation(pool.metadata.labels)
   if (!location.region) {
     const platform = pool.spec?.platform
-    const region = platform?.aws?.region
+    const region = platform?.aws?.region ?? platform?.gcp?.region ?? platform?.azure?.region
     if (region) location.region = region
   }
   return location
