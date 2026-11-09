@@ -21,7 +21,7 @@ import {
 } from '../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
 import { mockManagedClusterSet, mockGlobalClusterSet } from '../../lib/test-metadata'
-import { waitForText, waitForNotText } from '../../lib/test-util'
+import { clickByLabel, clickByText, getCSVExportSpies, waitForText, waitForNotText } from '../../lib/test-util'
 import { ClusterSetsTable, getClusterSetProviders } from './ClusterSetsTable'
 import { ExtendedManagedClusterSet } from '../../resources'
 import { Cluster } from '../../resources/utils'
@@ -182,6 +182,32 @@ describe('ClusterSetsTable', () => {
     await userEvent.type(screen.getByRole('textbox'), ProviderLongTextMap[Provider.aws])
     await waitForNotText('gcp-set')
     expect(screen.getByText('aws-set')).toBeInTheDocument()
+  })
+})
+
+describe('ClusterSetsTable export', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  test('exports provider long names, de-duplicated, in the Infrastructure column', async () => {
+    mockGetMappedClusterSetClusters.mockReturnValue([
+      clusterWith(Provider.vmware),
+      clusterWith(Provider.aws),
+      clusterWith(Provider.vmware),
+    ])
+    render(<Component managedClusterSets={[mockExtendedClusterSet]} />)
+    await waitForText(mockManagedClusterSet.metadata.name!)
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const { blobConstructorSpy } = getCSVExportSpies()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export all to CSV')
+
+    const csv = blobConstructorSpy.mock.calls[0][0][0] as string
+    expect(csv).toContain(`"${ProviderLongTextMap[Provider.vmware]}, ${ProviderLongTextMap[Provider.aws]}"`)
   })
 })
 

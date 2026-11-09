@@ -17,7 +17,7 @@ import {
 } from '../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import nock from 'nock'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router'
@@ -587,6 +587,23 @@ describe('ClusterPools page', () => {
   })
 })
 
+describe('ClusterPoolsTable name cell', () => {
+  test('renders provider icon and region in the table', () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <StateProvider>
+        <MemoryRouter>
+          <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    const row = screen.getByText('test-pool').closest('tr') as HTMLElement
+    expect(within(row).getAllByRole('img', { name: 'Amazon Web Services' }).length).toBeGreaterThan(0)
+    expect(within(row).getByText('us-east-1')).toBeInTheDocument()
+  })
+})
+
 describe('Export from clusterpool table', () => {
   test('export button should produce a file for download', async () => {
     nockIgnoreRBAC()
@@ -745,6 +762,32 @@ describe('ClusterPool location', () => {
   test('getClusterPoolLocation prefers the region label over the spec region', () => {
     const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { region: 'eu-west-1' } } }
     expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
+  })
+
+  test('getClusterPoolLocation combines label zone with the spec region', () => {
+    const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { zone: 'us-east-1a' } } }
+    expect(getClusterPoolLocation(labeled)).toEqual({ zone: 'us-east-1a', region: 'us-east-1' })
+  })
+
+  test('getClusterPoolLocation prefers the topology region label over the spec region', () => {
+    const labeled = {
+      ...mockClusterPool,
+      metadata: { ...mockClusterPool.metadata, labels: { 'topology.kubernetes.io/region': 'eu-west-1' } },
+    }
+    expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
+  })
+
+  test('ClusterPoolName renders region, zone and datacenter from pool labels', () => {
+    const labeled = {
+      ...mockClusterPool,
+      metadata: {
+        ...mockClusterPool.metadata,
+        labels: { region: 'USW1', zone: 'USW1B', datacenter: 'DC-East' },
+      },
+    }
+    render(<ClusterPoolName clusterPool={labeled} />)
+    expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
+    expect(screen.getByLabelText('Datacenter: DC-East')).toBeInTheDocument()
   })
 
   test('getClusterPoolLocation returns empty location for an unsupported platform', () => {
