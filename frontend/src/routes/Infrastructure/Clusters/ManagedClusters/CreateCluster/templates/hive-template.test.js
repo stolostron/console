@@ -3,7 +3,7 @@
 
 /**
  * Location labels (zone, datacenter) must be written on both the ClusterDeployment and the ManagedCluster,
- * only when set, on every platform. The vSphere credential `datacenter` variable is unrelated to the
+ * only when set, on the platforms covered below (AWS, GCP, Azure, vSphere). The vSphere credential `datacenter` variable is unrelated to the
  * location `datacenter` label and must never produce that label.
  */
 import Handlebars from 'handlebars'
@@ -105,5 +105,14 @@ describe('hive-template.hbs location labels', () => {
     })
     expect(clusterDeployment.metadata.labels).not.toHaveProperty('datacenter')
     expect(managedCluster.metadata.labels).not.toHaveProperty('datacenter')
+  })
+
+  it('annotates only the ClusterDeployment labels for editor-to-form sync', () => {
+    const raw = hiveTemplate({ ...baseData, zone: 'z1', locationDatacenter: 'dc1' }, helpers)
+    // ##<id> markers wire the editor back to form controls; reverse only targets ClusterDeployment[0]
+    expect(raw.match(/zone: 'z1'.*##zone/g)).toHaveLength(1)
+    expect(raw.match(/datacenter: 'dc1'.*##locationDatacenter/g)).toHaveLength(1)
+    expect(raw.match(/zone: 'z1'/g)).toHaveLength(2)
+    expect(raw.match(/datacenter: 'dc1'/g)).toHaveLength(2)
   })
 })
