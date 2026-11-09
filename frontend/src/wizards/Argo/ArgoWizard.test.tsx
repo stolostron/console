@@ -67,6 +67,28 @@ function TestArgoWizard() {
   )
 }
 
+function TestArgoWizardPreferClustersGenerator() {
+  return (
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, gitOpsOperators)
+        store.set(managedClusterSetsState, mockClusterSets)
+        store.set(argoCDsState, [mockArgoCD])
+        store.set(namespacesState, mockNamespaces)
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+        <Routes>
+          <Route
+            path={NavigationPath.createApplicationArgo}
+            element={<ArgoWizard {...props} preferClustersGenerator={true} />}
+          />
+        </Routes>
+      </MemoryRouter>
+    </StateProvider>
+  )
+}
+
 function TestArgoWizardPullModel() {
   return (
     <StateProvider
@@ -545,6 +567,25 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     await clickByRole('button', { name: 'Submit' })
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGitPullModel)
+  })
+
+  test('push model defaults to Clusters generator when preferClustersGenerator is set', async () => {
+    nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
+
+    render(<TestArgoWizardPreferClustersGenerator />)
+
+    await typeElement(
+      screen.getByRole('textbox', {
+        name: /name/i,
+      }),
+      'testapp'
+    )
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    await waitForText('Clusters Generator', true)
   })
 
   //=====================================================================
