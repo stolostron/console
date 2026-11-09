@@ -13,14 +13,13 @@ import {
   DescriptionListTerm,
   Flex,
   FlexItem,
-  FormSelect,
-  FormSelectOption,
   Grid,
   GridItem,
   Label,
   List,
   ListItem,
   PageSection,
+  SelectOption,
   Stack,
   StackItem,
   Title,
@@ -33,12 +32,22 @@ import { NavigationPath } from '~/NavigationPath'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
 import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
-import { AcmEmptyState, AcmPageContent } from '~/ui-components'
+import { AcmEmptyState, AcmPageContent, AcmSelect } from '~/ui-components'
 import { DeleteGitOpsClusterModal } from '~/routes/Infrastructure/Clusters/GitOps/DeleteGitOpsClusterModal'
 import { getGitOpsClusterNames } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterStatus'
 import { ViewDocumentationLink, DOC_LINKS } from '~/lib/doc-util'
 
 const resourceKey = (resource: GitOpsCluster) => `${resource.metadata.namespace}/${resource.metadata.name}`
+
+function getAgentModeLabel(mode: string, t: (key: string) => string) {
+  if (mode === 'autonomous') {
+    return t('Autonomous')
+  }
+  if (mode === 'managed') {
+    return t('Managed')
+  }
+  return mode
+}
 
 export default function GitOps() {
   const { t } = useTranslation()
@@ -50,6 +59,7 @@ export default function GitOps() {
     resources.find((resource) => resourceKey(resource) === selectedKey) ??
     (resources.length === 1 ? resources[0] : undefined)
   const closeDelete = () => setDeleting(undefined)
+  const onSelectResource = (value: string | undefined) => setSelectedKey(value ?? '')
 
   return (
     <AcmPageContent id="gitops">
@@ -75,20 +85,19 @@ export default function GitOps() {
             )}
             {resources.length > 1 && (
               <StackItem>
-                <FormSelect
-                  aria-label={t('GitOps configuration')}
-                  value={selected ? resourceKey(selected) : ''}
-                  onChange={(_event, value) => setSelectedKey(value)}
+                <AcmSelect
+                  id="gitops-configuration"
+                  label={t('GitOps configuration')}
+                  placeholder={t('Select a GitOps configuration')}
+                  value={selected ? resourceKey(selected) : undefined}
+                  onChange={onSelectResource}
                 >
-                  <FormSelectOption value="" label={t('Select a GitOps configuration')} isDisabled />
                   {resources.map((resource) => (
-                    <FormSelectOption
-                      key={resourceKey(resource)}
-                      value={resourceKey(resource)}
-                      label={resourceKey(resource)}
-                    />
+                    <SelectOption key={resourceKey(resource)} value={resourceKey(resource)}>
+                      {resourceKey(resource)}
+                    </SelectOption>
                   ))}
-                </FormSelect>
+                </AcmSelect>
               </StackItem>
             )}
             {selected && (
@@ -107,10 +116,10 @@ export default function GitOps() {
 function GitOpsOverview({
   resource,
   onDelete,
-}: {
+}: Readonly<{
   resource: GitOpsCluster
   onDelete: (resource: GitOpsCluster) => void
-}) {
+}>) {
   const { t } = useTranslation()
   const { placementsState, managedClusterSetBindingsState } = useSharedAtoms()
   const placements = useSharedValue(placementsState)
@@ -129,8 +138,7 @@ function GitOpsOverview({
   const agentEnabled =
     resource.spec?.gitopsAddon?.enabled === true && resource.spec?.gitopsAddon?.argoCDAgent?.enabled === true
   const agentMode = resource.spec?.gitopsAddon?.argoCDAgent?.mode ?? 'managed'
-  const agentModeLabel =
-    agentMode === 'autonomous' ? t('Autonomous') : agentMode === 'managed' ? t('Managed') : agentMode
+  const agentModeLabel = getAgentModeLabel(agentMode, t)
   const actions = [
     {
       id: 'delete-gitops',
@@ -272,7 +280,7 @@ function GitOpsOverview({
   )
 }
 
-function GitOpsClusterLinks({ names }: { names: string[] }) {
+function GitOpsClusterLinks({ names }: Readonly<{ names: string[] }>) {
   const { t } = useTranslation()
   return names.length > 0 ? (
     <List isPlain>

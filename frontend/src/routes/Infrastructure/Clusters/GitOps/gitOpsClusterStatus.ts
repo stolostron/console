@@ -18,7 +18,7 @@ export function getGitOpsClusterNames(status: GitOpsCluster['status']): string[]
   if (ellipsis !== -1 && (closingBracket === -1 || ellipsis < closingBracket)) {
     // The upstream byte limit can cut through a name. Keep only whitespace-terminated tokens.
     const completePrefix = remainder.slice(0, ellipsis)
-    names = completePrefix.slice(0, completePrefix.search(/\S*$/))
+    names = completePrefix.slice(0, endOfTerminatedTokens(completePrefix))
     if (!names.trim()) return undefined
   } else if (closingBracket !== -1) {
     names = remainder.slice(0, closingBracket)
@@ -26,4 +26,17 @@ export function getGitOpsClusterNames(status: GitOpsCluster['status']): string[]
     return undefined
   }
   return [...new Set(names.trim().split(/\s+/).filter(Boolean))]
+}
+
+/** Index after the last whitespace-terminated token. A trailing token with no terminator is excluded. */
+function endOfTerminatedTokens(value: string): number {
+  const last = value.length - 1
+  if (last < 0 || /\s/.test(value.charAt(last))) {
+    return value.length
+  }
+  let index = last
+  while (index > 0 && !/\s/.test(value.charAt(index - 1))) {
+    index -= 1
+  }
+  return index
 }

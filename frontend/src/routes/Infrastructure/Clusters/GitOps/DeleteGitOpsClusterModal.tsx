@@ -8,7 +8,13 @@ import type { GitOpsCluster } from '~/resources/gitops-cluster'
 import { deleteResource } from '~/resources/utils'
 import { AcmModal } from '~/ui-components'
 
-export function DeleteGitOpsClusterModal({ resource, onClose }: { resource: GitOpsCluster; onClose: () => void }) {
+export function DeleteGitOpsClusterModal({
+  resource,
+  onClose,
+}: Readonly<{
+  resource: GitOpsCluster
+  onClose: () => void
+}>) {
   const { t } = useTranslation()
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string>()
