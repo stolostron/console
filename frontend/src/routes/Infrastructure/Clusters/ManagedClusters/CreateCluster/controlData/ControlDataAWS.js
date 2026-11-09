@@ -17,6 +17,7 @@ import {
   proxyControlData,
   disabledForFirstInGroup,
   reverseImageSet,
+  locationControls,
 } from './ControlDataHelpers'
 import {
   getAlphanumericValidator,
@@ -921,6 +922,7 @@ export const getControlDataAWS = (
       onSelect: setAWSZones,
       reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ...locationControls(t),
     ///////////////////////  architecture  /////////////////////////////////////
     ...architectureData(t),
     ///////////////////////  control plane pool  /////////////////////////////////////

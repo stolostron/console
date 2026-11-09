@@ -209,6 +209,32 @@ exports[`Cluster creation control data for AZR generates correctly 1`] = `
     },
   },
   {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
     "available": [
       "amd64",
       "arm64",
@@ -1669,6 +1695,32 @@ exports[`Cluster creation control data for AZR generates correctly for MCE 1`] =
     "reverse": "ClusterDeployment[0].metadata.labels.region",
     "tooltip": "The name of the Azure region where your cluster is hosted. For example, centralus for Azure. You can select zones within the region for your control plane and worker pools.",
     "type": "combobox",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
     "validation": {
       "notification": "Value must be alphanumeric.",
       "required": false,
@@ -4537,6 +4589,32 @@ exports[`Cluster creation control data for AZR generates correctly with SNO enab
     "reverse": "ClusterDeployment[0].metadata.labels.region",
     "tooltip": "The name of the Azure region where your cluster is hosted. For example, centralus for Azure. You can select zones within the region for your control plane and worker pools.",
     "type": "combobox",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be alphanumeric.",
+      "required": false,
+      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "type": "text",
     "validation": {
       "notification": "Value must be alphanumeric.",
       "required": false,

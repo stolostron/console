@@ -19,6 +19,7 @@ import {
   appendKlusterletAddonConfig,
   onImageChange,
   reverseImageSet,
+  locationControls,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -399,6 +400,7 @@ export const getControlDataGCP = (
       cacheUserValueKey: 'create.cluster.region',
       reverse: 'ClusterDeployment[0].metadata.labels.region',
     },
+    ...locationControls(t),
     ///////////////////////  architecture  /////////////////////////////////////
     ...architectureData(t),
     ///////////////////////  control plane pool  /////////////////////////////////////

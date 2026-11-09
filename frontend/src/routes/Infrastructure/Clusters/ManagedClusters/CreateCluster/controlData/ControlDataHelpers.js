@@ -5,6 +5,7 @@ import jsYaml from 'js-yaml'
 import _ from 'lodash'
 import { AutomationProviderHint } from '../../../../../../components/AutomationProviderHint.tsx'
 import {
+  getAlphanumericValidator,
   getCIDRValidator,
   getNoProxyValidator,
   getNumericValidator,
@@ -416,6 +417,27 @@ export const reverseStorageClass = (control, templateObject) => {
   }
   return control
 }
+
+export const locationControls = (t) => [
+  {
+    name: t('creation.ocp.zone'),
+    tooltip: t('tooltip.creation.ocp.zone'),
+    id: 'zone',
+    type: 'text',
+    active: '',
+    validation: getAlphanumericValidator(t),
+    reverse: 'ClusterDeployment[0].metadata.labels.zone',
+  },
+  {
+    name: t('creation.ocp.datacenter'),
+    tooltip: t('tooltip.creation.ocp.datacenter'),
+    id: 'locationDatacenter',
+    type: 'text',
+    active: '',
+    validation: getAlphanumericValidator(t),
+    reverse: 'ClusterDeployment[0].metadata.labels.datacenter',
+  },
+]
 
 export const clusterDetailsControlData = (t) => {
   return [
