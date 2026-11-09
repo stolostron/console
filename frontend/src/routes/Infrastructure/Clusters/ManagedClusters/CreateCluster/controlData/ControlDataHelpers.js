@@ -417,10 +417,11 @@ export const reverseStorageClass = (control, templateObject) => {
   return control
 }
 
+// K8s label value: empty allowed, alphanumeric at start and end, max 63 chars (length checked separately)
 const LABEL_VALUE_REGEX = /^([A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?)?$/
 
 const getLabelValueValidator = (t) => ({
-  tester: { test: (value) => value.length <= 63 && LABEL_VALUE_REGEX.test(value) },
+  tester: { test: (value) => typeof value === 'string' && value.length <= 63 && LABEL_VALUE_REGEX.test(value) },
   notification: t('creation.valid.labelValue'),
   required: false,
 })
