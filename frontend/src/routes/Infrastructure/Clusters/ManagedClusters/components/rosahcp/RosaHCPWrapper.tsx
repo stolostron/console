@@ -15,6 +15,7 @@ import { createRosaHcpResourceGenerator } from './resourceGenerator/createRosaHc
 import { deriveAvailabilityZones, deriveRolesRef } from './resourceGenerator/enrichFormValues'
 import { DropdownType, RosaHCPWizard, ROSAHCPWizardData, STEP_IDS } from '@redhat-cloud-services/nxtcm-rosa-hcp-wizard'
 import { useClusterNameUniquenessCheck } from './queries/useCheckClusterNameUniqueness'
+import { useRosaHcpWizardStrings } from './useRosaHcpWizardStrings'
 import { generatePath, useLocation, useNavigate } from 'react-router'
 import { createRosaHcpCluster } from '~/lib/create-rosa-hcp-cluster'
 import * as monaco from 'monaco-editor'
@@ -33,6 +34,7 @@ const transform = (awsInfraAccounts: string[]): DropdownType[] =>
 export const RosaHCPWrapper = () => {
   const secret = useCredentialsSecrets()
   const [t] = useTranslation()
+  const rosaHcpWizardStrings = useRosaHcpWizardStrings()
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -265,6 +267,7 @@ export const RosaHCPWrapper = () => {
         resourceGenerator={resourceGenerator}
         title=""
         product="acm"
+        strings={rosaHcpWizardStrings}
         config={{ hiddenSteps: [STEP_IDS.CLUSTER_WIDE_PROXY, STEP_IDS.CLUSTER_UPDATES] }}
         onSubmitError={submitError}
         onBackToReviewStep={() => setSubmitError(false)}
