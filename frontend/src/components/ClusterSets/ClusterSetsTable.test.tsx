@@ -162,7 +162,7 @@ describe('ClusterSetsTable', () => {
     await waitForText(mockManagedClusterSet.metadata.name!)
     expect(screen.queryByRole('img', { name: ProviderLongTextMap[Provider.aws] })).not.toBeInTheDocument()
     const row = screen.getByRole('link', { name: mockManagedClusterSet.metadata.name! }).closest('tr')!
-    expect(row).toHaveTextContent('-')
+    expect(row.querySelector('td[data-label="Infrastructure"]')).toHaveTextContent('-')
   })
 })
 
