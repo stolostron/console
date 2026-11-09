@@ -126,9 +126,9 @@ describe('ClusterSets page with csv export', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Cluster status,Namespace bindings\n' +
-          '"test-cluster-set","healthy: 0, running: 0, warning: 0, progress: 1, danger: 0, detached: 0, pending: 0, sleep: 0, unknown: 0",-\n' +
-          '"global","healthy: 4, running: 0, warning: 0, progress: 1, danger: 1, detached: 0, pending: 0, sleep: 0, unknown: 0",-',
+        'Name,Cluster status,Infrastructure,Namespace bindings\n' +
+          '"test-cluster-set","healthy: 0, running: 0, warning: 0, progress: 1, danger: 0, detached: 0, pending: 0, sleep: 0, unknown: 0","Amazon Web Services",-\n' +
+          '"global","healthy: 4, running: 0, warning: 0, progress: 1, danger: 1, detached: 0, pending: 0, sleep: 0, unknown: 0","Amazon Web Services, Google Cloud Platform",-',
       ],
       { type: 'text/csv' }
     )
