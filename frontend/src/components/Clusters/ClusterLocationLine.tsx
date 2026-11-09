@@ -2,12 +2,12 @@
 
 import { Content, ContentVariants, Tooltip } from '@patternfly/react-core'
 import { BuildingIcon } from '@patternfly/react-icons'
-import { getClusterLocation } from '~/lib/cluster-location'
+import { ClusterLocation } from '~/lib/cluster-location'
 import { useTranslation } from '~/lib/acm-i18next'
 
-export function ClusterLocationLine(props: { labels?: Record<string, string> }) {
+export function ClusterLocationLine(props: { location: ClusterLocation }) {
   const { t } = useTranslation()
-  const { region, zone, datacenter } = getClusterLocation(props.labels)
+  const { region, zone, datacenter } = props.location
   const regionZone = [region, zone].filter(Boolean).join(' · ')
   if (!regionZone && !datacenter) return null
   const datacenterLabel = datacenter ? `${t('cluster.location.datacenter')}: ${datacenter}` : undefined
