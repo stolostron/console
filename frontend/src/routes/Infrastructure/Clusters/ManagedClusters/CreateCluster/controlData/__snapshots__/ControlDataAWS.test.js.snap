@@ -205,12 +205,14 @@ exports[`Cluster creation control data for AWS generates correctly 1`] = `
     "id": "zone",
     "name": "Zone",
     "reverse": "ClusterDeployment[0].metadata.labels.zone",
-    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -218,12 +220,14 @@ exports[`Cluster creation control data for AWS generates correctly 1`] = `
     "id": "locationDatacenter",
     "name": "Datacenter",
     "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
-    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -2073,12 +2077,14 @@ exports[`Cluster creation control data for AWS generates correctly for MCE 1`] =
     "id": "zone",
     "name": "Zone",
     "reverse": "ClusterDeployment[0].metadata.labels.zone",
-    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -2086,12 +2092,14 @@ exports[`Cluster creation control data for AWS generates correctly for MCE 1`] =
     "id": "locationDatacenter",
     "name": "Datacenter",
     "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
-    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -5746,12 +5754,14 @@ exports[`Cluster creation control data for AWS generates correctly with AWS priv
     "id": "zone",
     "name": "Zone",
     "reverse": "ClusterDeployment[0].metadata.labels.zone",
-    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -5759,12 +5769,14 @@ exports[`Cluster creation control data for AWS generates correctly with AWS priv
     "id": "locationDatacenter",
     "name": "Datacenter",
     "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
-    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -7735,12 +7747,14 @@ exports[`Cluster creation control data for AWS generates correctly with SNO enab
     "id": "zone",
     "name": "Zone",
     "reverse": "ClusterDeployment[0].metadata.labels.zone",
-    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -7748,12 +7762,14 @@ exports[`Cluster creation control data for AWS generates correctly with SNO enab
     "id": "locationDatacenter",
     "name": "Datacenter",
     "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
-    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use letters, numbers, dashes, and underscores.",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
     "type": "text",
     "validation": {
-      "notification": "Value must be alphanumeric.",
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
       "required": false,
-      "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
