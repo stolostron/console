@@ -46,7 +46,7 @@ import {
   waitForText,
   waitTimeout,
 } from '../../../../lib/test-util'
-import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
+import ClusterPoolsPage, { ClusterPoolName, ClusterPoolsTable, getClusterPoolLocation } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
 
 const mockNamespace: Namespace = {
@@ -718,5 +718,39 @@ describe('ClusterPools page RBAC', () => {
     await waitFor(() =>
       expect(screen.getByRole('link', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
     )
+  })
+})
+
+describe('ClusterPool location', () => {
+  const vspherePool = {
+    ...mockClusterPool,
+    spec: { ...mockClusterPool.spec, platform: {} },
+  } as ClusterPool
+
+  test('getClusterPoolLocation reads region from spec.platform.aws.region when no label', () => {
+    expect(getClusterPoolLocation(mockClusterPool)).toEqual({ region: 'us-east-1' })
+  })
+
+  test('getClusterPoolLocation prefers the region label over the spec region', () => {
+    const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { region: 'eu-west-1' } } }
+    expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
+  })
+
+  test('getClusterPoolLocation returns empty location for an unsupported platform', () => {
+    expect(getClusterPoolLocation(vspherePool)).toEqual({})
+  })
+
+  test('ClusterPoolName renders provider icon, name and region for an AWS pool', () => {
+    render(<ClusterPoolName clusterPool={mockClusterPool} />)
+    expect(screen.getByRole('img', { name: 'Amazon Web Services' })).toBeInTheDocument()
+    expect(screen.getByText('test-pool')).toBeInTheDocument()
+    expect(screen.getByText('us-east-1')).toBeInTheDocument()
+  })
+
+  test('ClusterPoolName renders only the name for an unsupported platform', () => {
+    render(<ClusterPoolName clusterPool={vspherePool} />)
+    expect(screen.getByText('test-pool')).toBeInTheDocument()
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
+    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
   })
 })
