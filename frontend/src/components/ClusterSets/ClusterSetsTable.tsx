@@ -122,6 +122,12 @@ export const ClusterSetsTable = ({
     }
   })
 
+  function getProviderNames(managedClusterSet: ManagedClusterSet): string {
+    return getClusterSetProviders(managedClusterSetClusters[managedClusterSet.metadata.name!] ?? [])
+      .map((provider) => ProviderLongTextMap[provider])
+      .join(', ')
+  }
+
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {
       return -1
@@ -229,10 +235,8 @@ export const ClusterSetsTable = ({
                 '-'
               )
             },
-            exportContent: (managedClusterSet: ManagedClusterSet) =>
-              getClusterSetProviders(managedClusterSetClusters[managedClusterSet.metadata.name!] ?? [])
-                .map((provider) => ProviderLongTextMap[provider])
-                .join(', '),
+            search: (managedClusterSet: ManagedClusterSet) => getProviderNames(managedClusterSet),
+            exportContent: (managedClusterSet: ManagedClusterSet) => getProviderNames(managedClusterSet),
             id: 'provider',
           },
           {
