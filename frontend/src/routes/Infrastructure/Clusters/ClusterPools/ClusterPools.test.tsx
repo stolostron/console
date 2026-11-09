@@ -731,6 +731,17 @@ describe('ClusterPool location', () => {
     expect(getClusterPoolLocation(mockClusterPool)).toEqual({ region: 'us-east-1' })
   })
 
+  test.each([
+    ['gcp', 'us-central1'],
+    ['azure', 'eastus'],
+  ])('getClusterPoolLocation reads region from spec.platform.%s.region when no label', (platform, region) => {
+    const pool = {
+      ...mockClusterPool,
+      spec: { ...mockClusterPool.spec, platform: { [platform]: { credentialsSecretRef: { name: 's' }, region } } },
+    } as ClusterPool
+    expect(getClusterPoolLocation(pool)).toEqual({ region })
+  })
+
   test('getClusterPoolLocation prefers the region label over the spec region', () => {
     const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { region: 'eu-west-1' } } }
     expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
