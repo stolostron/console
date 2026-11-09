@@ -67,6 +67,7 @@ export const DOC_LINKS = {
   VIRTUALIZATION_ENABLE_MIGRATION: `${DOC_BASE_PATH}/virtualization/index#migrate-vm`,
   RBAC: `${DOC_BASE_PATH}/secure_clusters/securing-cluster-intro#fine-grain-rbac-ui`,
   ACM_WELCOME: `${DOC_BASE_PATH}/about/welcome-to-red-hat-advanced-cluster-management-for-kubernetes`,
+  GITOPS_CLUSTER_AGENT_PULL: `${DOC_BASE_PATH}/gitops/gitops-pull-overview#gitops-pull-agent-managed`,
   // OCP doc links
   HYPERSHIFT_INTRO: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#hosted-control-planes-overview_hcp-overview`,
   HYPERSHIFT_DEPLOY_AWS: `${OCP_DOC_BASE_PATH}/hosted_control_planes/hosted-control-planes-overview#deploying-hosted-control-planes-on-aws`,
