@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
@@ -71,8 +71,33 @@ describe('DiscoveredClusters', () => {
       </StateProvider>
     )
     await waitForText(mockDiscoveredClusters[0].spec.displayName)
-    expect(screen.getAllByRole('img', { name: 'Amazon Web Services' }).length).toBeGreaterThan(0)
-    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
+    const nameCell = screen.getByRole('link', { name: mockDiscoveredClusters[0].spec.displayName }).closest('span')!
+    expect(within(nameCell).getByRole('img', { name: 'Amazon Web Services' })).toBeInTheDocument()
+    expect(nameCell).toHaveTextContent(new RegExp(`^[,\\s]*${mockDiscoveredClusters[0].spec.displayName}$`))
+  })
+
+  test('name cell shows no provider icon when cloudProvider is missing', async () => {
+    const noProviderCluster = {
+      ...mockDiscoveredClusters[0],
+      metadata: { name: 'no-provider', namespace: 'alpha' },
+      spec: { ...mockDiscoveredClusters[0].spec, displayName: 'no-provider', cloudProvider: '' },
+    }
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [noProviderCluster])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText('no-provider')
+    const nameCell = screen.getByRole('link', { name: 'no-provider' }).closest('span')!
+    expect(within(nameCell).queryByRole('img')).not.toBeInTheDocument()
   })
 
   test('No provider connections or discoveryconfig (Empty State 1)', async () => {
