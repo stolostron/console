@@ -2,6 +2,8 @@
 
 import {
   Content,
+  Flex,
+  FlexItem,
   Label,
   PageSection,
   Popover,
@@ -10,6 +12,8 @@ import {
   StackItem,
   ToolbarItem,
 } from '@patternfly/react-core'
+import { RhUiLongArrowRightIcon } from '@patternfly/react-icons'
+import textStyles from '@patternfly/react-styles/css/utilities/Text/text'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
 import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
@@ -1228,23 +1232,19 @@ export default function ApplicationsOverview() {
           }
         }}
         text={t('Create application')}
+        menuWidth="min(40rem, calc(100vw - 2rem))"
         dropdownItems={[
-          {
-            id: 'psuedo.group.label',
-            isAriaDisabled: true,
-            text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
-          },
           {
             id: 'create-argo-pull-model',
             text: isArgoCDAgentModeEnabled
-              ? t('Argo CD ApplicationSet - Agent pull model')
-              : t('Argo CD ApplicationSet - ManifestWork pull model'),
+              ? t('Argo CD Agent Pull model ApplicationSet')
+              : t('Argo CD ManifestWork Pull model ApplicationSet'),
             description: isArgoCDAgentModeEnabled
               ? t(
-                  'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories using the Argo CD Agent.'
+                  'Deploy applications across managed clusters using Argo CD Agent pull mode. Managed clusters pull directly from Git using the Argo CD Agent.'
                 )
               : t(
-                  'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
+                  'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
                 ),
             isDisabled: !canCreateApplicationSet || !hasGitOpsCluster,
             tooltip: !canCreateApplicationSet
@@ -1255,23 +1255,35 @@ export default function ApplicationsOverview() {
           },
           {
             id: 'create-argo',
-            text: t('Argo CD ApplicationSet - Push model'),
-            description: t(
-              'Hub cluster pushes application resources to managed clusters requiring credentials for each cluster.'
-            ),
+            text: t('Argo CD Push model ApplicationSet'),
+            description: t('Push application resources from the hub cluster out to managed clusters.'),
             isDisabled: !canCreateApplicationSet,
             tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
           },
           {
             id: 'create-subscription',
             text: <DeprecatedTitle title={t('Subscription')} />,
+            description: t('Distribute subscription resources from the hub to managed clusters'),
             isDisabled: !canCreateApplication,
             tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
           },
           {
             id: 'configure-gitops',
-            text: t('Configure GitOps cluster'),
-            description: t('Set up the GitOpsCluster resource required for pull model applications.'),
+            separator: true,
+            text: (
+              <Flex
+                component="span"
+                className={textStyles.textColorLink}
+                justifyContent={{ default: 'justifyContentSpaceBetween' }}
+                alignItems={{ default: 'alignItemsCenter' }}
+                flexWrap={{ default: 'nowrap' }}
+              >
+                <FlexItem component="span">{t('Set up GitOps configuration for Argo CD Agent Pull')}</FlexItem>
+                <FlexItem component="span">
+                  <RhUiLongArrowRightIcon aria-hidden />
+                </FlexItem>
+              </Flex>
+            ),
           },
         ]}
         isKebab={false}
@@ -1292,8 +1304,8 @@ export default function ApplicationsOverview() {
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
                 <Content component="p">
                   {isArgoCDAgentModeEnabled
-                    ? t('Argo CD ApplicationSet - Agent pull model')
-                    : t('Argo CD ApplicationSet - ManifestWork pull model')}
+                    ? t('Argo CD Agent Pull model ApplicationSet')
+                    : t('Argo CD ManifestWork Pull model ApplicationSet')}
                 </Content>
               </span>
               <span>
@@ -1310,7 +1322,7 @@ export default function ApplicationsOverview() {
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Push model')}</Content>
+                <Content component="p">{t('Argo CD Push model ApplicationSet')}</Content>
               </span>
               <span>
                 <Content component="p">

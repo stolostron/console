@@ -335,14 +335,14 @@ describe('Applications Page', () => {
   test('create dropdown navigates to argo pull model (ManifestWork pull model when agent mode is off)', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - ManifestWork pull model'))
+    await clickElement(screen.getByText('Argo CD ManifestWork Pull model ApplicationSet'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
   })
 
   test('create dropdown navigates to argo push model', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - Push model'))
+    await clickElement(screen.getByText('Argo CD Push model ApplicationSet'))
     expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
@@ -356,7 +356,7 @@ describe('Applications Page', () => {
   test('create dropdown navigates to the GitOps configuration tab', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Configure GitOps cluster'))
+    await clickElement(screen.getByText('Set up GitOps configuration for Argo CD Agent Pull'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/infrastructure/clusters/gitops')
   })
 
@@ -438,7 +438,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
 
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    expect(screen.getByText('Argo CD ApplicationSet - Agent pull model')).toBeInTheDocument()
+    expect(screen.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
   })
 
   test('pull model item is disabled when there is no GitOpsCluster configured', async () => {

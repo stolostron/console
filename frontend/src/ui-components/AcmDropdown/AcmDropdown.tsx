@@ -39,6 +39,7 @@ export type AcmDropdownProps = Props & {
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
   dropdownPosition?: PopperProps['placement']
+  menuWidth?: PopperProps['width']
 }
 
 export type AcmDropdownItems = {
@@ -104,7 +105,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
             )
             return (
               <>
-                {item.separator && <Divider key={item.id} />}
+                {item.separator && <Divider key={item.id} component="li" />}
                 {wrappedMenuItem}
               </>
             )
@@ -152,6 +153,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
  * @param props.isPrimary - Whether to use primary button styling
  * @param props.tooltip - Tooltip text for the dropdown button
  * @param props.dropdownPosition - Position of the dropdown menu
+ * @param props.menuWidth - Optional width of the dropdown menu
  *
  * @returns A dropdown menu component
  */
@@ -356,6 +358,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           enableFlip={true}
           preventOverflow={true}
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
+          width={props.menuWidth}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
         />
       </div>
