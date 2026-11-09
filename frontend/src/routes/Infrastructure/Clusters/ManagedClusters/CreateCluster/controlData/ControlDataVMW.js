@@ -21,6 +21,7 @@ import {
   disabledForFirstInGroup,
   reverseImageSet,
   reverseMultitext,
+  locationControls,
 } from './ControlDataHelpers'
 import { DevPreviewLabel } from '../../../../../../components/TechPreviewAlert'
 import installConfigHbs from '../templates/install-config.hbs'
@@ -164,6 +165,7 @@ export const getControlDataVMW = (
         },
       },
     },
+    ...locationControls(t),
 
     ////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////  node(machine) pools  /////////////////////////////////////
