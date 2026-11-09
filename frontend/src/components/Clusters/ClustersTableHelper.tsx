@@ -67,6 +67,7 @@ import {
 import { SearchOperator } from '../../ui-components/AcmSearchInput'
 import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
 import { HighlightSearchText } from '../HighlightSearchText'
+import { ClusterLocationLine } from './ClusterLocation'
 import { DEFAULT_MAX_VISIBLE_LABELS, getOverflowLabelKeys } from './labelCollapse'
 
 const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
@@ -95,6 +96,11 @@ export function useClusterNameColumn(
     cell: (cluster, search) => (
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
+          {cluster.provider && (
+            <span style={{ marginRight: '0.5rem' }}>
+              <AcmInlineProvider provider={cluster.provider} iconOnly />
+            </span>
+          )}
           {areLinksDisplayed ? (
             <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
               <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
@@ -122,6 +128,7 @@ export function useClusterNameColumn(
             <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
           </Content>
         )}
+        <ClusterLocationLine labels={cluster.labels} />
       </>
     ),
     exportContent: (cluster) => cluster.displayName,
