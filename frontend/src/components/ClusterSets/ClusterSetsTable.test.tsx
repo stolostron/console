@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -163,6 +164,24 @@ describe('ClusterSetsTable', () => {
     expect(screen.queryByRole('img', { name: ProviderLongTextMap[Provider.aws] })).not.toBeInTheDocument()
     const row = screen.getByRole('link', { name: mockManagedClusterSet.metadata.name! }).closest('tr')!
     expect(row.querySelector('td[data-label="Infrastructure"]')).toHaveTextContent('-')
+  })
+  test('searching by provider name finds sets with that provider', async () => {
+    const awsSet: ExtendedManagedClusterSet = {
+      ...mockExtendedClusterSet,
+      metadata: { ...mockExtendedClusterSet.metadata, name: 'aws-set' },
+    }
+    const gcpSet: ExtendedManagedClusterSet = {
+      ...mockExtendedClusterSet,
+      metadata: { ...mockExtendedClusterSet.metadata, name: 'gcp-set' },
+    }
+    mockGetMappedClusterSetClusters.mockImplementation(({ managedClusterSets }) =>
+      managedClusterSets[0].metadata.name === 'aws-set' ? [clusterWith(Provider.aws)] : [clusterWith(Provider.gcp)]
+    )
+    render(<Component managedClusterSets={[awsSet, gcpSet]} />)
+    await waitForText('aws-set')
+    await userEvent.type(screen.getByRole('textbox'), ProviderLongTextMap[Provider.aws])
+    await waitForNotText('gcp-set')
+    expect(screen.getByText('aws-set')).toBeInTheDocument()
   })
 })
 
