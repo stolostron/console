@@ -478,6 +478,42 @@ describe('RosaHCPWrapper', () => {
     expect(wizardProps.wizardData.roles.userRoleError).toBe('User role was not found')
   })
 
+  test('should pass visible wizard strings and omit hidden-step copy', () => {
+    renderComponent()
+
+    const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
+    expect(wizardProps.strings.wizard.next).toBe('Next')
+    expect(wizardProps.strings.wizard.back).toBe('Back')
+    expect(wizardProps.strings.wizard.stepLabels.additionalSetup).toBe('Additional setup')
+    expect(wizardProps.strings.wizard.stepLabels.clusterWideProxy).toBeUndefined()
+    expect(wizardProps.strings.wizard.stepLabels.clusterUpdatesOptional).toBeUndefined()
+    expect(wizardProps.strings.clusterWideProxy).toBeUndefined()
+    expect(wizardProps.strings.clusterUpdates).toBeUndefined()
+    expect(wizardProps.strings.networking.proxyCheckboxLabel).toBeUndefined()
+    expect(wizardProps.strings.networking.machineCidrLabel).toBe('Machine CIDR')
+    expect(wizardProps.strings.review.updateStrategy).toBeUndefined()
+    expect(wizardProps.strings.review.editStep).toBe('Edit step')
+    expect(wizardProps.strings.yamlEditor.description).toBeUndefined()
+    expect(wizardProps.strings.validators.commonRequired).toBe('This field is required')
+    expect(wizardProps.strings.validators.noProxyDomains).toBeUndefined()
+    expect(wizardProps.strings.validators.url).toBeUndefined()
+    expect(wizardProps.strings.validators.ca).toBeUndefined()
+    expect(wizardProps.strings.validators.proxyConfigureAtLeastOne).toBeUndefined()
+    expect(wizardProps.strings.validators.serviceCidr.subnetMaskBetween).toBeUndefined()
+    expect(wizardProps.strings.validators.serviceCidr.subnetMaskBetweenOneAnd(24)).toBe(
+      'Subnet mask must be between /1 and /{{max}}.'
+    )
+    expect(wizardProps.strings.validators.disjointSubnets.overlap('Pod CIDR', false)).toBe(
+      'This subnet overlaps with the subnet in the {{otherFieldLabelsCsv}} field._one'
+    )
+    expect(wizardProps.strings.validators.disjointSubnets.overlap('Pod CIDR, Machine CIDR', true)).toBe(
+      'This subnet overlaps with the subnets in the {{otherFieldLabelsCsv}} fields._other'
+    )
+    expect(wizardProps.strings.validators.operatorRolesPrefix.invalidFormat('Prefix', 'Bad_Name')).toBe(
+      "{{label}} '{{value}}' isn't valid, must consist of lower-case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character. For example, 'my-name', or 'abc-123'."
+    )
+  })
+
   test('should pass empty title, product, config and a real resource generator to the wizard', () => {
     renderComponent()
 
