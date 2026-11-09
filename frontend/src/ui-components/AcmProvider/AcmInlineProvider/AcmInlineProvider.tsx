@@ -21,7 +21,8 @@ export function AcmInlineProvider(props: { provider: Provider; iconOnly?: boolea
     const label = ProviderLongTextMap[props.provider]
     return (
       <Tooltip content={label}>
-        <span role="img" aria-label={label} className={container}>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focus is required so keyboard users can reveal the tooltip */}
+        <span role="img" aria-label={label} tabIndex={0} className={container}>
           <AcmIcon icon={ProviderIconMap[props.provider]} />
         </span>
       </Tooltip>
