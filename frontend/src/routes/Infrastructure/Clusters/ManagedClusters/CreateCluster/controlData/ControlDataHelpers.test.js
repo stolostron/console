@@ -228,9 +228,25 @@ describe('location controls', () => {
     expect(ids).toContain('locationDatacenter')
   })
 
-  it('places the location controls right after region on platforms that have one', () => {
-    const ids = getControlDataAWS(tFn, jest.fn(), true, false, false, true).map((control) => control.id)
+  it.each([
+    ['AWS', () => getControlDataAWS(tFn, jest.fn(), true, false, false, true)],
+    ['GCP', () => getControlDataGCP(tFn, jest.fn(), true, false, false, true)],
+    ['Azure', () => getControlDataAZR(tFn, jest.fn(), true, false, false, true)],
+  ])('places the location controls right after region for %s', (_name, getControlData) => {
+    const ids = getControlData().map((control) => control.id)
     const regionIndex = ids.indexOf('region')
+    expect(regionIndex).toBeGreaterThan(-1)
     expect(ids.slice(regionIndex + 1, regionIndex + 3)).toEqual(['zone', 'locationDatacenter'])
+  })
+
+  it('adds exactly one location datacenter control to vSphere, separate from the credential datacenter variable', () => {
+    const ids = getControlDataVMW(tFn, jest.fn(), true, true, false).map((control) => control.id)
+    expect(ids.filter((id) => id === 'locationDatacenter')).toHaveLength(1)
+  })
+
+  it('rejects non-string values instead of throwing', () => {
+    const [zone] = locationControls(tFn)
+    expect(zone.validation.tester.test(undefined)).toBe(false)
+    expect(zone.validation.tester.test(null)).toBe(false)
   })
 })

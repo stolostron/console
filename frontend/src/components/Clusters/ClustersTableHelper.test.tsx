@@ -399,6 +399,33 @@ describe('ClustersTableHelper', () => {
       expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
     })
 
+    it('should render provider icon, name and location without a link when links are hidden', () => {
+      const cluster = { ...mockCluster, provider: Provider.vmware, labels: { region: 'USW1', zone: 'USW1B' } }
+      const column = useClusterNameColumn(false)
+      renderWithProviders(<TestColumnComponent column={column} cluster={cluster} />)
+
+      expect(screen.queryByRole('link')).not.toBeInTheDocument()
+      expect(screen.getByRole('img', { name: 'VMware vSphere' })).toBeInTheDocument()
+      expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
+    })
+
+    it('should render the datacenter icon in the name cell', () => {
+      const cluster = { ...mockCluster, labels: { datacenter: 'DC-East' } }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={cluster} />)
+
+      expect(screen.getByLabelText('cluster.location.datacenter: DC-East')).toBeInTheDocument()
+    })
+
+    it('should render the location line when the cluster has labels but no provider', () => {
+      const cluster = { ...mockCluster, provider: undefined, labels: { region: 'USW1' } }
+      const column = useClusterNameColumn(true)
+      renderWithProviders(<TestColumnComponent column={column} cluster={cluster} />)
+
+      expect(screen.queryByRole('img')).not.toBeInTheDocument()
+      expect(screen.getByText('USW1')).toBeInTheDocument()
+    })
+
     it('should render only the name when cluster has no provider or labels', () => {
       const cluster = { ...mockCluster, provider: undefined, labels: undefined }
       const column = useClusterNameColumn(true)

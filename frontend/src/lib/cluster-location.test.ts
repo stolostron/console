@@ -34,4 +34,21 @@ describe('getClusterLocation', () => {
   it('returns {} for undefined labels', () => {
     expect(getClusterLocation(undefined)).toEqual({})
   })
+
+  it('falls through to the topology label when the plain label is empty', () => {
+    expect(getClusterLocation({ region: '', 'topology.kubernetes.io/region': 'eu-west-1' })).toEqual({
+      region: 'eu-west-1',
+    })
+  })
+
+  it('mixes a plain region with a topology zone', () => {
+    expect(getClusterLocation({ region: 'us-east-1', 'topology.kubernetes.io/zone': 'us-east-1a' })).toEqual({
+      region: 'us-east-1',
+      zone: 'us-east-1a',
+    })
+  })
+
+  it('has no topology fallback for datacenter', () => {
+    expect(getClusterLocation({ 'topology.kubernetes.io/datacenter': 'dc1' })).toEqual({})
+  })
 })
