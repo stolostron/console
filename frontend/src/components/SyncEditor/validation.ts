@@ -131,7 +131,7 @@ export const getErrors = (documents: any[]) => {
   if (source?.includes('{{') && documents.some((document) => document?.errors.length)) {
     // Helm/Argo templates are not YAML. Mask them only for syntax validation,
     // retaining line and column positions and leaving the original documents intact.
-    const validationSource = source.replace(/{{[\s\S]*?}}/g, (template: string, offset: number) => {
+    const validationSource = source.replace(/{{[^{}]*}}/g, (template: string, offset: number) => {
       const lineStart = source.lastIndexOf('\n', offset - 1) + 1
       const nextNewline = source.indexOf('\n', offset + template.length)
       const lineEnd = nextNewline === -1 ? source.length : nextNewline

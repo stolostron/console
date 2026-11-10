@@ -292,6 +292,13 @@ describe('validation', () => {
       expect(errors).toEqual([expect.objectContaining({ message: expect.stringContaining('Map keys must be unique') })])
     })
 
+    it('does not mask an incomplete template with a later complete template', () => {
+      const source = 'replicas: {{ .Values.replicaCount\nname: {{ .Values.name }}'
+      const errors = getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true }))
+
+      expect(errors.length).toBeGreaterThan(0)
+    })
+
     it('keeps YAML errors when a template expression is incomplete', () => {
       const source = 'replicas: {{ .Values.replicaCount\n'
       expect(

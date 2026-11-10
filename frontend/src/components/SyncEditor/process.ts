@@ -479,7 +479,7 @@ const lineEnd = (source: string, offset: number) => {
   return end === -1 ? source.length : end
 }
 const lineIndent = (source: string, offset: number) =>
-  source.slice(lineStart(source, offset)).match(/^[ \t]*/)?.[0].length ?? 0
+  /^[ \t]*/.exec(source.slice(lineStart(source, offset)))?.[0].length ?? 0
 const nodeIndent = (source: string, offset: number, path: (string | number)[]) =>
   path.at(-1) === KEY_MARKER ? offset - lineStart(source, offset) : lineIndent(source, offset)
 
