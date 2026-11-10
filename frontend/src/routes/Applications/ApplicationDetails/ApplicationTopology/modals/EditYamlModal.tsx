@@ -1,7 +1,17 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
-import { ActionList, ActionListGroup, ActionListItem, Alert, AlertGroup, Button, Spinner } from '@patternfly/react-core'
+import {
+  ActionList,
+  ActionListGroup,
+  ActionListItem,
+  Alert,
+  AlertGroup,
+  Button,
+  Flex,
+  FlexItem,
+  Spinner,
+} from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import cloneDeep from 'lodash/cloneDeep'
 import jsYaml from 'js-yaml'
@@ -10,15 +20,19 @@ import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor
 import { useTranslation } from '~/lib/acm-i18next'
 import { PluginContext } from '~/lib/PluginContext'
 import { canUser } from '~/lib/rbac-util'
-import type { TopologyNode } from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
+import type {
+  ResourceKindDecoratorProps,
+  TopologyNode,
+} from '~/routes/Applications/ApplicationDetails/ApplicationTopology/types'
 import { getGroupFromApiVersion, getResource } from '~/resources/utils'
 import { fleetCanUser } from '~/resources/utils/fleet-can-user'
 import { fleetResourceRequest } from '~/resources/utils/fleet-resource-request'
 import { onReload, onSave } from '~/routes/Search/components/YamlEditor/utils'
 import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
 import { AcmAlert, AcmModal } from '~/ui-components'
-import { TopologyModalNavigatorLayout } from '../components/TopologyModalNavigatorLayout'
-import '../components/ResourceNavigator.css'
+import { ResourceKindDecorator, ResourceNavigator } from './ResourceNavigator'
+import { ModalNavigatorLayout } from './ModalNavigatorLayout'
+import './ResourceNavigator.css'
 import {
   buildNavigatorGroups,
   findInitialNavigatorSelection,
@@ -27,6 +41,7 @@ import {
   topologyNodeToApplicationEditNode,
   type ResourceNavigatorItem,
 } from '../helpers/resourceNavigatorHelpers'
+import { typeToShapeMap } from '../model/NodeDetailsProvider'
 
 const typesWithoutDefaultName = new Set(['replicaset', 'pod', 'replicationcontroller', 'controllerrevision'])
 
@@ -46,6 +61,18 @@ export function EditYamlModal(props: IEditYamlModalProps | { open: false }) {
   }
 
   return <EditYamlModalContent {...props} />
+}
+
+function EditYamlModalTitle({ shape, className }: Readonly<ResourceKindDecoratorProps>) {
+  const { t } = useTranslation()
+  return (
+    <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsSm' }}>
+      <FlexItem>
+        <ResourceKindDecorator shape={shape} className={className} size={39} />
+      </FlexItem>
+      <FlexItem>{t('Edit YAML')}</FlexItem>
+    </Flex>
+  )
 }
 
 function EditYamlModalContent({
@@ -306,11 +333,13 @@ function EditYamlModalContent({
 
   const isLoadingResource = !resource && resourceError.message === ''
 
+  const { shape: editorIconShape = 'other', className: editorIconClassName = 'default' } =
+    typeToShapeMap[String(type) as keyof typeof typeToShapeMap] || {}
   return (
     <AcmModal
       id="edit-yaml-modal"
       isOpen={true}
-      title={t('Edit YAML')}
+      title={<EditYamlModalTitle shape={editorIconShape} className={editorIconClassName} />}
       aria-label={t('Edit YAML')}
       showClose={true}
       onClose={close}
@@ -318,25 +347,16 @@ function EditYamlModalContent({
       position="top"
       hasNoBodyWrapper
     >
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          height: '70vh',
-          minHeight: 0,
-          overflow: 'hidden',
-          paddingTop: 'var(--pf-t--global--spacer--sm)',
-          paddingLeft: 'var(--pf-t--global--spacer--lg)',
-          paddingRight: 'var(--pf-t--global--spacer--lg)',
-        }}
-      >
-        <TopologyModalNavigatorLayout
+      <div className="resource-modal-body">
+        <ModalNavigatorLayout
           showNavigator={showNavigator}
-          navigatorProps={{
-            groups: navigatorGroups,
-            selectedItemId,
-            onSelectItem: handleNavigatorSelect,
-          }}
+          navigator={
+            <ResourceNavigator
+              groups={navigatorGroups}
+              selectedItemId={selectedItemId}
+              onSelectItem={handleNavigatorSelect}
+            />
+          }
         >
           <div style={{ flexGrow: 1, minHeight: 0, position: 'relative' }}>
             {(isLoadingResource || isReloading) && (
@@ -482,7 +502,7 @@ function EditYamlModalContent({
               </ActionListGroup>
             </ActionList>
           </div>
-        </TopologyModalNavigatorLayout>
+        </ModalNavigatorLayout>
       </div>
     </AcmModal>
   )

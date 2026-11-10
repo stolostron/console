@@ -51,6 +51,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react'
 import StyledNode, {
   ACTION_DECORATOR_HOVER_DELAY_OUT_MS,
   clearStickyDangerPulseNodeIds,
+  getActionDecoratorScale,
   resolveShouldPulse,
 } from './StyledNode'
 import { Node } from '@patternfly/react-topology'
@@ -269,6 +270,42 @@ describe('StyledNode tests', () => {
       const useElement = container.querySelector('use')
       expect(useElement).toBeInTheDocument()
     })
+
+    test('scales action decorators up when zoomed out', () => {
+      mockUseHover.mockReturnValue([true])
+      const element = createMockElement({ scale: 0.5, data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      expect(logsAction).toHaveAttribute('transform', 'translate(10, 10) scale(1.6) translate(-10, -10)')
+    })
+
+    test('does not scale action decorators when zoomed in', () => {
+      mockUseHover.mockReturnValue([true])
+      const element = createMockElement({ scale: 1, data: { type: 'pod', name: 'test-pod' } })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      expect(logsAction).not.toHaveAttribute('transform')
+    })
+  })
+
+  describe('getActionDecoratorScale', () => {
+    test('returns 1 at full zoom', () => {
+      expect(getActionDecoratorScale(1)).toBe(1)
+      expect(getActionDecoratorScale(1.5)).toBe(1)
+    })
+
+    test('inverse-scales when zoomed out at 80% size and caps growth', () => {
+      expect(getActionDecoratorScale(0.5)).toBe(1.6)
+      expect(getActionDecoratorScale(0.4)).toBe(2)
+      expect(getActionDecoratorScale(0.2)).toBe(2)
+    })
+
+    test('returns 1 for non-positive scale', () => {
+      expect(getActionDecoratorScale(0)).toBe(1)
+      expect(getActionDecoratorScale(-1)).toBe(1)
+    })
   })
 
   describe('hover behavior', () => {
@@ -356,7 +393,7 @@ describe('StyledNode tests', () => {
       expect(countText).toHaveTextContent('3')
     })
 
-    test('does not render decorators at low detail level', () => {
+    test('does not render status or count decorators at low detail level', () => {
       const element = createMockElement({
         scale: 0.2,
         data: {
@@ -366,8 +403,26 @@ describe('StyledNode tests', () => {
       })
       const { container } = render(<StyledNode element={element} />)
 
-      const decorator = container.querySelector('[data-testid="decorator"]')
-      expect(decorator).not.toBeInTheDocument()
+      const statusDecorators = [...container.querySelectorAll('[data-testid="decorator"]')].filter(
+        (el) => !el.closest('.pf-topology-node-action-decorator-hit')
+      )
+      expect(statusDecorators).toHaveLength(0)
+      expect(container.querySelector('text')).not.toBeInTheDocument()
+    })
+
+    test('still mounts action decorators at low detail level', () => {
+      mockUseHover.mockReturnValue([false])
+      const element = createMockElement({
+        scale: 0.2,
+        data: { type: 'pod', name: 'test-pod' },
+      })
+      render(<StyledNode element={element} />)
+
+      const logsAction = screen.getByRole('button', { name: 'Logs' })
+      expect(logsAction).toBeInTheDocument()
+      expect(logsAction.closest('.pf-topology-node-action-decorators')).toHaveClass(
+        'pf-topology-node-action-decorators--hidden'
+      )
     })
 
     test('does not render count decorator when resourceCount is 1', () => {

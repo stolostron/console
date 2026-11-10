@@ -23,6 +23,11 @@ export function getTopologyNodeActionVisibility(
   return { showLogs, showEditYaml }
 }
 
+/** Git repo nodes get a "View repository" action instead of logs/edit-YAML actions. Helm (`chart`) nodes do not. */
+export function showViewRepoOnNode(type: string | undefined): boolean {
+  return type === 'git'
+}
+
 export function showApplicationPickerOnAppSet(node: TopologyNode): boolean {
   if (node.type !== 'applicationset') {
     return false

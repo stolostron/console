@@ -289,7 +289,7 @@ describe('LogsModal', () => {
     await screen.findByText('hub log line')
 
     const logViewer = screen.getByTestId('log-viewer')
-    expect(logViewer).toHaveAttribute('data-height', 'calc(70vh - 200px)')
+    expect(logViewer).toHaveAttribute('data-height', '100%')
     expect(logViewer.parentElement).toHaveStyle({ flex: '1', minHeight: '0' })
 
     await clickElement(screen.getByRole('button', { name: 'Expand' }))
