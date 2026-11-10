@@ -11,6 +11,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -91,6 +93,13 @@ func doJSON(t *testing.T, h http.Handler, method, path string, body any) *http.R
 	return resp
 }
 
+func drainResponse(t *testing.T, resp *http.Response) {
+	t.Helper()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestValidateAuthFailure(t *testing.T) {
 	up := httptest.NewServer(http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}))
 	t.Cleanup(up.Close)
@@ -110,7 +119,8 @@ func TestValidateAuthFailure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -165,7 +175,8 @@ func TestActionInvalidJSON400(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -182,14 +193,16 @@ func TestActionPlainTextResponse(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.Header.Get("Content-Type") != "text/plain" {
 		t.Fatalf("content-type %q", resp.Header.Get("Content-Type"))
 	}
 }
 
 func TestUnauthorized(t *testing.T) {
+	var called atomic.Bool
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("upstream")
+		called.Store(true)
 	}), nil)
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -197,18 +210,25 @@ func TestUnauthorized(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if called.Load() {
+		t.Fatal("upstream")
 	}
 }
 
 func TestStartAction(t *testing.T) {
 	var capturedPath, capturedAuth, capturedMethod string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
 		capturedAuth = r.Header.Get("Authorization")
 		capturedMethod = r.Method
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"statusCode":200}`))
@@ -219,9 +239,12 @@ func TestStartAction(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName/start" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -235,8 +258,11 @@ func TestStartAction(t *testing.T) {
 
 func TestPauseAction(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
@@ -246,7 +272,10 @@ func TestPauseAction(t *testing.T) {
 		"vmName":         "vmName",
 		"vmNamespace":    "vmNamespace",
 	})
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/subresources.kubevirt.io/v1/namespaces/vmNamespace/virtualmachineinstances/vmName/pause" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -254,10 +283,13 @@ func TestPauseAction(t *testing.T) {
 
 func TestSnapshotCreate(t *testing.T) {
 	var capturedPath, capturedBody string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		capturedPath = r.URL.Path
 		b, _ := io.ReadAll(r.Body)
+		capturedMu.Lock()
+		capturedPath = r.URL.Path
 		capturedBody = string(b)
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
@@ -269,7 +301,10 @@ func TestSnapshotCreate(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 		"reqBody":        reqBody,
 	})
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -288,6 +323,7 @@ func TestActionUpstreamError(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -295,8 +331,11 @@ func TestActionUpstreamError(t *testing.T) {
 
 func TestGetVM(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"kind":"VirtualMachine"}`))
@@ -307,6 +346,8 @@ func TestGetVM(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/kubevirt.io/v1/namespaces/vmNamespace/virtualmachines/vmName" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -317,13 +358,19 @@ func TestGetVM(t *testing.T) {
 
 func TestGetVMSnapshot(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{"kind":"VirtualMachineSnapshot"}`))
 	}), nil)
 	resp := doJSON(t, h, http.MethodGet, "/multicloud/virtualmachinesnapshots/get/testCluster/vmName/vmNamespace", nil)
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinesnapshots/vmName" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -331,9 +378,12 @@ func TestGetVMSnapshot(t *testing.T) {
 
 func TestDeleteVM(t *testing.T) {
 	var capturedPath, capturedMethod string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
 		capturedMethod = r.Method
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
@@ -344,7 +394,10 @@ func TestDeleteVM(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 		"reqBody":        map[string]any{},
 	})
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedMethod != http.MethodDelete {
 		t.Fatalf("method %s", capturedMethod)
 	}
@@ -355,8 +408,11 @@ func TestDeleteVM(t *testing.T) {
 
 func TestRestoreSnapshot(t *testing.T) {
 	var capturedPath string
+	var capturedMu sync.Mutex
 	h := newVMHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{}`))
@@ -367,7 +423,10 @@ func TestRestoreSnapshot(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 		"reqBody":        map[string]any{"kind": "VirtualMachineRestore"},
 	})
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testCluster/apis/snapshot.kubevirt.io/v1beta1/namespaces/vmNamespace/virtualmachinerestores" {
 		t.Fatalf("path %s", capturedPath)
 	}
@@ -375,8 +434,11 @@ func TestRestoreSnapshot(t *testing.T) {
 
 func TestFineGrainedUsesUserToken(t *testing.T) {
 	var capturedAuth string
+	var capturedMu sync.Mutex
 	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.Header().Set(httpx.HeaderContentType, httpx.MIMEJSON)
 		_, _ = w.Write([]byte(`{}`))
 	}))
@@ -392,16 +454,19 @@ func TestFineGrainedUsesUserToken(t *testing.T) {
 		"vmName":         "vmName",
 		"vmNamespace":    "vmNamespace",
 	})
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedAuth != "Bearer user-token" {
 		t.Fatalf("auth %s", capturedAuth)
 	}
 }
 
 func TestUnknownAction400(t *testing.T) {
-	var called bool
+	var called atomic.Bool
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		called = true
+		called.Store(true)
 	}), nil)
 	resp := doJSON(t, h, http.MethodPut, "/virtualmachines/not-a-verb", map[string]string{
 		"managedCluster": "testCluster",
@@ -409,20 +474,21 @@ func TestUnknownAction400(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
-	if called {
+	if called.Load() {
 		t.Fatal("upstream should not be called")
 	}
 }
 
 func TestMissingVMActor500(t *testing.T) {
-	var called bool
+	var called atomic.Bool
 	kube := fake.NewSimpleClientset()
 	allowMCA(kube, true)
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		called = true
+		called.Store(true)
 	}), kube)
 	resp := doJSON(t, h, http.MethodPut, "/virtualmachines/start", map[string]string{
 		"managedCluster": "testCluster",
@@ -430,10 +496,11 @@ func TestMissingVMActor500(t *testing.T) {
 		"vmNamespace":    "vmNamespace",
 	})
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
-	if called {
+	if called.Load() {
 		t.Fatal("unauthenticated addon request must not be sent")
 	}
 }
@@ -442,6 +509,7 @@ func TestUsageMissingParams(t *testing.T) {
 	h := newVMHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {}), nil)
 	resp := doJSON(t, h, http.MethodGet, "/vmResourceUsage/cluster//namespace/vmNamespace", nil)
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -472,7 +540,9 @@ func TestUsageAggregate(t *testing.T) {
 		case strings.Contains(r.URL.Path, "/virtualmachineinstances/fedora/filesystemlist"):
 			_, _ = w.Write([]byte(`{"items":[{"totalBytes":42949672960,"usedBytes":5368709120}]}`))
 		default:
-			t.Fatalf("unexpected path %s", r.URL.Path)
+			t.Errorf("unexpected path %s", r.URL.Path)
+			http.Error(w, "unexpected path", http.StatusInternalServerError)
+			return
 		}
 	}), nil)
 	resp := doJSON(t, h, http.MethodGet, "/vmResourceUsage/cluster/testCluster/namespace/vmNamespace", nil)
