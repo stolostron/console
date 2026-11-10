@@ -448,7 +448,7 @@ describe('processForm', () => {
 // Helper: capture comments from a source yaml string and re-apply them onto next,
 // mirroring how `process` wires `preserveComments` + `applyComments` together.
 const restoreComments = (source: string | undefined, next: string) =>
-  applyComments(preserveComments(source ? YAML.parseAllDocuments(source) : []), next)
+  applyComments(preserveComments(source ? YAML.parseAllDocuments(source, { keepCstNodes: true }) : []), next)
 
 describe('preserveComments', () => {
   it('returns an empty map when the source has no comments', () => {
@@ -469,6 +469,149 @@ describe('preserveComments', () => {
 })
 
 describe('applyComments', () => {
+  it('keeps comments above their fields when the first field in a map is reordered', () => {
+    const source = [
+      'serviceAccount:',
+      '  # Specifies whether a service account should be created',
+      '  create: true',
+      '  # Annotations to add to the service account',
+      '  annotations: {}',
+      '  # The name of the service account to use.',
+      '  # If not set and create is true, a name is generated using the fullname template',
+      '  name: ""',
+      '',
+    ].join('\n')
+    const next = 'serviceAccount:\n  name: ""\n  annotations: {}\n  create: false\n'
+    const result = restoreComments(source, next)
+
+    expect(result).toContain('  # Specifies whether a service account should be created\n  create: false')
+    expect(result).toContain('  # Annotations to add to the service account\n  annotations: {}')
+    expect(result).toContain(
+      '  # The name of the service account to use.\n' +
+        '  # If not set and create is true, a name is generated using the fullname template\n  name: ""'
+    )
+    expect(YAML.parse(result)).toEqual(YAML.parse(next))
+  })
+
+  it('keeps indented Helm examples with their empty objects after reordering', () => {
+    const source = [
+      '# Default values for mychart.',
+      '# This is a YAML-formatted file.',
+      '# Declare variables to be passed into your templates.',
+      '',
+      'podSecurityContext: {}',
+      '  # fsGroup: 2000',
+      '',
+      'securityContext: {}',
+      '  # capabilities:',
+      '  #   drop:',
+      '  #   - ALL',
+      '  # readOnlyRootFilesystem: true',
+      '',
+      'service:',
+      '  type: ClusterIP',
+      '  port: 80',
+      '',
+      'ingress:',
+      '  enabled: false',
+      '  annotations: {}',
+      '    # kubernetes.io/ingress.class: nginx',
+      '    # kubernetes.io/tls-acme: "true"',
+      '  hosts:',
+      '    - host: chart-example.local',
+      '      paths: []',
+      '  tls: []',
+      '  #  - secretName: chart-example-tls',
+      '  #    hosts:',
+      '  #      - chart-example.local',
+      '',
+      'resources: {}',
+      '  # We usually recommend not to specify default resources',
+      '  # limits:',
+      '  #   cpu: 100m',
+      '  #   memory: 128Mi',
+      '',
+      'autoscaling:',
+      '  enabled: false',
+      '  targetCPUUtilizationPercentage: 80',
+      '  # targetMemoryUtilizationPercentage: 80',
+      '',
+    ].join('\n')
+    const values = YAML.parse(source)
+    const reordered = Object.fromEntries(Object.entries(values).sort(([a], [b]) => a.localeCompare(b)))
+    reordered.ingress = { ...values.ingress, hosts: values.ingress.hosts, enabled: false }
+    const next = stringify([reordered])
+    const result = restoreComments(source, next)
+
+    expect(result).toContain('podSecurityContext: {}\n  # fsGroup: 2000')
+    expect(result).toContain('securityContext: {}\n  # capabilities:\n  #   drop:\n  #   - ALL')
+    expect(result).toContain('resources: {}\n  # We usually recommend not to specify default resources\n  # limits:')
+    expect(result).toContain('  annotations: {}\n    # kubernetes.io/ingress.class: nginx')
+    expect(result).toContain('  tls: []\n  #  - secretName: chart-example-tls')
+    expect(result).toContain('  targetCPUUtilizationPercentage: 80\n  # targetMemoryUtilizationPercentage: 80')
+    expect(result.startsWith('# Default values for mychart.\n# This is a YAML-formatted file.')).toBe(true)
+    expect(YAML.parse(result)).toEqual(YAML.parse(next))
+    expect(restoreComments(result, next)).toBe(result)
+  })
+
+  it('drops comments above removed first fields and below removed empty objects', () => {
+    const source =
+      'account:\n  # create account\n  create: true\n  name: test\nresources: {}\n  # limits: {}\nnext: true\n'
+    const next = 'account:\n  name: test\nnext: true\n'
+    expect(restoreComments(source, next)).toBe(next)
+  })
+
+  it('distinguishes a document header from a comment above its first field', () => {
+    const source = '# document header\n\n# first field\nfirst: 1\nsecond: 2\n'
+    const next = 'second: 2\nfirst: 3\n'
+    expect(restoreComments(source, next)).toBe('# document header\n\nsecond: 2\n# first field\nfirst: 3\n')
+  })
+
+  it('preserves block scalar header comments without treating literal hashes as comments', () => {
+    const source =
+      'data:\n  script: | # script header\n    # part of the script\n    echo hello\n  # next field\n  next: old\n'
+    const next = 'data:\n  next: new\n  script: |\n    # part of the script\n    echo updated\n'
+    const result = restoreComments(source, next)
+    expect(result).toContain('  # next field\n  next: new')
+    expect(result).toContain('  script: | # script header\n    # part of the script\n    echo updated')
+    expect(YAML.parse(result)).toEqual(YAML.parse(next))
+  })
+
+  it('keeps inline comments outside wrapped scalar values', () => {
+    const source = 'description: old # description comment\n'
+    const next = stringify([{ description: 'A long description that must wrap onto several YAML lines. '.repeat(5) }])
+    const result = restoreComments(source, next)
+    expect(result).toContain('# description comment')
+    expect(YAML.parse(result)).toEqual(YAML.parse(next))
+  })
+
+  it('keeps comments on sequence entries and their fields', () => {
+    const source =
+      'items:\n  # first item\n  - name: one\n    # replicas\n    replicas: 1\n  # second item\n  - name: two\n'
+    const next = 'items:\n  - replicas: 2\n    name: one\n  - name: two\n'
+    const result = restoreComments(source, next)
+    expect(result).toContain('    # replicas')
+    expect(result).toContain('# first item')
+    expect(result).toContain('  # second item\n  - name: two')
+    expect(YAML.parse(result)).toEqual(YAML.parse(next))
+  })
+
+  it('keeps document comments separate when reordering multiple documents', () => {
+    const source =
+      '# first document\n\nfirst: {}\n  # first example\nnext: true\n---\n# second document\n\nfirst: {}\n  # second example\nnext: false\n'
+    const next = 'next: true\nfirst: {}\n---\nnext: false\nfirst: {}\n'
+    const result = restoreComments(source, next)
+    const documents = result.split('---\n')
+    expect(documents).toHaveLength(2)
+    expect(documents[0]).toContain('first: {}\n  # first example')
+    expect(documents[0]).not.toContain('# second')
+    expect(documents[1]).toContain('first: {}\n  # second example')
+    expect(documents[1]).not.toContain('# first')
+    expect(YAML.parseAllDocuments(result).map((doc) => doc.toJSON())).toEqual(
+      YAML.parseAllDocuments(next).map((doc) => doc.toJSON())
+    )
+  })
+
   it('returns the new yaml unchanged when the comments map is empty', () => {
     const next = 'apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: foo\n'
     expect(applyComments(new Map(), next)).toBe(next)
@@ -505,13 +648,9 @@ describe('applyComments', () => {
   })
 
   it('restores a document-level header comment block', () => {
-    const source = [
-      '# Default values for cm-app.',
-      '# This is a YAML-formatted file.',
-      '',
-      'replicaCount: 1',
-      '',
-    ].join('\n')
+    const source = ['# Default values for cm-app.', '# This is a YAML-formatted file.', '', 'replicaCount: 1', ''].join(
+      '\n'
+    )
     const next = 'replicaCount: 3\n'
     const result = restoreComments(source, next)
     expect(result).toContain('# Default values for cm-app.')

@@ -41,6 +41,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   editableUidSiblings?: boolean
   syncs?: unknown
   readonly?: boolean
+  wordWrap?: editorTypes.IEditorOptions['wordWrap']
   mock?: boolean
   autoCreateNs?: boolean
   onClose?: () => void
@@ -68,6 +69,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     syncs,
     filters,
     readonly,
+    wordWrap = 'wordWrapColumn',
     mock,
     autoCreateNs,
     onStatusChange,
@@ -920,7 +922,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           showEditor={!showDiffView}
           options={{
             theme: getTheme(),
-            wordWrap: 'wordWrapColumn',
+            wordWrap,
             scrollBeyondLastLine: true,
             smoothScrolling: true,
             glyphMargin: true,

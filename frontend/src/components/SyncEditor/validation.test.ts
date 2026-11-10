@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import Ajv from 'ajv'
+import YAML from 'yaml'
 import {
   compileAjvSchemas,
   addAjvKeywords,
@@ -218,6 +219,84 @@ describe('validation', () => {
       const documents = [undefined, { errors: [] }]
       const errors = getErrors(documents as any)
       expect(errors).toHaveLength(0)
+    })
+
+    it('ignores Helm substitutions and control blocks without changing the source documents', () => {
+      const source = `spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "mychart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+`
+      const documents = YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true })
+      const originalErrors = [...documents[0].errors]
+
+      expect(originalErrors.length).toBeGreaterThan(0)
+      expect(getErrors(documents)).toEqual([])
+      expect(documents[0].errors).toEqual(originalErrors)
+      expect(documents[0].cstNode?.context?.src).toBe(source)
+    })
+
+    it.each([
+      'name: "{{ include "mychart.fullname" . }}"',
+      'labels:\n  "{{ .Values.foo }}": one\n  "{{ .Values.bar }}": two',
+      'image: {{ .Values.image.repository }}:{{ .Values.image.tag }}',
+      'replicas: {{- .Values.replicaCount -}}',
+      'value: {{\n  .Values.value\n}}',
+      '{{- /* a multiline\ncomment */ -}}\nkind: Deployment',
+    ])('ignores template syntax in %s', (source) => {
+      expect(getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true }))).toEqual([])
+    })
+
+    it.each(['\n', '\r\n'])('keeps unrelated YAML errors and their positions with %j line endings', (newline) => {
+      const source = [
+        'spec:',
+        '{{- if .Values.enabled }}',
+        '  replicas: {{ .Values.replicaCount }}',
+        '{{- end }}',
+        '  invalid: [',
+      ].join(newline)
+      const errors = getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true }))
+
+      expect(errors.length).toBeGreaterThan(0)
+      expect(errors).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.stringContaining('Expected flow sequence to end with ]'),
+            linePos: { start: { line: 5, col: 13 }, end: { line: 5, col: 14 } },
+          }),
+        ])
+      )
+    })
+
+    it('keeps errors in other YAML documents when one contains templates', () => {
+      const source = '{{- if .Values.enabled }}\nkind: Deployment\n{{- end }}\n---\ninvalid: [\n'
+      const errors = getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true }))
+
+      expect(errors.length).toBeGreaterThan(0)
+      expect(errors.every((error) => error.linePos.start.line === 5)).toBe(true)
+    })
+
+    it('keeps ordinary YAML errors in a document containing a quoted template', () => {
+      const source = 'name: "{{ .Values.name }}"\nkey: one\nkey: two\n'
+      const errors = getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true }))
+
+      expect(errors).toEqual([expect.objectContaining({ message: expect.stringContaining('Map keys must be unique') })])
+    })
+
+    it('keeps YAML errors when a template expression is incomplete', () => {
+      const source = 'replicas: {{ .Values.replicaCount\n'
+      expect(
+        getErrors(YAML.parseAllDocuments(source, { prettyErrors: true, keepCstNodes: true })).length
+      ).toBeGreaterThan(0)
     })
   })
 

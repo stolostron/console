@@ -128,6 +128,7 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
           code={fileContents.contents}
           resources={null}
           readonly
+          wordWrap="off"
           initialShowChanges={false}
         />
       )
@@ -141,8 +142,10 @@ function ViewRepositoryModalContent({ close, node }: Readonly<Omit<IViewReposito
           isLineNumbersVisible
           isReadOnly
           options={{
+            // Keep the normal editor appearance while preventing edits.
+            readOnly: true,
             theme: getTheme(),
-            wordWrap: 'wordWrapColumn',
+            wordWrap: 'off',
             scrollBeyondLastLine: true,
             smoothScrolling: true,
             glyphMargin: true,

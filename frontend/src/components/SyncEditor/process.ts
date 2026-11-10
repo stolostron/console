@@ -432,7 +432,20 @@ export const stringify = (resources: any[]) => {
 }
 
 // A comment captured from a source YAML node, keyed by its path in the document.
-type NodeComments = { comment?: string; commentBefore?: string; spaceBefore?: boolean }
+type PositionedComment = {
+  text: string
+  placement: 'before' | 'inline' | 'after'
+  indent: number
+  blankLineAfter: boolean
+  order: number
+}
+
+type NodeComments = {
+  comment?: string
+  commentBefore?: string
+  spaceBefore?: boolean
+  positioned?: PositionedComment[]
+}
 
 // A marker appended to a path so a map key's own comments don't collide with its value's.
 const KEY_MARKER = '\u0001key'
@@ -460,13 +473,146 @@ function walkYamlNodes(node: any, path: (string | number)[], visit: (node: any, 
   })
 }
 
+const lineStart = (source: string, offset: number) => source.lastIndexOf('\n', offset - 1) + 1
+const lineEnd = (source: string, offset: number) => {
+  const end = source.indexOf('\n', offset)
+  return end === -1 ? source.length : end
+}
+const lineIndent = (source: string, offset: number) =>
+  source.slice(lineStart(source, offset)).match(/^[ \t]*/)?.[0].length ?? 0
+const nodeIndent = (source: string, offset: number, path: (string | number)[]) =>
+  path.at(-1) === KEY_MARKER ? offset - lineStart(source, offset) : lineIndent(source, offset)
+
+// CST ranges retain the indentation and location that the AST's commentBefore
+// loses, particularly for comments before a map's first key or after an empty map.
+function preserveSourceComments(document: any, docIndex: number, comments: Map<string, NodeComments>) {
+  const source: string | undefined = document.cstNode?.context?.src
+  if (source === undefined) return false
+
+  const nodes: { node: any; path: (string | number)[]; start: number; end: number; indent: number }[] = []
+  walkYamlNodes(document.contents, [docIndex], (node, path) => {
+    if (node.range) {
+      nodes.push({
+        node,
+        path,
+        start: node.range[0],
+        end: node.cstNode?.valueRange?.end ?? node.range[1],
+        indent: nodeIndent(source, node.range[0], path),
+      })
+    }
+  })
+  nodes.sort((a, b) => a.start - b.start || b.path.length - a.path.length)
+  // A blank line separates a document header from comments on its first field.
+  const headerEnd = [...source.slice(0, nodes[0]?.start ?? 0).matchAll(/\n[ \t]*\r?\n/g)].at(-1)?.index ?? -1
+
+  const ranges = new Map<number, number>()
+  const visitCst = (node: any) => {
+    node?.props?.forEach(({ start, end }: { start: number; end: number }) => {
+      if (source[start] === '#') ranges.set(start, end)
+    })
+    node?.items?.forEach(visitCst)
+    node?.contents?.forEach(visitCst)
+    if (node?.node) visitCst(node.node)
+  }
+  visitCst(document.cstNode)
+
+  for (const [start, end] of [...ranges].sort(([a], [b]) => a - b)) {
+    const inline = source.slice(lineStart(source, start), start).trim().length > 0
+    const indent = start - lineStart(source, start)
+    const next = nodes.find((entry) => entry.start > start)
+    const previous = nodes
+      .filter((entry) => entry.end <= start)
+      .sort((a, b) => b.end - a.end || b.path.length - a.path.length)[0]
+    let anchor: (typeof nodes)[number] | undefined
+    let placement: PositionedComment['placement'] = 'before'
+
+    if (inline) {
+      // A block scalar's header may have a comment before the scalar's end.
+      anchor =
+        nodes.find(
+          (entry) =>
+            (entry.node.type === 'BLOCK_LITERAL' || entry.node.type === 'BLOCK_FOLDED') &&
+            entry.start <= start &&
+            entry.start >= lineStart(source, start)
+        ) ?? previous
+      placement = 'inline'
+    } else if (previous?.node.items?.length === 0 && (indent > previous.indent || !next || indent > next.indent)) {
+      // Indented, commented-out Helm examples belong to the preceding empty
+      // collection, even when the parser attaches them to the following key.
+      anchor = previous
+      placement = 'after'
+    } else if (previous && (!next || indent > next.indent)) {
+      anchor = nodes
+        .filter((entry) => entry.node.items && entry.start < start && entry.end >= end && entry.indent <= indent)
+        .sort((a, b) => b.path.length - a.path.length)[0]
+      placement = 'after'
+    } else if (previous || document.commentBefore == null || start > headerEnd) {
+      anchor = next
+    }
+
+    const path = (anchor?.path ?? [docIndex, DOC_MARKER]).join('\u0000')
+    const saved = comments.get(path) ?? {}
+    saved.positioned ??= []
+    saved.positioned.push({
+      text: source.slice(start, end),
+      placement,
+      indent: indent - (anchor?.indent ?? 0),
+      blankLineAfter: /^\r?\n[ \t]*\r?\n/.test(source.slice(end)),
+      order: start,
+    })
+    comments.set(path, saved)
+  }
+  return true
+}
+
+function applyPositionedComments(comments: Map<string, NodeComments>, yaml: string) {
+  const insertions: { offset: number; text: string; order: number }[] = []
+  const documents: any[] = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
+  if (documents.some((document) => document.errors.length)) return yaml
+
+  documents.forEach((document, docIndex) => {
+    const insertComments = (node: any, path: (string | number)[]) => {
+      comments.get(path.join('\u0000'))?.positioned?.forEach((comment) => {
+        if (!node?.range) return
+        const start = node.range[0]
+        const end = node.cstNode?.valueRange?.end ?? node.range[1]
+        let offset: number
+        let text: string
+        if (comment.placement === 'inline') {
+          const blockScalar = node.type === 'BLOCK_LITERAL' || node.type === 'BLOCK_FOLDED'
+          offset = lineEnd(yaml, blockScalar ? start : end - 1)
+          text = ` ${comment.text}`
+        } else {
+          offset =
+            comment.placement === 'before' ? lineStart(yaml, start) : Math.min(lineEnd(yaml, end - 1) + 1, yaml.length)
+          const indent = Math.max(0, nodeIndent(yaml, start, path) + comment.indent)
+          const prefix = offset > 0 && yaml[offset - 1] !== '\n' ? '\n' : ''
+          text = `${prefix}${' '.repeat(indent)}${comment.text}\n${comment.blankLineAfter ? '\n' : ''}`
+        }
+        insertions.push({ offset, text, order: comment.order })
+      })
+    }
+    insertComments(document.contents, [docIndex, DOC_MARKER])
+    walkYamlNodes(document.contents, [docIndex], insertComments)
+  })
+
+  // Work backwards so insertions do not invalidate subsequent source offsets.
+  insertions.sort((a, b) => b.offset - a.offset || b.order - a.order)
+  for (const { offset, text } of insertions) {
+    yaml = yaml.slice(0, offset) + text + yaml.slice(offset)
+  }
+  return yaml
+}
+
 // Capture `#` comments from the source documents (as produced by
-// `YAML.parseAllDocuments`), keyed by their path within each document.
+// `YAML.parseAllDocuments` with keepCstNodes), keyed by their path within each document.
 // Returns the comments map of the source docs.
 export const preserveComments = (srcDocs: any[]) => {
   const comments = new Map<string, NodeComments>()
   srcDocs?.forEach((srcDoc, docIndex) => {
     if (srcDoc && !srcDoc.errors?.length && srcDoc.contents) {
+      if (preserveSourceComments(srcDoc, docIndex, comments)) return
+      // Retain support for callers that did not keep the source CST.
       // Document-level leading/trailing comments (e.g. a header block before the
       // first key) attach to the document node itself, not to any node inside
       // `contents`, so capture them separately under a doc-level key.
@@ -519,7 +665,7 @@ export const applyComments = (comments: Map<string, NodeComments>, newYaml: stri
       outputs.push(newDoc.toString().replace(/^---\s*\n/, ''))
     })
     // re-serialization re-introduces `null`, so re-apply our formatting fixups
-    return formatYaml(outputs.join('---\n'))
+    return applyPositionedComments(comments, formatYaml(outputs.join('---\n')))
   } catch {
     // on any parse/serialize failure, fall back to the comment-free yaml
     return newYaml
