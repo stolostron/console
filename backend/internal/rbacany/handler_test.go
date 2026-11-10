@@ -24,14 +24,15 @@ type reviewFunc func(authzv1.ResourceAttributes) (authzv1.SubjectAccessReviewSta
 
 func fakeClient(reviewer reviewFunc) *fake.Clientset {
 	client := fake.NewSimpleClientset()
-	client.PrependReactor("create", "selfsubjectaccessreviews", func(action ktesting.Action) (bool, runtime.Object, error) {
-		request := action.(ktesting.CreateAction).GetObject().(*authzv1.SelfSubjectAccessReview)
-		status, err := reviewer(*request.Spec.ResourceAttributes)
-		if err != nil {
-			return true, nil, err
-		}
-		return true, &authzv1.SelfSubjectAccessReview{Status: status}, nil
-	})
+	client.PrependReactor("create", "selfsubjectaccessreviews",
+		func(action ktesting.Action) (bool, runtime.Object, error) {
+			request := action.(ktesting.CreateAction).GetObject().(*authzv1.SelfSubjectAccessReview)
+			status, err := reviewer(*request.Spec.ResourceAttributes)
+			if err != nil {
+				return true, nil, err
+			}
+			return true, &authzv1.SelfSubjectAccessReview{Status: status}, nil
+		})
 	return client
 }
 
@@ -174,7 +175,11 @@ func TestHandlerReturnsServiceUnavailableForReviewFailure(t *testing.T) {
 		return authzv1.SubjectAccessReviewStatus{}, fmt.Errorf("temporary API failure")
 	})
 	handler := New(Options{ClientForUser: func(string) (kubernetes.Interface, error) { return client, nil }})
-	request := httptest.NewRequest(http.MethodPost, Route, strings.NewReader(`{"resourceAttributes":{"verb":"create","resource":"deployments"},"namespaces":["namespace-1"]}`))
+	request := httptest.NewRequest(
+		http.MethodPost,
+		Route,
+		strings.NewReader(`{"resourceAttributes":{"verb":"create","resource":"deployments"},"namespaces":["namespace-1"]}`),
+	)
 	request.Header.Set("Authorization", "Bearer caller-token")
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)

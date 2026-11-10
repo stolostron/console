@@ -59,7 +59,12 @@ func New(opts Options) *Handler {
 			if opts.RESTConfig == nil {
 				return nil, errors.New("rest config is required")
 			}
-			return kubernetes.NewForConfig(auth.UserRESTConfig(opts.RESTConfig, userToken))
+			cfg := auth.UserRESTConfig(opts.RESTConfig, userToken)
+			if cfg.RateLimiter == nil && cfg.QPS == 0 && cfg.Burst == 0 {
+				cfg.QPS = 50
+				cfg.Burst = 100
+			}
+			return kubernetes.NewForConfig(cfg)
 		}
 	}
 	return &Handler{clientForUser: newClient}
@@ -180,13 +185,12 @@ func anyNamespaceAuthorized(
 				cancel()
 				return false, ctx.Err()
 			case result := <-results:
-				if result.err != nil || result.status.EvaluationError != "" {
-					reviewFailed = true
-					continue
-				}
-				if result.status.Allowed {
+				if result.err == nil && result.status.Allowed {
 					cancel()
 					return true, nil
+				}
+				if result.err != nil || result.status.EvaluationError != "" {
+					reviewFailed = true
 				}
 			}
 		}
@@ -214,10 +218,13 @@ func checkAdminAccess(ctx context.Context, client kubernetes.Interface) (bool, e
 	if err != nil {
 		return false, err
 	}
+	if status.Allowed {
+		return true, nil
+	}
 	if status.EvaluationError != "" {
 		return false, errors.New("admin authorization review failed")
 	}
-	return status.Allowed, nil
+	return false, nil
 }
 
 func review(
