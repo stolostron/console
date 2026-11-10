@@ -171,7 +171,11 @@ const process = (
   editableUidSiblings: boolean | undefined
 ) => {
   // restore hidden secret values
-  let { mappings, parsed, resources, paths } = getMappings(documents)
+  // capture comments from the original source documents before the yaml is
+  // regenerated from resources (which would otherwise strip them)
+  const initialMappings = getMappings(documents)
+  const sourceComments = initialMappings.comments
+  let { mappings, parsed, resources, paths } = initialMappings
   cachedSecrets?.forEach(({ path, value }) => {
     if (has(parsed, path)) {
       set(parsed, path, value)
@@ -228,7 +232,9 @@ const process = (
     }
 
     // create redacted yaml, etc
-    yaml = editorHasFocus ? currentEditorValue : stringify(resources)
+    // when regenerating yaml from resources, restore the comments captured from
+    // the original source (the editor value already carries its own comments)
+    yaml = editorHasFocus ? currentEditorValue : applyComments(sourceComments, stringify(resources))
     documents = YAML.parseAllDocuments(yaml, { keepCstNodes: true })
     ;({ mappings, parsed, resources, paths } = getMappings(documents))
   }
@@ -313,7 +319,7 @@ function getMappings(documents: any[]) {
       }
     }
   })
-  return { mappings, parsed, resources, paths }
+  return { mappings, parsed, resources, paths, comments: preserveComments(documents) }
 }
 
 function getMappingItems(
@@ -394,13 +400,19 @@ function getMappingItems(
 // sort name/namespace to top when present; otherwise preserve prepareResourceForYaml order
 const sort = ['name', 'namespace']
 
+// Apply our canonical YAML formatting fixups: turn numeric-keyed maps into
+// sequences and drop explicit `null` values. Re-applied after any re-serialization.
+const formatYaml = (yaml: string) => {
+  return yaml.replaceAll(/'\d+':(\s|$)\s*/gm, '- ').replaceAll(/:\s*null$/gm, ':')
+}
+
 export const stringify = (resources: any[]) => {
   const yamls: string[] = []
   resources.forEach((resource: any) => {
     if (!isEmpty(resource)) {
       // Reorder status/condition keys (and keep name/namespace first elsewhere).
       const ordered = prepareResourceForYaml(resource)
-      let yaml = YAML.stringify(ordered, {
+      const yaml = YAML.stringify(ordered, {
         sortMapEntries: (a: { key: { value: string } }, b: { key: { value: string } }) => {
           const ai = sort.indexOf(a.key.value)
           const bi = sort.indexOf(b.key.value)
@@ -413,12 +425,105 @@ export const stringify = (resources: any[]) => {
           return 0
         },
       })
-      yaml = yaml.replaceAll(/'\d+':(\s|$)\s*/gm, '- ')
-      yaml = yaml.replaceAll(/:\s*null$/gm, ':')
-      yamls.push(yaml)
+      yamls.push(formatYaml(yaml))
     }
   })
   return yamls.join('---\n')
+}
+
+// A comment captured from a source YAML node, keyed by its path in the document.
+type NodeComments = { comment?: string; commentBefore?: string; spaceBefore?: boolean }
+
+// A marker appended to a path so a map key's own comments don't collide with its value's.
+const KEY_MARKER = '\u0001key'
+
+// A marker for document-level comments, which attach to the document node rather
+// than to any node inside its `contents`.
+const DOC_MARKER = '\u0001doc'
+
+// Walk a parsed yaml AST node, invoking `visit` with each node and its path.
+// Handles both maps (PAIR items with key/value) and sequences (indexed items).
+function walkYamlNodes(node: any, path: (string | number)[], visit: (node: any, path: (string | number)[]) => void) {
+  if (!node || typeof node !== 'object') return
+  visit(node, path)
+  if (!Array.isArray(node.items)) return
+  node.items.forEach((item: any, index: number) => {
+    if (item == null) return
+    const isPair = item.type === 'PAIR' || (item.key !== undefined && item.value !== undefined)
+    if (isPair) {
+      const pairPath = [...path, item.key?.value]
+      if (item.key) walkYamlNodes(item.key, [...pairPath, KEY_MARKER], visit)
+      if (item.value) walkYamlNodes(item.value, pairPath, visit)
+    } else {
+      walkYamlNodes(item, [...path, index], visit)
+    }
+  })
+}
+
+// Capture `#` comments from the source documents (as produced by
+// `YAML.parseAllDocuments`), keyed by their path within each document.
+// Returns the comments map of the source docs.
+export const preserveComments = (srcDocs: any[]) => {
+  const comments = new Map<string, NodeComments>()
+  srcDocs?.forEach((srcDoc, docIndex) => {
+    if (srcDoc && !srcDoc.errors?.length && srcDoc.contents) {
+      // Document-level leading/trailing comments (e.g. a header block before the
+      // first key) attach to the document node itself, not to any node inside
+      // `contents`, so capture them separately under a doc-level key.
+      if (srcDoc.commentBefore != null || srcDoc.comment != null) {
+        comments.set([docIndex, DOC_MARKER].join('\u0000'), {
+          comment: srcDoc.comment,
+          commentBefore: srcDoc.commentBefore,
+        })
+      }
+      walkYamlNodes(srcDoc.contents, [docIndex], (node, path) => {
+        if (node.comment != null || node.commentBefore != null || node.spaceBefore) {
+          comments.set(path.join('\u0000'), {
+            comment: node.comment,
+            commentBefore: node.commentBefore,
+            spaceBefore: node.spaceBefore,
+          })
+        }
+      })
+    }
+  })
+  return comments
+}
+
+// Re-apply a comments map (from `preserveComments`) onto freshly generated yaml.
+// Comments whose paths no longer exist (fields removed by the form) are dropped;
+// comments on surviving paths — even with changed values — are restored.
+export const applyComments = (comments: Map<string, NodeComments>, newYaml: string) => {
+  if (!comments || comments.size === 0) return newYaml
+  try {
+    const newDocs: any[] = YAML.parseAllDocuments(newYaml)
+    const outputs: string[] = []
+    newDocs.forEach((newDoc, docIndex) => {
+      if (newDoc && !newDoc.errors?.length && newDoc.contents) {
+        // document-level leading/trailing comments
+        const docSaved = comments.get([docIndex, DOC_MARKER].join('\u0000'))
+        if (docSaved) {
+          if (docSaved.commentBefore != null) newDoc.commentBefore = docSaved.commentBefore
+          if (docSaved.comment != null) newDoc.comment = docSaved.comment
+        }
+        walkYamlNodes(newDoc.contents, [docIndex], (node, path) => {
+          const saved = comments.get(path.join('\u0000'))
+          if (saved) {
+            if (saved.comment != null) node.comment = saved.comment
+            if (saved.commentBefore != null) node.commentBefore = saved.commentBefore
+            if (saved.spaceBefore) node.spaceBefore = saved.spaceBefore
+          }
+        })
+      }
+      // strip a leading document marker so we can rejoin with stringify()'s convention
+      outputs.push(newDoc.toString().replace(/^---\s*\n/, ''))
+    })
+    // re-serialization re-introduces `null`, so re-apply our formatting fixups
+    return formatYaml(outputs.join('---\n'))
+  } catch {
+    // on any parse/serialize failure, fall back to the comment-free yaml
+    return newYaml
+  }
 }
 
 /** Deep-clone resource lists for diff: strip `managedFields`, then align empty placeholders on `original` with populated `current`. */

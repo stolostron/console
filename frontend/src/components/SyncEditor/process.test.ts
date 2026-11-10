@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { processForm, processUser, stringify, normalize, type CachedValuesType } from './process'
+import YAML from 'yaml'
+import {
+  processForm,
+  processUser,
+  stringify,
+  normalize,
+  preserveComments,
+  applyComments,
+  type CachedValuesType,
+} from './process'
 import { compileAjvSchemas } from './validation'
 import type { ChangeType } from './changes'
 import type { Monaco } from '@monaco-editor/react'
@@ -433,6 +442,112 @@ describe('processForm', () => {
     expect(result.unredactedChange.hiddenSecretsValues).toEqual(
       expect.arrayContaining([expect.objectContaining({ value: 'hush' })])
     )
+  })
+})
+
+// Helper: capture comments from a source yaml string and re-apply them onto next,
+// mirroring how `process` wires `preserveComments` + `applyComments` together.
+const restoreComments = (source: string | undefined, next: string) =>
+  applyComments(preserveComments(source ? YAML.parseAllDocuments(source) : []), next)
+
+describe('preserveComments', () => {
+  it('returns an empty map when the source has no comments', () => {
+    const source = 'apiVersion: v1\nkind: ConfigMap\n'
+    expect(preserveComments(YAML.parseAllDocuments(source)).size).toBe(0)
+  })
+
+  it('returns an empty map for undefined/empty source docs', () => {
+    expect(preserveComments(undefined as unknown as any[]).size).toBe(0)
+    expect(preserveComments([]).size).toBe(0)
+  })
+
+  it('captures a comment entry per source comment', () => {
+    const source = '# top comment\napiVersion: v1 # inline api\nkind: ConfigMap\n'
+    const comments = preserveComments(YAML.parseAllDocuments(source))
+    expect(comments.size).toBeGreaterThan(0)
+  })
+})
+
+describe('applyComments', () => {
+  it('returns the new yaml unchanged when the comments map is empty', () => {
+    const next = 'apiVersion: v1\nkind: ConfigMap\nmetadata:\n  name: foo\n'
+    expect(applyComments(new Map(), next)).toBe(next)
+    expect(restoreComments('apiVersion: v1\nkind: ConfigMap\n', next)).toBe(next)
+  })
+
+  it('returns the new yaml unchanged when the source is undefined', () => {
+    const next = 'apiVersion: v1\n'
+    expect(restoreComments(undefined, next)).toBe(next)
+  })
+
+  it('restores leading, inline, and before-key comments onto surviving paths', () => {
+    const source = [
+      '# top comment',
+      'apiVersion: v1 # inline api',
+      'kind: ConfigMap',
+      'metadata:',
+      '  # before name',
+      '  name: foo',
+      'data:',
+      '  key: value # inline value',
+      '',
+    ].join('\n')
+    // regenerated from the form: value changed, a field added, comments gone
+    const next = ['apiVersion: v1', 'kind: ConfigMap', 'metadata:', '  name: foo', 'data:', '  key: changed', ''].join(
+      '\n'
+    )
+    const result = restoreComments(source, next)
+    expect(result).toContain('# top comment')
+    expect(result).toContain('apiVersion: v1 # inline api')
+    expect(result).toContain('# before name')
+    // comment survives even though the value changed
+    expect(result).toContain('key: changed # inline value')
+  })
+
+  it('restores a document-level header comment block', () => {
+    const source = [
+      '# Default values for cm-app.',
+      '# This is a YAML-formatted file.',
+      '',
+      'replicaCount: 1',
+      '',
+    ].join('\n')
+    const next = 'replicaCount: 3\n'
+    const result = restoreComments(source, next)
+    expect(result).toContain('# Default values for cm-app.')
+    expect(result).toContain('# This is a YAML-formatted file.')
+    expect(result).toContain('replicaCount: 3')
+  })
+
+  it('drops comments for paths removed in the new yaml', () => {
+    const source = 'apiVersion: v1\ndata:\n  key: value # gone\n'
+    const next = 'apiVersion: v1\ndata: {}\n'
+    const result = restoreComments(source, next)
+    expect(result).not.toContain('# gone')
+  })
+
+  it('restores comments across multiple documents without duplicating separators', () => {
+    const source = [
+      '# first',
+      'apiVersion: v1',
+      'kind: ConfigMap',
+      '---',
+      '# second',
+      'apiVersion: v1',
+      'kind: Secret',
+      '',
+    ].join('\n')
+    const next = ['apiVersion: v1', 'kind: ConfigMap', '---', 'apiVersion: v1', 'kind: Secret', ''].join('\n')
+    const result = restoreComments(source, next)
+    expect(result).toContain('# first')
+    expect(result).toContain('# second')
+    expect(result).not.toContain('---\n---')
+  })
+
+  it('falls back to the new yaml when the new yaml is not parseable', () => {
+    const source = '# c\nkey: value\n'
+    const malformed = 'key: "unterminated'
+    expect(restoreComments(source, malformed)).toBe(malformed)
   })
 })
 
