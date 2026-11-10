@@ -140,6 +140,7 @@ describe('ViewRepositoryModal', () => {
     const { baseElement } = renderModal()
 
     await screen.findByText('two.md')
+    await waitFor(() => expect(mockGetGitBlobContents).toHaveBeenCalledTimes(1))
     expect(screen.getByLabelText('Loading')).toBeInTheDocument()
     expect(screen.queryByTestId('code-editor')).not.toBeInTheDocument()
     expect(mockGetGitBlobContents).toHaveBeenCalledTimes(1)
