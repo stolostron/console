@@ -11,130 +11,56 @@ import {
   Namespace,
   ResourceAttributes,
 } from '../resources'
+import { getBackendUrl, postRequest } from '../resources/utils'
 import { useSharedValue, useSharedAtoms } from '../shared-atoms'
 
-const SELF_ACCESS_CHECK_BATCH_SIZE = 40
+const ANY_NAMESPACE_RBAC_URL = '/rbac/any-namespace'
+
+interface AnyNamespaceAuthorizationResponse {
+  allowed: boolean
+}
+
+/**
+ * Ask the backend to check the candidate namespaces as the current user.
+ * This keeps the per-namespace SSAR (SelfSubjectAccessReview) fan-out out of the browser.
+ */
+function requestAnyNamespaceAuthorization(resourceAttributes: Promise<ResourceAttributes>, namespaces: string[]) {
+  const request = postRequest<
+    { resourceAttributes: ResourceAttributes; namespaces: string[] },
+    AnyNamespaceAuthorizationResponse
+  >(
+    `${getBackendUrl()}${ANY_NAMESPACE_RBAC_URL}`,
+    resourceAttributes.then((resourceAttributes) => ({ resourceAttributes, namespaces }))
+  )
+
+  return {
+    // A failed request is indeterminate, so the hook cannot treat it as a confirmed denial.
+    promise: request.promise.then((response) => response.allowed).catch(() => undefined),
+    abort: request.abort,
+  }
+}
 
 export function isAnyNamespaceAuthorized(resourceAttributes: Promise<ResourceAttributes>, namespaces: Namespace[]) {
   const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
   if (namespaceList.length === 0) {
-    return { promise: Promise.resolve(false) }
+    return { promise: Promise.resolve(false), abort: () => undefined }
   }
 
-  let abortFn: () => void | undefined
-  const abort = () => {
-    abortFn?.()
-  }
-
-  return {
-    promise: resourceAttributes.then((resourceAttributes) =>
-      checkAdminAccess().then((adminAccessRequest) => {
-        if (adminAccessRequest?.status?.allowed) {
-          return true
-        } else {
-          const resourceList: Array<ResourceAttributes> = []
-
-          namespaceList.forEach((namespace) => {
-            resourceList.push({ ...resourceAttributes, namespace })
-          })
-
-          async function processBatch(): Promise<boolean> {
-            const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
-            const results = nextBatch.map((resource) => {
-              return createSubjectAccessReview(resource)
-            })
-            abortFn = () => results.forEach((result) => result.abort())
-            try {
-              // short-circuit as soon as any namespace says the access is allowed
-              return await Promise.any(
-                results.map((result) =>
-                  result.promise.then((result) => {
-                    if (result.status?.allowed) {
-                      abort()
-                      return true
-                    } else {
-                      throw new Error('access not allowed')
-                    }
-                  })
-                )
-              )
-            } catch {
-              if (resourceList.length) {
-                return processBatch()
-              } else {
-                return false
-              }
-            }
-          }
-          return processBatch()
-        }
-      })
-    ),
-    abort,
-  }
+  const request = requestAnyNamespaceAuthorization(resourceAttributes, namespaceList)
+  return { ...request, promise: request.promise.then((allowed) => allowed === true) }
 }
 
 export function areAllNamespacesUnauthorized(resourceAttributes: Promise<ResourceAttributes>, namespaces: Namespace[]) {
   const namespaceList: string[] = namespaces.map((namespace) => namespace.metadata.name!)
 
   if (namespaceList.length === 0) {
-    return { promise: Promise.resolve(true) }
+    return { promise: Promise.resolve(true), abort: () => undefined }
   }
 
-  let abortFn: () => void | undefined
-  const abort = () => {
-    abortFn?.()
-  }
-
-  return {
-    promise: resourceAttributes.then((resourceAttributes) =>
-      checkAdminAccess().then((adminAccessRequest) => {
-        if (adminAccessRequest?.status?.allowed) {
-          return false
-        } else {
-          const resourceList: Array<ResourceAttributes> = []
-
-          namespaceList.forEach((namespace) => {
-            resourceList.push({ ...resourceAttributes, namespace })
-          })
-
-          async function processBatch(): Promise<boolean> {
-            const nextBatch = resourceList.splice(0, SELF_ACCESS_CHECK_BATCH_SIZE)
-            const results = nextBatch.map((resource) => {
-              return createSubjectAccessReview(resource)
-            })
-            abortFn = () => results.forEach((result) => result.abort())
-            try {
-              // short-circuit as soon as any namespace says the access is allowed
-              return await Promise.all(
-                results.map((result) =>
-                  result.promise.then((result) => {
-                    if (result.status && !result.status.allowed) {
-                      return true
-                    } else {
-                      abort()
-                      throw new Error('access is allowed')
-                    }
-                  })
-                )
-              ).then(() => {
-                if (resourceList.length) {
-                  return processBatch()
-                } else {
-                  return true
-                }
-              })
-            } catch {
-              return false
-            }
-          }
-          return processBatch()
-        }
-      })
-    ),
-    abort,
-  }
+  const request = requestAnyNamespaceAuthorization(resourceAttributes, namespaceList)
+  // Only an explicit backend denial proves that every candidate namespace denied access.
+  return { ...request, promise: request.promise.then((allowed) => allowed === false) }
 }
 
 export async function getAuthorizedNamespaces(resourceAttributes: ResourceAttributes[], namespaces: Namespace[]) {
@@ -249,6 +175,7 @@ export function useIsAnyNamespaceAuthorized(resourceAttributes: Promise<Resource
   const resourceAttributesAsString = JSON.stringify(resourceAttributes)
 
   useEffect(() => {
+    // Once allowed, only switch back after a successful check confirms no namespace grants access.
     const result = (someNamespaceIsAuthorized ? areAllNamespacesUnauthorized : isAnyNamespaceAuthorized)(
       resourceAttributes,
       namespaces
