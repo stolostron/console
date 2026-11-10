@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import type { TFunction } from 'i18next'
 import {
   getErrorInfo,
   getRawErrorInfo,
@@ -7,7 +8,7 @@ import {
 } from './ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../resources/utils'
 
-const t = (key: string) => key
+const t = ((key: string) => key) as unknown as TFunction
 
 describe('ErrorPage access-restricted helpers', () => {
   const accessMessage =
