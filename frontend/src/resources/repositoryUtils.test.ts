@@ -2,7 +2,12 @@
 
 import { Octokit } from '@octokit/rest'
 import { TextDecoder } from 'util'
-import { getGitBlobContents, getGitBranchPathDetails, type GitBranchPathNode } from './repositoryUtils'
+import {
+  getGitBlobContents,
+  getGitBranchPathDetails,
+  getGitChannelBranches,
+  type GitBranchPathNode,
+} from './repositoryUtils'
 
 jest.mock('@octokit/rest')
 jest.mock('~/resources', () => ({ getSecret: jest.fn() }))
@@ -10,6 +15,7 @@ jest.mock('~/resources', () => ({ getSecret: jest.fn() }))
 const mockRequest = jest.fn()
 const mockGetTree = jest.fn()
 const mockGetBranch = jest.fn()
+const mockListBranches = jest.fn()
 const mockGetRepo = jest.fn()
 const repoURL = 'https://github.com/example/repository'
 const blobURL = 'https://api.github.com/repos/example/repository/git/blobs/readme'
@@ -20,11 +26,12 @@ beforeEach(() => {
     () =>
       ({
         request: mockRequest,
-        repos: { get: mockGetRepo, getBranch: mockGetBranch },
+        repos: { get: mockGetRepo, getBranch: mockGetBranch, listBranches: mockListBranches },
         git: { getTree: mockGetTree },
       }) as unknown as Octokit
   )
   mockGetBranch.mockResolvedValue({ data: { commit: { sha: 'commit-sha' } } })
+  mockListBranches.mockResolvedValue({ data: [{ name: 'main' }, { name: 'release-2.12' }] })
   mockGetRepo.mockResolvedValue({ data: { default_branch: 'main' } })
   mockGetTree.mockResolvedValue({
     data: {
@@ -35,6 +42,29 @@ beforeEach(() => {
         { type: 'blob', path: 'apps-other/ignored.md', url: `${blobURL}-other` },
       ],
     },
+  })
+})
+
+describe('getGitChannelBranches', () => {
+  it('returns branch names from the repository listing', async () => {
+    await expect(
+      getGitChannelBranches(repoURL, undefined, { user: 'test-user', accessToken: 'test-token' })
+    ).resolves.toEqual(['main', 'release-2.12'])
+
+    expect(mockListBranches).toHaveBeenCalledWith({ owner: 'example', repo: 'repository' })
+  })
+
+  it('returns an empty list when the repository listing fails', async () => {
+    mockListBranches.mockRejectedValue(new Error('Branches unavailable'))
+    const log = jest.spyOn(console, 'log').mockImplementation(() => {})
+
+    try {
+      await expect(
+        getGitChannelBranches(repoURL, undefined, { user: 'test-user', accessToken: 'test-token' })
+      ).resolves.toEqual([])
+    } finally {
+      log.mockRestore()
+    }
   })
 })
 

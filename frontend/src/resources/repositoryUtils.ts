@@ -45,20 +45,22 @@ async function getGitConnection(
   }
 }
 
-export function getGitChannelBranches(
+export async function getGitChannelBranches(
   channelPath: string,
   secretArgs?: { secretRef?: string; namespace?: string },
   accessData?: { user?: string; accessToken?: string }
 ) {
   const gitInfo = getGitInformation(channelPath)
-  return getGitConnection(secretArgs, accessData)
-    .then((octokit) =>
-      octokit?.repos.listBranches(gitInfo).then(({ data }) => (data ? data.map((branch) => branch.name) : []))
-    )
-    .catch((err) => {
-      handleGitError(err)
-      return []
-    })
+  try {
+    const octokit = await getGitConnection(secretArgs, accessData)
+    if (!octokit) return []
+
+    const { data } = await octokit.repos.listBranches(gitInfo)
+    return data ? data.map((branch) => branch.name) : []
+  } catch (error) {
+    handleGitError(error)
+    return []
+  }
 }
 
 export async function getGitChannelPaths(
@@ -192,8 +194,10 @@ async function getGitSubtreeItems(
   const pendingTrees = [{ sha: treeSha, path: '' }]
 
   // Fetch one subtree at a time to avoid a burst of requests for large repositories.
-  while (pendingTrees.length > 0) {
-    const subtree = pendingTrees.pop()!
+  const visitNextTree = async (): Promise<GitTreeEntry[]> => {
+    const subtree = pendingTrees.pop()
+    if (!subtree) return items
+
     // Omit recursive entirely: GitHub enables recursion for any supplied value, including "false".
     const { data } = await octokit.git.getTree({ ...gitInfo, tree_sha: subtree.sha })
     if (data.truncated) throw new Error('GitHub returned a truncated non-recursive tree')
@@ -204,18 +208,24 @@ async function getGitSubtreeItems(
       const withinPath = isGitPathWithinPath(itemPath, path)
       if (withinPath) items.push({ ...item, path: itemPath })
 
-      if (item.type === 'tree' && (withinPath || isGitPathWithinPath(path, itemPath))) {
+      if (item.type === 'tree' && (withinPath || isGitPathContainingPath(itemPath, path))) {
         if (!item.sha) throw new Error('GitHub tree entry is missing its SHA')
         pendingTrees.push({ sha: item.sha, path: itemPath })
       }
     }
+
+    return visitNextTree()
   }
 
-  return items
+  return visitNextTree()
 }
 
 function isGitPathWithinPath(itemPath: string, path: string) {
   return !path || itemPath === path || itemPath.startsWith(`${path}/`)
+}
+
+function isGitPathContainingPath(treePath: string, path: string) {
+  return !treePath || path === treePath || path.startsWith(`${treePath}/`)
 }
 
 function getGitParentPath(path: string) {
