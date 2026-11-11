@@ -8,7 +8,14 @@
  */
 import Handlebars from 'handlebars'
 import jsyaml from 'js-yaml'
-import { caseFn, if_eqFn, if_orFn, if_truthyFn, switchFn } from '~/components/TemplateEditor/helpers'
+import {
+  caseFn,
+  if_eqFn,
+  if_orFn,
+  if_truthyFn,
+  isOverriddenByLocationFieldFn,
+  switchFn,
+} from '~/components/TemplateEditor/helpers'
 import hiveTemplateHbs from './hive-template.hbs'
 import { clusterPath, datastorePath, folderPath, resourcePoolPath } from '../controlData/ControlDataVMW'
 
@@ -23,6 +30,7 @@ const helpers = {
     if_or: if_orFn,
     if_truthy: if_truthyFn,
     switch: switchFn,
+    isOverriddenByLocationField: isOverriddenByLocationFieldFn,
     clusterPath,
     datastorePath,
     folderPath,
@@ -114,5 +122,34 @@ describe('hive-template.hbs location labels', () => {
     expect(raw.match(/datacenter: 'dc1'.*##locationDatacenter/g)).toHaveLength(1)
     expect(raw.match(/zone: 'z1'/g)).toHaveLength(2)
     expect(raw.match(/datacenter: 'dc1'/g)).toHaveLength(2)
+  })
+
+  // duplicate YAML keys fail validation and block cluster creation
+  it('lets a set dedicated field win over an additional label with the same key', () => {
+    const { managedCluster } = render({
+      ...baseData,
+      zone: 'us-east-1a',
+      locationDatacenter: 'dc1',
+      additional: [
+        { key: 'zone', value: 'other-zone' },
+        { key: 'datacenter', value: 'other-dc' },
+        { key: 'env', value: 'prod' },
+      ],
+    })
+    expect(managedCluster.metadata.labels.zone).toBe('us-east-1a')
+    expect(managedCluster.metadata.labels.datacenter).toBe('dc1')
+    expect(managedCluster.metadata.labels.env).toBe('prod')
+  })
+
+  it('keeps additional zone and datacenter labels when the dedicated fields are unset', () => {
+    const { managedCluster } = render({
+      ...baseData,
+      additional: [
+        { key: 'zone', value: 'extra-zone' },
+        { key: 'datacenter', value: 'extra-dc' },
+      ],
+    })
+    expect(managedCluster.metadata.labels.zone).toBe('extra-zone')
+    expect(managedCluster.metadata.labels.datacenter).toBe('extra-dc')
   })
 })
