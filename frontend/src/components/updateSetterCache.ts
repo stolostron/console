@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+// Extracted from LoadData so this pure cache-key logic can be tested without the SSE component's dependency graph.
 // eslint-disable-next-line @typescript-eslint/no-restricted-imports
 import type { WatchEvent } from '../atoms'
 import type { IResource } from '../resources'
