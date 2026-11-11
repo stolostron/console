@@ -181,7 +181,9 @@ metadata:
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
 {{/if}}
     {{#each additional}}
+    {{#unless (isOverriddenByLocationField key)}}
     {{{key}}}: '{{{value}}}'
+    {{/unless}}
     {{/each}}
   name: '{{{name}}}'
 spec:
