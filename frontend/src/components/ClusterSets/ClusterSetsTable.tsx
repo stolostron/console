@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { css } from '@emotion/css'
 import {
   AcmButton,
   AcmEmptyState,
@@ -35,14 +36,14 @@ import { CreateClusterSetModal } from '../../routes/Infrastructure/Clusters/Clus
 import { useSharedAtoms, useSharedValue } from '../../shared-atoms'
 import { getMappedClusterSetClusters } from '../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters'
 
+const providerIconsClass = css({ display: 'inline-flex', gap: '0.5em' })
+
 export function getClusterSetProviders(clusters: Cluster[]): Provider[] {
-  const providers: Provider[] = []
+  const providers = new Set<Provider>()
   clusters.forEach((cluster) => {
-    if (cluster.provider && !providers.includes(cluster.provider)) {
-      providers.push(cluster.provider)
-    }
+    if (cluster.provider) providers.add(cluster.provider)
   })
-  return providers
+  return Array.from(providers)
 }
 
 interface ClusterSetsTableProps {
@@ -233,7 +234,7 @@ export const ClusterSetsTable = ({
                 managedClusterSetClusters[managedClusterSet.metadata.name!] ?? []
               )
               return providers.length ? (
-                <span style={{ display: 'inline-flex', gap: '0.5em' }}>
+                <span className={providerIconsClass}>
                   {providers.map((provider) => (
                     <AcmInlineProvider key={provider} provider={provider} iconOnly />
                   ))}
