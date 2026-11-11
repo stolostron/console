@@ -1,64 +1,80 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { css } from '@emotion/css'
-import useResizeObserver from '@react-hook/resize-observer'
+import {
+  ExpandableSection,
+  ExpandableSectionToggle,
+  ExpandableSectionVariant,
+} from '@patternfly/react-core'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useId, useLayoutEffect, useState } from 'react'
 import { useTranslation } from '../../../../../lib/acm-i18next'
-import { AcmButton } from '../../../../../ui-components'
 
 /** UX guidance: keep long descriptions to about 3–4 lines (max 4). */
 export const DEFAULT_MAX_DESCRIPTION_LINES = 4
 
 const descriptionContent = css({
-  whiteSpace: 'pre-wrap',
+  // Avoid pre-wrap: marked emits a trailing newline that inflates scrollHeight and
+  // false-triggers truncate ellipsis when no text is hidden (ACM-50219).
+  lineHeight: 1.5,
+  '& p': {
+    margin: 0,
+  },
 })
 
-const descriptionClamped = css({
-  display: '-webkit-box',
-  WebkitBoxOrient: 'vertical',
-  overflow: 'hidden',
-})
-
-export function ExpandableDescription(props: Readonly<{ description: string; maxLines?: number }>) {
+export function ExpandableDescription(
+  props: Readonly<{ description: string; maxLines?: number }>
+) {
   const { t } = useTranslation()
   const maxLines = props.maxLines ?? DEFAULT_MAX_DESCRIPTION_LINES
   const [isExpanded, setIsExpanded] = useState(false)
   const [isTruncatable, setIsTruncatable] = useState(false)
-  const contentRef = useRef<HTMLDivElement>(null)
+  const contentId = useId()
+  const toggleId = useId()
 
-  const updateTruncatable = useCallback(() => {
-    const element = contentRef.current
-    if (!element || isExpanded) {
+  // Detached truncate always renders our toggle; only show it when content overflows.
+  useLayoutEffect(() => {
+    if (isExpanded) {
       return
     }
-    setIsTruncatable(element.scrollHeight > element.clientHeight + 1)
-  }, [isExpanded])
-
-  useLayoutEffect(() => {
-    updateTruncatable()
-  }, [props.description, maxLines, updateTruncatable])
-
-  // Recalculate when the container reflows (narrower width, text zoom, etc.)
-  useResizeObserver(contentRef, () => {
-    requestAnimationFrame(updateTruncatable)
-  })
-
-  const contentClassName = isExpanded ? descriptionContent : `${descriptionContent} ${descriptionClamped}`
+    const element = document.getElementById(contentId)
+    if (!element) {
+      return
+    }
+    const lineHeight = Number.parseFloat(getComputedStyle(element).lineHeight)
+    if (!Number.isFinite(lineHeight) || lineHeight <= 0) {
+      setIsTruncatable(false)
+      return
+    }
+    setIsTruncatable(element.scrollHeight / lineHeight > maxLines + 0.5)
+  }, [props.description, maxLines, isExpanded, contentId])
 
   return (
-    <div>
-      <div
-        ref={contentRef}
-        className={contentClassName}
-        style={!isExpanded ? { WebkitLineClamp: maxLines } : undefined}
+    <>
+      <ExpandableSection
+        className={descriptionContent}
+        variant={ExpandableSectionVariant.truncate}
+        truncateMaxLines={maxLines}
+        isDetached
+        isExpanded={isExpanded}
+        contentId={contentId}
+        toggleId={toggleId}
+        direction="up"
       >
         <Markdown template={props.description} />
-      </div>
+      </ExpandableSection>
       {isTruncatable && (
-        <AcmButton variant="link" isInline onClick={() => setIsExpanded(!isExpanded)}>
+        <ExpandableSectionToggle
+          isExpanded={isExpanded}
+          onToggle={setIsExpanded}
+          contentId={contentId}
+          toggleId={toggleId}
+          direction="up"
+          hasTruncatedContent
+          isDetached
+        >
           {isExpanded ? t('Show less') : t('Show more')}
-        </AcmButton>
+        </ExpandableSectionToggle>
       )}
-    </div>
+    </>
   )
 }
