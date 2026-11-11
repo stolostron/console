@@ -588,7 +588,7 @@ describe('ClusterPools page', () => {
 })
 
 describe('ClusterPoolsTable name cell', () => {
-  test('renders provider icon and region in the table', () => {
+  test('renders provider icon and location column in the table', () => {
     nockIgnoreRBAC()
     nockIgnoreApiPaths()
     render(
@@ -625,8 +625,8 @@ describe('Export from clusterpool table', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Cluster status,Available clusters,Infrastructure,Distribution version\n' +
-          '"test-pool","test-pool-namespace",-,"1 out of 2","Amazon Web Services","-"',
+        'Name,Namespace,Cluster status,Available clusters,Infrastructure,Location,Distribution version\n' +
+          '"test-pool","test-pool-namespace",-,"1 out of 2","Amazon Web Services","us-east-1","-"',
       ],
       { type: 'text/csv' }
     )
@@ -777,34 +777,39 @@ describe('ClusterPool location', () => {
     expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
   })
 
-  test('ClusterPoolName renders region, zone and datacenter from pool labels', () => {
-    const labeled = {
-      ...mockClusterPool,
-      metadata: {
-        ...mockClusterPool.metadata,
-        labels: { region: 'USW1', zone: 'USW1B', datacenter: 'DC-East' },
-      },
-    }
-    render(<ClusterPoolName clusterPool={labeled} />)
-    expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
-    expect(screen.getByLabelText('Datacenter: DC-East')).toBeInTheDocument()
-  })
-
   test('getClusterPoolLocation returns empty location for an unsupported platform', () => {
     expect(getClusterPoolLocation(vspherePool)).toEqual({})
   })
 
-  test('ClusterPoolName renders provider icon, name and region for an AWS pool', () => {
+  test('ClusterPoolName renders provider icon and name only for an AWS pool', () => {
     render(<ClusterPoolName clusterPool={mockClusterPool} />)
     expect(screen.getByRole('img', { name: 'Amazon Web Services' })).toBeInTheDocument()
     expect(screen.getByText('test-pool')).toBeInTheDocument()
-    expect(screen.getByText('us-east-1')).toBeInTheDocument()
+    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
+  })
+
+  test('Location column renders region, zone and datacenter from pool labels', () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const labeled = {
+      ...mockClusterPool,
+      metadata: { ...mockClusterPool.metadata, labels: { region: 'USW1', zone: 'USW1B', datacenter: 'DC-East' } },
+    }
+    render(
+      <StateProvider>
+        <MemoryRouter>
+          <ClusterPoolsTable clusterPools={[labeled]} clusters={[mockCluster]} emptyState={''} />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    expect(screen.getByRole('columnheader', { name: 'Location' })).toBeInTheDocument()
+    expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
+    expect(screen.getByLabelText('Datacenter: DC-East')).toBeInTheDocument()
   })
 
   test('ClusterPoolName renders only the name for an unsupported platform', () => {
     render(<ClusterPoolName clusterPool={vspherePool} />)
     expect(screen.getByText('test-pool')).toBeInTheDocument()
     expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
   })
 })

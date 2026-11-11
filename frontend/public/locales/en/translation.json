@@ -3358,6 +3358,7 @@
   "table.kubeApiServer": "Cluster API address",
   "table.labels": "Labels",
   "table.linkedCred": "Credential",
+  "table.location": "Location",
   "table.machineSetReplicas": "Machine set replicas",
   "table.memory": "RAM",
   "table.message": "Message",
