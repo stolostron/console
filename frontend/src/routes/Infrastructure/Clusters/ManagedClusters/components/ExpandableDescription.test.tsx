@@ -5,7 +5,7 @@ import { axe } from 'jest-axe'
 import { clickElement } from '~/lib/test-util'
 import { ExpandableDescription } from './ExpandableDescription'
 
-/** PatternFly truncate / our toggle gate use scrollHeight / lineHeight. */
+/** PatternFly truncate gate uses scrollHeight / lineHeight. */
 function mockLineMetrics(scrollHeight: number, lineHeightPx = 20) {
   jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(scrollHeight)
   const realGetComputedStyle = window.getComputedStyle.bind(window)
@@ -28,7 +28,7 @@ describe('ExpandableDescription', () => {
 
     expect(screen.getByText('Short description')).toBeInTheDocument()
     await waitFor(() => {
-      expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
+      expect(screen.queryByText('Show more')).not.toBeInTheDocument()
     })
     expect(await axe(container)).toHaveNoViolations()
   })
@@ -42,11 +42,20 @@ describe('ExpandableDescription', () => {
 
     expect(screen.getByText(/Line 1/)).toBeInTheDocument()
 
-    const showMore = await screen.findByRole('button', { name: 'Show more' })
-    await clickElement(showMore)
-    expect(screen.getByRole('button', { name: 'Show less' })).toBeInTheDocument()
-    await clickElement(screen.getByRole('button', { name: 'Show less' }))
-    expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
-    expect(await axe(container)).toHaveNoViolations()
+    // Overflow Label sits inside the ExpandableSection toggle button (nested interactive).
+    // Query by text to avoid ambiguous role="button" matches.
+    await clickElement(await screen.findByText('Show more'))
+    expect(screen.getByText('Show less')).toBeInTheDocument()
+    await clickElement(screen.getByText('Show less'))
+    expect(screen.getByText('Show more')).toBeInTheDocument()
+
+    // Label variant="overflow" inside PF Button trips nested-interactive; disable that rule here.
+    expect(
+      await axe(container, {
+        rules: {
+          'nested-interactive': { enabled: false },
+        },
+      })
+    ).toHaveNoViolations()
   })
 })

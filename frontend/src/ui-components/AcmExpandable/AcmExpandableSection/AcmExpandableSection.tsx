@@ -9,6 +9,7 @@ export function AcmExpandableSection(props: {
   summary?: string
   expanded?: boolean
   hidden?: boolean
+  truncateMaxLines?: number
   style?: CSSProperties
 }) {
   const [expanded, setExpanded] = useState(props.expanded === true)

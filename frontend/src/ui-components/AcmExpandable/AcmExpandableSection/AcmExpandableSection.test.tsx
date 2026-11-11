@@ -56,4 +56,19 @@ describe('AcmExpandableSection', () => {
     )
     expect(container.querySelector('.pf-v6-c-expandable-section.pf-m-expanded')).not.toBeInTheDocument()
   })
+  test('accepts truncateMaxLines prop', async () => {
+    const { getByText, container } = render(
+      <AcmExpandableSection
+        label="Expandable Label"
+        summary="Summary about this section"
+        truncateMaxLines={4}
+        expanded
+      >
+        Section content that may truncate
+      </AcmExpandableSection>
+    )
+    expect(getByText('Expandable Label')).toBeInTheDocument()
+    expect(getByText('Section content that may truncate')).toBeVisible()
+    expect(await axe(container)).toHaveNoViolations()
+  })
 })
