@@ -166,12 +166,9 @@ export function getClusterPoolLocation(pool: ClusterPool): ClusterLocation {
 export function ClusterPoolName(props: { clusterPool: ClusterPool }) {
   const provider = determineProvider(props.clusterPool)
   return (
-    <div>
-      <span style={{ whiteSpace: 'nowrap' }}>
-        {provider && <AcmInlineProvider iconOnly provider={provider} />} {props.clusterPool.metadata.name}
-      </span>
-      <ClusterLocationLine location={getClusterPoolLocation(props.clusterPool)} />
-    </div>
+    <span style={{ whiteSpace: 'nowrap' }}>
+      {provider && <AcmInlineProvider iconOnly provider={provider} />} {props.clusterPool.metadata.name}
+    </span>
   )
 }
 
@@ -437,6 +434,21 @@ export function ClusterPoolsTable(props: {
               if (provider) {
                 return ProviderLongTextMap[provider]
               }
+            },
+          },
+          {
+            header: t('table.location'),
+            cell: (clusterPool: ClusterPool) => {
+              const location = getClusterPoolLocation(clusterPool)
+              return location.region || location.zone || location.datacenter ? (
+                <ClusterLocationLine location={location} />
+              ) : (
+                '-'
+              )
+            },
+            exportContent: (clusterPool: ClusterPool) => {
+              const { region, zone, datacenter } = getClusterPoolLocation(clusterPool)
+              return [region, zone, datacenter].filter(Boolean).join(' · ') || '-'
             },
           },
           {
