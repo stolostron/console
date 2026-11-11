@@ -215,7 +215,7 @@
   .clusterDetailItem
   .pf-v6-c-accordion__toggle:focus {
   background-color: var(--pf-t--global--background--color--primary--default);
-  outline-width: 0px;
+  outline: 2px solid var(--pf-t--global--border--color--clicked, #0066cc);
 }
 .topologyDetails
   .sectionContent
