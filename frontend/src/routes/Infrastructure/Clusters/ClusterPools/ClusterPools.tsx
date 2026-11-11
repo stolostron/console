@@ -437,7 +437,7 @@ export function ClusterPoolsTable(props: {
             },
           },
           {
-            header: t('table.location'),
+            header: t('Location'),
             cell: (clusterPool: ClusterPool) => {
               const location = getClusterPoolLocation(clusterPool)
               return location.region || location.zone || location.datacenter ? (
