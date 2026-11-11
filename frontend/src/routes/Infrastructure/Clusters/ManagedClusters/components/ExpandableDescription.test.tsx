@@ -2,69 +2,51 @@
 
 import { render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
+import { clickElement } from '~/lib/test-util'
 import { ExpandableDescription } from './ExpandableDescription'
 
-jest.mock('@react-hook/resize-observer')
-
-import useResizeObserver from '@react-hook/resize-observer'
-import { clickElement } from '~/lib/test-util'
-const mockUseResizeObserver = jest.mocked(useResizeObserver)
+/** PatternFly truncate / our toggle gate use scrollHeight / lineHeight. */
+function mockLineMetrics(scrollHeight: number, lineHeightPx = 20) {
+  jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(scrollHeight)
+  const realGetComputedStyle = window.getComputedStyle.bind(window)
+  jest.spyOn(window, 'getComputedStyle').mockImplementation((el) => {
+    const style = realGetComputedStyle(el)
+    Object.defineProperty(style, 'lineHeight', { value: `${lineHeightPx}px`, configurable: true })
+    return style
+  })
+}
 
 describe('ExpandableDescription', () => {
-  let resizeCallback: (() => void) | undefined
-
-  beforeEach(() => {
-    resizeCallback = undefined
-    mockUseResizeObserver.mockImplementation((_target, callback) => {
-      resizeCallback = callback as () => void
-      return {} as ResizeObserver
-    })
-  })
-
   afterEach(() => {
     jest.restoreAllMocks()
   })
 
-  it('renders description without toggle when content fits', async () => {
-    jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(40)
-    jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(40)
+  it('shows description text without toggle when content fits', async () => {
+    mockLineMetrics(40)
 
     const { container } = render(<ExpandableDescription description="Short description" />)
 
     expect(screen.getByText('Short description')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
+    })
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('shows Show more / Show less when content overflows', async () => {
-    jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(200)
-    jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(80)
+  it('shows description and toggles Show more / Show less when content overflows', async () => {
+    mockLineMetrics(200)
 
     const { container } = render(
       <ExpandableDescription description={'Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6'} />
     )
 
-    const showMore = screen.getByRole('button', { name: 'Show more' })
-    expect(showMore).toBeInTheDocument()
+    expect(screen.getByText(/Line 1/)).toBeInTheDocument()
+
+    const showMore = await screen.findByRole('button', { name: 'Show more' })
     await clickElement(showMore)
     expect(screen.getByRole('button', { name: 'Show less' })).toBeInTheDocument()
     await clickElement(screen.getByRole('button', { name: 'Show less' }))
     expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
-  })
-
-  it('recalculates truncatable state when the container resizes', async () => {
-    const scrollHeightSpy = jest.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockReturnValue(40)
-    jest.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockReturnValue(40)
-
-    render(<ExpandableDescription description="Resize-sensitive description" />)
-    expect(screen.queryByRole('button', { name: 'Show more' })).not.toBeInTheDocument()
-
-    scrollHeightSpy.mockReturnValue(200)
-    resizeCallback?.()
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'Show more' })).toBeInTheDocument()
-    })
   })
 })
