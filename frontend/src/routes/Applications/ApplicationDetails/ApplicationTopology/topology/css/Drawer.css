@@ -198,7 +198,7 @@
   .pf-v6-c-accordion
   .clusterDetailItem
   .pf-v6-c-accordion__toggle:hover {
-  background-color: #fff;
+  background-color: var(--pf-t--global--background--color--primary--default);
 }
 .topologyDetails
   .sectionContent
@@ -206,7 +206,7 @@
   .pf-v6-c-accordion
   .clusterDetailItem
   .pf-v6-c-accordion__toggle:active {
-  background-color: #fff;
+  background-color: var(--pf-t--global--background--color--primary--default);
 }
 .topologyDetails
   .sectionContent
@@ -214,7 +214,7 @@
   .pf-v6-c-accordion
   .clusterDetailItem
   .pf-v6-c-accordion__toggle:focus {
-  background-color: #fff;
+  background-color: var(--pf-t--global--background--color--primary--default);
   outline-width: 0px;
 }
 .topologyDetails
