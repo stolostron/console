@@ -168,7 +168,7 @@ export interface WatchEvent {
     apiVersion: string
     metadata: {
       name: string
-      namespace: string
+      namespace?: string
       resourceVersion: string
     }
   }
