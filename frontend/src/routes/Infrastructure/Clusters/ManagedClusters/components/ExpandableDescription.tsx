@@ -17,16 +17,14 @@ export function ExpandableDescription(
   const { t } = useTranslation()
   const maxLines = props.maxLines ?? DEFAULT_MAX_DESCRIPTION_LINES
   const [isExpanded, setIsExpanded] = useState(false)
-  const toggleExpanded = () => isExpanded ? t('Show less') : t('Show more')
+  const toggleText = isExpanded ? t('Show less') : t('Show more')
 
   return (
     <ExpandableSection
       variant={ExpandableSectionVariant.truncate}
-      toggleContent={() =>
-        <Label style={{ width: 'fit-content' }} variant="overflow" onClick={toggleExpanded}>
-          {isExpanded
-            ? t('Show less')
-            : t('Show more')}
+      toggleContent={
+        <Label style={{ width: 'fit-content' }} variant="overflow">
+          {toggleText}
         </Label>
       }
       truncateMaxLines={maxLines}

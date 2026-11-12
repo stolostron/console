@@ -42,7 +42,6 @@ describe('ExpandableDescription', () => {
 
     expect(screen.getByText(/Line 1/)).toBeInTheDocument()
 
-    // Overflow Label sits inside the ExpandableSection toggle button (nested interactive).
     // Query by text to avoid ambiguous role="button" matches.
     await clickElement(await screen.findByText('Show more'))
     expect(screen.getByText('Show less')).toBeInTheDocument()
