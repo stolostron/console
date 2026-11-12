@@ -58,12 +58,7 @@ describe('AcmExpandableSection', () => {
   })
   test('accepts truncateMaxLines prop', async () => {
     const { getByText, container } = render(
-      <AcmExpandableSection
-        label="Expandable Label"
-        summary="Summary about this section"
-        truncateMaxLines={4}
-        expanded
-      >
+      <AcmExpandableSection label="Expandable Label" summary="Summary about this section" truncateMaxLines={4} expanded>
         Section content that may truncate
       </AcmExpandableSection>
     )
