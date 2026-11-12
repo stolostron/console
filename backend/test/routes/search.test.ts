@@ -26,6 +26,7 @@ describe(`search Route`, function () {
     // TODO - pipeline is not writing response
     //expect(res.statusCode).toEqual(200)
   })
+
   it(`uses search-api in namespace of pod if no MultiClusterHub`, async function () {
     nock(process.env.CLUSTER_API_URL).get('/api').reply(200, {
       status: 200,
