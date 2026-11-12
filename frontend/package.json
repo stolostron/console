@@ -126,7 +126,7 @@
     "@rspack/core": "^2.3.1",
     "@rspack/dev-server": "^2.2.2",
     "@rspack/plugin-react-refresh": "^2.0.2",
-    "@sentry/browser": "6.19.7",
+    "@sentry/browser": "7.119.1",
     "@storybook/addon-a11y": "^8.6.19",
     "@storybook/addon-actions": "^8.6.19",
     "@storybook/addon-docs": "^8.6.19",
