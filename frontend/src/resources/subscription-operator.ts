@@ -19,6 +19,9 @@ export interface SubscriptionOperator extends IResource {
   metadata: Metadata
   spec: {
     name: string
+    config?: {
+      env?: { name: string; value?: string }[]
+    }
   }
   status?: {
     conditions: {
