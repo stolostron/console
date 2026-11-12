@@ -86,7 +86,7 @@
         "watch": "^1.0.2",
         "webpack": "^5.105.2",
         "webpack-cli": "4.10.0",
-        "webpack-dev-server": "^4.15.2"
+        "webpack-dev-server": "^5.2.6"
     },
     "optionalDependencies": {
         "cypress": "^15.8.1"
