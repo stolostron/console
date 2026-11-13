@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@apollo/client": "3.5.10",
-    "@babel/runtime": "7.18.9",
+    "@babel/runtime": "7.26.10",
     "@emotion/css": "^11.11.2",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
