@@ -5,6 +5,11 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useContext, useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
+import {
+  getErrorInfo,
+  isAccessRestrictedError,
+  normalizeAccessRestrictedError,
+} from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'
@@ -83,15 +88,20 @@ export function handleVMActions(
     .catch((err) => {
       console.error(`VirtualMachine: ${item.name} ${action} error. ${err}`)
 
-      const errMessage: string = err?.message ?? t('An unexpected error occurred.')
+      const normalized = normalizeAccessRestrictedError(err)
+      const errorInfo = getErrorInfo(normalized, t)
       toast.addAlert({
-        title: t('Error triggering action {{action}} on {{itemKind}} {{name}}', {
-          name: item.name,
-          itemKind: item.kind,
-          action,
-        }),
-        message: errMessage,
-        type: 'danger',
+        title: isAccessRestrictedError(normalized)
+          ? errorInfo.title
+          : t('Error triggering action {{action}} on {{itemKind}} {{name}}', {
+              name: item.name,
+              itemKind: item.kind,
+              action,
+            }),
+        message: isAccessRestrictedError(normalized)
+          ? errorInfo.message
+          : (err?.message ?? t('An unexpected error occurred.')),
+        type: errorInfo.type,
       })
     })
 }
