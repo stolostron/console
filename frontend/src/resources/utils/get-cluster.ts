@@ -1053,7 +1053,7 @@ export function getDistributionInfo(
       !upgradeInfo.upgradeFailed &&
       (!isManagedOpenShift || isAROClassic) &&
       !upgradeInfo.isUpgrading &&
-      curatorIsIdle
+      !isSelectingChannel
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
 
     upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
