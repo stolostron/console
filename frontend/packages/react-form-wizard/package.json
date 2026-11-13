@@ -99,7 +99,7 @@
         "type-fest": "2.19.0",
         "typescript": "4.9.5",
         "validator": "13.15.15",
-        "webpack": "5.99.9",
+        "webpack": "5.104.1",
         "webpack-cli": "4.10.0",
         "webpack-dev-server": "4.15.2"
     },
