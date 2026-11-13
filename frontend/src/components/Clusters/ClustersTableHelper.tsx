@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { AgentClusterInstallK8sResource, HostedClusterK8sResource } from '@openshift-assisted/ui-lib/cim'
+import { css } from '@emotion/css'
 import { Alert, Content, ContentVariants, Label, Tooltip } from '@patternfly/react-core'
 import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { fitContent, nowrap } from '@patternfly/react-table'
@@ -67,7 +68,11 @@ import {
 import { SearchOperator } from '../../ui-components/AcmSearchInput'
 import { BulkActionModalProps, errorIsNot } from '../BulkActionModal'
 import { HighlightSearchText } from '../HighlightSearchText'
+import { ClusterLocationLine } from './ClusterLocationLine'
+import { getClusterLocation } from '~/lib/cluster-location'
 import { DEFAULT_MAX_VISIBLE_LABELS, getOverflowLabelKeys } from './labelCollapse'
+
+const providerIconClass = css({ marginRight: '0.5rem' })
 
 const patchClusterPowerState = (cluster: Cluster, powerState: 'Hibernating' | 'Running') =>
   patchResource(
@@ -95,6 +100,11 @@ export function useClusterNameColumn(
     cell: (cluster, search) => (
       <>
         <span style={{ whiteSpace: 'nowrap' }}>
+          {cluster.provider && (
+            <span className={providerIconClass}>
+              <AcmInlineProvider provider={cluster.provider} iconOnly />
+            </span>
+          )}
           {areLinksDisplayed ? (
             <AcmVisitedLink to={getClusterNavPath(NavigationPath.clusterDetails, cluster)}>
               <HighlightSearchText text={cluster.displayName} searchText={search} isLink useFuzzyHighlighting />
@@ -122,6 +132,7 @@ export function useClusterNameColumn(
             <Content component={ContentVariants.small}>{cluster.hive.clusterClaimName}</Content>
           </Content>
         )}
+        <ClusterLocationLine location={getClusterLocation(cluster.labels)} />
       </>
     ),
     exportContent: (cluster) => cluster.displayName,

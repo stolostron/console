@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -20,9 +21,20 @@ import {
 } from '../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '../../lib/nock-util'
 import { mockManagedClusterSet, mockGlobalClusterSet } from '../../lib/test-metadata'
-import { waitForText, waitForNotText } from '../../lib/test-util'
-import { ClusterSetsTable } from './ClusterSetsTable'
+import { clickByLabel, clickByText, getCSVExportSpies, waitForText, waitForNotText } from '../../lib/test-util'
+import { ClusterSetsTable, getClusterSetProviders } from './ClusterSetsTable'
 import { ExtendedManagedClusterSet } from '../../resources'
+import { Cluster } from '../../resources/utils'
+import { Provider, ProviderLongTextMap } from '~/ui-components'
+import { getMappedClusterSetClusters } from '../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters'
+
+jest.mock('../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters', () => ({
+  ...jest.requireActual('../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters'),
+  getMappedClusterSetClusters: jest.fn(() => []),
+}))
+
+const mockGetMappedClusterSetClusters = getMappedClusterSetClusters as jest.Mock
+const clusterWith = (provider?: Provider) => ({ provider }) as Cluster
 
 const mockExtendedClusterSet: ExtendedManagedClusterSet = {
   ...mockManagedClusterSet,
@@ -130,5 +142,93 @@ describe('ClusterSetsTable', () => {
     await waitForText(mockGlobalClusterSet.metadata.name!)
     const checkbox = screen.getByRole('checkbox', { name: /select row 0/i })
     expect(checkbox).toBeDisabled()
+  })
+
+  test('shows provider icons for a set with vSphere and AWS clusters', async () => {
+    mockGetMappedClusterSetClusters.mockReturnValue([
+      clusterWith(Provider.vmware),
+      clusterWith(Provider.aws),
+      clusterWith(Provider.vmware),
+    ])
+    render(<Component managedClusterSets={[mockExtendedClusterSet]} />)
+    await waitForText(mockManagedClusterSet.metadata.name!)
+    expect(screen.getByRole('columnheader', { name: 'Infrastructure' })).toBeInTheDocument()
+    expect(screen.getAllByRole('img', { name: ProviderLongTextMap[Provider.vmware] })).toHaveLength(1)
+    expect(screen.getAllByRole('img', { name: ProviderLongTextMap[Provider.aws] })).toHaveLength(1)
+  })
+
+  test('shows - in the provider column for an empty cluster set', async () => {
+    mockGetMappedClusterSetClusters.mockReturnValue([])
+    render(<Component managedClusterSets={[mockExtendedClusterSet]} />)
+    await waitForText(mockManagedClusterSet.metadata.name!)
+    expect(screen.queryByRole('img', { name: ProviderLongTextMap[Provider.aws] })).not.toBeInTheDocument()
+    const row = screen.getByRole('link', { name: mockManagedClusterSet.metadata.name! }).closest('tr')!
+    expect(row.querySelector('td[data-label="Infrastructure"]')).toHaveTextContent('-')
+  })
+  test('searching by provider name finds sets with that provider', async () => {
+    const awsSet: ExtendedManagedClusterSet = {
+      ...mockExtendedClusterSet,
+      metadata: { ...mockExtendedClusterSet.metadata, name: 'aws-set' },
+    }
+    const gcpSet: ExtendedManagedClusterSet = {
+      ...mockExtendedClusterSet,
+      metadata: { ...mockExtendedClusterSet.metadata, name: 'gcp-set' },
+    }
+    mockGetMappedClusterSetClusters.mockImplementation(({ managedClusterSets }) =>
+      managedClusterSets[0].metadata.name === 'aws-set' ? [clusterWith(Provider.aws)] : [clusterWith(Provider.gcp)]
+    )
+    render(<Component managedClusterSets={[awsSet, gcpSet]} />)
+    await waitForText('aws-set')
+    await userEvent.type(screen.getByRole('textbox'), ProviderLongTextMap[Provider.aws])
+    await waitForNotText('gcp-set')
+    expect(screen.getByText('aws-set')).toBeInTheDocument()
+  })
+})
+
+describe('ClusterSetsTable export', () => {
+  beforeEach(() => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+  })
+
+  test('exports provider long names, de-duplicated, in the Infrastructure column', async () => {
+    mockGetMappedClusterSetClusters.mockReturnValue([
+      clusterWith(Provider.vmware),
+      clusterWith(Provider.aws),
+      clusterWith(Provider.vmware),
+    ])
+    render(<Component managedClusterSets={[mockExtendedClusterSet]} />)
+    await waitForText(mockManagedClusterSet.metadata.name!)
+    window.URL.createObjectURL = jest.fn()
+    window.URL.revokeObjectURL = jest.fn()
+    const { blobConstructorSpy } = getCSVExportSpies()
+
+    await clickByLabel('export-search-result')
+    await clickByText('Export all to CSV')
+
+    const csv = blobConstructorSpy.mock.calls[0][0][0] as string
+    expect(csv).toContain(`"${ProviderLongTextMap[Provider.vmware]}, ${ProviderLongTextMap[Provider.aws]}"`)
+  })
+})
+
+describe('getClusterSetProviders', () => {
+  test('de-duplicates providers in order of first appearance', () => {
+    expect(
+      getClusterSetProviders([
+        clusterWith(Provider.vmware),
+        clusterWith(Provider.aws),
+        clusterWith(Provider.vmware),
+        clusterWith(Provider.azure),
+        clusterWith(Provider.aws),
+      ])
+    ).toEqual([Provider.vmware, Provider.aws, Provider.azure])
+  })
+
+  test('skips clusters with undefined provider', () => {
+    expect(getClusterSetProviders([clusterWith(undefined), clusterWith(Provider.gcp)])).toEqual([Provider.gcp])
+  })
+
+  test('returns [] for no clusters', () => {
+    expect(getClusterSetProviders([])).toEqual([])
   })
 })

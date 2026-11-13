@@ -150,6 +150,36 @@ exports[`Cluster creation control data for VMW generates correctly 1`] = `
     "type": "hidden",
   },
   {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
     "id": "nodePoolsStep",
     "title": "Node pools",
     "type": "step",
@@ -855,6 +885,36 @@ exports[`Cluster creation control data for VMW generates correctly for MCE 1`] =
     "type": "hidden",
   },
   {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
     "id": "nodePoolsStep",
     "title": "Node pools",
     "type": "step",
@@ -1558,6 +1618,36 @@ exports[`Cluster creation control data for VMW generates correctly with SNO enab
     "hasReplacements": true,
     "id": "infrastructure",
     "type": "hidden",
+  },
+  {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
   },
   {
     "id": "nodePoolsStep",

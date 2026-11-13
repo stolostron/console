@@ -1,6 +1,15 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { AcmButton, AcmEmptyState, AcmLabels, AcmTable } from '../../ui-components'
+import { css } from '@emotion/css'
+import {
+  AcmButton,
+  AcmEmptyState,
+  AcmInlineProvider,
+  AcmLabels,
+  AcmTable,
+  Provider,
+  ProviderLongTextMap,
+} from '~/ui-components'
 import { ButtonVariant } from '@patternfly/react-core'
 import { fitContent } from '@patternfly/react-table'
 import { Fragment, useEffect, useMemo, useState } from 'react'
@@ -26,6 +35,16 @@ import { GlobalClusterSetPopover } from '../../routes/Infrastructure/Clusters/Cl
 import { CreateClusterSetModal } from '../../routes/Infrastructure/Clusters/ClusterSets/CreateClusterSet/CreateClusterSetModal'
 import { useSharedAtoms, useSharedValue } from '../../shared-atoms'
 import { getMappedClusterSetClusters } from '../../routes/Infrastructure/Clusters/ClusterSets/components/useClusters'
+
+const providerIconsClass = css({ display: 'inline-flex', gap: '0.5em' })
+
+export function getClusterSetProviders(clusters: Cluster[]): Provider[] {
+  const providers = new Set<Provider>()
+  clusters.forEach((cluster) => {
+    if (cluster.provider) providers.add(cluster.provider)
+  })
+  return Array.from(providers)
+}
 
 interface ClusterSetsTableProps {
   managedClusterSets?: ExtendedManagedClusterSet[]
@@ -110,6 +129,12 @@ export const ClusterSetsTable = ({
       managedClusterSetClusters[managedClusterSet.metadata.name] = clusters
     }
   })
+
+  function getProviderNames(managedClusterSet: ManagedClusterSet): string {
+    return getClusterSetProviders(managedClusterSetClusters[managedClusterSet.metadata.name!] ?? [])
+      .map((provider) => ProviderLongTextMap[provider])
+      .join(', ')
+  }
 
   function clusterSetSortFn(a: ManagedClusterSet, b: ManagedClusterSet): number {
     if (isGlobalClusterSet(a) && !isGlobalClusterSet(b)) {
@@ -201,6 +226,26 @@ export const ClusterSetsTable = ({
                 )
             },
             id: 'statuses',
+          },
+          {
+            header: t('table.provider'),
+            cell: (managedClusterSet: ManagedClusterSet) => {
+              const providers = getClusterSetProviders(
+                managedClusterSetClusters[managedClusterSet.metadata.name!] ?? []
+              )
+              return providers.length ? (
+                <span className={providerIconsClass}>
+                  {providers.map((provider) => (
+                    <AcmInlineProvider key={provider} provider={provider} iconOnly />
+                  ))}
+                </span>
+              ) : (
+                '-'
+              )
+            },
+            search: (managedClusterSet: ManagedClusterSet) => getProviderNames(managedClusterSet),
+            exportContent: (managedClusterSet: ManagedClusterSet) => getProviderNames(managedClusterSet),
+            id: 'provider',
           },
           {
             header: t('table.clusterSetBinding'),

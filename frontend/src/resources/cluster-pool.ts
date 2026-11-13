@@ -40,11 +40,13 @@ export interface ClusterPool extends IResource {
         credentialsSecretRef: {
           name: string
         }
+        region?: string
       }
       azure?: {
         credentialsSecretRef: {
           name: string
         }
+        region?: string
       }
     }
     pullSecretRef: {

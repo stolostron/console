@@ -12,6 +12,7 @@ import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader, Provider } fr
 import MonacoEditor from 'react-monaco-editor'
 import { generatePath, useNavigate } from 'react-router'
 import TemplateEditor from '../../../../../components/TemplateEditor'
+import { isOverriddenByLocationFieldFn } from '../../../../../components/TemplateEditor/helpers'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { createCluster } from '../../../../../lib/create-cluster'
 import { DOC_LINKS } from '../../../../../lib/doc-util'
@@ -89,6 +90,7 @@ Handlebars.registerHelper('or', (...args) => {
   const values = args.slice(0, -1)
   return values.some(Boolean)
 })
+Handlebars.registerHelper('isOverriddenByLocationField', isOverriddenByLocationFieldFn)
 
 interface CreationStatus {
   status: string

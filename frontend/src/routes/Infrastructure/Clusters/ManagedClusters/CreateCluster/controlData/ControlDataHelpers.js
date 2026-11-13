@@ -417,6 +417,36 @@ export const reverseStorageClass = (control, templateObject) => {
   return control
 }
 
+// K8s label value: empty allowed, alphanumeric at start and end, max 63 chars (length checked separately)
+const LABEL_VALUE_REGEX = /^([A-Za-z0-9]([-A-Za-z0-9_.]*[A-Za-z0-9])?)?$/
+
+const getLabelValueValidator = (t) => ({
+  tester: { test: (value) => typeof value === 'string' && value.length <= 63 && LABEL_VALUE_REGEX.test(value) },
+  notification: t('creation.valid.labelValue'),
+  required: false,
+})
+
+export const locationControls = (t) => [
+  {
+    name: t('creation.ocp.zone'),
+    tooltip: t('tooltip.creation.ocp.zone'),
+    id: 'zone',
+    type: 'text',
+    active: '',
+    validation: getLabelValueValidator(t),
+    reverse: 'ClusterDeployment[0].metadata.labels.zone',
+  },
+  {
+    name: t('creation.ocp.datacenter'),
+    tooltip: t('tooltip.creation.ocp.datacenter'),
+    id: 'locationDatacenter',
+    type: 'text',
+    active: '',
+    validation: getLabelValueValidator(t),
+    reverse: 'ClusterDeployment[0].metadata.labels.datacenter',
+  },
+]
+
 export const clusterDetailsControlData = (t) => {
   return [
     {

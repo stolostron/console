@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { discoveredClusterState, discoveryConfigState, secretsState } from '../../../../atoms'
@@ -17,6 +17,7 @@ import {
 } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import DiscoveredClustersPage from './DiscoveredClusters'
+import { Provider, ProviderLongTextMap } from '~/ui-components'
 import {
   discoveryConfigCreateSelfSubjectAccessRequest,
   discoveryConfigCreateSelfSubjectAccessResponse,
@@ -54,6 +55,75 @@ describe('DiscoveredClusters', () => {
     await waitForNotText(mockDiscoveredClusters[2].spec.displayName) // Ensure managedcluster does not appear
 
     await waitForText(mockDiscoveredClusters[0].metadata.namespace!)
+  })
+
+  test('name cell shows provider icon only, no location line', async () => {
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, mockDiscoveredClusters)
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText(mockDiscoveredClusters[0].spec.displayName)
+    const nameCell = screen.getByRole('link', { name: mockDiscoveredClusters[0].spec.displayName }).closest('span')!
+    expect(within(nameCell).getByRole('img', { name: 'Amazon Web Services' })).toBeInTheDocument()
+    expect(nameCell).toHaveTextContent(mockDiscoveredClusters[0].spec.displayName)
+    expect(nameCell.querySelector('small')).toBeNull()
+  })
+
+  test('name cell shows no provider icon when cloudProvider is missing', async () => {
+    const noProviderCluster = {
+      ...mockDiscoveredClusters[0],
+      metadata: { name: 'no-provider', namespace: 'alpha' },
+      spec: { ...mockDiscoveredClusters[0].spec, displayName: 'no-provider', cloudProvider: '' },
+    }
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [noProviderCluster])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText('no-provider')
+    const nameCell = screen.getByRole('link', { name: 'no-provider' }).closest('span')!
+    expect(within(nameCell).queryByRole('img')).not.toBeInTheDocument()
+  })
+
+  test('name cell falls back to the generic provider icon for an unknown cloudProvider', async () => {
+    const unknownCluster = {
+      ...mockDiscoveredClusters[0],
+      metadata: { name: 'unknown-provider', namespace: 'alpha' },
+      spec: { ...mockDiscoveredClusters[0].spec, displayName: 'unknown-provider', cloudProvider: 'mystery-cloud' },
+    }
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(discoveredClusterState, [unknownCluster])
+          store.set(discoveryConfigState, [mockDiscoveryConfig])
+          store.set(secretsState, [mockCRHCredential])
+        }}
+      >
+        <MemoryRouter>
+          <DiscoveredClustersPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText('unknown-provider')
+    const nameCell = screen.getByRole('link', { name: 'unknown-provider' }).closest('span')!
+    expect(within(nameCell).getByRole('img', { name: ProviderLongTextMap[Provider.other] })).toBeInTheDocument()
   })
 
   test('No provider connections or discoveryconfig (Empty State 1)', async () => {
