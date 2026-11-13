@@ -33,6 +33,7 @@ import (
 	"github.com/stolostron/console/backend/internal/metricsproxy"
 	"github.com/stolostron/console/backend/internal/oauth"
 	"github.com/stolostron/console/backend/internal/placementdebug"
+	"github.com/stolostron/console/backend/internal/rbacany"
 	"github.com/stolostron/console/backend/internal/rosa"
 	"github.com/stolostron/console/backend/internal/searchapi"
 	"github.com/stolostron/console/backend/internal/searchproxy"
@@ -234,6 +235,7 @@ func run() error {
 			Kube:       kube,
 			Client:     auth.HTTPClient(insightsCA, 0),
 		})),
+		server.WithRBACAny(rbacany.New(rbacany.Options{RESTConfig: restCfg})),
 	)
 
 	handler, err := server.Handler(cfg, opts...)

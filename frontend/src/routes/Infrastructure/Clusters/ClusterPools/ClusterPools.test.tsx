@@ -24,13 +24,13 @@ import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { clusterClaimsState, clusterImageSetsState, clusterPoolsState, namespacesState } from '../../../../atoms'
 import {
+  nockAnyNamespaceRBAC,
   nockCreate,
   nockDelete,
   nockGet,
   nockIgnoreApiPaths,
   nockIgnoreRBAC,
   nockPatch,
-  nockRBAC,
 } from '../../../../lib/nock-util'
 import {
   clickBulkAction,
@@ -59,7 +59,6 @@ const createClusterPoolAccess = {
   verb: 'create',
   resource: 'clusterpools',
   group: 'hive.openshift.io',
-  namespace: mockNamespace.metadata.name,
 }
 
 function nockNonAdminAccess() {
@@ -81,7 +80,15 @@ function nockNonAdminAccess() {
 
 function nockCreateClusterPoolAccess(allowed: boolean) {
   nockNonAdminAccess()
-  const createNock = nockRBAC(createClusterPoolAccess, allowed)
+  const createNock = nockAnyNamespaceRBAC(
+    {
+      verb: createClusterPoolAccess.verb,
+      resource: createClusterPoolAccess.resource,
+      group: createClusterPoolAccess.group,
+    },
+    [mockNamespace.metadata.name!],
+    allowed
+  )
   nockIgnoreRBAC()
   return [createNock]
 }
