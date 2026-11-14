@@ -36,7 +36,7 @@ export function SecurityGroupPolicySummarySidebar(props: {
       if (!annotation) {
         return false
       }
-      const names = annotation.split(',')
+      const names = annotation.split(',').map((name) => name.trim())
       for (const name of names) {
         if (name === violation.name && policy.status?.compliant) {
           return true
