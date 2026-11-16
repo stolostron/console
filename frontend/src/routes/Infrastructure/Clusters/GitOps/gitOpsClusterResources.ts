@@ -299,11 +299,14 @@ export function createDefaultAppProject(namespace: string, existing?: IResource)
     name: 'default',
     namespace,
   }
-  ;(base as { spec?: Record<string, unknown> }).spec = {
-    sourceNamespaces: ['*'],
-    destinations: [{ name: '*', namespace: '*', server: '*' }],
-    clusterResourceWhitelist: [{ group: '*', kind: '*' }],
-    sourceRepos: ['*'],
+  // Preserve draft/live AppProject.spec (e.g. restricted sourceRepos). Defaults only for new objects.
+  if (!existing) {
+    ;(base as { spec?: Record<string, unknown> }).spec = {
+      sourceNamespaces: ['*'],
+      destinations: [{ name: '*', namespace: '*', server: '*' }],
+      clusterResourceWhitelist: [{ group: '*', kind: '*' }],
+      sourceRepos: ['*'],
+    }
   }
   return base
 }

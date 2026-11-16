@@ -238,11 +238,13 @@ function AgentResourcesSync(props: {
       nextGitOps.metadata.name = name
       nextGitOps.transformed = { pushModelEnabled: agentEnabled ? pushModelEnabled : false }
       if (agentEnabled) {
+        const existingAddon = nextGitOps.spec?.gitopsAddon
         nextGitOps.spec = {
           ...nextGitOps.spec,
           gitopsAddon: {
+            ...existingAddon,
             enabled: true,
-            argoCDAgent: { enabled: true },
+            argoCDAgent: { ...existingAddon?.argoCDAgent, enabled: true },
           },
         }
       } else if (nextGitOps.spec) {

@@ -228,7 +228,7 @@ export const InputSelect = ({
           innerRef={textInputRef}
           placeholder={placeholder}
           isExpanded={open}
-          inputProps={{ autoComplete: 'off' }}
+          inputProps={{ autoComplete: 'off', disabled: !!disabled, readOnly: !!disabled }}
           style={isMultiSelect && Array.isArray(value) && value.length > 0 ? { overflow: 'auto' } : undefined}
         >
           {Array.isArray(value) && (
