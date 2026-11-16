@@ -123,7 +123,6 @@ describe('gitOpsClusterResources', () => {
         apiVersion: 'argoproj.io/v1beta1',
         kind: ArgoCDKind,
         metadata: { name: 'other', namespace: 'openshift-cluster-samples-operator', uid: 'wrong-uid' },
-        spec: {},
       },
       { namespace: 'openshift-gitops', pushEnabled: false }
     )
@@ -213,5 +212,55 @@ describe('gitOpsClusterResources', () => {
       existing,
     })
     expect(next.spec.predicates).toEqual(existing.spec.predicates)
+  })
+
+  it('preserves existing Placement name, placementRef, and numberOfClusters on edit', () => {
+    const existingPlacement = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops' })
+    existingPlacement.metadata.name = 'targets'
+    existingPlacement.metadata.uid = 'placement-uid'
+    existingPlacement.spec.numberOfClusters = 1
+
+    const placement = createPlacementResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      existing: existingPlacement,
+    })
+    expect(placement.metadata.name).toBe('targets')
+    expect(placement.metadata.uid).toBe('placement-uid')
+    expect(placement.spec.numberOfClusters).toBe(1)
+
+    const gitOps = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      existing: {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: GitOpsClusterKind,
+        metadata: { name: 'fleet', namespace: 'openshift-gitops' },
+        spec: {
+          argoServer: { argoNamespace: 'openshift-gitops' },
+          placementRef: { kind: PlacementKind, apiVersion: 'cluster.open-cluster-management.io/v1beta1', name: 'targets' },
+        },
+      },
+    })
+    expect(gitOps.spec?.placementRef?.name).toBe('targets')
+  })
+
+  it('keeps existing ManagedClusterSetBindings when Placement clusterSets are cleared', () => {
+    const binding = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: { name: 'default', namespace: 'openshift-gitops', uid: 'binding-uid' },
+      spec: { clusterSet: 'default' },
+    }
+    const resources = buildGitOpsClusterResources({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      clusterSets: [],
+      existingBindings: [binding as never],
+      includeBindings: true,
+    })
+    expect(resources.some((r) => r.kind === 'ManagedClusterSetBinding' && r.metadata?.name === 'default')).toBe(true)
   })
 })
