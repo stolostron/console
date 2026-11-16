@@ -59,11 +59,14 @@ export function isPushModelEnabled(gitOpsCluster?: GitOpsClusterWizardData): boo
 }
 
 export function placementNameFor(gitOpsClusterName: string): string {
-  return `${gitOpsClusterName}-placement`
+  // Empty wizard name must still yield a valid DNS-1123 name (not "-placement").
+  const base = gitOpsClusterName.trim() || 'gitopscluster'
+  return `${base}-placement`
 }
 
 export function policyNameFor(gitOpsClusterName: string): string {
-  return `${gitOpsClusterName}-argocd-policy`
+  const base = gitOpsClusterName.trim() || 'gitopscluster'
+  return `${base}-argocd-policy`
 }
 
 export function createGitOpsClusterResource(options: {
@@ -91,8 +94,11 @@ export function createGitOpsClusterResource(options: {
       placementRef: {
         kind: PlacementKind,
         apiVersion: PlacementApiVersionBeta,
-        // Keep the Placement name already referenced on edit; generate only for create.
-        name: existing?.spec?.placementRef?.name ?? placementNameFor(name),
+        // Only keep placementRef on live edit objects. Create drafts must rename with the form name.
+        name:
+          existing?.metadata?.uid && existing.spec?.placementRef?.name
+            ? existing.spec.placementRef.name
+            : placementNameFor(name),
       },
     },
     transformed: {
@@ -175,8 +181,11 @@ export function createPlacementResource(options: {
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
-      // Keep the existing Placement name on edit; generate only for create.
-      name: existing?.metadata?.name ?? placementNameFor(name),
+      // Only keep the Placement name when it already exists on the cluster (has uid).
+      // Create drafts start as "*-placement" and must rename as the user types the GitOpsCluster name.
+      name: existing?.metadata?.uid
+        ? (existing.metadata.name ?? placementNameFor(name))
+        : placementNameFor(name),
       namespace,
     },
     spec,
