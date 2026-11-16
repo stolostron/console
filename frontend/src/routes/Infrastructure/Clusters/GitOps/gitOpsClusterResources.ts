@@ -183,9 +183,7 @@ export function createPlacementResource(options: {
       ...existing?.metadata,
       // Only keep the Placement name when it already exists on the cluster (has uid).
       // Create drafts start as "*-placement" and must rename as the user types the GitOpsCluster name.
-      name: existing?.metadata?.uid
-        ? (existing.metadata.name ?? placementNameFor(name))
-        : placementNameFor(name),
+      name: existing?.metadata?.uid ? (existing.metadata.name ?? placementNameFor(name)) : placementNameFor(name),
       namespace,
     },
     spec,

@@ -239,7 +239,11 @@ describe('gitOpsClusterResources', () => {
         metadata: { name: 'fleet', namespace: 'openshift-gitops', uid: 'goc-uid' },
         spec: {
           argoServer: { argoNamespace: 'openshift-gitops' },
-          placementRef: { kind: PlacementKind, apiVersion: 'cluster.open-cluster-management.io/v1beta1', name: 'targets' },
+          placementRef: {
+            kind: PlacementKind,
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'targets',
+          },
         },
       },
     })
