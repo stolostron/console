@@ -26,10 +26,8 @@ import { AcmToastContext } from '~/ui-components'
 import {
   buildGitOpsClusterResources,
   collectMissingPermissions,
-  findArgoCDInNamespace,
   findGitOpsOperatorSubscription,
   formatMissingPermissions,
-  getGitOpsClusterFromResources,
   isAgentEnabled,
   isPushModelEnabled,
   policyNameFor,
@@ -150,8 +148,14 @@ export function EditGitOpsCluster() {
     )
     const existingSubscription = findGitOpsOperatorSubscription(subscriptions)
 
-    setExistingResources(
-      buildGitOpsClusterResources({
+    // Freeze the wizard baseline after the first successful load. Watched updates must not replace
+    // Wizard defaultData alone (stale resourceVersion / lost draft). Upsert re-reads live objects on submit.
+    // AppProject is not in Recoil; collectMissingPermissions probes the live object when the draft has no uid.
+    setExistingResources((previous) => {
+      if (previous !== undefined) {
+        return previous
+      }
+      return buildGitOpsClusterResources({
         name,
         namespace,
         agentEnabled,
@@ -163,9 +167,9 @@ export function EditGitOpsCluster() {
         existingArgoCD: argoCD,
         existingSubscription,
         existingPolicy,
-        includeBindings: (placement?.spec?.clusterSets?.length ?? 0) > 0,
+        includeBindings: true,
       })
-    )
+    })
   }, [gitOpsClusters, placements, argoCDs, clusterSetBindings, policies, subscriptions, name, namespace, navigate])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)

@@ -240,23 +240,35 @@ function AgentResourcesSync(props: {
     if (!needsRebuild) return
 
     const clusterSets = clusterSetsKey ? clusterSetsKey.split(',') : []
+    // Prefer the wizard/YAML copy so rebuilds (e.g. Push toggle) do not wipe in-progress edits.
+    // Fall back to live Recoil resources only when the draft does not include that kind yet.
     const argoCD =
-      findArgoCDInNamespace(props.argoCDs, namespace) ??
       (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
-        IResource | undefined)
+        | IResource
+        | undefined) ?? findArgoCDInNamespace(props.argoCDs, namespace)
     const existingPolicy =
+      (resources.find(
+        (item) =>
+          item.kind === 'Policy' &&
+          item.metadata?.namespace === namespace &&
+          item.metadata?.name === `${name}-argocd-policy`
+      ) as Policy | undefined) ??
       props.policies.find(
         (policy) => policy.metadata.namespace === namespace && policy.metadata.name === `${name}-argocd-policy`
-      ) ?? (resources.find((item) => item.kind === 'Policy') as Policy | undefined)
+      )
     const existingSubscription =
+      (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined) ??
       props.subscriptions.find(
         (subscription) =>
           subscription.spec?.name === 'openshift-gitops-operator' ||
           subscription.metadata?.name === 'openshift-gitops-operator'
-      ) ?? (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined)
+      )
     const existingAppProject = resources.find(
       (item) => item.kind === AppProjectKind && item.metadata?.namespace === namespace
     )
+    const currentBindings = resources.filter(
+      (item) => item.kind === 'ManagedClusterSetBinding' && item.metadata?.namespace === namespace
+    ) as ManagedClusterSetBinding[]
 
     const next = buildGitOpsClusterResources({
       name: name || 'gitopscluster',
@@ -266,12 +278,12 @@ function AgentResourcesSync(props: {
       clusterSets,
       existingGitOpsCluster: gitOpsCluster,
       existingPlacement: placement as PlacementResource | undefined,
-      existingBindings: props.existingBindings,
+      existingBindings: clusterSets.length > 0 ? props.existingBindings : currentBindings,
       existingArgoCD: argoCD,
       existingAppProject,
       existingSubscription,
       existingPolicy,
-      includeBindings: clusterSets.length > 0,
+      includeBindings: true,
     })
 
     const nextGitOps = getGitOpsClusterFromResources(next)
