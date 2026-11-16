@@ -18,6 +18,7 @@ import {
   mergeHubArgoCD,
   placementNameFor,
   policyNameFor,
+  preferDraftManagedClusterSetBindings,
   stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
@@ -300,5 +301,53 @@ describe('gitOpsClusterResources', () => {
       includeBindings: true,
     })
     expect(resources.some((r) => r.kind === 'ManagedClusterSetBinding' && r.metadata?.name === 'default')).toBe(true)
+  })
+
+  it('prefers draft ManagedClusterSetBindings over live ones for selected cluster sets', () => {
+    const draft = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: {
+        name: 'kike-cs',
+        namespace: 'openshift-gitops',
+        annotations: { 'wizard.edited': 'true' },
+      },
+      spec: { clusterSet: 'kike-cs' },
+    }
+    const live = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: { name: 'kike-cs', namespace: 'openshift-gitops', uid: 'live-uid' },
+      spec: { clusterSet: 'kike-cs' },
+    }
+    const preferred = preferDraftManagedClusterSetBindings({
+      namespace: 'openshift-gitops',
+      clusterSets: ['kike-cs', 'other-cs'],
+      draftBindings: [draft as never],
+      liveBindings: [
+        live as never,
+        {
+          apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+          kind: 'ManagedClusterSetBinding',
+          metadata: { name: 'other-cs', namespace: 'openshift-gitops', uid: 'other-uid' },
+          spec: { clusterSet: 'other-cs' },
+        } as never,
+      ],
+    })
+
+    expect(preferred).toHaveLength(2)
+    expect(preferred[0].metadata.annotations?.['wizard.edited']).toBe('true')
+    expect(preferred[0].metadata.uid).toBeUndefined()
+    expect(preferred[1].metadata.name).toBe('other-cs')
+    expect(preferred[1].metadata.uid).toBe('other-uid')
+
+    expect(
+      preferDraftManagedClusterSetBindings({
+        namespace: 'openshift-gitops',
+        clusterSets: [],
+        draftBindings: [draft as never],
+        liveBindings: [live as never],
+      })
+    ).toEqual([draft])
   })
 })

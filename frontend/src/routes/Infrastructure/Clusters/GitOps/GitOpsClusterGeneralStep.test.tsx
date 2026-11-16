@@ -6,7 +6,9 @@ import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
+import type { IResource } from '~/resources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
+import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
 import { PlacementKind } from '~/resources/placement'
 import { buildGitOpsClusterResources } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterGeneralStep } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterGeneralStep'
@@ -17,19 +19,26 @@ jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () =
   return {
     ...actual,
     collectMissingPermissions: jest.fn(async () => []),
+    preferDraftManagedClusterSetBindings: jest.fn(actual.preferDraftManagedClusterSetBindings),
+    buildGitOpsClusterResources: jest.fn(actual.buildGitOpsClusterResources),
   }
 })
 
-const { collectMissingPermissions } = jest.requireMock(
-  '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
-) as {
+const {
+  collectMissingPermissions,
+  preferDraftManagedClusterSetBindings,
+  buildGitOpsClusterResources: buildGitOpsClusterResourcesMock,
+} = jest.requireMock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources') as {
   collectMissingPermissions: jest.Mock
+  preferDraftManagedClusterSetBindings: jest.Mock
+  buildGitOpsClusterResources: jest.Mock
 }
 
 function renderGeneralStep(options?: {
   editMode?: EditMode
-  resources?: ReturnType<typeof buildGitOpsClusterResources>
+  resources?: IResource[]
   namespaces?: string[]
+  existingBindings?: ManagedClusterSetBinding[]
 }) {
   const editMode = options?.editMode ?? EditMode.Create
   const namespaces = options?.namespaces ?? ['openshift-gitops']
@@ -66,6 +75,7 @@ function renderGeneralStep(options?: {
             ]}
             subscriptions={[]}
             policies={[]}
+            existingBindings={options?.existingBindings}
           />
         </Step>
       </WizardPage>
@@ -79,6 +89,8 @@ describe('GitOpsClusterGeneralStep', () => {
     nockIgnoreRBAC()
     collectMissingPermissions.mockReset()
     collectMissingPermissions.mockResolvedValue([])
+    preferDraftManagedClusterSetBindings.mockClear()
+    buildGitOpsClusterResourcesMock.mockClear()
   })
 
   it('renders name, namespace, and agent checkbox accessibly', async () => {
@@ -159,5 +171,72 @@ describe('GitOpsClusterGeneralStep', () => {
         screen.getByText('You do not have permission to create or update all required resources.')
       ).toBeInTheDocument()
     )
+  })
+
+  it('prefers draft ManagedClusterSetBindings over live ones when Agent rebuilds', async () => {
+    const user = userEvent.setup()
+    const draftBinding = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: {
+        name: 'kike-cs',
+        namespace: 'openshift-gitops',
+        annotations: { 'wizard.edited': 'true' },
+      },
+      spec: { clusterSet: 'kike-cs' },
+    } as ManagedClusterSetBinding
+    const liveBinding = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: { name: 'kike-cs', namespace: 'openshift-gitops', uid: 'live-uid' },
+      spec: { clusterSet: 'kike-cs' },
+    } as ManagedClusterSetBinding
+
+    const resources = buildGitOpsClusterResources({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      pushModelEnabled: false,
+      clusterSets: ['kike-cs'],
+      existingBindings: [draftBinding],
+      includeBindings: true,
+    })
+
+    renderGeneralStep({
+      resources,
+      existingBindings: [liveBinding],
+    })
+
+    await user.click(screen.getByText('Enable Argo CD Agent'))
+
+    await waitFor(() => {
+      expect(preferDraftManagedClusterSetBindings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          namespace: 'openshift-gitops',
+          clusterSets: ['kike-cs'],
+          draftBindings: expect.arrayContaining([
+            expect.objectContaining({
+              metadata: expect.objectContaining({
+                name: 'kike-cs',
+                annotations: { 'wizard.edited': 'true' },
+              }),
+            }),
+          ]),
+          liveBindings: [liveBinding],
+        })
+      )
+    })
+
+    await waitFor(() => {
+      const rebuildCalls = buildGitOpsClusterResourcesMock.mock.calls.filter(
+        ([options]: [{ agentEnabled?: boolean }]) => options?.agentEnabled === true
+      )
+      expect(rebuildCalls.length).toBeGreaterThan(0)
+      const lastRebuild = rebuildCalls[rebuildCalls.length - 1][0] as {
+        existingBindings: ManagedClusterSetBinding[]
+      }
+      expect(lastRebuild.existingBindings[0].metadata.annotations?.['wizard.edited']).toBe('true')
+      expect(lastRebuild.existingBindings[0].metadata.uid).toBeUndefined()
+    })
   })
 })

@@ -31,6 +31,7 @@ import {
   getGitOpsClusterFromResources,
   getPlacementFromResources,
   isPushModelEnabled,
+  preferDraftManagedClusterSetBindings,
   type GitOpsClusterWizardData,
   type MissingPermission,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -219,7 +220,12 @@ function AgentResourcesSync(props: {
       clusterSets,
       existingGitOpsCluster: gitOpsCluster,
       existingPlacement: placement as PlacementResource | undefined,
-      existingBindings: clusterSets.length > 0 ? props.existingBindings : currentBindings,
+      existingBindings: preferDraftManagedClusterSetBindings({
+        namespace,
+        clusterSets,
+        draftBindings: currentBindings,
+        liveBindings: props.existingBindings,
+      }),
       existingArgoCD: argoCD,
       existingAppProject,
       existingSubscription,

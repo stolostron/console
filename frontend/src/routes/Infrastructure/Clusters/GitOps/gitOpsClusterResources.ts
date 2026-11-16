@@ -190,6 +190,38 @@ export function createPlacementResource(options: {
   }
 }
 
+function bindingMatchesClusterSet(binding: ManagedClusterSetBinding, namespace: string, clusterSet: string): boolean {
+  return (
+    binding.metadata.namespace === namespace &&
+    (binding.spec.clusterSet === clusterSet || binding.metadata.name === clusterSet)
+  )
+}
+
+/**
+ * Prefer wizard/YAML draft bindings for selected cluster sets; fall back to live bindings
+ * only when the draft has no entry for that set. With no selected sets, keep the draft list
+ * (empty Placement clusterSets means "all sets bound to the namespace").
+ */
+export function preferDraftManagedClusterSetBindings(options: {
+  namespace: string
+  clusterSets: string[]
+  draftBindings: ManagedClusterSetBinding[]
+  liveBindings: ManagedClusterSetBinding[]
+}): ManagedClusterSetBinding[] {
+  const { namespace, clusterSets, draftBindings, liveBindings } = options
+  if (clusterSets.length === 0) {
+    return draftBindings
+  }
+  return clusterSets.flatMap((clusterSet) => {
+    const draft = draftBindings.find((binding) => bindingMatchesClusterSet(binding, namespace, clusterSet))
+    if (draft) {
+      return [draft]
+    }
+    const live = liveBindings.find((binding) => bindingMatchesClusterSet(binding, namespace, clusterSet))
+    return live ? [live] : []
+  })
+}
+
 export function createManagedClusterSetBindings(options: {
   namespace: string
   clusterSets: string[]
@@ -197,11 +229,7 @@ export function createManagedClusterSetBindings(options: {
 }): ManagedClusterSetBinding[] {
   const { namespace, clusterSets, existingBindings = [] } = options
   return clusterSets.map((clusterSet) => {
-    const existing = existingBindings.find(
-      (binding) =>
-        binding.metadata.namespace === namespace &&
-        (binding.spec.clusterSet === clusterSet || binding.metadata.name === clusterSet)
-    )
+    const existing = existingBindings.find((binding) => bindingMatchesClusterSet(binding, namespace, clusterSet))
     return (
       existing ?? {
         apiVersion: ManagedClusterSetBindingApiVersion,
@@ -657,8 +685,9 @@ async function resourceExistsLive(resource: IResource): Promise<boolean> {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
       return false
     }
-    // Forbidden / other errors: assume create path; upsert will surface the real failure.
-    return false
+    // Forbidden / other GET errors must stop preflight; assuming "absent" would let create pass
+    // while upsertResource fails on the same GET after earlier resources were already applied.
+    throw err
   }
 }
 
@@ -678,8 +707,9 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
       checks.push(rbacGet(definition, namespace, name), rbacPatch(definition, namespace, name))
       labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'patch', namespace, name })
     } else {
-      checks.push(rbacCreate(definition, namespace, name))
-      labels.push({ kind, verb: 'create', namespace, name })
+      // Upsert always GETs first (NotFound → create), so create path still needs get.
+      checks.push(rbacGet(definition, namespace, name), rbacCreate(definition, namespace, name))
+      labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'create', namespace, name })
     }
   }
 
