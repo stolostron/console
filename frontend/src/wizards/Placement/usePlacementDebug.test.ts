@@ -1,6 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { renderHook, act } from '@testing-library/react'
-import { usePlacementDebug, clearPlacementDebugCache, placementHasIncompleteEntries } from './usePlacementDebug'
+import {
+  usePlacementDebug,
+  clearPlacementDebugCache,
+  placementHasIncompleteEntries,
+  getPlacementMatchErrorDetail,
+} from './usePlacementDebug'
 import { IPlacement } from '../common/resources/IPlacement'
 import { postPlacementDebug } from '../../resources/placement-debug'
 import { ResourceError, ResourceErrorCode } from '../../resources/utils/resource-request'
@@ -922,5 +927,37 @@ describe('placementHasIncompleteEntries', () => {
       },
     }
     expect(placementHasIncompleteEntries(placement)).toBe(true)
+  })
+})
+
+describe('getPlacementMatchErrorDetail', () => {
+  const t = (key: string) => key
+
+  it('maps 404 to a clear unavailable message', () => {
+    expect(getPlacementMatchErrorDetail(new Error('404 NotFound'), t)).toBe(
+      'Placement match preview is not available. The placement debug service was not found on this cluster.'
+    )
+  })
+
+  it('maps auth failures', () => {
+    expect(getPlacementMatchErrorDetail(new Error('403 Forbidden'), t)).toBe(
+      'You do not have permission to preview which clusters match this Placement.'
+    )
+  })
+
+  it('maps temporary upstream failures', () => {
+    expect(getPlacementMatchErrorDetail(new Error('503 Service Unavailable'), t)).toBe(
+      'Placement match preview is temporarily unavailable. Try again later.'
+    )
+  })
+
+  it('keeps non-HTTP error messages', () => {
+    expect(getPlacementMatchErrorDetail(new Error('placement namespace not found'), t)).toBe(
+      'placement namespace not found'
+    )
+  })
+
+  it('falls back when error is missing', () => {
+    expect(getPlacementMatchErrorDetail(undefined, t)).toBe('An unknown error occurred.')
   })
 })

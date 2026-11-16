@@ -17,12 +17,12 @@ import { isType } from '~/lib/is-type'
 import { NavigationPath } from '~/NavigationPath'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
 import type { IResource } from '~/resources'
-import { reconcileResources } from '~/resources/utils'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmToastContext } from '~/ui-components'
 import {
   collectMissingPermissions,
   formatMissingPermissions,
+  reconcileGitOpsWizardResources,
   stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterWizard } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard'
@@ -93,9 +93,7 @@ export function CreateGitOpsCluster() {
   )
   // Prefer Argo CD namespaces when available
   const availableNamespaces =
-    argoCDs.length > 0
-      ? argoCDs.map((argo) => argo.metadata?.namespace).filter(isType)
-      : argoNamespaces
+    argoCDs.length > 0 ? argoCDs.map((argo) => argo.metadata?.namespace).filter(isType) : argoNamespaces
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
   const navigate = useNavigate()
@@ -126,17 +124,18 @@ export function CreateGitOpsCluster() {
             title: t('Missing permissions'),
             message: formatMissingPermissions(missing).join(', '),
             type: 'danger',
+            autoClose: true,
           })
           throw new Error(t('Missing permissions to create one or more required resources.'))
         }
 
-        return reconcileResources(resources, [])
+        return reconcileGitOpsWizardResources(resources)
           .then(() => {
-            const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
+            const created = resources.find((resource) => resource.kind === GitOpsClusterKind)
             toast.addAlert({
               title: t('GitOpsCluster created'),
               message: t('{{name}} was successfully created.', {
-                name: gitOpsCluster?.metadata?.name,
+                name: created?.metadata?.name,
               }),
               type: 'success',
               autoClose: true,

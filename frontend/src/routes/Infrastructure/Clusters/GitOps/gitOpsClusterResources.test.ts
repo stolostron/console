@@ -108,10 +108,40 @@ describe('gitOpsClusterResources', () => {
 
   it('keeps hub controller enabled when push model is checked', () => {
     const argo = mergeHubArgoCD(undefined, { namespace: 'openshift-gitops', pushEnabled: true }) as unknown as {
+      metadata: { name?: string; uid?: string }
       spec: { controller: { enabled: boolean }; sourceNamespaces: string[] }
     }
+    expect(argo.metadata.name).toBe('openshift-gitops')
+    expect(argo.metadata.uid).toBeUndefined()
     expect(argo.spec.controller.enabled).toBe(true)
     expect(argo.spec.sourceNamespaces).toEqual(['*'])
+  })
+
+  it('creates an ArgoCD in the target namespace without reusing another namespace uid', () => {
+    const argo = mergeHubArgoCD(
+      {
+        apiVersion: 'argoproj.io/v1beta1',
+        kind: ArgoCDKind,
+        metadata: { name: 'other', namespace: 'openshift-cluster-samples-operator', uid: 'wrong-uid' },
+        spec: {},
+      },
+      { namespace: 'openshift-gitops', pushEnabled: false }
+    )
+    expect(argo.metadata?.namespace).toBe('openshift-gitops')
+    expect(argo.metadata?.name).toBe('openshift-gitops')
+    expect(argo.metadata?.uid).toBeUndefined()
+  })
+
+  it('includes a new ArgoCD in agent resources when none exists yet', () => {
+    const resources = buildGitOpsClusterResources({
+      name: 'agent-gitops',
+      namespace: 'openshift-gitops',
+      agentEnabled: true,
+      pushModelEnabled: false,
+    })
+    const argo = resources.find((r) => r.kind === ArgoCDKind)
+    expect(argo?.metadata?.name).toBe('openshift-gitops')
+    expect(argo?.metadata?.namespace).toBe('openshift-gitops')
   })
 
   it('creates AppProject wildcards and named helpers', () => {

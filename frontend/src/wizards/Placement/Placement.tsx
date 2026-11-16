@@ -27,7 +27,7 @@ import { useLabelValuesMap } from '../common/useLabelValuesMap'
 import { MatchExpression, MatchExpressionCollapsed, MatchExpressionSummary } from './MatchExpression'
 import './MatchExpression.css'
 import { MatchedClustersModal } from './MatchedClustersModal'
-import { PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
+import { getPlacementMatchErrorDetail, PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
 import { PlacementMatchFooter } from './PlacementMatchFooter'
 
 function TolerationCollapsed() {
@@ -128,7 +128,7 @@ export function Placement(props: {
           label={t('Matched by Placement')}
           value={
             error ? (
-              t('Unable to determine cluster matches.')
+              getPlacementMatchErrorDetail(error, t)
             ) : matchedCount === undefined ? (
               '-'
             ) : matchedCount > 0 ? (

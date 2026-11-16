@@ -18,20 +18,22 @@ import { isType } from '~/lib/is-type'
 import { NavigationPath } from '~/NavigationPath'
 import type { IResource } from '~/resources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
-import { PlacementKind } from '~/resources/placement'
 import { ManagedClusterSetBindingKind } from '~/resources/managed-cluster-set-binding'
-import { reconcileResources } from '~/resources/utils'
+import { PlacementKind } from '~/resources/placement'
+import { PolicyKind } from '~/resources/policy'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmToastContext } from '~/ui-components'
 import {
   buildGitOpsClusterResources,
   collectMissingPermissions,
+  findArgoCDInNamespace,
   findGitOpsOperatorSubscription,
   formatMissingPermissions,
   getGitOpsClusterFromResources,
   isAgentEnabled,
   isPushModelEnabled,
   policyNameFor,
+  reconcileGitOpsWizardResources,
   stripTransformedFields,
   type GitOpsClusterWizardData,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -118,9 +120,9 @@ export function EditGitOpsCluster() {
       (item) => item.metadata.namespace === namespace && item.metadata.name === placementName
     )
     const agentEnabled = isAgentEnabled(gitOpsCluster)
-    const argoCD = argoCDs.find((item) => item.metadata?.namespace === namespace)
+    const argoCD = argoCDs.find((item) => item.metadata?.namespace === namespace) // never fall back to another NS
     const pushEnabled =
-      (argoCD as IResource & { spec?: { controller?: { enabled?: boolean } } } | undefined)?.spec?.controller
+      (argoCD as (IResource & { spec?: { controller?: { enabled?: boolean } } }) | undefined)?.spec?.controller
         ?.enabled === true
     const wizardGitOps: GitOpsClusterWizardData = {
       ...gitOpsCluster,
@@ -164,17 +166,7 @@ export function EditGitOpsCluster() {
         includeBindings: (placement?.spec?.clusterSets?.length ?? 0) > 0,
       })
     )
-  }, [
-    gitOpsClusters,
-    placements,
-    argoCDs,
-    clusterSetBindings,
-    policies,
-    subscriptions,
-    name,
-    namespace,
-    navigate,
-  ])
+  }, [gitOpsClusters, placements, argoCDs, clusterSetBindings, policies, subscriptions, name, namespace, navigate])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
@@ -203,29 +195,26 @@ export function EditGitOpsCluster() {
             title: t('Missing permissions'),
             message: formatMissingPermissions(missing).join(', '),
             type: 'danger',
+            autoClose: true,
           })
           throw new Error(t('Missing permissions to update one or more required resources.'))
         }
 
-        const previousAgentEnabled = isAgentEnabled(getGitOpsClusterFromResources(existingResources))
-        const previous = stripTransformedFields(existingResources).filter((resource) => {
-          if (!previousAgentEnabled) {
-            return (
-              resource.kind === GitOpsClusterKind ||
-              resource.kind === PlacementKind ||
-              resource.kind === ManagedClusterSetBindingKind
-            )
-          }
-          return true
-        }) as IResource[]
+        const previousOwned = stripTransformedFields(existingResources).filter(
+          (resource) =>
+            resource.kind === GitOpsClusterKind ||
+            resource.kind === PlacementKind ||
+            resource.kind === ManagedClusterSetBindingKind ||
+            resource.kind === PolicyKind
+        ) as IResource[]
 
-        return reconcileResources(resources, previous)
+        return reconcileGitOpsWizardResources(resources, previousOwned)
           .then(() => {
-            const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
+            const updated = resources.find((resource) => resource.kind === GitOpsClusterKind)
             toast.addAlert({
               title: t('GitOpsCluster updated'),
               message: t('{{name}} was successfully updated.', {
-                name: gitOpsCluster?.metadata?.name,
+                name: updated?.metadata?.name,
               }),
               type: 'success',
               autoClose: true,
@@ -238,6 +227,7 @@ export function EditGitOpsCluster() {
               title: t('Failed to update GitOpsCluster'),
               message: err instanceof Error ? err.message : String(err),
               type: 'danger',
+              autoClose: true,
             })
             throw err
           })

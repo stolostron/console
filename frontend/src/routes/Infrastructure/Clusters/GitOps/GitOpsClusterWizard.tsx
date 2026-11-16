@@ -36,6 +36,7 @@ import {
   ArgoCDKind,
   buildGitOpsClusterResources,
   collectMissingPermissions,
+  findArgoCDInNamespace,
   formatMissingPermissions,
   getGitOpsClusterFromResources,
   getPlacementFromResources,
@@ -104,7 +105,7 @@ export function GitOpsClusterWizard(props: GitOpsClusterWizardProps) {
               required
               placeholder={t('Enter the name')}
               validation={validateKubernetesResourceName}
-              readonly={editMode === EditMode.Edit}
+              disabled={editMode === EditMode.Edit}
             />
             <WizSingleSelect
               label={t('Namespace')}
@@ -113,7 +114,7 @@ export function GitOpsClusterWizard(props: GitOpsClusterWizardProps) {
               placeholder={t('Select the Argo CD namespace')}
               options={props.namespaces}
               required
-              readonly={editMode === EditMode.Edit}
+              disabled={editMode === EditMode.Edit}
               helperText={t('Select the namespace of the hub Argo CD instance.')}
             />
             <WizCheckbox
@@ -240,9 +241,9 @@ function AgentResourcesSync(props: {
 
     const clusterSets = clusterSetsKey ? clusterSetsKey.split(',') : []
     const argoCD =
-      props.argoCDs.find((item) => item.metadata?.namespace === namespace) ??
-      resources.find((item) => item.kind === ArgoCDKind) ??
-      props.argoCDs[0]
+      findArgoCDInNamespace(props.argoCDs, namespace) ??
+      (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
+        IResource | undefined)
     const existingPolicy =
       props.policies.find(
         (policy) => policy.metadata.namespace === namespace && policy.metadata.name === `${name}-argocd-policy`
@@ -253,7 +254,9 @@ function AgentResourcesSync(props: {
           subscription.spec?.name === 'openshift-gitops-operator' ||
           subscription.metadata?.name === 'openshift-gitops-operator'
       ) ?? (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined)
-    const existingAppProject = resources.find((item) => item.kind === AppProjectKind)
+    const existingAppProject = resources.find(
+      (item) => item.kind === AppProjectKind && item.metadata?.namespace === namespace
+    )
 
     const next = buildGitOpsClusterResources({
       name: name || 'gitopscluster',
@@ -341,7 +344,7 @@ function GitOpsPermissionAlert() {
       isInline
       variant="danger"
       title={t('You do not have permission to create or update all required resources.')}
-      style={{ marginBottom: '1rem' }}
+      style={{ marginBottom: 'var(--pf-t--global--spacer--md)' }}
     >
       <List>
         {formatMissingPermissions(missing).map((item) => (

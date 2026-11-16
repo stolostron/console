@@ -2,24 +2,16 @@
 
 import { rbacCreate, rbacPatch, rbacUpdate } from '~/lib/rbac-util'
 import type { IResource } from '~/resources'
+import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
-import {
-  GitOpsClusterApiVersion,
-  GitOpsClusterKind,
-  GitopsClusterDefinition,
-} from '~/resources/gitops-cluster'
+import { GitOpsClusterApiVersion, GitOpsClusterKind, GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import {
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingDefinition,
   ManagedClusterSetBindingKind,
   type ManagedClusterSetBinding,
 } from '~/resources/managed-cluster-set-binding'
-import {
-  PlacementApiVersionBeta,
-  PlacementDefinition,
-  PlacementKind,
-  type Placement,
-} from '~/resources/placement'
+import { PlacementApiVersionBeta, PlacementDefinition, PlacementKind, type Placement } from '~/resources/placement'
 import { PolicyApiVersion, PolicyDefinition, PolicyKind, type Policy } from '~/resources/policy'
 import { createSubjectAccessReview } from '~/resources/self-subject-access-review'
 import {
@@ -203,18 +195,25 @@ function cloneResource<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T
 }
 
+export function findArgoCDInNamespace(argoCDs: IResource[], namespace: string): IResource | undefined {
+  return argoCDs.find((item) => item.metadata?.namespace === namespace)
+}
+
+/** Apply Agent settings. Reuse an ArgoCD already in this namespace; otherwise emit a new one to create. */
 export function mergeHubArgoCD(
   existing: IResource | undefined,
   options: { namespace: string; pushEnabled: boolean }
 ): IResource {
   const { namespace, pushEnabled } = options
-  const base = existing
-    ? cloneResource(existing)
+  const sameNamespace = existing?.metadata?.namespace === namespace
+  const base: IResource = sameNamespace
+    ? cloneResource(existing as IResource)
     : {
         apiVersion: ArgoCDApiVersion,
         kind: ArgoCDKind,
         metadata: { name: 'openshift-gitops', namespace },
       }
+
   const spec = ((base as { spec?: Record<string, unknown> }).spec ??= {})
   const controller = ((spec.controller as Record<string, unknown> | undefined) ??= {})
   controller.enabled = pushEnabled
@@ -230,8 +229,8 @@ export function mergeHubArgoCD(
   const route = ((server.route as Record<string, unknown> | undefined) ??= {})
   route.enabled = true
   base.metadata = {
-    ...base.metadata,
-    name: base.metadata?.name || 'openshift-gitops',
+    ...(sameNamespace ? base.metadata : {}),
+    name: sameNamespace ? base.metadata?.name || 'openshift-gitops' : 'openshift-gitops',
     namespace,
   }
   return base
@@ -539,6 +538,73 @@ function resourceExistsOnCluster(resource: IResource): boolean {
   return Boolean(resource.metadata?.uid || resource.metadata?.resourceVersion || resource.metadata?.generation)
 }
 
+function sameResourceIdentity(a: IResource, b: IResource): boolean {
+  return a.kind === b.kind && a.metadata?.namespace === b.metadata?.namespace && a.metadata?.name === b.metadata?.name
+}
+
+/** Shared hub objects stay when Agent is turned off. Everything else in the YAML is created, updated, or removed. */
+const PRESERVE_WHEN_ABSENT = new Set([ArgoCDKind, AppProjectKind, SubscriptionOperatorKind])
+
+function withoutServerMetadata(resource: IResource): IResource {
+  const copy = cloneResource(resource) as IResource & { status?: unknown }
+  delete copy.status
+  if (copy.metadata) {
+    delete copy.metadata.uid
+    delete copy.metadata.resourceVersion
+    delete copy.metadata.generation
+    delete copy.metadata.managedFields
+    delete copy.metadata.creationTimestamp
+    delete copy.metadata.ownerReferences
+  }
+  return copy
+}
+
+function withLiveIdentity(desired: IResource, live: IResource): IResource {
+  const copy = withoutServerMetadata(desired)
+  copy.metadata = {
+    ...live.metadata,
+    name: desired.metadata?.name ?? live.metadata?.name,
+    namespace: desired.metadata?.namespace ?? live.metadata?.namespace,
+    labels: { ...live.metadata?.labels, ...desired.metadata?.labels },
+    annotations: { ...live.metadata?.annotations, ...desired.metadata?.annotations },
+  }
+  return copy
+}
+
+async function upsertResource(resource: IResource): Promise<void> {
+  const createBody = withoutServerMetadata(resource)
+  try {
+    const live = await getResource(createBody).promise
+    await reconcileResources([withLiveIdentity(resource, live)], [live])
+  } catch (err) {
+    if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
+      await reconcileResources([createBody], [])
+      return
+    }
+    throw err
+  }
+}
+
+/**
+ * Apply the wizard YAML as-is: create resources that are missing and patch resources that already exist.
+ * Argo CD, AppProject, and the operator Subscription are not deleted when they drop out of the YAML.
+ */
+export async function reconcileGitOpsWizardResources(
+  desired: IResource[],
+  previousOwned: IResource[] = []
+): Promise<void> {
+  const removed = previousOwned.filter(
+    (previous) =>
+      !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))
+  )
+  if (removed.length > 0) {
+    await reconcileResources([], removed)
+  }
+  for (const resource of desired) {
+    await upsertResource(resource)
+  }
+}
+
 export interface MissingPermission {
   kind: string
   verb: string
@@ -557,10 +623,7 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
     const definition = definitionForKind(kind) ?? resource
     if (resourceExistsOnCluster(resource)) {
       checks.push(rbacUpdate(definition, namespace, name), rbacPatch(definition, namespace, name))
-      labels.push(
-        { kind, verb: 'update', namespace, name },
-        { kind, verb: 'patch', namespace, name }
-      )
+      labels.push({ kind, verb: 'update', namespace, name }, { kind, verb: 'patch', namespace, name })
     } else {
       checks.push(rbacCreate(definition, namespace, name))
       labels.push({ kind, verb: 'create', namespace, name })
