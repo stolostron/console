@@ -91,7 +91,8 @@ export function createGitOpsClusterResource(options: {
       placementRef: {
         kind: PlacementKind,
         apiVersion: PlacementApiVersionBeta,
-        name: placementNameFor(name),
+        // Keep the Placement name already referenced on edit; generate only for create.
+        name: existing?.spec?.placementRef?.name ?? placementNameFor(name),
       },
     },
     transformed: {
@@ -143,28 +144,42 @@ export function createPlacementResource(options: {
   ]
 
   const selectedClusterSets = clusterSets ?? existing?.spec?.clusterSets
+  const spec: Placement['spec'] = {
+    // Preserve fields such as numberOfClusters from the live Placement.
+    ...existing?.spec,
+    tolerations: existing?.spec?.tolerations ?? [
+      {
+        key: 'cluster.open-cluster-management.io/unreachable',
+        operator: 'Exists',
+      },
+      {
+        key: 'cluster.open-cluster-management.io/unavailable',
+        operator: 'Exists',
+      },
+    ],
+    predicates: existing?.spec?.predicates?.length ? existing.spec.predicates : defaultPredicates,
+  }
+
+  if (clusterSets !== undefined) {
+    if (clusterSets.length > 0) {
+      spec.clusterSets = clusterSets
+    } else {
+      delete spec.clusterSets
+    }
+  } else if (selectedClusterSets?.length) {
+    spec.clusterSets = selectedClusterSets
+  }
+
   return {
     apiVersion: PlacementApiVersionBeta,
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
-      name: placementNameFor(name),
+      // Keep the existing Placement name on edit; generate only for create.
+      name: existing?.metadata?.name ?? placementNameFor(name),
       namespace,
     },
-    spec: {
-      tolerations: existing?.spec?.tolerations ?? [
-        {
-          key: 'cluster.open-cluster-management.io/unreachable',
-          operator: 'Exists',
-        },
-        {
-          key: 'cluster.open-cluster-management.io/unavailable',
-          operator: 'Exists',
-        },
-      ],
-      predicates: existing?.spec?.predicates?.length ? existing.spec.predicates : defaultPredicates,
-      ...(selectedClusterSets?.length ? { clusterSets: selectedClusterSets } : {}),
-    },
+    spec,
   }
 }
 
@@ -507,6 +522,13 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
         clusterSets: placementClusterSets,
         existingBindings,
       })
+    )
+  } else if (includeBindings && existingBindings.length > 0) {
+    // Empty Placement clusterSets means "all sets bound to the namespace" — keep existing bindings.
+    resources.push(
+      ...existingBindings.filter(
+        (binding) => binding.metadata.namespace === namespace || binding.metadata.namespace === undefined
+      )
     )
   }
 
