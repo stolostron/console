@@ -236,7 +236,7 @@ describe('gitOpsClusterResources', () => {
       existing: {
         apiVersion: 'apps.open-cluster-management.io/v1beta1',
         kind: GitOpsClusterKind,
-        metadata: { name: 'fleet', namespace: 'openshift-gitops' },
+        metadata: { name: 'fleet', namespace: 'openshift-gitops', uid: 'goc-uid' },
         spec: {
           argoServer: { argoNamespace: 'openshift-gitops' },
           placementRef: { kind: PlacementKind, apiVersion: 'cluster.open-cluster-management.io/v1beta1', name: 'targets' },
@@ -244,6 +244,40 @@ describe('gitOpsClusterResources', () => {
       },
     })
     expect(gitOps.spec?.placementRef?.name).toBe('targets')
+  })
+
+  it('renames draft Placement when the GitOpsCluster name changes during create', () => {
+    expect(placementNameFor('')).toBe('gitopscluster-placement')
+
+    const draft = createPlacementResource({ name: '', namespace: 'openshift-gitops' })
+    expect(draft.metadata.name).toBe('gitopscluster-placement')
+
+    const renamed = createPlacementResource({
+      name: 'klee-openshift-gitops',
+      namespace: 'openshift-gitops',
+      existing: draft,
+    })
+    expect(renamed.metadata.name).toBe('klee-openshift-gitops-placement')
+
+    const gitOps = createGitOpsClusterResource({
+      name: 'klee-openshift-gitops',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      existing: {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: GitOpsClusterKind,
+        metadata: { name: 'klee-openshift-gitops', namespace: 'openshift-gitops' },
+        spec: {
+          argoServer: { argoNamespace: 'openshift-gitops' },
+          placementRef: {
+            kind: PlacementKind,
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'gitopscluster-placement',
+          },
+        },
+      },
+    })
+    expect(gitOps.spec?.placementRef?.name).toBe('klee-openshift-gitops-placement')
   })
 
   it('keeps existing ManagedClusterSetBindings when Placement clusterSets are cleared', () => {
