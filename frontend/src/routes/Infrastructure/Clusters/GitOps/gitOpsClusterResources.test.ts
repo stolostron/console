@@ -1,11 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
 import {
   AGENT_AUTH,
   AGENT_SUBSCRIPTION_ENV,
   AppProjectKind,
   ArgoCDKind,
   buildGitOpsClusterResources,
+  collectMissingPermissions,
   createArgoCDAgentPolicy,
   createDefaultAppProject,
   createGitOpsClusterResource,
@@ -19,6 +21,7 @@ import {
   placementNameFor,
   policyNameFor,
   preferDraftManagedClusterSetBindings,
+  reconcileGitOpsWizardResources,
   stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
@@ -29,8 +32,29 @@ import {
   SubscriptionOperatorKind,
   type SubscriptionOperator,
 } from '~/resources/subscription-operator'
+import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
+
+jest.mock('~/resources/utils/resource-request', () => {
+  const actual = jest.requireActual('~/resources/utils/resource-request')
+  return {
+    ...actual,
+    getResource: jest.fn(),
+    reconcileResources: jest.fn(async () => undefined),
+  }
+})
+
+const mockGetResource = getResource as jest.Mock
+const mockReconcileResources = reconcileResources as jest.Mock
 
 describe('gitOpsClusterResources', () => {
+  beforeEach(() => {
+    nockIgnoreApiPaths()
+    nockIgnoreRBAC()
+    mockGetResource.mockReset()
+    mockReconcileResources.mockReset()
+    mockReconcileResources.mockResolvedValue(undefined)
+  })
+
   it('builds create defaults without agent extras when agent is off', () => {
     const resources = buildGitOpsClusterResources({
       name: 'fleet',
@@ -144,7 +168,7 @@ describe('gitOpsClusterResources', () => {
     expect(argo?.metadata?.namespace).toBe('openshift-gitops')
   })
 
-  it('creates AppProject wildcards and named helpers', () => {
+  it('creates AppProject wildcards for new objects and preserves draft spec', () => {
     const project = createDefaultAppProject('openshift-gitops') as unknown as {
       spec: {
         sourceNamespaces: string[]
@@ -159,6 +183,14 @@ describe('gitOpsClusterResources', () => {
     expect(project.spec.clusterResourceWhitelist[0]).toEqual({ group: '*', kind: '*' })
     expect(placementNameFor('x')).toBe('x-placement')
     expect(policyNameFor('x')).toBe('x-argocd-policy')
+
+    const draft = createDefaultAppProject('openshift-gitops', {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: AppProjectKind,
+      metadata: { name: 'default', namespace: 'openshift-gitops' },
+      spec: { sourceRepos: ['https://github.com/acme/*'] },
+    } as never)
+    expect((draft as { spec?: { sourceRepos?: string[] } }).spec?.sourceRepos).toEqual(['https://github.com/acme/*'])
   })
 
   it('finds and merges operator subscription env vars', () => {
@@ -349,5 +381,93 @@ describe('gitOpsClusterResources', () => {
         liveBindings: [live as never],
       })
     ).toEqual([draft])
+  })
+
+  it('reconciles by creating missing resources and patching live ones', async () => {
+    const desired = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    mockGetResource.mockReturnValue({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+    })
+
+    await reconcileGitOpsWizardResources([desired])
+    expect(mockReconcileResources).toHaveBeenCalledWith(
+      [expect.objectContaining({ kind: GitOpsClusterKind, metadata: expect.objectContaining({ name: 'fleet' }) })],
+      []
+    )
+
+    mockReconcileResources.mockClear()
+    const live = {
+      ...desired,
+      metadata: { ...desired.metadata, uid: 'live-uid', resourceVersion: '3' },
+    }
+    mockGetResource.mockReturnValue({ promise: Promise.resolve(live) })
+    await reconcileGitOpsWizardResources([desired])
+    expect(mockReconcileResources).toHaveBeenCalledWith(
+      [
+        expect.objectContaining({
+          metadata: expect.objectContaining({ uid: 'live-uid', resourceVersion: '3', name: 'fleet' }),
+        }),
+      ],
+      [live]
+    )
+  })
+
+  it('deletes removed owned resources only after desired upserts succeed', async () => {
+    const keep = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    keep.metadata.uid = 'goc-uid'
+    const removedPolicy = {
+      apiVersion: 'policy.open-cluster-management.io/v1',
+      kind: PolicyKind,
+      metadata: { name: 'fleet-argocd-policy', namespace: 'openshift-gitops', uid: 'policy-uid' },
+    }
+    mockGetResource.mockReturnValue({ promise: Promise.resolve(keep) })
+
+    await reconcileGitOpsWizardResources([keep], [keep, removedPolicy as never])
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(
+      1,
+      [expect.objectContaining({ kind: GitOpsClusterKind })],
+      [keep]
+    )
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(2, [], [removedPolicy])
+  })
+
+  it('propagates non-NotFound existence probe errors and requires get on create path', async () => {
+    const resource = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    mockGetResource.mockReturnValue({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden, 'denied')),
+    })
+    await expect(collectMissingPermissions([resource])).rejects.toMatchObject({
+      code: ResourceErrorCode.Forbidden,
+    })
+
+    mockGetResource.mockReturnValue({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+    })
+    const missing = await collectMissingPermissions([resource])
+    // nockIgnoreRBAC allows all; ensure both get and create were evaluated (no missing)
+    expect(missing).toEqual([])
+  })
+
+  it('checks get and patch permissions when the resource already exists', async () => {
+    const resource = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    resource.metadata.uid = 'existing-uid'
+    const missing = await collectMissingPermissions([resource])
+    expect(missing).toEqual([])
   })
 })

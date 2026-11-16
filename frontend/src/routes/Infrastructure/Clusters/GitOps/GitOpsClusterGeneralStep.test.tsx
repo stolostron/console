@@ -140,6 +140,7 @@ describe('GitOpsClusterGeneralStep', () => {
 
     const namespaceToggle = document.getElementById('namespace')?.querySelector('.pf-v6-c-menu-toggle')
     expect(namespaceToggle).toHaveClass('pf-m-disabled')
+    expect(document.getElementById('namespace')?.querySelector('input')).toBeDisabled()
   })
 
   it('shows a permission alert when required permissions are missing', async () => {
