@@ -15,7 +15,20 @@ jest.mock('react-router', () => ({
 }))
 
 jest.mock('~/lib/acm-i18next', () => ({
-  useTranslation: () => [(key: string) => key],
+  useTranslation: () => [
+    (key: string, options?: Record<string, string | number>) => {
+      if (key === 'Next') {
+        return 'Siguiente'
+      }
+      if (!options) {
+        return key
+      }
+      return Object.entries(options).reduce(
+        (message, [name, value]) => message.replaceAll(`{{${name}}}`, String(value)),
+        key
+      )
+    },
+  ],
 }))
 
 jest.mock('./hooks/useCredentialsSecrets', () => ({
@@ -248,14 +261,14 @@ describe('RosaHCPWrapper', () => {
 
     expect(screen.getByText('Clusters')).toBeInTheDocument()
     expect(screen.getByText('Infrastructure')).toBeInTheDocument()
-    expect(screen.getAllByText('Control plane type - {{hcType}}')).toHaveLength(2)
+    expect(screen.getAllByText('Control plane type - AWS')).toHaveLength(2)
     expect(screen.getByText('ROSA HCP')).toBeInTheDocument()
   })
 
   test('should render page header with title and description', () => {
     renderComponent()
 
-    expect(screen.getAllByText('Control plane type - {{hcType}}')).toHaveLength(2)
+    expect(screen.getAllByText('Control plane type - AWS')).toHaveLength(2)
     expect(screen.getByText('Choose a control plane type for your cluster.')).toBeInTheDocument()
   })
 
@@ -482,7 +495,7 @@ describe('RosaHCPWrapper', () => {
     renderComponent()
 
     const wizardProps = MockRosaHCPWizard.mock.calls[0][0]
-    expect(wizardProps.strings.wizard.next).toBe('Next')
+    expect(wizardProps.strings.wizard.next).toBe('Siguiente')
     expect(wizardProps.strings.wizard.back).toBe('Back')
     expect(wizardProps.strings.wizard.stepLabels.additionalSetup).toBe('Additional setup')
     expect(wizardProps.strings.wizard.stepLabels.clusterWideProxy).toBeUndefined()
@@ -501,16 +514,16 @@ describe('RosaHCPWrapper', () => {
     expect(wizardProps.strings.validators.proxyConfigureAtLeastOne).toBeUndefined()
     expect(wizardProps.strings.validators.serviceCidr.subnetMaskBetween).toBeUndefined()
     expect(wizardProps.strings.validators.serviceCidr.subnetMaskBetweenOneAnd(24)).toBe(
-      'Subnet mask must be between /1 and /{{max}}.'
+      'Subnet mask must be between /1 and /24.'
     )
     expect(wizardProps.strings.validators.disjointSubnets.overlap('Pod CIDR', false)).toBe(
-      'This subnet overlaps with the subnet in the {{otherFieldLabelsCsv}} field._one'
+      'This subnet overlaps with the subnet in the Pod CIDR field._one'
     )
     expect(wizardProps.strings.validators.disjointSubnets.overlap('Pod CIDR, Machine CIDR', true)).toBe(
-      'This subnet overlaps with the subnets in the {{otherFieldLabelsCsv}} fields._other'
+      'This subnet overlaps with the subnets in the Pod CIDR, Machine CIDR fields._other'
     )
     expect(wizardProps.strings.validators.operatorRolesPrefix.invalidFormat('Prefix', 'Bad_Name')).toBe(
-      "{{label}} '{{value}}' isn't valid, must consist of lower-case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character. For example, 'my-name', or 'abc-123'."
+      "Prefix 'Bad_Name' isn't valid, must consist of lower-case alphanumeric characters or '-', start with an alphabetic character, and end with an alphanumeric character. For example, 'my-name', or 'abc-123'."
     )
   })
 
