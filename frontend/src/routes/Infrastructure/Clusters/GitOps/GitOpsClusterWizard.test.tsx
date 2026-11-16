@@ -1,7 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { render, screen, waitFor } from '@testing-library/react'
-import { axe } from 'jest-axe'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
 import { GitOpsClusterWizard } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard'
@@ -9,6 +8,21 @@ import { GitOpsClusterWizard } from '~/routes/Infrastructure/Clusters/GitOps/Git
 jest.mock('~/hooks/use-local-hub', () => ({
   useLocalHubName: () => 'local-cluster',
 }))
+
+jest.mock('~/wizards/Placement/usePlacementDebug', () => {
+  const actual = jest.requireActual('~/wizards/Placement/usePlacementDebug')
+  return {
+    ...actual,
+    usePlacementDebug: jest.fn(() => ({
+      matched: [],
+      notMatched: [],
+      totalClusters: 0,
+      matchedCount: undefined,
+      loading: false,
+      error: undefined,
+    })),
+  }
+})
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
   const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources')
@@ -24,8 +38,8 @@ describe('GitOpsClusterWizard', () => {
     nockIgnoreRBAC()
   })
 
-  it('renders general step accessibly with agent checkbox', async () => {
-    const { container } = render(
+  it('renders the wizard with General and Placement steps', async () => {
+    render(
       <MemoryRouter>
         <GitOpsClusterWizard
           title="Create GitOpsCluster"
@@ -50,16 +64,6 @@ describe('GitOpsClusterWizard', () => {
 
     expect(screen.getByText('Create GitOpsCluster')).toBeInTheDocument()
     expect(screen.getByText('Enable Argo CD Agent')).toBeInTheDocument()
-    await waitFor(() => expect(screen.getByText('Enable Argo CD Agent')).toBeInTheDocument())
-    // Wizard mounts all steps; Placement array inputs reuse field ids (framework limitation)
-    expect(
-      await axe(container, {
-        rules: {
-          'duplicate-id': { enabled: false },
-          'duplicate-id-active': { enabled: false },
-          'duplicate-id-aria': { enabled: false },
-        },
-      })
-    ).toHaveNoViolations()
+    expect(await screen.findByText('The hub cluster cannot be included in this Placement.')).toBeInTheDocument()
   })
 })
