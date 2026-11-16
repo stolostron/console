@@ -360,7 +360,7 @@ function LocalClusterPlacementAlert() {
       isInline
       variant="info"
       title={t('The hub cluster cannot be included in this Placement.')}
-      style={{ marginBottom: '1rem' }}
+      style={{ marginBottom: 'var(--pf-t--global--spacer--md)' }}
     >
       {t(
         'GitOpsCluster Placement resources must exclude the local-cluster (hub) labeled cluster. The default predicate excludes the local-cluster label. Do not select {{hub}}.',

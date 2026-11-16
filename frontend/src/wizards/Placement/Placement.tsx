@@ -175,7 +175,7 @@ export function Placement(props: {
       )}
 
       {!isClusterSet && !props.namespaceClusterSetNames.length && props.alertTitle ? (
-        <Alert variant="warning" title={props.alertTitle}>
+        <Alert variant="warning" title={props.alertTitle} style={{ marginBottom: 'var(--pf-t--global--spacer--md)' }}>
           {props.alertContent}
         </Alert>
       ) : null}
