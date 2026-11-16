@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { rbacCreate, rbacPatch, rbacUpdate } from '~/lib/rbac-util'
+import { rbacCreate, rbacGet, rbacPatch } from '~/lib/rbac-util'
 import type { IResource } from '~/resources'
 import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
@@ -583,12 +583,16 @@ function withoutServerMetadata(resource: IResource): IResource {
 
 function withLiveIdentity(desired: IResource, live: IResource): IResource {
   const copy = withoutServerMetadata(desired)
+  // Desired metadata (labels, annotations, finalizers, …) stays the source of truth.
+  // Only attach live identity fields required for a successful patch.
   copy.metadata = {
-    ...live.metadata,
+    ...copy.metadata,
     name: desired.metadata?.name ?? live.metadata?.name,
     namespace: desired.metadata?.namespace ?? live.metadata?.namespace,
-    labels: { ...live.metadata?.labels, ...desired.metadata?.labels },
-    annotations: { ...live.metadata?.annotations, ...desired.metadata?.annotations },
+    uid: live.metadata?.uid,
+    resourceVersion: live.metadata?.resourceVersion,
+    generation: live.metadata?.generation,
+    creationTimestamp: live.metadata?.creationTimestamp,
   }
   return copy
 }
@@ -615,15 +619,16 @@ export async function reconcileGitOpsWizardResources(
   desired: IResource[],
   previousOwned: IResource[] = []
 ): Promise<void> {
+  // Apply desired resources first so a failed upsert does not leave deletions already applied.
+  for (const resource of desired) {
+    await upsertResource(resource)
+  }
   const removed = previousOwned.filter(
     (previous) =>
       !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))
   )
   if (removed.length > 0) {
     await reconcileResources([], removed)
-  }
-  for (const resource of desired) {
-    await upsertResource(resource)
   }
 }
 
@@ -632,6 +637,22 @@ export interface MissingPermission {
   verb: string
   namespace?: string
   name?: string
+}
+
+async function resourceExistsLive(resource: IResource): Promise<boolean> {
+  if (resourceExistsOnCluster(resource)) {
+    return true
+  }
+  try {
+    await getResource(withoutServerMetadata(resource)).promise
+    return true
+  } catch (err) {
+    if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
+      return false
+    }
+    // Forbidden / other errors: assume create path; upsert will surface the real failure.
+    return false
+  }
 }
 
 export async function collectMissingPermissions(resources: IResource[]): Promise<MissingPermission[]> {
@@ -643,9 +664,12 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
     const name = resource.metadata?.name
     const kind = resource.kind ?? 'Unknown'
     const definition = definitionForKind(kind) ?? resource
-    if (resourceExistsOnCluster(resource)) {
-      checks.push(rbacUpdate(definition, namespace, name), rbacPatch(definition, namespace, name))
-      labels.push({ kind, verb: 'update', namespace, name }, { kind, verb: 'patch', namespace, name })
+    // Probe the cluster when the draft has no uid (e.g. generated AppProject) so preflight matches upsert.
+    const exists = await resourceExistsLive(resource)
+    if (exists) {
+      // Upsert reads with getResource then patches — no full update verb.
+      checks.push(rbacGet(definition, namespace, name), rbacPatch(definition, namespace, name))
+      labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'patch', namespace, name })
     } else {
       checks.push(rbacCreate(definition, namespace, name))
       labels.push({ kind, verb: 'create', namespace, name })
