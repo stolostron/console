@@ -7,6 +7,7 @@ Prerequisites:
 - openpyxl library (pip install openpyxl)
 - pytorch library (pip install torch torchvision pillow)
 - playwright library (pip install playwright) (playwright install)
+- Google Chrome browser installed
 
 Usage:
   ./generate-doc-links.py [--compare] [--previous-acm-version VERSION] [--previous-ocp-version VERSION]
