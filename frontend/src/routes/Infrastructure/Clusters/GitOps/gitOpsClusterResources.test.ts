@@ -21,6 +21,7 @@ import {
   placementNameFor,
   policyNameFor,
   preferDraftManagedClusterSetBindings,
+  orderGitOpsWizardResourcesForApply,
   reconcileGitOpsWizardResources,
   stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -61,9 +62,9 @@ describe('gitOpsClusterResources', () => {
       namespace: 'openshift-gitops',
       agentEnabled: false,
     })
-    expect(resources.map((r) => r.kind)).toEqual([GitOpsClusterKind, PlacementKind])
-    expect(isAgentEnabled(resources[0] as never)).toBe(false)
-    const placement = resources[1]
+    expect(resources.map((r) => r.kind)).toEqual([PlacementKind, GitOpsClusterKind])
+    expect(isAgentEnabled(resources[1] as never)).toBe(false)
+    const placement = resources[0]
     expect(placement.metadata?.name).toBe('fleet-placement')
     expect((placement as { spec?: { predicates?: unknown[] } }).spec?.predicates).toEqual([
       {
@@ -102,16 +103,17 @@ describe('gitOpsClusterResources', () => {
       clusterSets: ['default'],
     })
     expect(resources.map((r) => r.kind)).toEqual([
-      GitOpsClusterKind,
       PlacementKind,
       'ManagedClusterSetBinding',
+      GitOpsClusterKind,
       ArgoCDKind,
       AppProjectKind,
       SubscriptionOperatorKind,
       PolicyKind,
     ])
-    expect(isAgentEnabled(resources[0] as never)).toBe(true)
-    expect(isPushModelEnabled(resources[0] as never)).toBe(false)
+    const gitOpsCluster = resources.find((r) => r.kind === GitOpsClusterKind) as never
+    expect(isAgentEnabled(gitOpsCluster)).toBe(true)
+    expect(isPushModelEnabled(gitOpsCluster)).toBe(false)
 
     const argo = resources.find((r) => r.kind === ArgoCDKind) as unknown as {
       spec: { controller: { enabled: boolean }; argoCDAgent: { principal: { auth: string; enabled: boolean } } }
@@ -383,6 +385,20 @@ describe('gitOpsClusterResources', () => {
     ).toEqual([draft])
   })
 
+  it('orders Placement and bindings before GitOpsCluster for apply', () => {
+    const ordered = orderGitOpsWizardResourcesForApply([
+      createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false }),
+      createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops' }),
+      {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+        kind: 'ManagedClusterSetBinding',
+        metadata: { name: 'default', namespace: 'openshift-gitops' },
+        spec: { clusterSet: 'default' },
+      },
+    ])
+    expect(ordered.map((r) => r.kind)).toEqual([PlacementKind, 'ManagedClusterSetBinding', GitOpsClusterKind])
+  })
+
   it('reconciles by creating missing resources and patching live ones', async () => {
     const desired = createGitOpsClusterResource({
       name: 'fleet',
@@ -413,6 +429,43 @@ describe('gitOpsClusterResources', () => {
         }),
       ],
       [live]
+    )
+  })
+
+  it('rolls back resources created in the same pass when a later upsert fails', async () => {
+    const placement = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops' })
+    const gitOpsCluster = createGitOpsClusterResource({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    // Submit out of order on purpose; apply path reorders Placement before GitOpsCluster.
+    mockGetResource
+      .mockReturnValueOnce({ promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)) })
+      .mockReturnValueOnce({ promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)) })
+    mockReconcileResources
+      .mockResolvedValueOnce(undefined) // create Placement
+      .mockRejectedValueOnce(new ResourceError(ResourceErrorCode.BadRequest, 'placement create ok, goc failed'))
+      .mockResolvedValueOnce(undefined) // rollback Placement
+
+    await expect(reconcileGitOpsWizardResources([gitOpsCluster, placement])).rejects.toMatchObject({
+      code: ResourceErrorCode.BadRequest,
+    })
+
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(
+      1,
+      [expect.objectContaining({ kind: PlacementKind })],
+      []
+    )
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(
+      2,
+      [expect.objectContaining({ kind: GitOpsClusterKind })],
+      []
+    )
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(
+      3,
+      [],
+      [expect.objectContaining({ kind: PlacementKind, metadata: expect.objectContaining({ name: 'fleet-placement' }) })]
     )
   })
 

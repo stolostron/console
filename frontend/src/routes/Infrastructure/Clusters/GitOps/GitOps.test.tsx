@@ -128,6 +128,24 @@ describe('GitOps', () => {
     expect(screen.getAllByText('-')).toHaveLength(3)
   })
 
+  it('shows placementRef as plain text when the Placement resource is missing', () => {
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(gitOpsClustersState, [resource])
+          store.set(placementsState, [])
+          store.set(managedClusterSetBindingsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <GitOps />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    expect(screen.getByText('fleet-placement (not found)')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'fleet-placement' })).not.toBeInTheDocument()
+  })
+
   it('includes all namespace bindings when the Placement does not restrict cluster sets', () => {
     renderGitOps([resource], [])
     expect(screen.getByText('actual-binding')).toBeInTheDocument()
