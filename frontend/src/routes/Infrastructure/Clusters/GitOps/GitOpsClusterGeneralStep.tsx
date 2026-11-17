@@ -45,7 +45,7 @@ export interface GitOpsClusterGeneralStepProps {
   existingBindings?: ManagedClusterSetBinding[]
 }
 
-export function GitOpsClusterGeneralStep(props: GitOpsClusterGeneralStepProps) {
+export function GitOpsClusterGeneralStep(props: Readonly<GitOpsClusterGeneralStepProps>) {
   const { t } = useTranslation()
   const { validateKubernetesResourceName } = useValidation()
 
@@ -152,12 +152,101 @@ function AgentFlagSync() {
   return null
 }
 
-function AgentResourcesSync(props: {
-  argoCDs: IResource[]
-  subscriptions: SubscriptionOperator[]
-  policies: Policy[]
-  existingBindings: ManagedClusterSetBinding[]
-}) {
+function resolveDraftAgentExtras(
+  resources: IResource[],
+  options: Readonly<{
+    name: string
+    namespace: string
+    argoCDs: IResource[]
+    subscriptions: SubscriptionOperator[]
+    policies: Policy[]
+  }>
+) {
+  const { name, namespace, argoCDs, subscriptions, policies } = options
+  // Prefer the wizard/YAML copy so rebuilds (e.g. Push toggle) do not wipe in-progress edits.
+  const argoCD =
+    (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
+      IResource | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
+  const existingPolicy =
+    (resources.find(
+      (item) =>
+        item.kind === 'Policy' &&
+        item.metadata?.namespace === namespace &&
+        item.metadata?.name === `${name}-argocd-policy`
+    ) as Policy | undefined) ??
+    policies.find(
+      (policy) => policy.metadata.namespace === namespace && policy.metadata.name === `${name}-argocd-policy`
+    )
+  const existingSubscription =
+    (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined) ??
+    subscriptions.find(
+      (subscription) =>
+        subscription.spec?.name === 'openshift-gitops-operator' ||
+        subscription.metadata?.name === 'openshift-gitops-operator'
+    )
+  const existingAppProject = resources.find(
+    (item) => item.kind === AppProjectKind && item.metadata?.namespace === namespace
+  )
+  const currentBindings = resources.filter(
+    (item) => item.kind === 'ManagedClusterSetBinding' && item.metadata?.namespace === namespace
+  ) as ManagedClusterSetBinding[]
+
+  return { argoCD, existingPolicy, existingSubscription, existingAppProject, currentBindings }
+}
+
+function applyAgentFlagsToDraft(
+  resources: IResource[],
+  options: Readonly<{ name: string; agentEnabled: boolean; pushModelEnabled: boolean }>
+) {
+  const nextGitOps = getGitOpsClusterFromResources(resources)
+  if (!nextGitOps) return
+
+  nextGitOps.metadata.name = options.name
+  nextGitOps.transformed = {
+    pushModelEnabled: options.agentEnabled ? options.pushModelEnabled : false,
+  }
+  if (options.agentEnabled) {
+    const existingAddon = nextGitOps.spec?.gitopsAddon
+    nextGitOps.spec = {
+      ...nextGitOps.spec,
+      gitopsAddon: {
+        ...existingAddon,
+        enabled: true,
+        argoCDAgent: { ...existingAddon?.argoCDAgent, enabled: true },
+      },
+    }
+    return
+  }
+  if (nextGitOps.spec) {
+    delete nextGitOps.spec.gitopsAddon
+  }
+}
+
+function preservePlacementDraftEdits(resources: IResource[], placement: PlacementResource | undefined) {
+  if (!placement) return
+  const nextPlacement = getPlacementFromResources(resources)
+  if (!nextPlacement) return
+
+  nextPlacement.spec = { ...placement.spec, ...nextPlacement.spec }
+  if (placement.spec?.predicates) {
+    nextPlacement.spec.predicates = placement.spec.predicates
+  }
+  if (placement.spec?.tolerations) {
+    nextPlacement.spec.tolerations = placement.spec.tolerations
+  }
+  if (placement.spec?.clusterSets) {
+    nextPlacement.spec.clusterSets = placement.spec.clusterSets
+  }
+}
+
+function AgentResourcesSync(
+  props: Readonly<{
+    argoCDs: IResource[]
+    subscriptions: SubscriptionOperator[]
+    policies: Policy[]
+    existingBindings: ManagedClusterSetBinding[]
+  }>
+) {
   const resources = useItem() as IResource[]
   const { update } = useData()
   const gitOpsCluster = getGitOpsClusterFromResources(resources)
@@ -177,40 +266,18 @@ function AgentResourcesSync(props: {
     const syncKey = `${name}|${namespace}|${agentEnabled}|${pushModelEnabled}|${clusterSetsKey}|${resources
       .map((r) => r.kind)
       .join(',')}`
-    const expectsAgentKinds = agentEnabled
-    const hasAgentKinds = resources.some((r) => r.kind === ArgoCDKind)
-    const needsRebuild = syncKey !== lastKey.current || expectsAgentKinds !== hasAgentKinds
+    const needsRebuild = syncKey !== lastKey.current || agentEnabled !== resources.some((r) => r.kind === ArgoCDKind)
     if (!needsRebuild) return
 
     const clusterSets = clusterSetsKey ? clusterSetsKey.split(',') : []
-    // Prefer the wizard/YAML copy so rebuilds (e.g. Push toggle) do not wipe in-progress edits.
-    // Fall back to live Recoil resources only when the draft does not include that kind yet.
-    const argoCD =
-      (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
-        IResource | undefined) ?? findArgoCDInNamespace(props.argoCDs, namespace)
-    const existingPolicy =
-      (resources.find(
-        (item) =>
-          item.kind === 'Policy' &&
-          item.metadata?.namespace === namespace &&
-          item.metadata?.name === `${name}-argocd-policy`
-      ) as Policy | undefined) ??
-      props.policies.find(
-        (policy) => policy.metadata.namespace === namespace && policy.metadata.name === `${name}-argocd-policy`
-      )
-    const existingSubscription =
-      (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined) ??
-      props.subscriptions.find(
-        (subscription) =>
-          subscription.spec?.name === 'openshift-gitops-operator' ||
-          subscription.metadata?.name === 'openshift-gitops-operator'
-      )
-    const existingAppProject = resources.find(
-      (item) => item.kind === AppProjectKind && item.metadata?.namespace === namespace
-    )
-    const currentBindings = resources.filter(
-      (item) => item.kind === 'ManagedClusterSetBinding' && item.metadata?.namespace === namespace
-    ) as ManagedClusterSetBinding[]
+    const { argoCD, existingPolicy, existingSubscription, existingAppProject, currentBindings } =
+      resolveDraftAgentExtras(resources, {
+        name,
+        namespace,
+        argoCDs: props.argoCDs,
+        subscriptions: props.subscriptions,
+        policies: props.policies,
+      })
 
     const next = buildGitOpsClusterResources({
       name: name || 'gitopscluster',
@@ -233,41 +300,8 @@ function AgentResourcesSync(props: {
       includeBindings: true,
     })
 
-    const nextGitOps = getGitOpsClusterFromResources(next)
-    if (nextGitOps) {
-      nextGitOps.metadata.name = name
-      nextGitOps.transformed = { pushModelEnabled: agentEnabled ? pushModelEnabled : false }
-      if (agentEnabled) {
-        const existingAddon = nextGitOps.spec?.gitopsAddon
-        nextGitOps.spec = {
-          ...nextGitOps.spec,
-          gitopsAddon: {
-            ...existingAddon,
-            enabled: true,
-            argoCDAgent: { ...existingAddon?.argoCDAgent, enabled: true },
-          },
-        }
-      } else if (nextGitOps.spec) {
-        delete nextGitOps.spec.gitopsAddon
-      }
-    }
-
-    // Preserve Placement user edits (predicates/tolerations/clusterSets) from current placement
-    if (placement) {
-      const nextPlacement = getPlacementFromResources(next)
-      if (nextPlacement) {
-        nextPlacement.spec = { ...placement.spec, ...nextPlacement.spec }
-        if (placement.spec?.predicates) {
-          nextPlacement.spec.predicates = placement.spec.predicates
-        }
-        if (placement.spec?.tolerations) {
-          nextPlacement.spec.tolerations = placement.spec.tolerations
-        }
-        if (placement.spec?.clusterSets) {
-          nextPlacement.spec.clusterSets = placement.spec.clusterSets
-        }
-      }
-    }
+    applyAgentFlagsToDraft(next, { name, agentEnabled, pushModelEnabled })
+    preservePlacementDraftEdits(next, placement as PlacementResource | undefined)
 
     lastKey.current = `${name}|${namespace}|${agentEnabled}|${pushModelEnabled}|${clusterSetsKey}|${next
       .map((r) => r.kind)

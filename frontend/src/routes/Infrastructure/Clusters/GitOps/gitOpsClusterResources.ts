@@ -242,7 +242,8 @@ export function createManagedClusterSetBindings(options: {
 }
 
 function cloneResource<T>(value: T): T {
-  return JSON.parse(JSON.stringify(value)) as T
+  // Store/atom values may be Proxies; structuredClone cannot clone them (Sonar S7784).
+  return JSON.parse(JSON.stringify(value)) as T // NOSONAR
 }
 
 export function findArgoCDInNamespace(argoCDs: IResource[], namespace: string): IResource | undefined {
@@ -657,10 +658,11 @@ export async function reconcileGitOpsWizardResources(
   desired: IResource[],
   previousOwned: IResource[] = []
 ): Promise<void> {
-  // Apply desired resources first so a failed upsert does not leave deletions already applied.
-  for (const resource of desired) {
-    await upsertResource(resource)
-  }
+  // Apply desired resources first (sequentially) so a failed upsert does not leave deletions already applied.
+  await desired.reduce<Promise<void>>(
+    (previous, resource) => previous.then(() => upsertResource(resource)),
+    Promise.resolve()
+  )
   const removed = previousOwned.filter(
     (previous) =>
       !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))
@@ -695,17 +697,18 @@ async function resourceExistsLive(resource: IResource): Promise<boolean> {
 }
 
 export async function collectMissingPermissions(resources: IResource[]): Promise<MissingPermission[]> {
+  // Probe existence up front (Forbidden / non-NotFound errors propagate and stop preflight).
+  const existenceFlags = await Promise.all(resources.map((resource) => resourceExistsLive(resource)))
+
   const checks: Promise<import('~/resources/self-subject-access-review').ResourceAttributes>[] = []
   const labels: MissingPermission[] = []
 
-  for (const resource of resources) {
+  resources.forEach((resource, index) => {
     const namespace = resource.metadata?.namespace
     const name = resource.metadata?.name
     const kind = resource.kind ?? 'Unknown'
     const definition = definitionForKind(kind) ?? resource
-    // Probe the cluster when the draft has no uid (e.g. generated AppProject) so preflight matches upsert.
-    const exists = await resourceExistsLive(resource)
-    if (exists) {
+    if (existenceFlags[index]) {
       // Upsert reads with getResource then patches — no full update verb.
       checks.push(rbacGet(definition, namespace, name), rbacPatch(definition, namespace, name))
       labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'patch', namespace, name })
@@ -714,7 +717,7 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
       checks.push(rbacGet(definition, namespace, name), rbacCreate(definition, namespace, name))
       labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'create', namespace, name })
     }
-  }
+  })
 
   const attributes = await Promise.all(checks)
   const results = await Promise.all(attributes.map((attribute) => createSubjectAccessReview(attribute).promise))

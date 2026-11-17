@@ -17,19 +17,28 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
 import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '~/NavigationPath'
 import type { IResource } from '~/resources'
-import { NamespaceApiVersion, NamespaceKind } from '~/resources/namespace'
+import { NamespaceApiVersion, NamespaceKind, type Namespace } from '~/resources/namespace'
+import type * as GitOpsResources from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { CreateGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/CreateGitOpsCluster'
 import { AcmToastContext } from '~/ui-components'
 
-const mockCollectMissingPermissions = jest.fn(async () => [])
-const mockReconcileGitOpsWizardResources = jest.fn(async () => undefined)
+const mockCollectMissingPermissions = jest.fn<
+  ReturnType<typeof GitOpsResources.collectMissingPermissions>,
+  Parameters<typeof GitOpsResources.collectMissingPermissions>
+>(async () => [])
+const mockReconcileGitOpsWizardResources = jest.fn<
+  ReturnType<typeof GitOpsResources.reconcileGitOpsWizardResources>,
+  Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>
+>(async () => undefined)
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
   const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources')
   return {
     ...actual,
-    collectMissingPermissions: (...args: unknown[]) => mockCollectMissingPermissions(...args),
-    reconcileGitOpsWizardResources: (...args: unknown[]) => mockReconcileGitOpsWizardResources(...args),
+    collectMissingPermissions: (...args: Parameters<typeof GitOpsResources.collectMissingPermissions>) =>
+      mockCollectMissingPermissions(...args),
+    reconcileGitOpsWizardResources: (...args: Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>) =>
+      mockReconcileGitOpsWizardResources(...args),
   }
 })
 
@@ -77,7 +86,7 @@ function createMockLostChangesContext(submitForm = jest.fn(), cancelForm = jest.
   }
 }
 
-const mockNamespace = {
+const mockNamespace: Namespace = {
   apiVersion: NamespaceApiVersion,
   kind: NamespaceKind,
   metadata: { name: 'openshift-gitops' },

@@ -26,7 +26,7 @@ export function getPlacementMatchErrorDetail(error: Error | undefined, t: Transl
     return t('An unknown error occurred.')
   }
 
-  const statusMatch = error.message.match(/^(\d{3})\b/)
+  const statusMatch = /^(\d{3})\b/.exec(error.message)
   const statusCode = statusMatch ? Number(statusMatch[1]) : undefined
 
   switch (statusCode) {

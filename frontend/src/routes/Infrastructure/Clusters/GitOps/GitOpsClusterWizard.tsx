@@ -43,7 +43,7 @@ export interface GitOpsClusterWizardProps {
   existingBindings?: ManagedClusterSetBinding[]
 }
 
-export function GitOpsClusterWizard(props: GitOpsClusterWizardProps) {
+export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
   const { t } = useTranslation()
   const editMode = props.resources && props.resources.length > 0 ? EditMode.Edit : EditMode.Create
 
@@ -118,11 +118,13 @@ function LocalClusterPlacementAlert() {
   )
 }
 
-function PlacementStepContent(props: {
-  clusterSets: IResource[]
-  clusterSetBindings: IClusterSetBinding[]
-  clusters: IResource[]
-}) {
+function PlacementStepContent(
+  props: Readonly<{
+    clusterSets: IResource[]
+    clusterSetBindings: IClusterSetBinding[]
+    clusters: IResource[]
+  }>
+) {
   const { t } = useTranslation()
   const placement = useItem() as IPlacement
   const namespace = placement?.metadata?.namespace

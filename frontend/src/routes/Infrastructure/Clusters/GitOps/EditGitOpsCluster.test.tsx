@@ -20,20 +20,29 @@ import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '~/NavigationPath'
 import type { IResource } from '~/resources'
 import { GitOpsClusterApiVersion, GitOpsClusterKind, type GitOpsCluster } from '~/resources/gitops-cluster'
-import { NamespaceApiVersion, NamespaceKind } from '~/resources/namespace'
+import { NamespaceApiVersion, NamespaceKind, type Namespace } from '~/resources/namespace'
 import { PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
+import type * as GitOpsResources from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { EditGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/EditGitOpsCluster'
 import { AcmToastContext } from '~/ui-components'
 
-const mockCollectMissingPermissions = jest.fn(async () => [])
-const mockReconcileGitOpsWizardResources = jest.fn(async () => undefined)
+const mockCollectMissingPermissions = jest.fn<
+  ReturnType<typeof GitOpsResources.collectMissingPermissions>,
+  Parameters<typeof GitOpsResources.collectMissingPermissions>
+>(async () => [])
+const mockReconcileGitOpsWizardResources = jest.fn<
+  ReturnType<typeof GitOpsResources.reconcileGitOpsWizardResources>,
+  Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>
+>(async () => undefined)
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
   const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources')
   return {
     ...actual,
-    collectMissingPermissions: (...args: unknown[]) => mockCollectMissingPermissions(...args),
-    reconcileGitOpsWizardResources: (...args: unknown[]) => mockReconcileGitOpsWizardResources(...args),
+    collectMissingPermissions: (...args: Parameters<typeof GitOpsResources.collectMissingPermissions>) =>
+      mockCollectMissingPermissions(...args),
+    reconcileGitOpsWizardResources: (...args: Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>) =>
+      mockReconcileGitOpsWizardResources(...args),
   }
 })
 
@@ -117,7 +126,11 @@ function renderEdit(options?: {
       <StateProvider
         initializeStore={(store) => {
           store.set(namespacesState, [
-            { apiVersion: NamespaceApiVersion, kind: NamespaceKind, metadata: { name: 'openshift-gitops' } },
+            {
+              apiVersion: NamespaceApiVersion,
+              kind: NamespaceKind,
+              metadata: { name: 'openshift-gitops' },
+            } satisfies Namespace,
           ])
           store.set(argoCDsState, [
             {
@@ -125,7 +138,7 @@ function renderEdit(options?: {
               kind: 'ArgoCD',
               metadata: { name: 'openshift-gitops', namespace: 'openshift-gitops', uid: 'argo-uid' },
               spec: { controller: { enabled: true } },
-            },
+            } as IResource,
           ])
           store.set(gitOpsClustersState, options?.gitOpsClusters ?? [mockGitOpsCluster])
           store.set(placementsState, [mockPlacement as never])
