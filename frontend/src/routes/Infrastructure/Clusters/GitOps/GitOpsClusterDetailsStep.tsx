@@ -6,15 +6,38 @@ import {
   useData,
   useItem,
   WizCheckbox,
+  WizCustomWrapper,
   WizHidden,
   WizItemSelector,
   WizSingleSelect,
   WizTextInput,
 } from '@patternfly-labs/react-form-wizard'
-import { Alert, List, ListItem } from '@patternfly/react-core'
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Content,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
+  Gallery,
+  GalleryItem,
+  Label,
+  List,
+  ListItem,
+  Stack,
+  StackItem,
+} from '@patternfly/react-core'
+import { ExternalLinkAltIcon } from '@patternfly/react-icons'
 import { useEffect, useRef, useState } from 'react'
 import { useValidation } from '~/hooks/useValidation'
 import { useTranslation } from '~/lib/acm-i18next'
+import { DOC_LINKS } from '~/lib/doc-util'
 import type { IResource } from '~/resources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
@@ -36,7 +59,7 @@ import {
   type MissingPermission,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 
-export interface GitOpsClusterGeneralStepProps {
+export interface GitOpsClusterDetailsStepProps {
   namespaces: string[]
   editMode: EditMode
   argoCDs: IResource[]
@@ -45,7 +68,24 @@ export interface GitOpsClusterGeneralStepProps {
   existingBindings?: ManagedClusterSetBinding[]
 }
 
-export function GitOpsClusterGeneralStep(props: Readonly<GitOpsClusterGeneralStepProps>) {
+type PullModelId = 'agent' | 'manifestwork'
+
+interface PullModelComparisonRow {
+  term: string
+  description: string
+}
+
+interface PullModelOption {
+  id: PullModelId
+  title: string
+  description: string
+  recommended?: boolean
+  rows: PullModelComparisonRow[]
+  learnMoreHref: string
+  learnMoreLabel: string
+}
+
+export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsStepProps>) {
   const { t } = useTranslation()
   const { validateKubernetesResourceName } = useValidation()
 
@@ -53,7 +93,7 @@ export function GitOpsClusterGeneralStep(props: Readonly<GitOpsClusterGeneralSte
     <>
       <GitOpsPermissionAlert />
       <WizItemSelector selectKey="kind" selectValue={GitOpsClusterKind}>
-        <Section label={t('General')}>
+        <Section label={t('Details')}>
           <WizTextInput
             label={t('Name')}
             id="name"
@@ -73,14 +113,7 @@ export function GitOpsClusterGeneralStep(props: Readonly<GitOpsClusterGeneralSte
             disabled={props.editMode === EditMode.Edit}
             helperText={t('Select the namespace of the hub Argo CD instance.')}
           />
-          <WizCheckbox
-            id="enable-argo-agent"
-            path="spec.gitopsAddon.enabled"
-            label={t('Enable Argo CD Agent')}
-            helperText={t(
-              'Enables Argo CD Agent managed mode and includes hub Argo CD, AppProject, operator Subscription, and Policy resources in the YAML editor.'
-            )}
-          />
+          <PullModelSelector />
           <WizHidden hidden={(item: GitOpsClusterWizardData) => item?.spec?.gitopsAddon?.enabled !== true}>
             <WizCheckbox
               id="enable-push-model"
@@ -102,6 +135,211 @@ export function GitOpsClusterGeneralStep(props: Readonly<GitOpsClusterGeneralSte
         existingBindings={props.existingBindings ?? []}
       />
     </>
+  )
+}
+
+function PullModelSelector() {
+  const { t } = useTranslation()
+  // Inside WizItemSelector the item is the GitOpsCluster, not the resources array.
+  const gitOpsCluster = useItem() as GitOpsClusterWizardData
+  const { update } = useData()
+  const agentEnabled = gitOpsCluster?.spec?.gitopsAddon?.enabled === true
+  const selected: PullModelId = agentEnabled ? 'agent' : 'manifestwork'
+
+  const options: PullModelOption[] = [
+    {
+      id: 'agent',
+      title: t('Argo CD Agent pull'),
+      description: t('Future-proof, high-performance architecture built for massive scale.'),
+      recommended: true,
+      rows: [
+        {
+          term: t('Scale & performance'),
+          description: t(
+            'High performance. Offloads processing to managed clusters for improved scalability.'
+          ),
+        },
+        {
+          term: t('Feature experience'),
+          description: t('Native experience. Delivers real-time status updates and a richer feature set.'),
+        },
+        {
+          term: t('Cluster footprint'),
+          description: t('Optimized agent footprint with a dedicated component on managed clusters.'),
+        },
+        {
+          term: t('Setup & integration'),
+          description: t(
+            'Advanced integration. Establishes gRPC communication channel between hub and managed clusters.'
+          ),
+        },
+      ],
+      learnMoreHref: DOC_LINKS.GITOPS_CLUSTER_AGENT_PULL,
+      learnMoreLabel: t('Learn more about Argo CD Agent pull'),
+    },
+    {
+      id: 'manifestwork',
+      title: t('Argo CD ManifestWork pull'),
+      description: t(
+        'Legacy, plug-and-play setup that utilizes your existing framework without adding new agent components.'
+      ),
+      rows: [
+        {
+          term: t('Scale & performance'),
+          description: t('Standard performance. Uses hub-side processing through the ManifestWork framework.'),
+        },
+        {
+          term: t('Feature experience'),
+          description: t('Basic experience. Provides essential status reporting with limited real-time updates.'),
+        },
+        {
+          term: t('Cluster footprint'),
+          description: t('Minimal footprint. No additional agent components on managed clusters.'),
+        },
+        {
+          term: t('Setup & integration'),
+          description: t('Plug-and-play. Uses the existing ManifestWork framework with no extra setup.'),
+        },
+      ],
+      learnMoreHref: DOC_LINKS.GITOPS_REGISTER,
+      learnMoreLabel: t('Learn more about Argo CD ManifestWork pull'),
+    },
+  ]
+
+  const selectedOption = options.find((option) => option.id === selected) ?? options[1]
+
+  const setPullModel = (model: PullModelId) => {
+    if (!gitOpsCluster || model === selected) return
+
+    if (model === 'manifestwork') {
+      if (gitOpsCluster.spec) {
+        delete gitOpsCluster.spec.gitopsAddon
+      }
+      gitOpsCluster.transformed = { ...gitOpsCluster.transformed, pushModelEnabled: false }
+    } else {
+      gitOpsCluster.spec = {
+        ...gitOpsCluster.spec,
+        gitopsAddon: {
+          ...gitOpsCluster.spec?.gitopsAddon,
+          enabled: true,
+          argoCDAgent: {
+            ...gitOpsCluster.spec?.gitopsAddon?.argoCDAgent,
+            enabled: true,
+          },
+        },
+      }
+    }
+    update()
+  }
+
+  return (
+    <WizCustomWrapper
+      id="pull-model-configuration"
+      path="spec.gitopsAddon.enabled"
+      label={t('Pull model configuration')}
+      value={selectedOption.title}
+    >
+      <Stack hasGutter>
+        <StackItem>
+          <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('Select Pull model configuration')}</span>
+          <Content component="p">
+            {t(
+              'Select the Pull model this GitOps configuration will use. The Pull model defines where ApplicationSet reconciliation and status reporting occur.'
+            )}
+          </Content>
+        </StackItem>
+        <StackItem>
+          <Gallery hasGutter minWidths={{ default: '280px' }}>
+            {options.map((option) => (
+              <GalleryItem key={option.id}>
+                <PullModelCard
+                  option={option}
+                  isSelected={selected === option.id}
+                  onSelect={() => setPullModel(option.id)}
+                />
+              </GalleryItem>
+            ))}
+          </Gallery>
+        </StackItem>
+      </Stack>
+    </WizCustomWrapper>
+  )
+}
+
+function PullModelCard(
+  props: Readonly<{
+    option: PullModelOption
+    isSelected: boolean
+    onSelect: () => void
+  }>
+) {
+  const { t } = useTranslation()
+  const { option, isSelected, onSelect } = props
+  const cardId = `pull-model-${option.id}`
+
+  return (
+    <Card
+      id={cardId}
+      isFullHeight
+      isSelectable
+      isSelected={isSelected}
+      isClicked={isSelected}
+      onClick={onSelect}
+      style={{ height: '100%' }}
+    >
+      <CardHeader
+        selectableActions={{
+          selectableActionId: `${cardId}-select`,
+          selectableActionAriaLabelledby: cardId,
+          name: 'pull-model-configuration',
+          variant: 'single',
+          isHidden: true,
+          onChange: onSelect,
+        }}
+        actions={
+          option.recommended
+            ? {
+                actions: <Label color="blue">{t('Recommended')}</Label>,
+                hasNoOffset: true,
+              }
+            : undefined
+        }
+      >
+        <CardTitle>{option.title}</CardTitle>
+      </CardHeader>
+      <CardBody>
+        <Stack hasGutter>
+          <StackItem>
+            <Content component="p">{option.description}</Content>
+          </StackItem>
+          <StackItem>
+            <DescriptionList isCompact>
+              {option.rows.map((row) => (
+                <DescriptionListGroup key={`${option.id}-${row.term}`}>
+                  <DescriptionListTerm>{row.term}</DescriptionListTerm>
+                  <DescriptionListDescription>{row.description}</DescriptionListDescription>
+                </DescriptionListGroup>
+              ))}
+            </DescriptionList>
+          </StackItem>
+        </Stack>
+      </CardBody>
+      <CardFooter>
+        <Button
+          variant="link"
+          isInline
+          component="a"
+          href={option.learnMoreHref}
+          target="_blank"
+          rel="noreferrer"
+          icon={<ExternalLinkAltIcon />}
+          iconPosition="right"
+          onClick={(event) => event.stopPropagation()}
+        >
+          {option.learnMoreLabel}
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }
 
@@ -166,7 +404,8 @@ function resolveDraftAgentExtras(
   // Prefer the wizard/YAML copy so rebuilds (e.g. Push toggle) do not wipe in-progress edits.
   const argoCD =
     (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
-      IResource | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
+      | IResource
+      | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
   const existingPolicy =
     (resources.find(
       (item) =>
@@ -255,7 +494,7 @@ function AgentResourcesSync(
 
   const name = gitOpsCluster?.metadata?.name ?? ''
   const namespace = gitOpsCluster?.metadata?.namespace ?? ''
-  // Checkbox path is the source of truth; argoCDAgent.enabled is synced by AgentFlagSync
+  // Card selection is the source of truth; argoCDAgent.enabled is synced by AgentFlagSync
   const agentEnabled = gitOpsCluster?.spec?.gitopsAddon?.enabled === true
   const pushModelEnabled = isPushModelEnabled(gitOpsCluster)
   const clusterSetsKey = (placement?.spec?.clusterSets ?? []).join(',')

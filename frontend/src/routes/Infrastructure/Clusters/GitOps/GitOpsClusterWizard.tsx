@@ -24,7 +24,7 @@ import { IPlacement } from '~/wizards/common/resources/IPlacement'
 import { Placement as PlacementFields } from '~/wizards/Placement/Placement'
 import { WizardPage } from '~/wizards/WizardPage'
 import { buildGitOpsClusterResources } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
-import { GitOpsClusterGeneralStep } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterGeneralStep'
+import { GitOpsClusterDetailsStep } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterDetailsStep'
 
 export interface GitOpsClusterWizardProps {
   breadcrumb?: { text: string; to?: string }[]
@@ -74,8 +74,8 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
       yamlEditor={props.yamlEditor}
       defaultData={defaultData}
     >
-      <Step label={t('General')} id="general">
-        <GitOpsClusterGeneralStep
+      <Step label={t('Details')} id="details">
+        <GitOpsClusterDetailsStep
           namespaces={props.namespaces}
           editMode={editMode}
           argoCDs={props.argoCDs}
@@ -84,9 +84,9 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
           existingBindings={props.existingBindings}
         />
       </Step>
-      <Step label={t('Placement')} id="placement">
+      <Step label={t('Target clusters')} id="target-clusters">
         <WizItemSelector selectKey="kind" selectValue={PlacementKind}>
-          <Section label={t('Placement')}>
+          <Section label={t('Target clusters')}>
             <LocalClusterPlacementAlert />
             <PlacementStepContent
               clusterSets={props.clusterSets}
