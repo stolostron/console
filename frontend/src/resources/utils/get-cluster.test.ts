@@ -157,6 +157,12 @@ const conditionCuratorFailedUpdate = {
   status: 'True',
   type: 'clustercurator-job',
 }
+const conditionPosthookRunning = {
+  message: 'Executing init container posthook-ansiblejob',
+  reason: 'Job_has_finished',
+  status: 'False',
+  type: 'posthook-ansiblejob',
+}
 
 const mockClusterCuratorUpdating: ClusterCurator = {
   ...mockClusterCurator,
@@ -252,15 +258,7 @@ const mockClusterCuratorUpgradePosthookRunning: ClusterCurator = {
     },
   },
   status: {
-    conditions: [
-      conditionCuratorJobRunning,
-      {
-        message: 'posthook-ansiblejob is running',
-        reason: 'Job_has_finished',
-        status: 'False',
-        type: 'posthook-ansiblejob',
-      },
-    ],
+    conditions: [conditionCuratorJobRunning, conditionPosthookRunning],
   },
 }
 
@@ -1223,12 +1221,7 @@ describe('getDistributionInfo', () => {
     const clusterCurator: ClusterCurator = {
       ...mockClusterCuratorUpgradePosthookRunning,
       status: {
-        conditions: [
-          conditionCuratorFailedUpdate,
-          ...(mockClusterCuratorUpgradePosthookRunning.status?.conditions.filter(
-            (condition) => condition.type !== 'clustercurator-job'
-          ) ?? []),
-        ],
+        conditions: [conditionCuratorFailedUpdate, conditionPosthookRunning],
       },
     }
     const d = getDistributionInfo(
@@ -1242,6 +1235,50 @@ describe('getDistributionInfo', () => {
     expect(d?.upgradeInfo.hooksInProgress).toBeTruthy()
     expect(d?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
+  it('should allow updates during channel reconciliation with a stale posthook condition', () => {
+    const clusterCurator: ClusterCurator = {
+      ...mockClusterCuratorChannelChangeRereconciling,
+      status: { conditions: [conditionCuratorJobRunning, conditionPosthookRunning] },
+    }
+    const d = getDistributionInfo(
+      mockManagedClusterInfoHasAvailableUpdates,
+      mockManagedCluster,
+      mockClusterDeployment,
+      clusterCurator
+    )
+    expect(d?.upgradeInfo.isReadyUpdates).toBe(true)
+  })
+  it.each([
+    { retryPosthook: 'installPosthook', curation: 'install', desiredUpdate: '1.2.3', isReadyUpdates: true },
+    { retryPosthook: 'upgradePosthook', curation: 'upgrade', desiredUpdate: '', isReadyUpdates: false },
+  ] as const)(
+    'should report update readiness as $isReadyUpdates during $retryPosthook',
+    ({ retryPosthook, curation, desiredUpdate, isReadyUpdates }) => {
+      const upgrade = mockClusterCuratorUpgradePosthookRunning.spec?.upgrade
+      const clusterCurator: ClusterCurator = {
+        ...mockClusterCuratorUpgradePosthookRunning,
+        operation: { retryPosthook },
+        spec: {
+          desiredCuration: 'upgrade',
+          install: { posthook: upgrade?.posthook },
+          upgrade: { ...upgrade, desiredUpdate },
+        },
+        status: {
+          conditions: [
+            { ...conditionCuratorJobRunning, message: `curator-job-retry DesiredCuration: ${curation}` },
+            conditionPosthookRunning,
+          ],
+        },
+      }
+      const d = getDistributionInfo(
+        mockManagedClusterInfoHasAvailableUpdates,
+        mockManagedCluster,
+        mockClusterDeployment,
+        clusterCurator
+      )
+      expect(d?.upgradeInfo.isReadyUpdates).toBe(isReadyUpdates)
+    }
+  )
   it('should not return upgrading for 3.11 clusters', () => {
     const d1 = getDistributionInfo(
       mockManagedClusterInfo311,
