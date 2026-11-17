@@ -1009,6 +1009,7 @@ export function getDistributionInfo(
     upgradeInfo.hooksInProgress =
       checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
       checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
+    const isUpgradeHookInProgress = isUpgradeCuration && !curatorIsIdle && upgradeInfo.hooksInProgress
     const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration && !curatorIsIdle
     const isSelectingChannel =
       isUpgradeCuration &&
@@ -1053,7 +1054,8 @@ export function getDistributionInfo(
       !upgradeInfo.upgradeFailed &&
       (!isManagedOpenShift || isAROClassic) &&
       !upgradeInfo.isUpgrading &&
-      curatorIsIdle
+      !isSelectingChannel &&
+      !isUpgradeHookInProgress
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
 
     upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []

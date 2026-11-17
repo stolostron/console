@@ -214,6 +214,19 @@ const mockClusterCuratorSelectingChannel: ClusterCurator = {
     conditions: [conditionCuratorJobRunning, conditionCuratorUpdating],
   },
 }
+const mockClusterCuratorChannelChangeRereconciling: ClusterCurator = {
+  ...mockClusterCurator,
+  spec: {
+    desiredCuration: 'upgrade',
+    upgrade: {
+      channel: 'stable-1.2',
+      desiredUpdate: '',
+    },
+  },
+  status: {
+    conditions: [conditionCuratorJobRunning],
+  },
+}
 const mockClusterCuratorRunningOther: ClusterCurator = {
   ...mockClusterCurator,
   spec: {
@@ -221,6 +234,33 @@ const mockClusterCuratorRunningOther: ClusterCurator = {
   },
   status: {
     conditions: [conditionCuratorJobRunning],
+  },
+}
+const mockClusterCuratorUpgradePosthookRunning: ClusterCurator = {
+  ...mockClusterCurator,
+  spec: {
+    desiredCuration: 'upgrade',
+    upgrade: {
+      channel: 'stable-1.2',
+      desiredUpdate: '1.2.3',
+      posthook: [
+        {
+          name: 'job_1',
+          type: 'Job',
+        },
+      ],
+    },
+  },
+  status: {
+    conditions: [
+      conditionCuratorJobRunning,
+      {
+        message: 'posthook-ansiblejob is running',
+        reason: 'Job_has_finished',
+        status: 'False',
+        type: 'posthook-ansiblejob',
+      },
+    ],
   },
 }
 
@@ -1072,7 +1112,7 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.upgradePercentage).toEqual('11%')
     expect(d1?.upgradeInfo.isUpgrading).toBeTruthy()
   })
-  it('should return false for ready for update if curator is running, or if currently updating, or if managed by ocm', () => {
+  it('should return false for ready for update while currently updating', () => {
     const d1 = getDistributionInfo(
       mockManagedClusterInfoUpdating,
       mockManagedCluster,
@@ -1091,15 +1131,17 @@ describe('getDistributionInfo', () => {
     expect(d2?.upgradeInfo.isUpgrading).toBeTruthy()
     expect(d2?.upgradeInfo.isReadySelectChannels).toBeFalsy()
     expect(d2?.upgradeInfo.isReadyUpdates).toBeFalsy()
-    const d3 = getDistributionInfo(
+  })
+  it('should allow updates while a non-upgrade curator operation is running', () => {
+    const d = getDistributionInfo(
       mockManagedClusterInfoHasAvailableUpdates,
       mockManagedCluster,
       mockClusterDeployment,
       mockClusterCuratorRunningOther
     )
-    expect(d3?.upgradeInfo.isUpgrading).toBeFalsy()
-    expect(d3?.upgradeInfo.isReadySelectChannels).toBeFalsy()
-    expect(d3?.upgradeInfo.isReadyUpdates).toBeFalsy()
+    expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d?.upgradeInfo.isReadySelectChannels).toBeFalsy()
+    expect(d?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
   it('should return false for ready to update if the cluster is managed by ocm', () => {
     const d1 = getDistributionInfo(
@@ -1152,6 +1194,53 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
     expect(d1?.upgradeInfo.currentChannel).toEqual('stable-1.2')
     expect(d1?.upgradeInfo.desiredChannel).toEqual('stable-1.3')
+  })
+  it('should allow updates when the curator re-reconciles after channel selection', () => {
+    const d = getDistributionInfo(
+      mockManagedClusterInfoHasAvailableUpdates,
+      mockManagedCluster,
+      mockClusterDeployment,
+      mockClusterCuratorChannelChangeRereconciling
+    )
+    expect(d?.upgradeInfo.isSelectingChannel).toBeFalsy()
+    expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d?.upgradeInfo.hooksInProgress).toBeFalsy()
+    expect(d?.upgradeInfo.isReadyUpdates).toBeTruthy()
+  })
+  it('should not allow updates while upgrade posthooks are running after the target version is reached', () => {
+    const d = getDistributionInfo(
+      mockManagedClusterInfoHasAvailableUpdates,
+      mockManagedCluster,
+      mockClusterDeployment,
+      mockClusterCuratorUpgradePosthookRunning
+    )
+    expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d?.upgradeInfo.isSelectingChannel).toBeFalsy()
+    expect(d?.upgradeInfo.hooksInProgress).toBeTruthy()
+    expect(d?.upgradeInfo.isReadyUpdates).toBeFalsy()
+  })
+  it('should allow updates after the curator job fails even if the posthook condition still indicates progress', () => {
+    const clusterCurator: ClusterCurator = {
+      ...mockClusterCuratorUpgradePosthookRunning,
+      status: {
+        conditions: [
+          conditionCuratorFailedUpdate,
+          ...(mockClusterCuratorUpgradePosthookRunning.status?.conditions.filter(
+            (condition) => condition.type !== 'clustercurator-job'
+          ) ?? []),
+        ],
+      },
+    }
+    const d = getDistributionInfo(
+      mockManagedClusterInfoHasAvailableUpdates,
+      mockManagedCluster,
+      mockClusterDeployment,
+      clusterCurator
+    )
+    expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d?.upgradeInfo.isSelectingChannel).toBeFalsy()
+    expect(d?.upgradeInfo.hooksInProgress).toBeTruthy()
+    expect(d?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
   it('should not return upgrading for 3.11 clusters', () => {
     const d1 = getDistributionInfo(
