@@ -201,7 +201,7 @@ function PullModelSelector() {
           description: t('Plug-and-play. Uses the existing ManifestWork framework with no extra setup.'),
         },
       ],
-      learnMoreHref: DOC_LINKS.GITOPS_REGISTER,
+      learnMoreHref: DOC_LINKS.GITOPS_CLUSTER_MANIFESTWORK_PULL,
       learnMoreLabel: t('Learn more about Argo CD ManifestWork pull'),
     },
   ]
