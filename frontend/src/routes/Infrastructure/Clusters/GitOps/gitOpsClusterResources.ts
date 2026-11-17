@@ -518,8 +518,8 @@ export interface BuildGitOpsClusterResourcesOptions {
 }
 
 /**
- * Recommended SyncEditor order:
- * [GitOpsCluster, Placement, ManagedClusterSetBinding(s)?, ArgoCD?, AppProject?, Subscription?, Policy?]
+ * Recommended SyncEditor / apply order (dependencies before GitOpsCluster):
+ * [Placement, ManagedClusterSetBinding(s)?, GitOpsCluster, ArgoCD?, AppProject?, Subscription?, Policy?]
  */
 export function buildGitOpsClusterResources(options: BuildGitOpsClusterResourcesOptions): IResource[] {
   const {
@@ -551,7 +551,8 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     clusterSets,
     existing: existingPlacement,
   })
-  const resources: IResource[] = [gitOpsCluster, placement]
+  // Placement (+ bindings) before GitOpsCluster so a failed GOC create does not leave a dangling placementRef.
+  const resources: IResource[] = [placement]
 
   const placementClusterSets = placement.spec.clusterSets ?? clusterSets
   if (includeBindings && placementClusterSets.length > 0) {
@@ -571,6 +572,8 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     )
   }
 
+  resources.push(gitOpsCluster)
+
   if (agentEnabled) {
     resources.push(
       mergeHubArgoCD(existingArgoCD, { namespace, pushEnabled: pushModelEnabled }),
@@ -585,6 +588,29 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
   }
 
   return resources
+}
+
+/** Apply Priority: Placement and bindings before GitOpsCluster; agent extras after. */
+const GITOPS_APPLY_PRIORITY: Record<string, number> = {
+  [PlacementKind]: 10,
+  [ManagedClusterSetBindingKind]: 20,
+  [GitOpsClusterKind]: 30,
+  [ArgoCDKind]: 40,
+  [AppProjectKind]: 50,
+  [SubscriptionOperatorKind]: 60,
+  [PolicyKind]: 70,
+}
+
+export function orderGitOpsWizardResourcesForApply(resources: IResource[]): IResource[] {
+  return resources
+    .map((resource, index) => ({ resource, index }))
+    .sort((a, b) => {
+      const priorityA = GITOPS_APPLY_PRIORITY[a.resource.kind ?? ''] ?? 100
+      const priorityB = GITOPS_APPLY_PRIORITY[b.resource.kind ?? ''] ?? 100
+      if (priorityA !== priorityB) return priorityA - priorityB
+      return a.index - b.index
+    })
+    .map(({ resource }) => resource)
 }
 
 export function getGitOpsClusterFromResources(resources: IResource[]): GitOpsClusterWizardData | undefined {
@@ -636,15 +662,16 @@ function withLiveIdentity(desired: IResource, live: IResource): IResource {
   return copy
 }
 
-async function upsertResource(resource: IResource): Promise<void> {
+async function upsertResource(resource: IResource): Promise<'created' | 'updated'> {
   const createBody = withoutServerMetadata(resource)
   try {
     const live = await getResource(createBody).promise
     await reconcileResources([withLiveIdentity(resource, live)], [live])
+    return 'updated'
   } catch (err) {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
       await reconcileResources([createBody], [])
-      return
+      return 'created'
     }
     throw err
   }
@@ -653,16 +680,35 @@ async function upsertResource(resource: IResource): Promise<void> {
 /**
  * Apply the wizard YAML as-is: create resources that are missing and patch resources that already exist.
  * Argo CD, AppProject, and the operator Subscription are not deleted when they drop out of the YAML.
+ * Newly created resources from a failed pass are rolled back (best effort) so Placement/GOC stay paired.
  */
 export async function reconcileGitOpsWizardResources(
   desired: IResource[],
   previousOwned: IResource[] = []
 ): Promise<void> {
-  // Apply desired resources first (sequentially) so a failed upsert does not leave deletions already applied.
-  await desired.reduce<Promise<void>>(
-    (previous, resource) => previous.then(() => upsertResource(resource)),
-    Promise.resolve()
-  )
+  const ordered = orderGitOpsWizardResourcesForApply(desired)
+  const createdInThisPass: IResource[] = []
+
+  try {
+    // Apply desired resources sequentially so a failed upsert does not leave deletions already applied.
+    for (const resource of ordered) {
+      const result = await upsertResource(resource)
+      if (result === 'created') {
+        createdInThisPass.push(withoutServerMetadata(resource))
+      }
+    }
+  } catch (err) {
+    if (createdInThisPass.length > 0) {
+      try {
+        // Reverse order: undo GitOpsCluster before Placement when both were created this pass.
+        await reconcileResources([], [...createdInThisPass].reverse())
+      } catch {
+        // Prefer surfacing the original apply failure over a rollback error.
+      }
+    }
+    throw err
+  }
+
   const removed = previousOwned.filter(
     (previous) =>
       !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))

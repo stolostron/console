@@ -248,15 +248,17 @@ function GitOpsOverview({
                   <DescriptionListGroup>
                     <DescriptionListTerm>{t('Placement')}</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {placementName ? (
+                      {placement ? (
                         <Link
                           to={generatePath(NavigationPath.placementOverview, {
                             namespace: resource.metadata.namespace!,
-                            name: placementName,
+                            name: placement.metadata.name!,
                           })}
                         >
-                          {placementName}
+                          {placement.metadata.name}
                         </Link>
+                      ) : placementName ? (
+                        t('{{name}} (not found)', { name: placementName })
                       ) : (
                         '-'
                       )}
