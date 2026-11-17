@@ -466,9 +466,9 @@ describe('Export from policy table', () => {
     await clickElement(screen.getByText('Export all to CSV'))
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Source,Automation,Created,Description,Standards,Controls,Categories\n' +
-          '"policy-set-with-1-placement-policy","test","Enabled","inform","-","no violations: 1 cluster, violations: 0 clusters, pending: 0 clusters, unknown: 0 clusters","Local","-",-,"-","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"\n' +
-          '"policy1","test","Enabled","inform","-","-","Local","-",-,"Test policy description","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"',
+        'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Dependencies,Source,Automation,Created,Description,Standards,Controls,Categories\n' +
+          '"policy-set-with-1-placement-policy","test","Enabled","inform","-","no violations: 1 cluster, violations: 0 clusters, pending: 0 clusters, unknown: 0 clusters","-","Local","-",-,"-","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"\n' +
+          '"policy1","test","Enabled","inform","-","-","-","Local","-",-,"Test policy description","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"',
       ],
       { type: 'text/csv' }
     )
