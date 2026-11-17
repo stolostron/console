@@ -1009,7 +1009,12 @@ export function getDistributionInfo(
     upgradeInfo.hooksInProgress =
       checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
       checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
-    const isUpgradeHookInProgress = isUpgradeCuration && !curatorIsIdle && upgradeInfo.hooksInProgress
+    // The curator skips upgrade hooks without a version target. A posthook retry specifies its own operation.
+    const retryPosthook = clusterCurator?.operation?.retryPosthook
+    const canRunUpgradeHooks = retryPosthook
+      ? retryPosthook === 'upgradePosthook'
+      : isUpgradeCuration && !!desiredVersionCC
+    const isUpgradeHookInProgress = !curatorIsIdle && canRunUpgradeHooks && upgradeInfo.hooksInProgress
     const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration && !curatorIsIdle
     const isSelectingChannel =
       isUpgradeCuration &&
