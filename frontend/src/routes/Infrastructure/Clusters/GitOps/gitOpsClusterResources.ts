@@ -816,6 +816,46 @@ export function stripTransformedFields(resources: IResource[]): IResource[] {
   })
 }
 
+/**
+ * Wizard/YAML sync can drop the Placement document while leaving placementRef on the GitOpsCluster.
+ * Re-attach a Placement before apply so create never succeeds with a dangling placementRef.
+ */
+export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[] {
+  const stripped = stripTransformedFields(resources)
+  const gitOpsCluster = getGitOpsClusterFromResources(stripped)
+  if (!gitOpsCluster) {
+    return orderGitOpsWizardResourcesForApply(stripped)
+  }
+
+  const namespace = gitOpsCluster.metadata?.namespace ?? ''
+  const name = gitOpsCluster.metadata?.name ?? ''
+  const placementRefName = gitOpsCluster.spec?.placementRef?.name || placementNameFor(name)
+
+  if (!gitOpsCluster.spec) {
+    gitOpsCluster.spec = {}
+  }
+  gitOpsCluster.spec.placementRef = {
+    ...gitOpsCluster.spec.placementRef,
+    kind: PlacementKind,
+    apiVersion: PlacementApiVersionBeta,
+    name: placementRefName,
+  }
+
+  const existingPlacement = getPlacementFromResources(stripped)
+  if (existingPlacement) {
+    existingPlacement.metadata = {
+      ...existingPlacement.metadata,
+      name: placementRefName,
+      namespace: existingPlacement.metadata?.namespace || namespace,
+    }
+    return orderGitOpsWizardResourcesForApply(stripped)
+  }
+
+  const placement = createPlacementResource({ name, namespace })
+  placement.metadata.name = placementRefName
+  return orderGitOpsWizardResourcesForApply([...stripped, placement])
+}
+
 export function resourcesSignature(resources: IResource[]): string {
   return resources
     .map((resource) => {

@@ -164,18 +164,55 @@ describe('CreateGitOpsCluster', () => {
         apiVersion: 'apps.open-cluster-management.io/v1beta1',
         kind: 'GitOpsCluster',
         metadata: { name: 'fleet', namespace: 'openshift-gitops' },
+        spec: {
+          placementRef: {
+            kind: 'Placement',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'fleet-placement',
+          },
+        },
         transformed: { pushModelEnabled: false },
       },
     ]
 
     await mockOnSubmit?.(resources)
     expect(mockCollectMissingPermissions).toHaveBeenCalled()
-    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith([
-      expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'fleet' }) }),
-    ])
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'Placement', metadata: expect.objectContaining({ name: 'fleet-placement' }) }),
+        expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'fleet' }) }),
+      ])
+    )
     expect(addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
     expect(submitForm).toHaveBeenCalled()
     expect(await screen.findByTestId('gitops-page')).toBeInTheDocument()
+  })
+
+  it('re-attaches a missing Placement before reconcile when only GitOpsCluster is submitted', async () => {
+    renderCreate()
+    await mockOnSubmit?.([
+      {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: 'GitOpsCluster',
+        metadata: { name: 'orphan', namespace: 'openshift-gitops' },
+        spec: {
+          placementRef: {
+            kind: 'Placement',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'orphan-placement',
+          },
+        },
+      },
+    ])
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'Placement',
+          metadata: expect.objectContaining({ name: 'orphan-placement', namespace: 'openshift-gitops' }),
+        }),
+        expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'orphan' }) }),
+      ])
+    )
   })
 
   it('blocks submit when permissions are missing', async () => {

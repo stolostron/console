@@ -26,6 +26,7 @@ import { AcmToastContext } from '~/ui-components'
 import {
   buildGitOpsClusterResources,
   collectMissingPermissions,
+  ensureGitOpsClusterPlacement,
   findGitOpsOperatorSubscription,
   formatMissingPermissions,
   isAgentEnabled,
@@ -192,7 +193,7 @@ export function EditGitOpsCluster() {
       resources={existingResources}
       yamlEditor={getWizardSyncEditor}
       onSubmit={async (data) => {
-        const resources = stripTransformedFields(data as IResource[]) as IResource[]
+        const resources = ensureGitOpsClusterPlacement(data as IResource[])
         const missing = await collectMissingPermissions(resources)
         if (missing.length > 0) {
           toast.addAlert({

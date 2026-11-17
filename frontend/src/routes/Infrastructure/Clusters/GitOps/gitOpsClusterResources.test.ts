@@ -21,6 +21,7 @@ import {
   placementNameFor,
   policyNameFor,
   preferDraftManagedClusterSetBindings,
+  ensureGitOpsClusterPlacement,
   orderGitOpsWizardResourcesForApply,
   reconcileGitOpsWizardResources,
   stripTransformedFields,
@@ -383,6 +384,20 @@ describe('gitOpsClusterResources', () => {
         liveBindings: [live as never],
       })
     ).toEqual([draft])
+  })
+
+  it('re-attaches Placement when GitOpsCluster has placementRef but Placement is missing', () => {
+    const gitOps = createGitOpsClusterResource({
+      name: 'orphan',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    const ensured = ensureGitOpsClusterPlacement([gitOps])
+    expect(ensured.map((r) => r.kind)).toEqual([PlacementKind, GitOpsClusterKind])
+    expect(ensured[0].metadata?.name).toBe('orphan-placement')
+    expect((ensured[1] as { spec?: { placementRef?: { name?: string } } }).spec?.placementRef?.name).toBe(
+      'orphan-placement'
+    )
   })
 
   it('orders Placement and bindings before GitOpsCluster for apply', () => {

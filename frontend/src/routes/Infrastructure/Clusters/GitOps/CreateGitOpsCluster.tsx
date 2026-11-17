@@ -21,9 +21,9 @@ import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmToastContext } from '~/ui-components'
 import {
   collectMissingPermissions,
+  ensureGitOpsClusterPlacement,
   formatMissingPermissions,
   reconcileGitOpsWizardResources,
-  stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterWizard } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard'
 import schema from '~/routes/Infrastructure/Clusters/GitOps/schema.json'
@@ -117,7 +117,7 @@ export function CreateGitOpsCluster() {
       }}
       breadcrumb={[{ text: t('GitOps'), to: NavigationPath.gitOps }, { text: t('Create GitOpsCluster') }]}
       onSubmit={async (data) => {
-        const resources = stripTransformedFields(data as IResource[]) as IResource[]
+        const resources = ensureGitOpsClusterPlacement(data as IResource[])
         const missing = await collectMissingPermissions(resources)
         if (missing.length > 0) {
           toast.addAlert({
