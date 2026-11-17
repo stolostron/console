@@ -11,7 +11,7 @@ import { GitOpsClusterKind } from '~/resources/gitops-cluster'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
 import { PlacementKind } from '~/resources/placement'
 import { buildGitOpsClusterResources } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
-import { GitOpsClusterGeneralStep } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterGeneralStep'
+import { GitOpsClusterDetailsStep } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterDetailsStep'
 import { WizardPage } from '~/wizards/WizardPage'
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
@@ -34,7 +34,7 @@ const {
   buildGitOpsClusterResources: jest.Mock
 }
 
-function renderGeneralStep(options?: {
+function renderDetailsStep(options?: {
   editMode?: EditMode
   resources?: IResource[]
   namespaces?: string[]
@@ -55,15 +55,15 @@ function renderGeneralStep(options?: {
   return render(
     <MemoryRouter>
       <WizardPage
-        id="gitopscluster-general-step-test"
-        title="GitOpsCluster General"
+        id="gitopscluster-details-step-test"
+        title="GitOpsCluster Details"
         onSubmit={async () => undefined}
         onCancel={() => undefined}
         editMode={editMode}
         defaultData={defaultData}
       >
-        <Step label="General" id="general">
-          <GitOpsClusterGeneralStep
+        <Step label="Details" id="details">
+          <GitOpsClusterDetailsStep
             namespaces={namespaces}
             editMode={editMode}
             argoCDs={[
@@ -83,7 +83,7 @@ function renderGeneralStep(options?: {
   )
 }
 
-describe('GitOpsClusterGeneralStep', () => {
+describe('GitOpsClusterDetailsStep', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
     nockIgnoreRBAC()
@@ -93,12 +93,15 @@ describe('GitOpsClusterGeneralStep', () => {
     buildGitOpsClusterResourcesMock.mockClear()
   })
 
-  it('renders name, namespace, and agent checkbox accessibly', async () => {
-    const { container } = renderGeneralStep()
+  it('renders name, namespace, and pull model cards accessibly', async () => {
+    const { container } = renderDetailsStep()
 
     expect(screen.getByText('Name')).toBeInTheDocument()
     expect(screen.getByText('Namespace')).toBeInTheDocument()
-    expect(screen.getByText('Enable Argo CD Agent')).toBeInTheDocument()
+    expect(screen.getByText('Select Pull model configuration')).toBeInTheDocument()
+    expect(screen.getByText('Argo CD Agent pull')).toBeInTheDocument()
+    expect(screen.getByText('Argo CD ManifestWork pull')).toBeInTheDocument()
+    expect(screen.getByText('Recommended')).toBeInTheDocument()
     expect(screen.queryByText('Enable Push model with Argo CD Agent')).not.toBeInTheDocument()
 
     expect(
@@ -112,19 +115,19 @@ describe('GitOpsClusterGeneralStep', () => {
     ).toHaveNoViolations()
   })
 
-  it('shows push model checkbox only when Argo CD Agent is enabled', async () => {
+  it('shows push model checkbox only when Argo CD Agent pull is selected', async () => {
     const user = userEvent.setup()
-    renderGeneralStep()
+    renderDetailsStep()
 
     expect(screen.queryByText('Enable Push model with Argo CD Agent')).not.toBeInTheDocument()
 
-    await user.click(screen.getByText('Enable Argo CD Agent'))
+    await user.click(screen.getByText('Argo CD Agent pull'))
 
     expect(await screen.findByText('Enable Push model with Argo CD Agent')).toBeInTheDocument()
   })
 
   it('disables name and namespace in edit mode', async () => {
-    renderGeneralStep({
+    renderDetailsStep({
       editMode: EditMode.Edit,
       resources: buildGitOpsClusterResources({
         name: 'existing-goc',
@@ -152,7 +155,7 @@ describe('GitOpsClusterGeneralStep', () => {
       },
     ])
 
-    renderGeneralStep({
+    renderDetailsStep({
       resources: [
         {
           apiVersion: 'apps.open-cluster-management.io/v1beta1',
@@ -203,12 +206,12 @@ describe('GitOpsClusterGeneralStep', () => {
       includeBindings: true,
     })
 
-    renderGeneralStep({
+    renderDetailsStep({
       resources,
       existingBindings: [liveBinding],
     })
 
-    await user.click(screen.getByText('Enable Argo CD Agent'))
+    await user.click(screen.getByText('Argo CD Agent pull'))
 
     await waitFor(() => {
       expect(preferDraftManagedClusterSetBindings).toHaveBeenCalledWith(

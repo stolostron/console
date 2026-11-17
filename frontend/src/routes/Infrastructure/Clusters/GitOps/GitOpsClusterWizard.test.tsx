@@ -38,7 +38,7 @@ describe('GitOpsClusterWizard', () => {
     nockIgnoreRBAC()
   })
 
-  it('renders the wizard with General and Placement steps', async () => {
+  it('renders the wizard with Details and Target clusters steps', async () => {
     render(
       <MemoryRouter>
         <GitOpsClusterWizard
@@ -63,7 +63,10 @@ describe('GitOpsClusterWizard', () => {
     )
 
     expect(screen.getByText('Create GitOpsCluster')).toBeInTheDocument()
-    expect(screen.getByText('Enable Argo CD Agent')).toBeInTheDocument()
+    expect(screen.getAllByText('Details').length).toBeGreaterThan(0)
+    expect(screen.getByText('Argo CD Agent pull')).toBeInTheDocument()
+    expect(screen.getByText('Argo CD ManifestWork pull')).toBeInTheDocument()
     expect(await screen.findByText('The hub cluster cannot be included in this Placement.')).toBeInTheDocument()
+    expect(screen.getAllByText('Target clusters').length).toBeGreaterThan(0)
   })
 })
