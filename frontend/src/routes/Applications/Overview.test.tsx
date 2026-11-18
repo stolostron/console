@@ -2,6 +2,7 @@
 
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { axe } from 'jest-axe'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -56,6 +57,18 @@ import Overview from './Overview'
 import { useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 
 jest.mock('../../lib/rbac-util')
+let mockWizardCallbacks: { onCancel?: () => void; onSubmitSuccess?: () => void }[] | undefined
+jest.mock('~/routes/Infrastructure/Clusters/GitOps/CreateGitOpsCluster', () => {
+  const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/CreateGitOpsCluster')
+  return {
+    ...actual,
+    CreateGitOpsCluster: (props: { onCancel?: () => void; onSubmitSuccess?: () => void }) => {
+      if (!mockWizardCallbacks) return <actual.CreateGitOpsCluster {...props} />
+      mockWizardCallbacks.push(props)
+      return <button onClick={props.onCancel}>Cancel</button>
+    },
+  }
+})
 beforeEach(() => {
   ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
 })
@@ -559,6 +572,33 @@ describe('Create application dropdown - GitOps agent mode', () => {
     await clickElement(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByTestId('location-display').textContent).toBe('/')
+  })
+
+  test('ignores completion and cancellation callbacks from a closed GitOps wizard session', async () => {
+    mockWizardCallbacks = []
+    const user = userEvent.setup()
+    try {
+      renderOverviewWithGitOpsClusters([])
+      await waitForText('feng-remote-argo8')
+      await clickElement(screen.getByRole('button', { name: /create application/i }))
+      await clickElement(screen.getByText('Set up GitOps configuration for Argo CD Agent Pull'))
+      const previous = mockWizardCallbacks[mockWizardCallbacks.length - 1]
+      await user.keyboard('{Escape}')
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      await clickElement(screen.getByRole('button', { name: /create application/i }))
+      await clickElement(screen.getByText('Set up GitOps configuration for Argo CD Agent Pull'))
+      await act(async () => {
+        previous.onSubmitSuccess?.()
+        previous.onCancel?.()
+      })
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+      await act(async () => {
+        mockWizardCallbacks?.[mockWizardCallbacks.length - 1].onSubmitSuccess?.()
+      })
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    } finally {
+      mockWizardCallbacks = undefined
+    }
   })
 
   test.each([true, false])(

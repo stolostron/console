@@ -2,6 +2,11 @@
 
 import { getColumnValues, setColumnValues } from '~/ui-components/AcmTable/localColumnStorage'
 import { APPLICATIONS_TABLE_ID, initializeApplicationColumnOrder } from './initializeApplicationColumnOrder'
+import {
+  DEFAULT_SORT,
+  getItemWithExpiration,
+  setItemWithExpiration,
+} from '~/ui-components/AcmTable/AcmTableStateProvider'
 
 describe('Applications column order initialization', () => {
   beforeEach(() => localStorage.clear())
@@ -38,6 +43,28 @@ describe('Applications column order initialization', () => {
     expect(getColumnValues(APPLICATIONS_TABLE_ID).localSavedCols).toEqual(['name', 'type'])
   })
 
+  test.each([
+    {
+      selected: ['name', 'type', 'namespace', 'model'],
+      order: ['name', 'type', 'namespace', 'model'],
+      index: 2,
+      next: 3,
+    },
+    { selected: ['name', 'type', 'namespace'], order: ['name', 'type', 'namespace'], index: 2, next: 3 },
+    { selected: ['name', 'type', 'namespace'], order: ['name', 'type', 'namespace', 'model'], index: 2, next: 2 },
+    { selected: ['name', 'type', 'retired'], order: ['name', 'type', 'retired'], index: 2, next: 0 },
+  ])('preserves sort column identity during migration: %j', ({ selected, order, index, next }) => {
+    setColumnValues(APPLICATIONS_TABLE_ID, selected, order)
+    const key = 'applications-overview-table-state'
+    setItemWithExpiration(`${key}-sort`, JSON.stringify({ index, direction: 'desc' }))
+    setItemWithExpiration(`${key}-preFilterSort`, JSON.stringify({ index, direction: 'asc' }))
+    initializeApplicationColumnOrder()
+    expect(JSON.parse(getItemWithExpiration(`${key}-sort`)!)).toEqual(
+      next === 0 ? DEFAULT_SORT : { index: next, direction: 'desc' }
+    )
+    expect(JSON.parse(getItemWithExpiration(`${key}-preFilterSort`)!)).toEqual({ index: next, direction: 'asc' })
+  })
+
   test('preserves column reordering made after initialization', () => {
     initializeApplicationColumnOrder()
     const order = ['name', 'type', 'namespace', 'model']
@@ -46,5 +73,15 @@ describe('Applications column order initialization', () => {
     initializeApplicationColumnOrder()
 
     expect(getColumnValues(APPLICATIONS_TABLE_ID).localSavedColOrder).toEqual(order)
+  })
+
+  test('keeps an intentionally cleared search sort while migrating its pre-filter sort', () => {
+    setColumnValues(APPLICATIONS_TABLE_ID, ['name', 'type', 'namespace'], ['name', 'type', 'namespace'])
+    const key = 'applications-overview-table-state'
+    setItemWithExpiration(`${key}-sort`, '{}')
+    setItemWithExpiration(`${key}-preFilterSort`, JSON.stringify({ index: 2, direction: 'desc' }))
+    initializeApplicationColumnOrder()
+    expect(JSON.parse(getItemWithExpiration(`${key}-sort`)!)).toEqual({})
+    expect(JSON.parse(getItemWithExpiration(`${key}-preFilterSort`)!)).toEqual({ index: 3, direction: 'desc' })
   })
 })

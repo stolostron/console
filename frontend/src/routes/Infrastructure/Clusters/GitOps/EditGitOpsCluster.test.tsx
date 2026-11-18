@@ -59,17 +59,20 @@ jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () =
 let mockOnSubmit: ((data: unknown) => Promise<unknown>) | undefined
 let mockOnCancel: (() => void) | undefined
 let mockWizardResources: IResource[] | undefined
+let mockLoadExistingAppProject: (() => Promise<IResource | undefined>) | undefined
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard', () => ({
   GitOpsClusterWizard: (props: {
     title: string
     resources?: IResource[]
+    loadExistingAppProject?: () => Promise<IResource | undefined>
     onSubmit: (data: unknown) => Promise<unknown>
     onCancel: () => void
   }) => {
     mockOnSubmit = props.onSubmit
     mockOnCancel = props.onCancel
     mockWizardResources = props.resources
+    mockLoadExistingAppProject = props.loadExistingAppProject
     return <div id="gitopscluster-wizard">{props.title}</div>
   },
 }))
@@ -131,9 +134,13 @@ function renderEdit(options?: {
   const submitForm = options?.submitForm ?? jest.fn()
   const cancelForm = options?.cancelForm ?? jest.fn()
   let completeLoading: (() => void) | undefined
+  let loadPlacements: (() => void) | undefined
   function DataLoadProvider({ children }: { children: ReactNode }) {
     const [loaded, setLoaded] = useState(options?.loaded ?? true)
-    completeLoading = () => setLoaded(true)
+    completeLoading = () => {
+      loadPlacements?.()
+      setLoaded(true)
+    }
     return (
       <PluginDataContext.Provider value={{ ...defaultContext, loadCompleted: loaded }}>
         {children}
@@ -165,7 +172,9 @@ function renderEdit(options?: {
               } as IResource,
             ])
             store.set(gitOpsClustersState, options?.gitOpsClusters ?? [mockGitOpsCluster])
-            store.set(placementsState, (options?.placements ?? [mockPlacement]) as never)
+            const placements = options?.placements ?? [mockPlacement]
+            store.set(placementsState, (options?.loaded === false ? [] : placements) as never)
+            loadPlacements = () => store.set(placementsState, placements as never)
             store.set(managedClusterSetsState, [])
             store.set(managedClusterSetBindingsState, [])
             store.set(managedClustersState, [])
@@ -200,6 +209,7 @@ describe('EditGitOpsCluster', () => {
     mockOnSubmit = undefined
     mockOnCancel = undefined
     mockWizardResources = undefined
+    mockLoadExistingAppProject = undefined
     mockGetResource.mockReset()
     mockGetResource.mockImplementation(() => ({
       promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
@@ -269,6 +279,12 @@ describe('EditGitOpsCluster', () => {
     expect(mockWizardResources?.find((resource) => resource.kind === PlacementKind)?.metadata?.uid).toBe(
       'placement-uid'
     )
+    await mockOnSubmit?.(mockWizardResources ?? [])
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(Array),
+      expect.objectContaining({ baseline: expect.arrayContaining([mockPlacement]) })
+    )
   })
 
   it('rebuilds a missing Placement with its retained reference name after loading', async () => {
@@ -308,6 +324,76 @@ describe('EditGitOpsCluster', () => {
     expect(await screen.findByText('Failed to load GitOpsCluster')).toBeInTheDocument()
     expect(screen.queryByTestId('gitopscluster-wizard')).not.toBeInTheDocument()
     expect(mockReconcileGitOpsWizardResources).not.toHaveBeenCalled()
+  })
+
+  it('opens and saves ManifestWork without reading AppProject', async () => {
+    const manifestWork = { ...mockGitOpsCluster, spec: { ...mockGitOpsCluster.spec, gitopsAddon: undefined } }
+    renderEdit({ gitOpsClusters: [manifestWork] })
+    await screen.findByTestId('gitopscluster-wizard')
+    await mockOnSubmit?.(mockWizardResources ?? [])
+    expect(mockGetResource).not.toHaveBeenCalled()
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalled()
+  })
+
+  it('loads and records the AppProject when switching from ManifestWork to Agent', async () => {
+    const project = {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'AppProject',
+      metadata: { name: 'default', namespace: 'openshift-gitops', resourceVersion: '7' },
+      spec: { sourceRepos: ['https://example.com/allowed.git'] },
+    }
+    mockGetResource.mockReturnValue({ promise: Promise.resolve(project) })
+    renderEdit({
+      gitOpsClusters: [{ ...mockGitOpsCluster, spec: { ...mockGitOpsCluster.spec, gitopsAddon: undefined } }],
+    })
+    await screen.findByTestId('gitopscluster-wizard')
+    expect(mockGetResource).not.toHaveBeenCalled()
+    await act(async () => {
+      await mockLoadExistingAppProject?.()
+    })
+    await mockOnSubmit?.([mockGitOpsCluster, project])
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
+      expect.any(Array),
+      expect.any(Array),
+      expect.objectContaining({ baseline: expect.arrayContaining([project]) })
+    )
+  })
+
+  it('blocks Agent submission after a failed lookup while still allowing ManifestWork', async () => {
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.Forbidden)),
+    }))
+    renderEdit({
+      gitOpsClusters: [{ ...mockGitOpsCluster, spec: { ...mockGitOpsCluster.spec, gitopsAddon: undefined } }],
+    })
+    await screen.findByTestId('gitopscluster-wizard')
+    await expect(mockLoadExistingAppProject?.()).rejects.toMatchObject({ code: ResourceErrorCode.Forbidden })
+    await expect(mockOnSubmit?.([mockGitOpsCluster])).rejects.toMatchObject({ code: ResourceErrorCode.Forbidden })
+    expect(mockCollectMissingPermissions).not.toHaveBeenCalled()
+    expect(mockReconcileGitOpsWizardResources).not.toHaveBeenCalled()
+    await mockOnSubmit?.(mockWizardResources ?? [])
+    expect(mockReconcileGitOpsWizardResources).toHaveBeenCalled()
+  })
+
+  it('does not treat an AppProject first discovered at YAML submission as the draft baseline', async () => {
+    const project = {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'AppProject',
+      metadata: { name: 'default', namespace: 'openshift-gitops' },
+      spec: { sourceRepos: ['https://example.com/restricted.git'] },
+    }
+    mockGetResource.mockReturnValue({ promise: Promise.resolve(project) })
+    renderEdit({
+      gitOpsClusters: [{ ...mockGitOpsCluster, spec: { ...mockGitOpsCluster.spec, gitopsAddon: undefined } }],
+    })
+    await screen.findByTestId('gitopscluster-wizard')
+    // YAML may enable Agent without using the card that loads the project first.
+    await mockOnSubmit?.([mockGitOpsCluster])
+    await mockOnSubmit?.([mockGitOpsCluster])
+    for (const call of mockReconcileGitOpsWizardResources.mock.calls) {
+      expect(call[2]?.baseline?.some((resource) => resource.kind === 'AppProject')).toBe(false)
+    }
   })
 
   it('checks removed-resource delete permissions before any reconciliation', async () => {

@@ -90,9 +90,16 @@ export function getBackendUrl() {
 export async function reconcileResources(
   desiredResources: IResource[],
   existingResources: IResource[],
-  options?: { abortController?: AbortController }
+  options?: { abortController?: AbortController; requireResourceVersion?: boolean; ignoreNotFound?: boolean }
 ) {
   const abortController = options?.abortController
+  const resourcePatch = (existing: IResource, desired: IResource) => {
+    const patch = jsonpatch.compare(existing, desired)
+    if (patch.length && options?.requireResourceVersion && existing.metadata?.resourceVersion) {
+      patch.unshift({ op: 'test', path: '/metadata/resourceVersion', value: existing.metadata.resourceVersion })
+    }
+    return patch
+  }
 
   const namespaceResources = desiredResources
     .filter((desired) => !existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
@@ -136,15 +143,15 @@ export async function reconcileResources(
     for (const resource of modifiedResources) {
       const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
       if (existing) {
-        const patch = jsonpatch.compare(existing, resource)
+        const patch = resourcePatch(existing, resource)
         if (patch.length) {
-          await patchResource(existing, patch, { dryRun: true })
+          await patchResource(existing, patch, { dryRun: true }).promise
         }
       }
     }
 
     // Dry Run - Deleted Resources
-    await deleteResources(deletedResources, { dryRun: true, abortController })
+    await deleteResources(deletedResources, { dryRun: true, abortController, ignoreNotFound: options?.ignoreNotFound })
 
     // Create Resources
     await createResources(addedResources, { deleteCreatedOnError: true, abortController })
@@ -154,9 +161,9 @@ export async function reconcileResources(
       for (const resource of modifiedResources) {
         const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
         if (existing) {
-          const patch = jsonpatch.compare(existing, resource)
+          const patch = resourcePatch(existing, resource)
           if (patch.length) {
-            await patchResource(existing, patch)
+            await patchResource(existing, patch).promise
           }
         }
       }
@@ -167,7 +174,7 @@ export async function reconcileResources(
     }
 
     // Delete Resources
-    await deleteResources(deletedResources, { abortController })
+    await deleteResources(deletedResources, { abortController, ignoreNotFound: options?.ignoreNotFound })
   } catch (err) {
     if (namespaceCreated) {
       // Delete created namespaces as we have an error
@@ -232,6 +239,7 @@ export async function deleteResources(
   options?: {
     dryRun?: boolean
     abortController?: AbortController
+    ignoreNotFound?: boolean
   }
 ): Promise<void> {
   const abortController = options?.abortController
@@ -240,6 +248,10 @@ export async function deleteResources(
     abortController?.signal.addEventListener('abort', requestResult.abort)
     try {
       await requestResult.promise
+    } catch (error) {
+      if (!(options?.ignoreNotFound && error instanceof ResourceError && error.code === ResourceErrorCode.NotFound)) {
+        throw error
+      }
     } finally {
       abortController?.signal.removeEventListener('abort', requestResult.abort)
     }

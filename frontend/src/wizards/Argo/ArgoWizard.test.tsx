@@ -655,7 +655,7 @@ describe('ArgoWizard tests', () => {
 
     await waitForText('Clusters Generator', true)
     await clickByText('Add generator')
-    expect(screen.queryByText('Cluster Decision Resource generator')).not.toBeInTheDocument()
+    expect(screen.getByText('Cluster Decision Resource generator')).toBeInTheDocument()
     expect(screen.getByText('Git generator')).toBeInTheDocument()
   })
 

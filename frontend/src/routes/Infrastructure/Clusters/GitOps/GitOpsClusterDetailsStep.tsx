@@ -53,6 +53,7 @@ import {
   formatMissingPermissions,
   getGitOpsClusterFromResources,
   getPlacementFromResources,
+  isAgentEnabled,
   isPushModelEnabled,
   policyNameFor,
   preferDraftManagedClusterSetBindings,
@@ -68,6 +69,7 @@ export interface GitOpsClusterDetailsStepProps {
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
   existingAppProject?: IResource
+  loadExistingAppProject?: () => Promise<IResource | undefined>
 }
 
 type PullModelId = 'agent' | 'manifestwork'
@@ -115,8 +117,8 @@ export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsSte
             disabled={props.editMode === EditMode.Edit}
             helperText={t('Select the namespace of the hub Argo CD instance.')}
           />
-          <PullModelSelector />
-          <WizHidden hidden={(item: GitOpsClusterWizardData) => item?.spec?.gitopsAddon?.enabled !== true}>
+          <PullModelSelector loadExistingAppProject={props.loadExistingAppProject} />
+          <WizHidden hidden={(item: GitOpsClusterWizardData) => !isAgentEnabled(item)}>
             <WizCheckbox
               id="enable-push-model"
               path="transformed.pushModelEnabled"
@@ -128,9 +130,8 @@ export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsSte
           </WizHidden>
         </Section>
       </WizItemSelector>
-      {/* Keep agent flags in sync on the nested argoCDAgent path */}
-      <AgentFlagSync />
       <AgentResourcesSync
+        editMode={props.editMode}
         argoCDs={props.argoCDs}
         subscriptions={props.subscriptions}
         policies={props.policies}
@@ -141,12 +142,14 @@ export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsSte
   )
 }
 
-function PullModelSelector() {
+function PullModelSelector(props: Readonly<{ loadExistingAppProject?: () => Promise<IResource | undefined> }>) {
   const { t } = useTranslation()
   // Inside WizItemSelector the item is the GitOpsCluster, not the resources array.
   const gitOpsCluster = useItem() as GitOpsClusterWizardData
   const { update } = useData()
-  const agentEnabled = gitOpsCluster?.spec?.gitopsAddon?.enabled === true
+  const [projectError, setProjectError] = useState<Error>()
+  const selectionRequest = useRef(0)
+  const agentEnabled = isAgentEnabled(gitOpsCluster)
   const selected: PullModelId = agentEnabled ? 'agent' : 'manifestwork'
 
   const options: PullModelOption[] = [
@@ -209,12 +212,24 @@ function PullModelSelector() {
 
   const selectedOption = options.find((option) => option.id === selected) ?? options[1]
 
-  const setPullModel = (model: PullModelId) => {
+  const setPullModel = async (model: PullModelId) => {
+    const request = ++selectionRequest.current
+    setProjectError(undefined)
+    if (model === 'agent' && props.loadExistingAppProject) {
+      try {
+        await props.loadExistingAppProject()
+      } catch (error) {
+        if (request === selectionRequest.current) setProjectError(error as Error)
+        return
+      }
+    }
+    if (request !== selectionRequest.current) return
     if (!gitOpsCluster || model === selected) return
 
     if (model === 'manifestwork') {
-      if (gitOpsCluster.spec) {
-        delete gitOpsCluster.spec.gitopsAddon
+      const addon = gitOpsCluster.spec?.gitopsAddon
+      if (gitOpsCluster.spec && addon?.argoCDAgent) {
+        gitOpsCluster.spec.gitopsAddon = { ...addon, argoCDAgent: { ...addon.argoCDAgent, enabled: false } }
       }
       gitOpsCluster.transformed = { ...gitOpsCluster.transformed, pushModelEnabled: false }
     } else {
@@ -236,11 +251,16 @@ function PullModelSelector() {
   return (
     <WizCustomWrapper
       id="pull-model-configuration"
-      path="spec.gitopsAddon.enabled"
+      path="spec.gitopsAddon.argoCDAgent.enabled"
       label={t('Pull model configuration')}
       value={selectedOption.title}
     >
       <Stack hasGutter>
+        {projectError && (
+          <Alert isInline variant="danger" title={t('Failed to load AppProject')}>
+            {projectError.message}
+          </Alert>
+        )}
         <StackItem>
           <span className="pf-v6-c-form__label pf-v6-c-form__label-text">{t('Select Pull model configuration')}</span>
           <Content component="p">
@@ -344,53 +364,6 @@ function PullModelCard(
   )
 }
 
-function AgentFlagSync() {
-  const resources = useItem() as IResource[]
-  const { update } = useData()
-  const gitOpsCluster = getGitOpsClusterFromResources(resources)
-  const addonEnabled = gitOpsCluster?.spec?.gitopsAddon?.enabled === true
-  const agentFlag = gitOpsCluster?.spec?.gitopsAddon?.argoCDAgent?.enabled === true
-
-  useEffect(() => {
-    if (!gitOpsCluster) return
-    if (addonEnabled === agentFlag) return
-
-    const next = resources.map((resource) => {
-      if (resource.kind !== GitOpsClusterKind) return resource
-      const current = resource as GitOpsClusterWizardData
-      if (!addonEnabled) {
-        const clone: GitOpsClusterWizardData = {
-          ...current,
-          spec: { ...current.spec },
-          transformed: { ...current.transformed, pushModelEnabled: false },
-        }
-        if (clone.spec) {
-          delete clone.spec.gitopsAddon
-        }
-        return clone
-      }
-      return {
-        ...current,
-        spec: {
-          ...current.spec,
-          gitopsAddon: {
-            ...current.spec?.gitopsAddon,
-            enabled: true,
-            argoCDAgent: {
-              ...current.spec?.gitopsAddon?.argoCDAgent,
-              enabled: true,
-            },
-          },
-        },
-      }
-    })
-    update(next)
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- sync only when agent checkbox flags diverge
-  }, [addonEnabled, agentFlag, update])
-
-  return null
-}
-
 function resolveDraftAgentExtras(
   resources: IResource[],
   options: Readonly<{
@@ -452,9 +425,6 @@ function applyAgentFlagsToDraft(
     }
     return
   }
-  if (nextGitOps.spec) {
-    delete nextGitOps.spec.gitopsAddon
-  }
 }
 
 function preservePlacementDraftEdits(resources: IResource[], placement: PlacementResource | undefined) {
@@ -476,6 +446,7 @@ function preservePlacementDraftEdits(resources: IResource[], placement: Placemen
 
 function AgentResourcesSync(
   props: Readonly<{
+    editMode: EditMode
     argoCDs: IResource[]
     subscriptions: SubscriptionOperator[]
     policies: Policy[]
@@ -492,13 +463,16 @@ function AgentResourcesSync(
 
   const name = gitOpsCluster?.metadata?.name ?? ''
   const namespace = gitOpsCluster?.metadata?.namespace ?? ''
-  // Card selection is the source of truth; argoCDAgent.enabled is synced by AgentFlagSync
-  const agentEnabled = gitOpsCluster?.spec?.gitopsAddon?.enabled === true
+  const placementNamespace = placement?.metadata?.namespace
+  const agentEnabled = isAgentEnabled(gitOpsCluster)
   const pushModelEnabled = isPushModelEnabled(gitOpsCluster)
   const clusterSetsKey = (placement?.spec?.clusterSets ?? []).join(',')
 
   useEffect(() => {
     if (!namespace || !gitOpsCluster) return
+    // Preserve invalid YAML for submit-time validation instead of silently moving
+    // a live Placement into another namespace or throwing from this effect.
+    if (props.editMode === EditMode.Edit && placementNamespace && placementNamespace !== namespace) return
 
     const syncKey = `${name}|${namespace}|${agentEnabled}|${pushModelEnabled}|${clusterSetsKey}|${resources
       .map((r) => r.kind)
@@ -548,7 +522,17 @@ function AgentResourcesSync(
       .join(',')}`
     update(next)
     // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuild when agent/push/name/namespace/clusterSets change
-  }, [agentEnabled, pushModelEnabled, name, namespace, clusterSetsKey, update])
+  }, [
+    agentEnabled,
+    pushModelEnabled,
+    name,
+    namespace,
+    placementNamespace,
+    clusterSetsKey,
+    update,
+    props.existingAppProject,
+    props.editMode,
+  ])
 
   return null
 }
@@ -556,7 +540,7 @@ function AgentResourcesSync(
 function GitOpsPermissionAlert() {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
-  const [missing, setMissing] = useState<MissingPermission[]>([])
+  const [checked, setChecked] = useState<{ identityKey: string; missing: MissingPermission[] }>()
   const resourcesRef = useRef(resources)
   resourcesRef.current = resources
   const identityKey = JSON.stringify(
@@ -570,10 +554,10 @@ function GitOpsPermissionAlert() {
     const timeout = setTimeout(() => {
       void collectMissingPermissions(resourcesRef.current)
         .then((result) => {
-          if (!cancelled) setMissing(result)
+          if (!cancelled) setChecked({ identityKey, missing: result })
         })
         .catch(() => {
-          if (!cancelled) setMissing([])
+          if (!cancelled) setChecked({ identityKey, missing: [] })
         })
     }, 300)
     return () => {
@@ -582,6 +566,7 @@ function GitOpsPermissionAlert() {
     }
   }, [identityKey])
 
+  const missing = checked?.identityKey === identityKey ? checked.missing : []
   if (missing.length === 0) return null
 
   return (

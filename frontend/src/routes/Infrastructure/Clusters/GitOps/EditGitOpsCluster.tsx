@@ -8,7 +8,7 @@ import {
   useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { Alert } from '@patternfly/react-core'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingPage } from '~/components/LoadingPage'
@@ -110,6 +110,27 @@ export function EditGitOpsCluster() {
   const [existingAppProject, setExistingAppProject] = useState<IResource>()
   const [loadError, setLoadError] = useState<Error>()
   const baselineResources = useRef<IResource[]>([])
+  const appProjectLookup = useRef<{ namespace: string; promise: Promise<IResource | undefined> } | undefined>(undefined)
+  const getExistingAppProject = useCallback(() => {
+    if (appProjectLookup.current?.namespace !== namespace) {
+      const promise = getResource({ ...AppProjectDefinition, metadata: { name: 'default', namespace } }).promise.catch(
+        (error: unknown) => {
+          if (error instanceof ResourceError && error.code === ResourceErrorCode.NotFound) return undefined
+          throw error
+        }
+      )
+      appProjectLookup.current = { namespace, promise }
+    }
+    return appProjectLookup.current.promise
+  }, [namespace])
+  const loadExistingAppProject = useCallback(async () => {
+    const project = await getExistingAppProject()
+    if (project && !baselineResources.current.some((resource) => resource.kind === project.kind)) {
+      baselineResources.current = [...baselineResources.current, JSON.parse(JSON.stringify(project)) as IResource]
+    }
+    setExistingAppProject(project)
+    return project
+  }, [getExistingAppProject])
 
   const availableNamespaces =
     argoCDs.length > 0
@@ -164,13 +185,8 @@ export function EditGitOpsCluster() {
     const existingSubscription = findGitOpsOperatorSubscription(subscriptions)
 
     let cancelled = false
-    // AppProject is not watched; load it before freezing either the wizard draft
-    // or the original live resources used to merge concurrent edits on submit.
-    void getResource({ ...AppProjectDefinition, metadata: { name: 'default', namespace } })
-      .promise.catch((error: unknown) => {
-        if (error instanceof ResourceError && error.code === ResourceErrorCode.NotFound) return undefined
-        throw error
-      })
+    // ManifestWork does not use AppProject. Agent loads it before generating a draft.
+    void (agentEnabled ? loadExistingAppProject() : Promise.resolve(undefined))
       .then((project) => {
         if (cancelled) return
         setLoadError(undefined)
@@ -224,6 +240,7 @@ export function EditGitOpsCluster() {
     name,
     namespace,
     navigate,
+    loadExistingAppProject,
   ])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
@@ -251,10 +268,19 @@ export function EditGitOpsCluster() {
       policies={policies}
       existingBindings={clusterSetBindings}
       existingAppProject={existingAppProject}
+      loadExistingAppProject={loadExistingAppProject}
       resources={existingResources}
       yamlEditor={getWizardSyncEditor}
       onSubmit={async (data) => {
         const resources = ensureGitOpsClusterPlacement(data as IResource[])
+        // Also guard YAML edits that bypass the pull-model card's lookup.
+        if (
+          isAgentEnabled(resources.find((resource) => resource.kind === GitOpsClusterKind) as GitOpsClusterWizardData)
+        ) {
+          // A project first discovered at Save has no wizard baseline: the
+          // create-only reconciliation rule retains its live configuration.
+          await getExistingAppProject()
+        }
         const gitOpsCluster = existingResources.find((resource) => resource.kind === GitOpsClusterKind)!
         const previousOwned = stripTransformedFields(baselineResources.current).filter(
           (resource) =>

@@ -605,7 +605,6 @@ export function ArgoWizard(props: ArgoWizardProps) {
                 disableForm={disableForm}
                 generatorPath={generatorPathRef}
                 secrets={props.repoSecrets ?? []}
-                excludeClusterDecisionResource={preferClustersGenerator}
               />
             </Section>
           </WizItemSelector>

@@ -1061,8 +1061,10 @@ function ApplicationsOverviewContent() {
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
   const { hasGitOpsCluster, isArgoCDAgentModeEnabled, isPushModelEnabled } = useApplicationGitOpsMode()
   const canCreateGitOpsCluster = useIsAnyNamespaceAuthorized(rbacCreate(GitopsClusterDefinition))
-  const [isGitOpsWizardOpen, setIsGitOpsWizardOpen] = useState(false)
-  const closeGitOpsWizard = useCallback(() => setIsGitOpsWizardOpen(false), [])
+  const [gitOpsWizardSession, setGitOpsWizardSession] = useState<object>()
+  const closeGitOpsWizard = useCallback(() => {
+    setGitOpsWizardSession((current) => (current === gitOpsWizardSession ? undefined : current))
+  }, [gitOpsWizardSession])
 
   const rowActionResolver = useCallback(
     (resource: IResource<ApplicationStatus>) => {
@@ -1341,7 +1343,7 @@ function ApplicationsOverviewContent() {
           } else if (id === 'create-argo-pull-model') {
             void navigate(NavigationPath.createApplicationArgoPullModel)
           } else if (id === 'configure-gitops') {
-            setIsGitOpsWizardOpen(true)
+            setGitOpsWizardSession({})
           } else {
             void navigate(NavigationPath.createApplicationSubscription)
           }
@@ -1456,7 +1458,7 @@ function ApplicationsOverviewContent() {
   return (
     <PageSection hasBodyWrapper={false}>
       <DeleteResourceModal {...modalProps} />
-      {isGitOpsWizardOpen && (
+      {gitOpsWizardSession && (
         <AcmModal
           title={t('Create GitOpsCluster')}
           variant={ModalVariant.large}

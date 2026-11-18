@@ -746,17 +746,36 @@ describe('CrossGeneratorSync - destination namespace preservation in edit mode',
   test.each([
     {
       generators: [{ list: { elements: [{ cluster: 'cluster1', url: 'https://cluster1' }] } }],
-      expectedName: '{{.cluster}}',
+      expectedName: '{{cluster}}',
+      goTemplate: undefined,
       prevGenState: {},
     },
-    { generators: [{ clusters: { selector: {} } }], expectedName: '{{name}}', prevGenState: { hasListGen: true } },
+    {
+      generators: [{ list: { elements: [{ cluster: 'cluster1' }] } }],
+      expectedName: '{{.cluster}}',
+      goTemplate: true,
+      prevGenState: {},
+    },
+    {
+      generators: [{ clusters: { selector: {} } }],
+      expectedName: '{{name}}',
+      goTemplate: undefined,
+      prevGenState: { hasListGen: true },
+    },
+    {
+      generators: [{ clusters: { selector: {} } }],
+      expectedName: '{{.name}}',
+      goTemplate: true,
+      prevGenState: { hasListGen: true },
+    },
   ])(
     'keeps Agent routing by name when switching generators: $expectedName',
-    ({ generators, expectedName, prevGenState }) => {
+    ({ generators, expectedName, prevGenState, goTemplate }) => {
       const appSet = {
         kind: 'ApplicationSet',
         metadata: { name: 'guestbook', namespace: 'openshift-gitops' },
         spec: {
+          goTemplate,
           generators,
           template: {
             metadata: { name: 'guestbook-{{name}}' },
@@ -766,6 +785,7 @@ describe('CrossGeneratorSync - destination namespace preservation in edit mode',
       }
       renderCrossGeneratorSync({ editMode: EditMode.Create, resources: [appSet], isAgentPullModel: true, prevGenState })
       expect(appSet.spec.template.spec.destination).toEqual({ namespace: 'guestbook', name: expectedName })
+      expect(appSet.spec.template.metadata.name).toBe(`guestbook-${expectedName}`)
     }
   )
 

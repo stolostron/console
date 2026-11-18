@@ -351,13 +351,17 @@ describe('getApplicationModel', () => {
     expect(getApplicationModel(resource)).toBe('manifestwork')
   })
 
-  it('recognizes existing placement-based Agent manifests', () => {
+  it.each([
+    [{ clusterDecisionResource: { configMapRef: 'acm-placement' } }],
+    [{ matrix: { generators: [{ clusterDecisionResource: { configMapRef: 'acm-placement' } }] } }],
+  ])('does not infer Agent from ambiguous placement generators: %j', (generator) => {
     const resource = {
       ...agent,
       metadata: {},
-      spec: { ...agent.spec, generators: [{ clusterDecisionResource: { configMapRef: 'acm-placement' } }] },
+      spec: { ...agent.spec, generators: [generator] },
     }
-    expect(getApplicationModel(resource)).toBe('agent')
+    expect(getApplicationModel(resource)).toBeUndefined()
+    expect(getApplicationModel({ ...resource, metadata: agent.metadata })).toBe('agent')
   })
 
   it('does not classify a push ApplicationSet by a named destination alone', () => {

@@ -42,6 +42,7 @@ export interface GitOpsClusterWizardProps {
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
   existingAppProject?: IResource
+  loadExistingAppProject?: () => Promise<IResource | undefined>
   isModal?: boolean
 }
 
@@ -86,6 +87,7 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
           policies={props.policies}
           existingBindings={props.existingBindings}
           existingAppProject={props.existingAppProject}
+          loadExistingAppProject={props.loadExistingAppProject}
         />
       </Step>
       <Step label={t('Target clusters')} id="target-clusters">

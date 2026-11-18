@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
+import { nockIgnoreApiPaths, nockRBAC } from '~/lib/nock-util'
+import { rbacCreateTestHelper, rbacGetTestHelper, rbacPatchTestHelper } from '~/lib/rbac-util'
 import {
   AGENT_AUTH,
   AGENT_SUBSCRIPTION_ENV,
@@ -29,6 +30,7 @@ import {
   stripTransformedFields,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
+import type { IResource } from '~/resources'
 import { PlacementKind } from '~/resources/placement'
 import { PolicyKind } from '~/resources/policy'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
@@ -38,19 +40,21 @@ import {
   SubscriptionOperatorKind,
   type SubscriptionOperator,
 } from '~/resources/subscription-operator'
-import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
+import { getResource, listResources, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
 
 jest.mock('~/resources/utils/resource-request', () => {
   const actual = jest.requireActual('~/resources/utils/resource-request')
   return {
     ...actual,
     getResource: jest.fn(),
+    listResources: jest.fn(),
     reconcileResources: jest.fn(async () => undefined),
   }
 })
 
 const mockGetResource = getResource as jest.Mock
 const mockReconcileResources = reconcileResources as jest.Mock
+const mockListResources = listResources as jest.Mock
 
 jest.mock('~/resources/self-subject-access-review', () => ({
   ...jest.requireActual('~/resources/self-subject-access-review'),
@@ -61,10 +65,11 @@ const mockAccessReview = createSubjectAccessReview as jest.Mock
 describe('gitOpsClusterResources', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
-    nockIgnoreRBAC()
     mockGetResource.mockReset()
     mockReconcileResources.mockReset()
     mockReconcileResources.mockResolvedValue(undefined)
+    mockListResources.mockReset()
+    mockListResources.mockReturnValue({ promise: Promise.resolve([]) })
     mockAccessReview.mockReset()
     mockAccessReview.mockReturnValue({ promise: Promise.resolve({ status: { allowed: true } }) })
   })
@@ -91,6 +96,67 @@ describe('gitOpsClusterResources', () => {
         },
       },
     ])
+  })
+
+  it('preserves Basic-mode addon options while rebuilding an edit draft', () => {
+    const addon = {
+      enabled: true,
+      overrideExistingConfigs: true,
+      argoCDAgent: { enabled: false, mode: 'managed', serverAddress: 'principal.example.com' },
+    }
+    const existing = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    existing.spec!.gitopsAddon = addon
+    existing.metadata.uid = 'goc-uid'
+    const resources = buildGitOpsClusterResources({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      existingGitOpsCluster: existing,
+    })
+    const draft = resources.find((resource) => resource.kind === GitOpsClusterKind) as typeof existing
+    expect(draft.spec?.gitopsAddon).toEqual(addon)
+    expect(isAgentEnabled(draft)).toBe(false)
+    expect(resources.map((resource) => resource.kind)).toEqual([PlacementKind, GitOpsClusterKind])
+  })
+
+  it('rejects conflicting namespaces before building or applying a GitOpsCluster edit', async () => {
+    const existing = createGitOpsClusterResource({ name: 'fleet', namespace: 'gitops-a', agentEnabled: false })
+    existing.metadata.uid = 'goc-uid'
+    const placement = createPlacementResource({ name: 'fleet', namespace: 'gitops-b' })
+    expect(() =>
+      buildGitOpsClusterResources({
+        name: 'fleet',
+        namespace: 'gitops-a',
+        agentEnabled: false,
+        existingGitOpsCluster: existing,
+        existingPlacement: placement,
+      })
+    ).toThrow(/same namespace/)
+    expect(() => ensureGitOpsClusterPlacement([existing, placement])).toThrow(/same namespace/)
+    await expect(reconcileGitOpsWizardResources([existing, placement])).rejects.toThrow(/same namespace/)
+    expect(mockGetResource).not.toHaveBeenCalled()
+    expect(mockReconcileResources).not.toHaveBeenCalled()
+  })
+
+  it('fills an omitted GitOpsCluster namespace from the selected namespace', () => {
+    const existing = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    delete existing.metadata.namespace
+    existing.metadata.uid = 'goc-uid'
+    const placement = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops' })
+    const resources = buildGitOpsClusterResources({
+      name: 'fleet',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      existingGitOpsCluster: existing,
+      existingPlacement: placement,
+    })
+    expect(resources.find((resource) => resource.kind === GitOpsClusterKind)?.metadata?.namespace).toBe(
+      'openshift-gitops'
+    )
+    expect(
+      ensureGitOpsClusterPlacement([existing, placement]).find((resource) => resource.kind === GitOpsClusterKind)
+        ?.metadata?.namespace
+    ).toBe('openshift-gitops')
   })
 
   it('includes ArgoCD, AppProject, Subscription, and Policy when agent is on', () => {
@@ -213,6 +279,66 @@ describe('gitOpsClusterResources', () => {
     const merged = mergeGitOpsOperatorSubscription()
     expect(merged.metadata.name).toBe('openshift-gitops-operator')
     expect(merged.spec.config?.env).toEqual([...AGENT_SUBSCRIPTION_ENV])
+  })
+
+  it.each([false, true])('uses the selected Argo CD Redis service (HA=%s)', (ha) => {
+    const argo = {
+      apiVersion: 'argoproj.io/v1beta1',
+      kind: ArgoCDKind,
+      metadata: { name: 'custom-argo', namespace: 'custom-gitops' },
+      spec: { ha: { enabled: ha } },
+    }
+    const subscription = mergeGitOpsOperatorSubscription(undefined, argo)
+    expect(subscription.spec.config?.env).toEqual(
+      expect.arrayContaining([
+        {
+          name: 'ARGOCD_PRINCIPAL_REDIS_SERVER_ADDRESS',
+          value: ha ? 'custom-argo-redis-ha-haproxy:6379' : 'custom-argo-redis:6379',
+        },
+        { name: 'ARGOCD_CLUSTER_CONFIG_NAMESPACES', value: 'openshift-gitops,local-cluster,custom-gitops' },
+      ])
+    )
+  })
+
+  it.each(['absent', 'incomplete', 'forbidden'] as const)(
+    'stops before all writes when the operator is %s',
+    async (state) => {
+      const resources = buildGitOpsClusterResources({
+        name: 'fleet',
+        namespace: 'openshift-gitops',
+        agentEnabled: true,
+      })
+      mockGetResource.mockImplementation(() => ({
+        promise:
+          state === 'incomplete'
+            ? Promise.resolve(mergeGitOpsOperatorSubscription())
+            : Promise.reject(
+                new ResourceError(state === 'forbidden' ? ResourceErrorCode.Forbidden : ResourceErrorCode.NotFound)
+              ),
+      }))
+      await expect(reconcileGitOpsWizardResources(resources)).rejects.toThrow()
+      expect(mockReconcileResources).not.toHaveBeenCalled()
+      expect(mockGetResource).toHaveBeenCalledTimes(1)
+      expect(mockGetResource).toHaveBeenCalledWith(expect.objectContaining({ kind: SubscriptionOperatorKind }))
+    }
+  )
+
+  it('reuses an installed operator Subscription and preserves its catalog fields', async () => {
+    const resources = buildGitOpsClusterResources({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: true })
+    const subscription = mergeGitOpsOperatorSubscription()
+    subscription.metadata = { ...subscription.metadata, uid: 'operator-uid', resourceVersion: '8' }
+    subscription.spec = { ...subscription.spec, source: 'redhat-operators', sourceNamespace: 'openshift-marketplace' }
+    mockGetResource.mockImplementation((resource: IResource) => ({
+      promise:
+        resource.kind === SubscriptionOperatorKind
+          ? Promise.resolve(subscription)
+          : Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+    }))
+    await reconcileGitOpsWizardResources(resources)
+    const applied = mockReconcileResources.mock.calls
+      .flatMap(([desired]) => desired as IResource[])
+      .find((resource) => resource.kind === SubscriptionOperatorKind) as SubscriptionOperator
+    expect(applied.spec).toMatchObject({ source: 'redhat-operators', sourceNamespace: 'openshift-marketplace' })
   })
 
   it('creates policy with spoke ArgoCD and RBAC templates', () => {
@@ -502,7 +628,8 @@ describe('gitOpsClusterResources', () => {
           metadata: expect.objectContaining({ uid: 'live-uid', resourceVersion: '3', name: 'fleet' }),
         }),
       ],
-      [live]
+      [live],
+      { requireResourceVersion: true }
     )
   })
 
@@ -535,8 +662,70 @@ describe('gitOpsClusterResources', () => {
     expect(mockReconcileResources).toHaveBeenNthCalledWith(
       3,
       [],
-      [expect.objectContaining({ kind: PlacementKind, metadata: expect.objectContaining({ name: 'fleet-placement' }) })]
+      [
+        expect.objectContaining({
+          kind: PlacementKind,
+          metadata: expect.objectContaining({ name: 'fleet-placement' }),
+        }),
+      ],
+      { ignoreNotFound: true }
     )
+  })
+
+  it.each([false, true])('restores the previous Placement before rollback (restore fails=%s)', async (fails) => {
+    const previous = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    previous.metadata = { ...previous.metadata, uid: 'goc-uid', resourceVersion: '1' }
+    const placement = createPlacementResource({ name: 'new', namespace: 'openshift-gitops' })
+    const draft = {
+      ...previous,
+      spec: { ...previous.spec, placementRef: { ...previous.spec!.placementRef!, name: placement.metadata.name } },
+    }
+    const current = { ...draft, metadata: { ...draft.metadata, resourceVersion: '2', labels: { concurrent: 'keep' } } }
+    const policy = {
+      apiVersion: 'policy.open-cluster-management.io/v1',
+      kind: PolicyKind,
+      metadata: { name: 'fleet-policy', namespace: 'openshift-gitops', uid: 'policy-uid' },
+    }
+    const extra = {
+      apiVersion: 'argoproj.io/v1beta1',
+      kind: ArgoCDKind,
+      metadata: { name: 'extra', namespace: 'openshift-gitops' },
+    }
+    let gocReads = 0
+    mockGetResource.mockImplementation((resource: IResource) => {
+      if (resource.kind === PlacementKind || resource.kind === ArgoCDKind)
+        return { promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)) }
+      if (resource.kind === GitOpsClusterKind)
+        return { promise: Promise.resolve(gocReads++ === 0 ? previous : current) }
+      return { promise: Promise.resolve(policy) }
+    })
+    mockReconcileResources
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce(new Error('Policy update failed'))
+      .mockImplementationOnce(async () => {
+        if (fails) throw new ResourceError(ResourceErrorCode.Conflict)
+      })
+      .mockResolvedValue(undefined)
+    await expect(
+      reconcileGitOpsWizardResources([draft, placement, extra, policy], [], { baseline: [previous] })
+    ).rejects.toThrow(fails ? /new Placement was retained/ : /Policy update failed/)
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(
+      5,
+      [
+        expect.objectContaining({
+          metadata: current.metadata,
+          spec: expect.objectContaining({ placementRef: previous.spec!.placementRef }),
+        }),
+      ],
+      [current],
+      { requireResourceVersion: true }
+    )
+    const deleted = mockReconcileResources.mock.calls
+      .filter(([desired]) => desired.length === 0)
+      .flatMap(([, removed]) => removed)
+    expect(deleted).toEqual(fails ? [extra] : [extra, placement])
   })
 
   it('deletes removed owned resources only after desired upserts succeed', async () => {
@@ -557,9 +746,10 @@ describe('gitOpsClusterResources', () => {
     expect(mockReconcileResources).toHaveBeenNthCalledWith(
       1,
       [expect.objectContaining({ kind: GitOpsClusterKind })],
-      [keep]
+      [keep],
+      { requireResourceVersion: true }
     )
-    expect(mockReconcileResources).toHaveBeenNthCalledWith(2, [], [removedPolicy])
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(2, [], [removedPolicy], { ignoreNotFound: true })
   })
 
   it('propagates non-NotFound existence probe errors and requires get on create path', async () => {
@@ -578,20 +768,75 @@ describe('gitOpsClusterResources', () => {
     mockGetResource.mockReturnValue({
       promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
     })
-    const missing = await collectMissingPermissions([resource])
-    // nockIgnoreRBAC allows all; ensure both get and create were evaluated (no missing)
-    expect(missing).toEqual([])
+    expect(await collectMissingPermissions([resource])).toEqual([])
   })
 
-  it('checks get and patch permissions when the resource already exists', async () => {
+  it.each([
+    { exists: false, denied: 'get' },
+    { exists: false, denied: 'create' },
+    { exists: true, denied: 'get' },
+    { exists: true, denied: 'patch' },
+  ])('checks get and the required write verb: %j', async ({ exists, denied }) => {
     const resource = createGitOpsClusterResource({
       name: 'fleet',
       namespace: 'openshift-gitops',
       agentEnabled: false,
     })
-    resource.metadata.uid = 'existing-uid'
+    if (exists) resource.metadata.uid = 'existing-uid'
+    mockGetResource.mockImplementation(() => ({
+      promise: exists ? Promise.resolve(resource) : Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+    }))
+    mockAccessReview.mockImplementation(
+      jest.requireActual('~/resources/self-subject-access-review').createSubjectAccessReview
+    )
+    const { namespace, name } = resource.metadata
+    const get = nockRBAC(rbacGetTestHelper(resource, namespace, name), denied !== 'get')
+    const write = nockRBAC(
+      exists ? rbacPatchTestHelper(resource, namespace, name) : rbacCreateTestHelper(resource, namespace, name),
+      denied === 'get'
+    )
     const missing = await collectMissingPermissions([resource])
-    expect(missing).toEqual([])
+    expect(missing).toEqual([{ kind: GitOpsClusterKind, namespace, name, verb: denied }])
+    expect(get.isDone()).toBe(true)
+    expect(write.isDone()).toBe(true)
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([undefined, []])('preserves existing Placement predicates exactly: %j', (predicates) => {
+    const placement = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops' })
+    placement.spec.predicates = predicates
+    const next = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops', existing: placement })
+    expect(next.spec.predicates).toEqual(predicates)
+  })
+
+  it('requires create permission for a UID-bearing draft deleted from the live cluster', async () => {
+    const resource = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    resource.metadata.uid = 'stale-uid'
+    mockGetResource.mockImplementation(() => ({
+      promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+    }))
+    mockAccessReview.mockImplementation((attributes) => ({
+      promise: Promise.resolve({ status: { allowed: attributes.verb !== 'create' } }),
+    }))
+    expect(await collectMissingPermissions([resource])).toEqual([
+      { kind: GitOpsClusterKind, name: 'fleet', namespace: 'openshift-gitops', verb: 'create' },
+    ])
+    expect(mockGetResource).toHaveBeenCalledTimes(1)
+    expect(mockAccessReview.mock.calls.map(([attributes]) => attributes.verb)).toEqual(['get', 'create'])
+  })
+
+  it('still creates a resource removed after a successful existence probe', async () => {
+    const resource = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    resource.metadata.uid = 'old-uid'
+    mockGetResource
+      .mockReturnValueOnce({ promise: Promise.resolve(resource) })
+      .mockImplementationOnce(() => ({ promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)) }))
+    expect(await collectMissingPermissions([resource])).toEqual([])
+    await expect(reconcileGitOpsWizardResources([resource])).resolves.toEqual({ gitOpsCluster: 'created' })
+    expect(mockReconcileResources).toHaveBeenCalledWith(
+      [expect.objectContaining({ metadata: { name: 'fleet', namespace: 'openshift-gitops' } })],
+      []
+    )
   })
 
   it('keeps a live GitOpsCluster custom Placement reference when that Placement is missing', () => {
@@ -644,6 +889,134 @@ describe('gitOpsClusterResources', () => {
     await reconcileGitOpsWizardResources([goc], [goc, binding], { placements: [] })
     expect(mockReconcileResources).toHaveBeenCalledTimes(1)
   })
+
+  it.each([
+    { desiredSets: ['default'], keepPlacement: true, retainBinding: true },
+    { desiredSets: [], keepPlacement: true, retainBinding: true },
+    { desiredSets: ['other'], keepPlacement: true, retainBinding: false },
+    { desiredSets: ['default'], keepPlacement: false, retainBinding: false },
+  ])('evaluates binding references from desired Placements: %j', ({ desiredSets, keepPlacement, retainBinding }) => {
+    const goc = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    const binding: ManagedClusterSetBinding = {
+      apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+      kind: 'ManagedClusterSetBinding',
+      metadata: {
+        name: 'default',
+        namespace: 'openshift-gitops',
+        annotations: { [GITOPS_BINDING_OWNER_ANNOTATION]: 'fleet' },
+      },
+      spec: { clusterSet: 'default' },
+    }
+    const before = createPlacementResource({ name: 'fleet', namespace: 'openshift-gitops', clusterSets: ['default'] })
+    const draft = { ...before, spec: { ...before.spec, clusterSets: desiredSets } }
+    const removed = getRemovedGitOpsWizardResources(
+      keepPlacement ? [goc, draft] : [goc],
+      [goc, before, binding],
+      [before]
+    )
+    expect(removed.includes(binding)).toBe(!retainBinding)
+  })
+
+  it.each(['referenced', 'unreferenced', 'read-failure'] as const)(
+    'uses fresh Placements before binding cleanup: %s',
+    async (state) => {
+      const goc = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+      goc.metadata.uid = 'goc-uid'
+      const binding: ManagedClusterSetBinding = {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta2',
+        kind: 'ManagedClusterSetBinding',
+        metadata: {
+          name: 'default',
+          namespace: 'openshift-gitops',
+          annotations: { [GITOPS_BINDING_OWNER_ANNOTATION]: 'fleet' },
+        },
+        spec: { clusterSet: 'default' },
+      }
+      const placement = createPlacementResource({
+        name: 'other',
+        namespace: 'openshift-gitops',
+        clusterSets: ['default'],
+      })
+      mockGetResource.mockReturnValue({ promise: Promise.resolve(goc) })
+      mockListResources.mockImplementation(() => ({
+        promise:
+          state === 'read-failure'
+            ? Promise.reject(new ResourceError(ResourceErrorCode.Forbidden))
+            : Promise.resolve(state === 'referenced' ? [placement] : []),
+      }))
+      const save = reconcileGitOpsWizardResources([goc], [goc, binding], {
+        placements: state === 'unreferenced' ? [placement] : [],
+      })
+      const outcome = await save.catch((error: unknown) => error)
+      const expectedFailure = expect.objectContaining({
+        message: expect.stringContaining('binding cleanup could not complete'),
+      })
+      const expectedSuccess = expect.objectContaining({ gitOpsCluster: 'updated' })
+      expect(outcome).toEqual(state === 'read-failure' ? expectedFailure : expectedSuccess)
+      expect(mockListResources).toHaveBeenCalledWith({
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: PlacementKind,
+        metadata: { namespace: 'openshift-gitops' },
+      })
+      expect(mockListResources.mock.invocationCallOrder[0]).toBeGreaterThan(
+        mockReconcileResources.mock.invocationCallOrder[0]
+      )
+      expect(mockReconcileResources.mock.calls.filter(([desired]) => desired.length === 0)).toEqual(
+        state === 'unreferenced' ? [[[], [binding], { ignoreNotFound: true }]] : []
+      )
+    }
+  )
+
+  it.each([true, false])(
+    'keeps a generated AppProject create-only when baseline recorded absence (exists=%s)',
+    async (exists) => {
+      const draft = createDefaultAppProject('openshift-gitops')
+      const live = { ...draft, spec: { sourceRepos: ['https://example.com/restricted.git'] } }
+      mockGetResource.mockImplementation(() => ({
+        promise: exists ? Promise.resolve(live) : Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
+      }))
+      await reconcileGitOpsWizardResources([draft], [], { baseline: [] })
+      expect(mockReconcileResources.mock.calls).toEqual(exists ? [] : [[[draft], []]])
+    }
+  )
+
+  it('reports a conflict if the live version changes after the merge read', async () => {
+    const resource = createGitOpsClusterResource({ name: 'fleet', namespace: 'openshift-gitops', agentEnabled: false })
+    resource.metadata = { ...resource.metadata, uid: 'goc-uid', resourceVersion: '4' }
+    mockGetResource.mockReturnValue({ promise: Promise.resolve(resource) })
+    mockReconcileResources.mockRejectedValueOnce(
+      new ResourceError(ResourceErrorCode.UnprocessableEntity, 'test failed at /metadata/resourceVersion')
+    )
+    await expect(reconcileGitOpsWizardResources([resource], [], { baseline: [resource] })).rejects.toMatchObject({
+      code: ResourceErrorCode.Conflict,
+    })
+    expect(mockReconcileResources).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([false, true])(
+    'distinguishes generic patch validation errors from version conflicts (changed=%s)',
+    async (changed) => {
+      const resource = createGitOpsClusterResource({
+        name: 'fleet',
+        namespace: 'openshift-gitops',
+        agentEnabled: false,
+      })
+      resource.metadata = { ...resource.metadata, uid: 'goc-uid', resourceVersion: '4' }
+      mockGetResource.mockReturnValueOnce({ promise: Promise.resolve(resource) }).mockReturnValueOnce({
+        promise: Promise.resolve({
+          ...resource,
+          metadata: { ...resource.metadata, resourceVersion: changed ? '5' : '4' },
+        }),
+      })
+      mockReconcileResources.mockRejectedValueOnce(
+        new ResourceError(ResourceErrorCode.UnprocessableEntity, 'Invalid request')
+      )
+      await expect(reconcileGitOpsWizardResources([resource], [], { baseline: [resource] })).rejects.toMatchObject({
+        code: changed ? ResourceErrorCode.Conflict : ResourceErrorCode.UnprocessableEntity,
+      })
+      expect(mockReconcileResources).toHaveBeenCalledTimes(1)
+    }
+  )
 
   it('does not mark a pre-existing binding as owned when a create draft finds it live', async () => {
     const binding = {
@@ -714,7 +1087,8 @@ describe('gitOpsClusterResources', () => {
     await reconcileGitOpsWizardResources([draft], [], { baseline: [baseline] })
     expect(mockReconcileResources).toHaveBeenCalledWith(
       [expect.objectContaining({ spec: { controller: { enabled: false }, ha: { enabled: true } } })],
-      [live]
+      [live],
+      { requireResourceVersion: true }
     )
     expect(baseline.spec.ha.enabled).toBe(false)
   })

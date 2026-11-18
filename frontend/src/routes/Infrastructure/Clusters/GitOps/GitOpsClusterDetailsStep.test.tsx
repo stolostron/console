@@ -7,7 +7,7 @@ import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
 import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
 import type { IResource } from '~/resources'
-import { GitOpsClusterKind } from '~/resources/gitops-cluster'
+import { GitOpsClusterKind, type GitOpsCluster } from '~/resources/gitops-cluster'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
 import { PlacementKind } from '~/resources/placement'
 import { buildGitOpsClusterResources } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -39,6 +39,7 @@ function renderDetailsStep(options?: {
   resources?: IResource[]
   namespaces?: string[]
   existingBindings?: ManagedClusterSetBinding[]
+  loadExistingAppProject?: () => Promise<IResource | undefined>
 }) {
   const editMode = options?.editMode ?? EditMode.Create
   const namespaces = options?.namespaces ?? ['openshift-gitops']
@@ -76,6 +77,7 @@ function renderDetailsStep(options?: {
             subscriptions={[]}
             policies={[]}
             existingBindings={options?.existingBindings}
+            loadExistingAppProject={options?.loadExistingAppProject}
           />
         </Step>
       </WizardPage>
@@ -126,15 +128,52 @@ describe('GitOpsClusterDetailsStep', () => {
     expect(await screen.findByText('Enable Push model with Argo CD Agent')).toBeInTheDocument()
   })
 
+  it('keeps an existing Basic-mode addon configuration when opening and changing models', async () => {
+    const user = userEvent.setup()
+    const addon = { enabled: true, overrideExistingConfigs: true, argoCDAgent: { enabled: false, mode: 'managed' } }
+    const resources = buildGitOpsClusterResources({
+      name: 'existing-goc',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+    })
+    const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind) as GitOpsCluster
+    gitOpsCluster.spec = { ...gitOpsCluster.spec, gitopsAddon: addon }
+    renderDetailsStep({ editMode: EditMode.Edit, resources })
+    expect(screen.queryByText('Enable Push model with Argo CD Agent')).not.toBeInTheDocument()
+    await waitFor(() => expect(buildGitOpsClusterResourcesMock).toHaveBeenCalled())
+    const latestAddon = () => {
+      const result = buildGitOpsClusterResourcesMock.mock.results.at(-1)?.value as {
+        kind: string
+        spec?: { gitopsAddon?: unknown }
+      }[]
+      return result.find((resource) => resource.kind === GitOpsClusterKind)?.spec?.gitopsAddon
+    }
+    expect(latestAddon()).toEqual(addon)
+    await user.click(screen.getByText('Argo CD Agent pull'))
+    expect(await screen.findByText('Enable Push model with Argo CD Agent')).toBeInTheDocument()
+    await user.click(screen.getByText('Argo CD ManifestWork pull'))
+    expect(screen.queryByText('Enable Push model with Argo CD Agent')).not.toBeInTheDocument()
+    expect(latestAddon()).toEqual(addon)
+  })
+
   it('debounces permission probes until name edits settle', async () => {
     jest.useFakeTimers()
     const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     const { unmount } = renderDetailsStep()
     try {
-      await user.type(screen.getByRole('textbox', { name: /^Name\b/ }), 'fleet')
+      const name = screen.getByRole('textbox', { name: /^Name\b/ })
+      await user.type(name, 'fle')
       expect(collectMissingPermissions).not.toHaveBeenCalled()
       await act(async () => {
-        jest.advanceTimersByTime(299)
+        jest.advanceTimersByTime(200)
+      })
+      await user.type(name, 'et')
+      await act(async () => {
+        jest.advanceTimersByTime(100)
+      })
+      expect(collectMissingPermissions).not.toHaveBeenCalled()
+      await act(async () => {
+        jest.advanceTimersByTime(199)
       })
       expect(collectMissingPermissions).not.toHaveBeenCalled()
       await act(async () => {
@@ -150,6 +189,49 @@ describe('GitOpsClusterDetailsStep', () => {
       unmount()
       jest.useRealTimers()
     }
+  })
+
+  it('hides permission results immediately when the checked resource identity changes', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    collectMissingPermissions.mockResolvedValueOnce([{ kind: GitOpsClusterKind, verb: 'create', name: 'old' }])
+    const { unmount } = renderDetailsStep()
+    try {
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(
+        screen.getByText('You do not have permission to create or update all required resources.')
+      ).toBeInTheDocument()
+      await user.type(screen.getByRole('textbox', { name: /^Name\b/ }), 'new')
+      expect(
+        screen.queryByText('You do not have permission to create or update all required resources.')
+      ).not.toBeInTheDocument()
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(collectMissingPermissions).toHaveBeenCalledTimes(2)
+      expect(
+        screen.queryByText('You do not have permission to create or update all required resources.')
+      ).not.toBeInTheDocument()
+    } finally {
+      unmount()
+      jest.useRealTimers()
+    }
+  })
+
+  it('keeps ManifestWork selectable when an Agent AppProject lookup fails', async () => {
+    const user = userEvent.setup()
+    const loadExistingAppProject = jest.fn(async () => {
+      throw new Error('Forbidden')
+    })
+    renderDetailsStep({ loadExistingAppProject })
+    await user.click(screen.getByText('Argo CD Agent pull'))
+    expect(await screen.findByText('Failed to load AppProject')).toBeInTheDocument()
+    expect(screen.queryByText('Enable Push model with Argo CD Agent')).not.toBeInTheDocument()
+    await user.click(screen.getByText('Argo CD ManifestWork pull'))
+    expect(screen.queryByText('Failed to load AppProject')).not.toBeInTheDocument()
+    expect(loadExistingAppProject).toHaveBeenCalledTimes(1)
   })
 
   it('navigates from review to the rendered pull model cards without adding a wrapper layout box', async () => {
