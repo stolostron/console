@@ -27,6 +27,7 @@ import {
   getSearchLink,
   groupByRepoType,
   isArgoPullModel,
+  getApplicationModel,
   normalizeRepoType,
 } from './resource-helper'
 const t = i18next.t.bind(i18next)
@@ -316,6 +317,61 @@ describe('getClusterCountSearchLink', () => {
     expect(getClusterCountSearchLink(resource, clusterCount, clusterList)).toEqual(
       '/multicloud/infrastructure/clusters/details/local-cluster/local-cluster'
     )
+  })
+})
+
+describe('getApplicationModel', () => {
+  const manifestWork = {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    spec: {
+      template: {
+        metadata: { annotations: { 'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}' } },
+        spec: { destination: { server: 'https://kubernetes.default.svc', namespace: 'guestbook' } },
+      },
+    },
+  }
+  const agent = {
+    apiVersion: 'argoproj.io/v1alpha1',
+    kind: 'ApplicationSet',
+    metadata: { annotations: { 'apps.open-cluster-management.io/gitops-model': 'agent' } },
+    spec: { template: { spec: { destination: { name: '{{name}}', namespace: 'guestbook' } } } },
+  }
+
+  it('recognizes both models from the resource without resolved clusters or current hub configuration', () => {
+    expect(getApplicationModel(manifestWork)).toBe('manifestwork')
+    expect(getApplicationModel(agent)).toBe('agent')
+  })
+
+  it('keeps existing ManifestWork propagation semantics when a destination name is also present', () => {
+    const resource = {
+      ...manifestWork,
+      spec: { template: { ...manifestWork.spec.template, spec: agent.spec.template.spec } },
+    }
+    expect(getApplicationModel(resource)).toBe('manifestwork')
+  })
+
+  it('recognizes existing placement-based Agent manifests', () => {
+    const resource = {
+      ...agent,
+      metadata: {},
+      spec: { ...agent.spec, generators: [{ clusterDecisionResource: { configMapRef: 'acm-placement' } }] },
+    }
+    expect(getApplicationModel(resource)).toBe('agent')
+  })
+
+  it('does not classify a push ApplicationSet by a named destination alone', () => {
+    expect(getApplicationModel({ ...agent, metadata: {} })).toBeUndefined()
+  })
+
+  it.each([
+    { ...agent, kind: 'Application' },
+    { ...agent, apiVersion: 'other.io/v1' },
+    { ...agent, metadata: {}, spec: undefined },
+    { ...agent, metadata: {}, spec: { template: { spec: { destination: { server: '{{server}}' } } } } },
+    { ...agent, metadata: {}, spec: { template: { spec: { destination: { name: '' } } } } },
+  ])('returns no model for resources without pull model semantics: %j', (resource) => {
+    expect(getApplicationModel(resource)).toBeUndefined()
   })
 })
 
