@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { argoCDsState, managedClusterSetsState, namespacesState, subscriptionOperatorsState } from '../../atoms'
@@ -48,7 +49,7 @@ const mockNamespaces: Namespace[] = ['openshift-gitops'].map((name) => ({
   metadata: { name },
 }))
 
-function TestArgoWizard() {
+function TestArgoWizard(testProps: Partial<ArgoWizardProps> = {}) {
   return (
     <StateProvider
       initializeStore={(store) => {
@@ -60,7 +61,29 @@ function TestArgoWizard() {
     >
       <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
         <Routes>
-          <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} />} />
+          <Route path={NavigationPath.createApplicationArgo} element={<ArgoWizard {...props} {...testProps} />} />
+        </Routes>
+      </MemoryRouter>
+    </StateProvider>
+  )
+}
+
+function TestArgoWizardPreferClustersGenerator() {
+  return (
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionOperatorsState, gitOpsOperators)
+        store.set(managedClusterSetsState, mockClusterSets)
+        store.set(argoCDsState, [mockArgoCD])
+        store.set(namespacesState, mockNamespaces)
+      }}
+    >
+      <MemoryRouter initialEntries={[NavigationPath.createApplicationArgo]}>
+        <Routes>
+          <Route
+            path={NavigationPath.createApplicationArgo}
+            element={<ArgoWizard {...props} preferClustersGenerator={true} />}
+          />
         </Routes>
       </MemoryRouter>
     </StateProvider>
@@ -108,6 +131,7 @@ function TestArgoWizardWithGitGeneratorAppSets(testProps: Partial<ArgoWizardProp
 describe('ArgoWizard tests', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    localStorage.removeItem('yaml')
   })
 
   test('should have danger alert', async () => {
@@ -129,6 +153,72 @@ describe('ArgoWizard tests', () => {
   //=====================================================================
   //                      GIT
   //=====================================================================
+  test.each(['agent', 'manifestwork'] as const)(
+    'keeps the %s model description and badge across steps and with YAML open',
+    async (model) => {
+      nockIgnoreApiPaths()
+      nockIgnorePlacementDebug()
+      const label = model === 'agent' ? 'GitOps model: Argo CD Agent pull' : 'GitOps model: ManifestWork pull'
+      const description =
+        model === 'agent'
+          ? /Create an ApplicationSet that uses Argo CD Agent pull/
+          : /Create an ApplicationSet that uses the ManifestWork pull model/
+      const yamlEditor = () => <div>Application set YAML preview</div>
+      const agentArgoServers = [
+        {
+          ...props.argoServers[0],
+          label: 'team-gitops',
+          value: {
+            ...props.argoServers[0].value,
+            metadata: { name: 'gitops', namespace: 'configuration' },
+            spec: {
+              argoServer: { argoNamespace: 'team-gitops' },
+              gitopsAddon: { enabled: true, argoCDAgent: { enabled: true } },
+            },
+          },
+        },
+      ]
+      render(
+        <TestArgoWizard
+          isPullModel
+          gitOpsModel={model}
+          yamlEditor={yamlEditor}
+          argoServers={model === 'agent' ? agentArgoServers : props.argoServers}
+        />
+      )
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        model === 'agent' ? 'Create application set - Agent pull model' : 'Create application set - Pull model'
+      )
+      expect(screen.getByText(label)).toBeVisible()
+      expect(screen.getByText(description)).toBeVisible()
+      expect(await axe(screen.getByRole('heading', { level: 1 }).closest('section')!)).toHaveNoViolations()
+
+      await typeElement(screen.getByRole('textbox', { name: /^Name\b/i }), 'testapp')
+      expect(screen.getByRole('combobox', { name: 'Select the Argo server' })).toHaveProperty(
+        'disabled',
+        model === 'agent'
+      )
+      const namespaceInput = screen.queryByRole<HTMLInputElement>('textbox', { name: /^Namespace\b/i })
+      expect(namespaceInput?.disabled).toBe(model === 'agent' ? true : undefined)
+      expect(namespaceInput?.value).toBe(model === 'agent' ? 'team-gitops' : undefined)
+      expect(
+        screen.queryAllByText('The Argo CD Agent controller runs in team-gitops on the hub cluster.')
+      ).toHaveLength(model === 'agent' ? 1 : 0)
+      if (model !== 'agent') {
+        await clickByRole('combobox', { name: 'Select the Argo server' })
+        await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+      }
+      await clickByText('Next')
+      await clickByRole('switch', { name: 'YAML' })
+      expect(screen.getByText('Application set YAML preview')).toBeVisible()
+      expect(screen.getByText(label)).toBeVisible()
+      expect(screen.getByText(description)).toBeVisible()
+      await clickByText('Next')
+      expect(screen.getByText(label)).toBeVisible()
+      expect(screen.getByText(description)).toBeVisible()
+    }
+  )
+
   test('create git', async () => {
     nockIgnoreApiPaths()
     nockIgnorePlacementDebug()
@@ -545,6 +635,28 @@ describe('ArgoWizard tests', () => {
     //=====================================================================
     await clickByRole('button', { name: 'Submit' })
     expect(mockOnsubmit).toHaveBeenCalledWith(submittedGitPullModel)
+  })
+
+  test('push model defaults to Clusters generator when preferClustersGenerator is set', async () => {
+    nockIgnoreApiPaths()
+    nockIgnorePlacementDebug()
+
+    render(<TestArgoWizardPreferClustersGenerator />)
+
+    await typeElement(
+      screen.getByRole('textbox', {
+        name: /name/i,
+      }),
+      'testapp'
+    )
+    await clickByRole('combobox', { name: 'Select the Argo server' })
+    await clickByRole('option', { name: /http:\/\/argoserver\.com/i })
+    await clickByText('Next')
+
+    await waitForText('Clusters Generator', true)
+    await clickByText('Add generator')
+    expect(screen.queryByText('Cluster Decision Resource generator')).not.toBeInTheDocument()
+    expect(screen.getByText('Git generator')).toBeInTheDocument()
   })
 
   //=====================================================================

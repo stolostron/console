@@ -1,15 +1,34 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { render, screen, waitFor, within } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
-import { managedClustersState, placementDecisionsState, subscriptionsState } from '../../atoms'
-import { nockAggegateRequest, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import {
+  argoCDsState,
+  gitOpsClustersState,
+  managedClustersState,
+  placementDecisionsState,
+  subscriptionsState,
+} from '../../atoms'
+import {
+  nockAggegateRequest,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+  nockIgnorePlacementDebug,
+  nockGet,
+  nockList,
+  nockSearch,
+} from '../../lib/nock-util'
 import { defaultPlugin, PluginContext } from '../../lib/PluginContext'
 import { getCSVDownloadLink, getCSVExportSpies, waitForText, clickElement, waitTimeout } from '~/lib/test-util'
 import {
   ApplicationKind,
+  IResource,
   ApplicationSetKind,
+  GitOpsCluster,
+  GitOpsClusterApiVersion,
+  GitOpsClusterKind,
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterKind,
@@ -37,7 +56,9 @@ import Overview from './Overview'
 import { useIsAnyNamespaceAuthorized } from '../../lib/rbac-util'
 
 jest.mock('../../lib/rbac-util')
-;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
+beforeEach(() => {
+  ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => true)
+})
 
 function LocationDisplay() {
   const location = useLocation()
@@ -107,6 +128,18 @@ const hubCluster: ManagedCluster = {
 
 const mockClusters = [hubCluster]
 
+const mockGitOpsCluster: GitOpsCluster = {
+  apiVersion: GitOpsClusterApiVersion,
+  kind: GitOpsClusterKind,
+  metadata: { name: 'gitops-cluster', namespace: 'openshift-gitops' },
+  spec: { gitopsAddon: { enabled: false } },
+}
+
+const mockAgentEnabledGitOpsCluster: GitOpsCluster = {
+  ...mockGitOpsCluster,
+  spec: { gitopsAddon: { enabled: true, argoCDAgent: { enabled: true, mode: 'managed' } } },
+}
+
 describe('Applications Page', () => {
   beforeEach(async () => {
     localStorage.removeItem('acm-table-filter.applicationTable')
@@ -120,6 +153,7 @@ describe('Applications Page', () => {
           store.set(subscriptionsState, mockSubscriptions)
           store.set(placementDecisionsState, mockPlacementsDecisions)
           store.set(managedClustersState, mockClusters)
+          store.set(gitOpsClustersState, [mockGitOpsCluster])
         }}
       >
         <AcmToastProvider>
@@ -316,7 +350,7 @@ describe('Applications Page', () => {
     expect(screen.getByTestId('location-display')).toHaveTextContent(route)
   })
 
-  test('create dropdown navigates to argo pull model', async () => {
+  test('create dropdown navigates to argo pull model (ManifestWork pull model when agent mode is off)', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
     await clickElement(screen.getByText('Argo CD ManifestWork Pull model ApplicationSet'))
@@ -335,6 +369,14 @@ describe('Applications Page', () => {
     await clickElement(screen.getByRole('button', { name: /create application/i }))
     await clickElement(within(screen.getByRole('menu')).getByText('Subscription'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/subscription')
+  })
+
+  test('places Model between Type and Namespace', async () => {
+    await waitForText('feng-remote-argo8')
+    const headers = within(screen.getByRole('grid', { name: 'Applications table' }))
+      .getAllByRole('columnheader')
+      .map((header) => header.textContent)
+    expect(headers.slice(0, 4)).toEqual(['Name', 'Type', 'Model', 'Namespace'])
   })
 
   test('export button should produce a file for download', async () => {
@@ -376,6 +418,218 @@ describe('Applications Page', () => {
     expect(getCSVDownloadLink(createElementSpy)?.value.download).toMatch(/^applicationsoverview-[\d]+\.csv$/)
   })
 })
+
+function renderOverviewWithGitOpsClusters(
+  gitOpsClusters: GitOpsCluster[],
+  argoCDs: IResource[] = [],
+  items = applicationAggregate.res.items
+) {
+  nockIgnoreRBAC()
+  nockIgnoreApiPaths()
+  nockAggegateRequest('applications', applicationAggregate.req, { ...applicationAggregate.res, items })
+  nockAggegateRequest('statuses', statusAggregate.req, statusAggregate.res)
+  return render(
+    <StateProvider
+      initializeStore={(store) => {
+        store.set(subscriptionsState, mockSubscriptions)
+        store.set(placementDecisionsState, mockPlacementsDecisions)
+        store.set(managedClustersState, mockClusters)
+        store.set(gitOpsClustersState, gitOpsClusters)
+        store.set(argoCDsState, argoCDs)
+      }}
+    >
+      <AcmToastProvider>
+        <AcmToastGroup />
+        <MemoryRouter>
+          <PluginContext.Provider
+            value={{
+              ...defaultPlugin,
+              acmExtensions: acmExtension,
+            }}
+          >
+            <LocationDisplay />
+            <Overview />
+          </PluginContext.Provider>
+        </MemoryRouter>
+      </AcmToastProvider>
+    </StateProvider>
+  )
+}
+
+describe('Applications saved column order', () => {
+  const storageKeys = [
+    'applicationTableSavedCols',
+    'applicationTableSavedColOrder',
+    'applicationTable.model-column-order-initialized',
+  ]
+  beforeEach(() => storageKeys.forEach((key) => localStorage.removeItem(key)))
+  afterEach(() => storageKeys.forEach((key) => localStorage.removeItem(key)))
+
+  test('renders Model third when it was previously saved at the end', async () => {
+    const order = ['name', 'type', 'namespace', 'labels', 'model']
+    localStorage.setItem('applicationTableSavedCols', JSON.stringify(order))
+    localStorage.setItem('applicationTableSavedColOrder', JSON.stringify(order))
+
+    renderOverviewWithGitOpsClusters([])
+
+    await waitForText('feng-remote-argo8')
+    const headers = within(screen.getByRole('grid', { name: 'Applications table' }))
+      .getAllByRole('columnheader')
+      .map((header) => header.textContent)
+    expect(headers.slice(0, 5)).toEqual(['Name', 'Type', 'Model', 'Namespace', 'Labels'])
+  })
+})
+
+describe('Create application dropdown - GitOps agent mode', () => {
+  test('offers Agent pull, Push, and Subscription without setup when Agent and Push are enabled', async () => {
+    const argoCD = {
+      apiVersion: 'argoproj.io/v1beta1',
+      kind: 'ArgoCD',
+      metadata: { name: 'openshift-gitops', namespace: 'openshift-gitops' },
+      spec: { controller: { enabled: true } },
+    }
+    renderOverviewWithGitOpsClusters([mockAgentEnabledGitOpsCluster], [argoCD])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    const menu = within(screen.getByRole('menu'))
+    const pullOption = menu.getByRole('menuitem', { name: /Argo CD Agent Pull model ApplicationSet/ })
+    expect(pullOption).not.toHaveAttribute('aria-disabled', 'true')
+    expect(
+      within(pullOption).getByText(
+        'Deploy applications across managed clusters using pull mode with full status fidelity, resource trees, and live-state visibility.'
+      )
+    ).toBeInTheDocument()
+    expect(menu.getByRole('menuitem', { name: /Argo CD Push model ApplicationSet/ })).toBeInTheDocument()
+    expect(menu.getByText('Subscription')).toBeInTheDocument()
+    expect(menu.queryByText('Set up GitOps configuration for Argo CD Agent Pull')).not.toBeInTheDocument()
+    expect(menu.queryByText('Argo CD ManifestWork Pull model ApplicationSet')).not.toBeInTheDocument()
+    await clickElement(pullOption)
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
+  })
+
+  test('offers ManifestWork creation and Agent setup when no GitOpsCluster exists', async () => {
+    renderOverviewWithGitOpsClusters([])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+    const pullOption = screen.getByRole('menuitem', { name: /ManifestWork pull model/i })
+    expect(pullOption).not.toHaveAttribute('aria-disabled', 'true')
+    expect(
+      within(pullOption).getByText(
+        'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
+      )
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('menuitem', { name: 'Set up GitOps configuration for Argo CD Agent Pull' })
+    ).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: /Push model/i })).toBeInTheDocument()
+    expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+    await clickElement(pullOption)
+    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
+  })
+
+  test('GitOps configuration link opens the creation wizard in a modal and cancels without navigation', async () => {
+    nockIgnorePlacementDebug()
+    nockList({ apiVersion: 'apps.open-cluster-management.io/v1beta1', kind: 'GitOpsCluster' }, []).persist()
+    nockGet(
+      {
+        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+        kind: 'Placement',
+        metadata: { name: 'gitopscluster-placement' },
+      },
+      undefined,
+      404
+    ).persist()
+    renderOverviewWithGitOpsClusters([])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+
+    const configureLink = screen.getByText('Set up GitOps configuration for Argo CD Agent Pull')
+    expect(configureLink).toBeInTheDocument()
+
+    await clickElement(configureLink)
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByRole('heading', { name: 'Create GitOpsCluster' })).toBeInTheDocument()
+    expect(within(dialog).getByRole('textbox', { name: /name/i })).toBeInTheDocument()
+    await clickElement(within(dialog).getByRole('button', { name: 'Cancel' }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByTestId('location-display').textContent).toBe('/')
+  })
+
+  test.each([true, false])(
+    'shows the Push option only when the Agent ArgoCD controller is enabled: %s',
+    async (enabled) => {
+      const argoCD = {
+        apiVersion: 'argoproj.io/v1beta1',
+        kind: 'ArgoCD',
+        metadata: { name: 'openshift-gitops', namespace: 'openshift-gitops' },
+        spec: { controller: { enabled } },
+      }
+      renderOverviewWithGitOpsClusters([mockAgentEnabledGitOpsCluster], [argoCD])
+      await waitForText('feng-remote-argo8')
+      await clickElement(screen.getByRole('button', { name: /create application/i }))
+      expect(screen.queryByRole('menuitem', { name: /Push model/i }) !== null).toBe(enabled)
+      expect(screen.getByRole('menuitem', { name: /Agent pull model/i })).not.toHaveAttribute('aria-disabled', 'true')
+      expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+    }
+  )
+
+  test.each([{ gitOpsClusters: [] }, { gitOpsClusters: [mockAgentEnabledGitOpsCluster] }])(
+    'renders each model from its ApplicationSet regardless of hub configuration: %j',
+    async ({ gitOpsClusters }) => {
+      const manifestWork = {
+        ...mockApplicationSet0,
+        metadata: { ...mockApplicationSet0.metadata, name: 'manifestwork-appset' },
+        spec: {
+          ...mockApplicationSet0.spec,
+          template: {
+            ...mockApplicationSet0.spec.template,
+            metadata: { annotations: { 'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}' } },
+          },
+        },
+      }
+      const agent = {
+        ...mockApplicationSet0,
+        metadata: {
+          ...mockApplicationSet0.metadata,
+          name: 'agent-appset',
+          annotations: { 'apps.open-cluster-management.io/gitops-model': 'agent' },
+        },
+        spec: {
+          ...mockApplicationSet0.spec,
+          template: {
+            ...mockApplicationSet0.spec.template,
+            spec: {
+              ...mockApplicationSet0.spec.template?.spec,
+              project: 'default',
+              destination: { namespace: 'guestbook', name: '{{name}}' },
+            },
+          },
+        },
+      }
+      renderOverviewWithGitOpsClusters(gitOpsClusters, [], [...applicationAggregate.res.items, manifestWork, agent])
+      await waitForText('agent-appset')
+      const agentRow = screen.getByText('agent-appset').closest('tr')!
+      const manifestWorkRow = screen.getByText('manifestwork-appset').closest('tr')!
+      expect(within(agentRow).getByText('Agent pull')).toBeInTheDocument()
+      expect(within(manifestWorkRow).getByText('ManifestWork pull')).toBeInTheDocument()
+      expect(within(screen.getByText('applicationset-0').closest('tr')!).getAllByRole('cell')[2]).toHaveTextContent('-')
+      expect(await axe(screen.getByRole('grid', { name: 'Applications table' }))).toHaveNoViolations()
+    }
+  )
+
+  test('GitOps configuration link is hidden when a GitOpsCluster exists', async () => {
+    renderOverviewWithGitOpsClusters([mockAgentEnabledGitOpsCluster])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /create application/i }))
+
+    expect(screen.queryByText('Set up GitOps configuration for Argo CD Agent Pull')).not.toBeInTheDocument()
+  })
+})
+
 describe('Create application dropdown', () => {
   test('Create application button should be disabled when unauthorized', async () => {
     ;(useIsAnyNamespaceAuthorized as jest.Mock).mockImplementation(() => false)
@@ -413,5 +667,18 @@ describe('Create application dropdown', () => {
     await waitForText('feng-remote-argo8')
     const createButton = screen.getByRole('button', { name: /create application/i })
     expect(createButton).toBeDisabled()
+  })
+
+  test('Compare application types popup shows all models', async () => {
+    renderOverviewWithGitOpsClusters([])
+
+    await waitForText('feng-remote-argo8')
+    await clickElement(screen.getByRole('button', { name: /Compare application types/i }))
+
+    const popup = screen.getByRole('dialog')
+    expect(within(popup).getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
+    expect(within(popup).getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
+    expect(within(popup).getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
+    expect(within(popup).getByText('Subscription')).toBeInTheDocument()
   })
 })

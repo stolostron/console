@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -397,18 +397,40 @@ jest.mock('react-router', () => {
   }
 })
 
+const gitOpsClusterAgentEnabled: GitOpsCluster = {
+  ...gitOpsCluster,
+  metadata: {
+    name: 'argo-server-agent',
+    namespace: 'argo-server-agent',
+  },
+  spec: {
+    ...gitOpsCluster.spec,
+    gitopsAddon: {
+      enabled: true,
+      argoCDAgent: {
+        enabled: true,
+      },
+    },
+  },
+}
+
 describe('Create Argo Application Set', () => {
   beforeEach(() => {
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
     nockIgnorePlacementDebug()
   })
-  const AddApplicationSet = () => {
+  const AddApplicationSet = ({ agentMode = false }: { agentMode?: boolean }) => {
     return (
       <StateProvider
         initializeStore={(store) => {
           store.set(placementsState, [mockPlacement])
-          store.set(gitOpsClustersState, [gitOpsCluster])
+          store.set(gitOpsClustersState, [
+            {
+              ...gitOpsCluster,
+              spec: { ...gitOpsCluster.spec, gitopsAddon: { enabled: agentMode, argoCDAgent: { enabled: agentMode } } },
+            },
+          ])
           store.set(channelsState, [channelGit, channelHelm])
           store.set(namespacesState, [namespace])
           store.set(secretsState, [])
@@ -427,64 +449,130 @@ describe('Create Argo Application Set', () => {
     )
   }
 
-  test('can create Argo Application Set with Git', async () => {
-    const initialNocks = [
-      nockGet(gitSecret),
-      nockList(
-        {
-          apiVersion: 'argoproj.io/v1alpha1',
-          kind: 'applicationsets',
-        },
-        [argoAppSetGit]
-      ),
-    ]
+  test('shows ManifestWork pull model badge when agent mode is disabled', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
     render(<AddApplicationSet />)
-    await waitForNocks(initialNocks)
-
-    // General
-    await typeByTestId('name', argoAppSetGit!.metadata!.name!)
-    await clickByRole('combobox', { name: 'Select the Argo server' })
-    await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
-    await clickByText('Next')
-
-    // Generators - skip with default
-    await clickByText('Next')
-
-    // Repository
-    await clickByText('Git')
-    await clickByRole('combobox', { name: /Enter or select a Git URL/i })
-
-    const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
-    await clickByText(channelGit.spec.pathname)
-    await waitForNocks(appBranchNocks)
-
-    await clickByRole('combobox', { name: /enter or select a tracking revision/i })
-    const pathNocks = [
-      nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
-      nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
-    ]
-    await clickByRole('option', { name: /branch-01/i })
-    await waitForNocks(pathNocks)
-
-    await clickByRole('combobox', { name: 'Enter or select a repository path' })
-    await clickByRole('option', { name: /application-test/i })
-
-    await typeByRole('gitops-ns', 'textbox')
-    await clickByText('Next')
-
-    // Sync policy
-    await clickByText('Next')
-
-    // Placement
-    await clickByRole('combobox', { name: /select the cluster sets/i })
-    await clickByText(clusterSetBinding.spec.clusterSet)
-    await clickByText('Next')
-
-    // Review
-    const createGitAppSetNocks = [nockCreate(argoAppSetGit), nockCreate(placementGit)]
-    await clickByText('Submit')
-    await waitForNocks(createGitAppSetNocks)
+    await waitForText('GitOps model: ManifestWork pull')
   })
+
+  test('shows Agent pull model badge when agent mode is enabled', async () => {
+    nockList(
+      {
+        apiVersion: 'argoproj.io/v1alpha1',
+        kind: 'applicationsets',
+      },
+      [argoAppSetGit]
+    )
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(placementsState, [mockPlacement])
+          store.set(gitOpsClustersState, [gitOpsClusterAgentEnabled])
+          store.set(channelsState, [channelGit, channelHelm])
+          store.set(namespacesState, [namespace])
+          store.set(secretsState, [])
+          store.set(managedClusterSetsState, [clusterSet])
+          store.set(managedClusterSetBindingsState, [clusterSetBinding])
+          store.set(subscriptionOperatorsState, gitOpsOperators)
+          store.set(managedClustersState, [hubCluster])
+        }}
+      >
+        <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>
+          <Routes>
+            <Route path={NavigationPath.createApplicationArgoPullModel} element={<CreatePullApplicationSet />} />
+          </Routes>
+        </MemoryRouter>
+      </StateProvider>
+    )
+    await waitForText('GitOps model: Argo CD Agent pull')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Create application set - Agent pull model')
+  })
+
+  test.each([{ agentMode: false }, { agentMode: true }])(
+    'creates a Git pull ApplicationSet with Agent mode $agentMode',
+    async ({ agentMode }) => {
+      const initialNocks = [
+        nockGet(gitSecret),
+        nockList(
+          {
+            apiVersion: 'argoproj.io/v1alpha1',
+            kind: 'applicationsets',
+          },
+          [argoAppSetGit]
+        ),
+      ]
+      render(<AddApplicationSet agentMode={agentMode} />)
+      await waitForNocks(initialNocks)
+
+      // General
+      await typeByTestId('name', argoAppSetGit!.metadata!.name!)
+      expect(screen.getByRole('combobox', { name: 'Select the Argo server' })).toHaveProperty('disabled', agentMode)
+      const namespaceInput = screen.queryByRole<HTMLInputElement>('textbox', { name: /^Namespace\b/i })
+      expect(namespaceInput?.disabled).toBe(agentMode ? true : undefined)
+      expect(namespaceInput?.value).toBe(agentMode ? gitOpsCluster.spec!.argoServer!.argoNamespace : undefined)
+      if (!agentMode) {
+        await clickByRole('combobox', { name: 'Select the Argo server' })
+        await clickByText(gitOpsCluster!.spec!.argoServer!.argoNamespace)
+      }
+      await clickByText('Next')
+
+      // Generators - skip with default
+      await clickByText('Next')
+
+      // Repository
+      await clickByText('Git')
+      await clickByRole('combobox', { name: /Enter or select a Git URL/i })
+
+      const appBranchNocks = [nockArgoGitBranches(channelGit.spec.pathname, { branchList: [{ name: 'branch-01' }] })]
+      await clickByText(channelGit.spec.pathname)
+      await waitForNocks(appBranchNocks)
+
+      await clickByRole('combobox', { name: /enter or select a tracking revision/i })
+      const pathNocks = [
+        nockArgoGitPathSha(channelGit.spec.pathname, 'branch-01', { commit: { sha: '01' } }),
+        nockArgoGitPathTree(channelGit.spec.pathname, { tree: [{ path: 'application-test', type: 'tree' }] }),
+      ]
+      await clickByRole('option', { name: /branch-01/i })
+      await waitForNocks(pathNocks)
+
+      await clickByRole('combobox', { name: 'Enter or select a repository path' })
+      await clickByRole('option', { name: /application-test/i })
+
+      await typeByRole('gitops-ns', 'textbox')
+      await clickByText('Next')
+
+      // Sync policy
+      await clickByText('Next')
+
+      // Placement
+      await clickByRole('combobox', { name: /select the cluster sets/i })
+      await clickByText(clusterSetBinding.spec.clusterSet)
+      await clickByText('Next')
+
+      // Review
+      const expectedApplicationSet: ApplicationSet = JSON.parse(JSON.stringify(argoAppSetGit))
+      if (agentMode) {
+        expectedApplicationSet.metadata.annotations = { 'apps.open-cluster-management.io/gitops-model': 'agent' }
+        delete expectedApplicationSet.spec.template!.metadata!.annotations
+        delete expectedApplicationSet.spec.template!.metadata!.labels![
+          'apps.open-cluster-management.io/pull-to-ocm-managed-cluster'
+        ]
+        expectedApplicationSet.spec.template!.spec!.destination = {
+          name: '{{name}}',
+          namespace: argoAppSetGit.spec.template!.spec!.destination!.namespace,
+        }
+      }
+      const createGitAppSetNocks = [nockCreate(expectedApplicationSet), nockCreate(placementGit)]
+      await clickByText('Submit')
+      await waitForNocks(createGitAppSetNocks)
+    }
+  )
 
   test('can create an Application Set with Helm', async () => {
     nockList(

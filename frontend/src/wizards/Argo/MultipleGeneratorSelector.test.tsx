@@ -716,6 +716,7 @@ describe('CrossGeneratorSync - destination namespace preservation in edit mode',
     editMode: EditMode
     resources: any[]
     prevGenState?: Partial<PrevGenState>
+    isAgentPullModel?: boolean
   }) {
     const prevGenState = { current: { hasCDRGen: true, ...opts.prevGenState } as PrevGenState }
     const generatorPath = createRef<string>() as React.MutableRefObject<string>
@@ -732,6 +733,7 @@ describe('CrossGeneratorSync - destination namespace preservation in edit mode',
               onGeneratorStateChange={onGeneratorStateChange}
               defaultData={opts.resources}
               generatorPath={generatorPath}
+              isAgentPullModel={opts.isAgentPullModel}
             />
           </ItemContext.Provider>
         </EditModeContext.Provider>
@@ -740,6 +742,32 @@ describe('CrossGeneratorSync - destination namespace preservation in edit mode',
 
     return { prevGenState, mockUpdate, resources: opts.resources }
   }
+
+  test.each([
+    {
+      generators: [{ list: { elements: [{ cluster: 'cluster1', url: 'https://cluster1' }] } }],
+      expectedName: '{{.cluster}}',
+      prevGenState: {},
+    },
+    { generators: [{ clusters: { selector: {} } }], expectedName: '{{name}}', prevGenState: { hasListGen: true } },
+  ])(
+    'keeps Agent routing by name when switching generators: $expectedName',
+    ({ generators, expectedName, prevGenState }) => {
+      const appSet = {
+        kind: 'ApplicationSet',
+        metadata: { name: 'guestbook', namespace: 'openshift-gitops' },
+        spec: {
+          generators,
+          template: {
+            metadata: { name: 'guestbook-{{name}}' },
+            spec: { destination: { namespace: 'guestbook', name: '{{name}}' }, project: 'default' },
+          },
+        },
+      }
+      renderCrossGeneratorSync({ editMode: EditMode.Create, resources: [appSet], isAgentPullModel: true, prevGenState })
+      expect(appSet.spec.template.spec.destination).toEqual({ namespace: 'guestbook', name: expectedName })
+    }
+  )
 
   test('should preserve destination namespace in edit mode on initial sync', async () => {
     const appSet: any = {
