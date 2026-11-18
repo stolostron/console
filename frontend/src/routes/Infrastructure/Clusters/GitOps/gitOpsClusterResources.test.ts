@@ -456,7 +456,7 @@ describe('gitOpsClusterResources', () => {
         kind: 'ManagedClusterSetBinding',
         metadata: { name: 'default', namespace: 'openshift-gitops' },
         spec: { clusterSet: 'default' },
-      },
+      } as never,
     ])
     expect(ordered.map((r) => r.kind)).toEqual([PlacementKind, 'ManagedClusterSetBinding', GitOpsClusterKind])
   })
