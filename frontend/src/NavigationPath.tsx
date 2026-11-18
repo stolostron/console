@@ -145,15 +145,12 @@ export enum NavigationPath {
 
   // Applications
   applications = '/multicloud/applications',
-  advancedConfiguration = '/multicloud/applications/advanced',
   createApplicationArgo = '/multicloud/applications/create/argo',
   createApplicationArgoPullModel = '/multicloud/applications/create/argopullmodel',
   editApplicationArgo = '/multicloud/applications/edit/argo/:namespace/:name',
-  createApplicationSubscription = '/multicloud/applications/create/subscription',
   applicationDetails = '/multicloud/applications/details/:namespace/:name',
   applicationOverview = '/multicloud/applications/details/:namespace/:name/details',
   applicationTopology = '/multicloud/applications/details/:namespace/:name/topology',
-  editApplicationSubscription = '/multicloud/applications/edit/subscription/:namespace/:name',
 
   // Governance
   governance = '/multicloud/governance',

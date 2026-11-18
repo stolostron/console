@@ -50,7 +50,7 @@ export function getRowActions(
     title: t('View Application'),
     click: (item: any) => {
       const { apigroup, applicationSet, cluster, name, namespace, kind, _hubClusterResource } = item
-      if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
+      if (apigroup === 'argoproj.io') {
         const path = generatePath(NavigationPath.applicationOverview, {
           namespace,
           name,
@@ -290,11 +290,13 @@ export function generateSearchResultExport(
 
   // If only 1 resource kind -> use column headers from searchDefinitions
   if (kinds.length === 1) {
-    const kindAndGroup =
-      kinds[0].split('.')[0].toLowerCase() === 'subscription'
-        ? `subscription.${searchResultItems[0].apigroup}`
-        : kinds[0].split('.')[0].toLowerCase()
-    columns = get(searchDefinitions, `['${kindAndGroup}'].columns`, searchDefinitions['genericresource'].columns)
+    const kindOnly = kinds[0].split('.')[0].toLowerCase()
+    const kindAndGroup = kindOnly === 'subscription' ? `subscription.${searchResultItems[0].apigroup}` : kindOnly
+    columns = get(
+      searchDefinitions,
+      `['${kindAndGroup}'].columns`,
+      get(searchDefinitions, `['${kindOnly}'].columns`, searchDefinitions['genericresource'].columns)
+    )
     // Filter column definitions that do NOT contain sort field. Sort is the only way to confidently get resource fields
     columns = columns.filter((col: SearchColumnDefinition) => {
       return !!col.sort

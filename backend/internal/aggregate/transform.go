@@ -18,9 +18,6 @@ const (
 func getApplicationType(obj map[string]any, prefixes []string) string {
 	api := apiVersionOf(obj)
 	kind := kindOf(obj)
-	if api == "app.k8s.io/v1beta1" && kind == "Application" {
-		return kindSubscriptionApp
-	}
 	if api == "argoproj.io/v1alpha1" {
 		if kind == "Application" {
 			return kindArgo
@@ -131,8 +128,6 @@ func getApplicationSources(
 	channels []map[string]any,
 ) []string {
 	switch typ {
-	case kindSubscriptionApp:
-		return getSubscriptionSources(obj, subscriptions, channels)
 	case kindArgo:
 		if source := nestedMap(obj, "spec", "source"); source != nil {
 			if strVal(source["repoURL"]) == "" {
@@ -170,60 +165,6 @@ func getApplicationSources(
 	default:
 		return nil
 	}
-}
-
-func getSubscriptionSources(
-	obj map[string]any,
-	subscriptions []map[string]any,
-	channels []map[string]any,
-) []string {
-	rawRefs := strings.Split(strVal(metaAnnotations(obj)["apps.open-cluster-management.io/subscriptions"]), ",")
-	refs := make([]string, 0, len(rawRefs))
-	for _, ref := range rawRefs {
-		if ref = strings.TrimSpace(ref); ref != "" {
-			refs = append(refs, ref)
-		}
-	}
-	out := make([]string, 0, len(refs))
-	for _, ref := range refs {
-		if isLocalSubscription(ref, refs) {
-			continue
-		}
-		parts := strings.Split(ref, "/")
-		if len(parts) < 2 {
-			continue
-		}
-		for _, sub := range subscriptions {
-			if metaNamespace(sub) != parts[0] || metaName(sub) != parts[1] {
-				continue
-			}
-			channelRef := nestedString(sub, "spec", "channel")
-			if channelRef == "" {
-				continue
-			}
-			channelParts := strings.Split(channelRef, "/")
-			if len(channelParts) < 2 {
-				continue
-			}
-			var channel map[string]any
-			for _, candidate := range channels {
-				if metaNamespace(candidate) == channelParts[0] && metaName(candidate) == channelParts[1] {
-					channel = candidate
-					break
-				}
-			}
-			annotations := metaAnnotations(sub)
-			name := truncateSourceName(
-				strings.TrimSpace(firstNonEmpty(strVal(annotations[gitPathAnnotation]), strVal(annotations[githubPathAnnotation]))),
-				maxSourceNameLength,
-			)
-			if name == "" && strVal(nestedMap(channel, "spec")["type"]) == "HelmRepo" {
-				name = truncateSourceName(strVal(nestedMap(sub, "spec")["name"]), maxSourceNameLength)
-			}
-			out = appendUniqueSource(out, name)
-		}
-	}
-	return out
 }
 
 func sourceName(source map[string]any) string {
@@ -318,58 +259,16 @@ func (e *Engine) transform(items []map[string]any, statusMap map[string]StatusMa
 	subs := e.listKind("apps.open-cluster-management.io/v1", "Subscription")
 	channels := e.listKind("apps.open-cluster-management.io/v1", "Channel")
 	placements := e.listKind("cluster.open-cluster-management.io/v1beta1", "PlacementDecision")
-	hub := e.hubClusterName()
 	out := make([]App, 0, len(items))
 	for _, raw := range items {
 		app := cloneMap(raw)
 		typ := getApplicationType(app, e.systemPrefixes)
-		if typ == kindSubscriptionApp {
-			if ann := strVal(metaAnnotations(app)["apps.open-cluster-management.io/subscriptions"]); ann != "" {
-				allLabels := map[string]any{}
-				for _, ref := range strings.Split(ann, ",") {
-					parts := strings.Split(strings.TrimSpace(ref), "/")
-					if len(parts) != 2 {
-						continue
-					}
-					for _, s := range subs {
-						if metaNamespace(s) == parts[0] && metaName(s) == parts[1] {
-							for k, v := range metaLabels(s) {
-								allLabels[k] = v
-							}
-						}
-					}
-				}
-				if len(allLabels) > 0 {
-					meta := metaMap(app)
-					if meta == nil {
-						meta = map[string]any{}
-						app["metadata"] = meta
-					}
-					labels := metaLabels(app)
-					if labels == nil {
-						labels = map[string]any{}
-					}
-					for k, v := range allLabels {
-						labels[k] = v
-					}
-					meta["labels"] = labels
-				}
-			}
-		}
 		cls := e.applicationClusters(app, typ, subs, placements, local, clusters)
 		row := App{
 			Object:    app,
 			Transform: getTransform(app, typ, statusMap, cls, getApplicationSources(app, typ, subs, channels)),
 		}
 		remote := isRemote
-		if !remote && typ == kindSubscriptionApp {
-			for _, n := range cls {
-				if n != hub {
-					remote = true
-					break
-				}
-			}
-		}
 		if remote {
 			row.RemoteClusters = cls
 		}

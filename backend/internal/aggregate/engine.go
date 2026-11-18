@@ -251,20 +251,10 @@ func (e *Engine) withListCache(fn func()) {
 	fn()
 }
 
-// rebuildSubscriptionLocked re-transforms ACM Subscription apps from the informer cache.
-func (e *Engine) rebuildSubscriptionLocked() {
-	subs := e.listKind("app.k8s.io/v1beta1", "Application")
-	e.cache[cacheSubscription].Resources = e.transform(subs, map[string]StatusMap{}, false, nil, nil, nil)
-	e.cache[cacheSubscription].ResourceUIDMap = nil
-	e.cache[cacheSubscription].ResourceMap = nil
-}
-
 // rebuildLocalLocked rebuilds all local (hub informer) cache buckets:
-// subscriptions, Argo CD Applications, and ApplicationSets. Must hold e.mu.
+// Argo CD Applications and ApplicationSets. Must hold e.mu.
 func (e *Engine) rebuildLocalLocked() {
 	e.withListCache(func() {
-		e.rebuildSubscriptionLocked()
-
 		clusters := e.clusters()
 		hub := e.hubClusterName()
 		var local *Cluster

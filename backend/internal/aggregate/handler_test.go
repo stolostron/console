@@ -168,20 +168,14 @@ func TestMulticloudAggregatePath(t *testing.T) {
 func TestApplicationsAndStatuses(t *testing.T) {
 	lister := MapLister{
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
-		"app.k8s.io/v1beta1|Application": {
-			uObj("app.k8s.io/v1beta1", "Application", "test-app", "default", map[string]any{
+		"argoproj.io/v1alpha1|Application": {
+			uObj("argoproj.io/v1alpha1", "Application", "test-app", "default", map[string]any{
 				"metadata": map[string]any{
 					"name":              "test-app",
 					"namespace":         "default",
 					"creationTimestamp": "2024-01-01T00:00:00Z",
-					"annotations": map[string]any{
-						"apps.open-cluster-management.io/subscriptions": "default/sub",
-					},
 				},
 			}),
-		},
-		"apps.open-cluster-management.io/v1|Subscription": {
-			uObj("apps.open-cluster-management.io/v1", "Subscription", "sub", "default", nil),
 		},
 	}
 	h := testHandler(t, lister)
@@ -213,11 +207,8 @@ func TestApplicationsAndStatuses(t *testing.T) {
 	if st.ItemCount != "1" {
 		t.Fatalf("itemCount %q", st.ItemCount)
 	}
-	if st.FilterCounts["type"]["subscription"] != 1 {
+	if st.FilterCounts["type"]["argo"] != 1 {
 		t.Fatalf("counts %+v", st.FilterCounts)
-	}
-	if len(st.FilterCounts["healthStatus"]) != 0 || len(st.FilterCounts["podStatuses"]) != 0 {
-		t.Fatalf("status counts should stay empty for subscription: %+v", st.FilterCounts)
 	}
 }
 

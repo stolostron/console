@@ -47,10 +47,8 @@ export const LoadPluginData = (props: { children?: ReactNode }) => {
       // Infrastructure - Clusters - Cluster Sets
       NavigationPath.clusterSets,
       NavigationPath.applications,
-      NavigationPath.advancedConfiguration,
       NavigationPath.createApplicationArgo,
       NavigationPath.createApplicationArgoPullModel,
-      NavigationPath.createApplicationSubscription,
 
       // Governance
       NavigationPath.governance,

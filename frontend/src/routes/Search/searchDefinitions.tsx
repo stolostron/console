@@ -506,8 +506,7 @@ export function CreateDetailsLink(props: Readonly<{ item: any }>) {
       )
     case 'application': {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
-      if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
-        // only redirect to apps page if it is an ACM application
+      if (apigroup === 'argoproj.io') {
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: item._hubClusterResource ? undefined : cluster,
@@ -616,7 +615,7 @@ export function CreateGlobalSearchDetailsLink(props: { item: any }) {
     }
     case 'application': {
       const { apigroup, applicationSet, cluster, name, namespace, kind } = item
-      if (apigroup === 'app.k8s.io' || apigroup === 'argoproj.io') {
+      if (apigroup === 'argoproj.io') {
         const params = queryString.stringify({
           apiVersion: `${kind}.${apigroup}`.toLowerCase(),
           cluster: item._hubClusterResource ? undefined : cluster,

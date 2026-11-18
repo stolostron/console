@@ -217,12 +217,6 @@ export default function ApplicationDetailsPage() {
                 .replace(namespaceString, selectedApp.metadata?.namespace)
                 .replace(nameString, selectedApp.metadata?.name)
             )
-          } else {
-            void navigate(
-              NavigationPath.editApplicationSubscription
-                .replace(namespaceString, selectedApp.metadata?.namespace)
-                .replace(nameString, selectedApp.metadata?.name)
-            )
           }
         },
         rbac: [

@@ -21,11 +21,6 @@ jest.mock('./Overview', () => ({
   default: () => <div>Overview page</div>,
 }))
 
-jest.mock('./AdvancedConfiguration', () => ({
-  __esModule: true,
-  default: () => <div>Advanced configuration page</div>,
-}))
-
 jest.mock('./CreateArgoApplication/CreatePushApplicationSet', () => ({
   CreatePushApplicationSet: () => <div>Create push application set</div>,
 }))
@@ -36,11 +31,6 @@ jest.mock('./CreateArgoApplication/EditApplicationSetPage', () => ({
 
 jest.mock('./CreateArgoApplication/CreatePullApplicationSet', () => ({
   CreatePullApplicationSet: () => <div>Create pull application set</div>,
-}))
-
-jest.mock('./CreateSubscriptionApplication/SubscriptionApplication', () => ({
-  __esModule: true,
-  default: () => <div>Subscription application page</div>,
 }))
 
 jest.mock('./ApplicationDetails/ApplicationDetails/ApplicationDetails', () => ({
@@ -74,11 +64,6 @@ describe('Applications', () => {
     expect(await axe(container)).toHaveNoViolations()
   })
 
-  it('renders advanced configuration', () => {
-    renderAt(NavigationPath.advancedConfiguration)
-    expect(screen.getByText('Advanced configuration page')).toBeInTheDocument()
-  })
-
   it('renders create push application set', () => {
     renderAt(NavigationPath.createApplicationArgo)
     expect(screen.getByText('Create push application set')).toBeInTheDocument()
@@ -92,16 +77,6 @@ describe('Applications', () => {
   it('renders create pull application set', () => {
     renderAt(NavigationPath.createApplicationArgoPullModel)
     expect(screen.getByText('Create pull application set')).toBeInTheDocument()
-  })
-
-  it('renders create subscription application', () => {
-    renderAt(NavigationPath.createApplicationSubscription)
-    expect(screen.getByText('Subscription application page')).toBeInTheDocument()
-  })
-
-  it('renders edit subscription application', () => {
-    renderAt('/multicloud/applications/edit/subscription/ns/name')
-    expect(screen.getByText('Subscription application page')).toBeInTheDocument()
   })
 
   it('renders application topology under details layout', () => {

@@ -258,9 +258,6 @@ func (c *countingLister) count(key string) int {
 
 func TestApplicationsReadOnly(t *testing.T) {
 	cl := &countingLister{inner: MapLister{
-		"app.k8s.io/v1beta1|Application": {
-			uObj("app.k8s.io/v1beta1", "Application", "sub-app", "ns", nil),
-		},
 		"argoproj.io/v1alpha1|Application": {
 			uObj("argoproj.io/v1alpha1", "Application", "argo-app", "argocd", nil),
 		},
@@ -280,9 +277,6 @@ func TestApplicationsReadOnly(t *testing.T) {
 	if cl.count("argoproj.io/v1alpha1|Application") != 0 {
 		t.Fatalf("applications() should not list anything, got argo %d", cl.count("argoproj.io/v1alpha1|Application"))
 	}
-	if cl.count("app.k8s.io/v1beta1|Application") != 0 {
-		t.Fatalf("applications() should not list anything, got subscription %d", cl.count("app.k8s.io/v1beta1|Application"))
-	}
 	found := false
 	for _, a := range apps {
 		if metaName(a.Object) == "cached-argo" {
@@ -296,7 +290,6 @@ func TestApplicationsReadOnly(t *testing.T) {
 
 func TestRebuildLocalMemoizesListKind(t *testing.T) {
 	cl := &countingLister{inner: MapLister{
-		"app.k8s.io/v1beta1|Application":                       {},
 		"argoproj.io/v1alpha1|Application":                     {},
 		"argoproj.io/v1alpha1|ApplicationSet":                  {},
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
@@ -320,7 +313,6 @@ func TestSearchLoopSkipsSearchWhenMCHMissing(t *testing.T) {
 	ts := countingSearch(t, &hits, true, nil)
 	defer ts.Close()
 	cl := &countingLister{inner: MapLister{
-		"app.k8s.io/v1beta1|Application":                       {},
 		"argoproj.io/v1alpha1|Application":                     {},
 		"argoproj.io/v1alpha1|ApplicationSet":                  {},
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
@@ -330,7 +322,7 @@ func TestSearchLoopSkipsSearchWhenMCHMissing(t *testing.T) {
 	cancel, done := startSearchLoop(t, e)
 	waitAtomic(t, &lists, 2)
 	deadline := time.Now().Add(2 * time.Second)
-	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+	for cl.count("argoproj.io/v1alpha1|Application") < 1 {
 		if time.Now().After(deadline) {
 			t.Fatal("expected local rebuild while MultiClusterHub is missing")
 		}
@@ -349,7 +341,6 @@ func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
 	ts := countingSearch(t, &hits, false, first)
 	defer ts.Close()
 	cl := &countingLister{inner: MapLister{
-		"app.k8s.io/v1beta1|Application":                       {},
 		"argoproj.io/v1alpha1|Application":                     {},
 		"argoproj.io/v1alpha1|ApplicationSet":                  {},
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
@@ -363,7 +354,7 @@ func TestSearchLoopStopsPingRetryWhenCanceled(t *testing.T) {
 		t.Fatal("timed out waiting for ping")
 	}
 	deadline := time.Now().Add(2 * time.Second)
-	for cl.count("app.k8s.io/v1beta1|Application") < 1 {
+	for cl.count("argoproj.io/v1alpha1|Application") < 1 {
 		if time.Now().After(deadline) {
 			t.Fatal("expected local rebuild while search API is missing")
 		}
@@ -394,7 +385,6 @@ func TestSearchLoopRechecksMCHBetweenFailedPings(t *testing.T) {
 	}))
 	defer ts.Close()
 	e := NewEngine(MapLister{
-		"app.k8s.io/v1beta1|Application":                       {},
 		"argoproj.io/v1alpha1|Application":                     {},
 		"argoproj.io/v1alpha1|ApplicationSet":                  {},
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
