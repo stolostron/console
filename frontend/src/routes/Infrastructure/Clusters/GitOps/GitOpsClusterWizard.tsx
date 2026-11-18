@@ -41,6 +41,7 @@ export interface GitOpsClusterWizardProps {
   subscriptions: SubscriptionOperator[]
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
+  isModal?: boolean
 }
 
 export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
@@ -66,6 +67,7 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
   return (
     <WizardPage
       id="gitopscluster-wizard"
+      isModal={props.isModal}
       title={props.title}
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}

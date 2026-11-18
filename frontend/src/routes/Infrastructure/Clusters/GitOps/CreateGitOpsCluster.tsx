@@ -64,7 +64,9 @@ export default function CreateGitOpsClusterPage() {
   return <CreateGitOpsCluster />
 }
 
-export function CreateGitOpsCluster() {
+export function CreateGitOpsCluster(
+  props: { isModal?: boolean; onCancel?: () => void; onSubmitSuccess?: () => void } = {}
+) {
   const { t } = useTranslation()
   const {
     argoCDsState,
@@ -102,6 +104,7 @@ export function CreateGitOpsCluster() {
   return (
     <GitOpsClusterWizard
       title={t('Create GitOpsCluster')}
+      isModal={props.isModal}
       namespaces={availableNamespaces}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
@@ -113,7 +116,8 @@ export function CreateGitOpsCluster() {
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
         cancelForm()
-        void navigate(NavigationPath.gitOps)
+        if (props.onCancel) props.onCancel()
+        else void navigate(NavigationPath.gitOps)
       }}
       breadcrumb={[{ text: t('GitOps'), to: NavigationPath.gitOps }, { text: t('Create GitOpsCluster') }]}
       onSubmit={async (data) => {
@@ -143,7 +147,8 @@ export function CreateGitOpsCluster() {
               autoClose: true,
             })
             submitForm()
-            void navigate(NavigationPath.gitOps)
+            if (props.onSubmitSuccess) props.onSubmitSuccess()
+            else void navigate(NavigationPath.gitOps)
           })
           .catch((err) => {
             const reason = err?.reason ?? 'Unknown'

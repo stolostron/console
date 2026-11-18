@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import useResizeObserver from '@react-hook/resize-observer'
-import { PageSection, Switch } from '@patternfly/react-core'
+import { LabelProps, PageSection, Switch } from '@patternfly/react-core'
 import {
   Children,
   cloneElement,
@@ -24,6 +24,8 @@ export type WizardPageProps = {
   yamlEditor?: () => ReactNode
   isLoading?: boolean
   isModal?: boolean
+  label?: ReactNode
+  labelColor?: LabelProps['color']
 } & WizardProps
 
 function getWizardYamlEditor() {
@@ -46,7 +48,17 @@ function renderWizardSteps(children: ReactNode) {
 }
 
 export function WizardPage(props: { id: string } & WizardPageProps) {
-  const { breadcrumb, children, id, yaml, yamlEditor = getWizardYamlEditor, isModal, ...wizardProps } = props
+  const {
+    breadcrumb,
+    children,
+    id,
+    yaml,
+    yamlEditor = getWizardYamlEditor,
+    isModal,
+    label,
+    labelColor,
+    ...wizardProps
+  } = props
 
   const [drawerExpanded, setDrawerExpanded] = useState(yaml !== false && localStorage.getItem('yaml') === 'true')
   const toggleDrawerExpanded = useCallback(() => {
@@ -96,6 +108,9 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
         <AcmPageHeader
           title={props.title}
           description={props.description}
+          label={label}
+          labelColor={labelColor}
+          labelPosition="right"
           breadcrumb={breadcrumb}
           switches={
             yaml !== false && (
