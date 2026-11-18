@@ -155,9 +155,7 @@ function PullModelSelector() {
       rows: [
         {
           term: t('Scale & performance'),
-          description: t(
-            'High performance. Offloads processing to managed clusters for improved scalability.'
-          ),
+          description: t('High performance. Offloads processing to managed clusters for improved scalability.'),
         },
         {
           term: t('Feature experience'),
@@ -404,8 +402,7 @@ function resolveDraftAgentExtras(
   // Prefer the wizard/YAML copy so rebuilds (e.g. Push toggle) do not wipe in-progress edits.
   const argoCD =
     (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
-      | IResource
-      | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
+      IResource | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
   const existingPolicy =
     (resources.find(
       (item) =>

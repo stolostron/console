@@ -514,11 +514,7 @@ describe('gitOpsClusterResources', () => {
       code: ResourceErrorCode.BadRequest,
     })
 
-    expect(mockReconcileResources).toHaveBeenNthCalledWith(
-      1,
-      [expect.objectContaining({ kind: PlacementKind })],
-      []
-    )
+    expect(mockReconcileResources).toHaveBeenNthCalledWith(1, [expect.objectContaining({ kind: PlacementKind })], [])
     expect(mockReconcileResources).toHaveBeenNthCalledWith(
       2,
       [expect.objectContaining({ kind: GitOpsClusterKind })],
