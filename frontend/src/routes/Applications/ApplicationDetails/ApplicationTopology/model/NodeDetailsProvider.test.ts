@@ -33,7 +33,7 @@ jest.mock('../helpers/diagram-helpers', () => {
 const mockGetLabels = jest.fn((...args: unknown[]) => (void args, 'mocked-labels'))
 const mockGetMatchLabels = jest.fn((...args: unknown[]) => (void args, 'mocked-match-labels'))
 
-jest.mock('../../../CreateSubscriptionApplication/controlData/ControlDataPlacement', () => ({
+jest.mock('../../../helpers/placement-labels', () => ({
   getLabels: (...args: unknown[]) => mockGetLabels(...args),
   getMatchLabels: (...args: unknown[]) => mockGetMatchLabels(...args),
 }))

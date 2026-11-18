@@ -99,30 +99,13 @@ func (e *Engine) nextClusterNameChunk() []string {
 // ocpArgoFilter, computes deployed status, and stores in the appropriate
 // local/remote cache buckets.
 func (e *Engine) cacheOCPApplications(search searchapi.ResultBucket, ocpArgoFilter map[string]struct{}, isSystem bool) {
-	helm := e.listKind("apps.open-cluster-management.io/v1", "HelmRelease")
 	hub := e.hubClusterName()
 	var localApps, remoteApps []map[string]any
 	var ocpApps []map[string]any
 	openShiftMap := map[string][]map[string]any{}
 	for _, ocpApp := range search.Items {
-		if searchStr(ocpApp, "_hostingSubscription") != "" {
-			continue
-		}
 		labels := parseSearchLabels(searchStr(ocpApp, "label"))
-		itemLabel, isHelm, argoInstance := ocpLabelValues(labels)
-		if itemLabel != "" && isHelm {
-			hosted := false
-			for _, hr := range helm {
-				if metaName(hr) == itemLabel && metaNamespace(hr) == searchStr(ocpApp, "namespace") {
-					if strVal(metaAnnotations(hr)["apps.open-cluster-management.io/hosting-subscription"]) != "" {
-						hosted = true
-					}
-				}
-			}
-			if hosted {
-				continue
-			}
-		}
+		itemLabel, _, argoInstance := ocpLabelValues(labels)
 		if itemLabel == "" {
 			continue
 		}

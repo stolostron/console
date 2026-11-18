@@ -13,7 +13,7 @@ import {
   addNodeOCPRouteLocationForCluster,
   addIngressNodeInfo,
 } from '../helpers/diagram-helpers'
-import { getLabels, getMatchLabels } from '../../../CreateSubscriptionApplication/controlData/ControlDataPlacement'
+import { getLabels, getMatchLabels } from '../../../helpers/placement-labels'
 import { PlacementKind } from '../../../../../resources'
 import type { TFunction } from 'i18next'
 

@@ -90,7 +90,7 @@ func TestCacheOCPApplicationsSkipsAndSplits(t *testing.T) {
 		},
 	}
 	e.cacheOCPApplications(search, filter, false)
-	if len(e.cache[cacheLocalOCP].Resources) != 1 {
+	if len(e.cache[cacheLocalOCP].Resources) != 2 {
 		t.Fatalf("local %+v", e.cache[cacheLocalOCP].Resources)
 	}
 	if len(e.cache[cacheRemoteOCP].Resources) != 1 {
