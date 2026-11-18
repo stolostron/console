@@ -720,38 +720,55 @@ describe('Create application dropdown', () => {
   })
 
   test.each([
-    { configuration: 'no GitOpsCluster', resources: [], agent: false },
-    { configuration: 'ManifestWork', resources: [mockGitOpsCluster], agent: false },
-    { configuration: 'Agent', resources: [mockAgentEnabledGitOpsCluster], agent: true },
-  ])('Compare application types follows $configuration configuration', async ({ resources, agent }) => {
-    renderOverviewWithGitOpsClusters(resources)
+    { configuration: 'no GitOpsCluster', resources: [], argoCDs: [] },
+    { configuration: 'ManifestWork', resources: [mockGitOpsCluster], argoCDs: [] },
+    ...[true, false].map((enabled) => ({
+      configuration: `Agent with Push ${enabled ? 'enabled' : 'disabled'}`,
+      resources: [mockAgentEnabledGitOpsCluster],
+      argoCDs: [
+        {
+          apiVersion: 'argoproj.io/v1beta1',
+          kind: 'ArgoCD',
+          metadata: { name: 'openshift-gitops', namespace: 'openshift-gitops' },
+          spec: { controller: { enabled } },
+        },
+      ],
+    })),
+  ])('Compare application types shows all types with $configuration', async ({ resources, argoCDs }) => {
+    renderOverviewWithGitOpsClusters(resources, argoCDs)
 
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /Compare application types/i }))
 
     const popup = screen.getByRole('dialog')
-    const pullTitle = agent
-      ? 'Argo CD Agent Pull model ApplicationSet'
-      : 'Argo CD ManifestWork Pull model ApplicationSet'
-    const otherPullTitle = agent
-      ? 'Argo CD ManifestWork Pull model ApplicationSet'
-      : 'Argo CD Agent Pull model ApplicationSet'
-    expect(within(popup).getByText(pullTitle)).toBeInTheDocument()
-    expect(within(popup).queryByText(otherPullTitle)).not.toBeInTheDocument()
-    expect(popup.textContent?.includes('using the Argo CD Agent.')).toBe(agent)
+    expect(within(popup).getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
+    expect(within(popup).getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
+    expect(
+      within(popup).getByText(
+        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+      )
+    ).toBeInTheDocument()
+    expect(
+      within(popup).getByText(
+        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+      )
+    ).toBeInTheDocument()
     expect(within(popup).getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
     expect(within(popup).getByText('Subscription')).toBeInTheDocument()
     expect(await axe(popup)).toHaveNoViolations()
   })
 
-  test('updates an open comparison popup when the configured pull model changes', async () => {
+  test('keeps all types visible in an open comparison popup when the configured pull model changes', async () => {
     const view = renderOverviewWithGitOpsClusters([mockGitOpsCluster])
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /Compare application types/i }))
     const popup = within(screen.getByRole('dialog'))
+    expect(popup.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
     expect(popup.getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
     await act(async () => view.updateGitOpsClusters([mockAgentEnabledGitOpsCluster]))
     expect(popup.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
-    expect(popup.queryByText('Argo CD ManifestWork Pull model ApplicationSet')).not.toBeInTheDocument()
+    expect(popup.getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
+    expect(popup.getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
+    expect(popup.getByText('Subscription')).toBeInTheDocument()
   })
 })
