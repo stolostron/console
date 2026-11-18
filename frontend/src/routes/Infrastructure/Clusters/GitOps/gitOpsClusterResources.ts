@@ -69,14 +69,43 @@ export function policyNameFor(gitOpsClusterName: string): string {
   return `${base}-argocd-policy`
 }
 
+/**
+ * Live names stay. Draft follows the GitOpsCluster name only while it still has the previous
+ * auto name (or the empty-draft default). YAML renames (e.g. `*-placement2`, `*2-placement`) stay.
+ */
+export function resolvePlacementDraftName(
+  gitOpsClusterName: string,
+  existingPlacementName: string | undefined,
+  options?: { isLive?: boolean; previousGitOpsClusterName?: string }
+): string {
+  const autoName = placementNameFor(gitOpsClusterName)
+  if (options?.isLive && existingPlacementName) {
+    return existingPlacementName
+  }
+  if (!existingPlacementName) {
+    return autoName
+  }
+  const previousAutoName = placementNameFor(options?.previousGitOpsClusterName ?? gitOpsClusterName)
+  const emptyDraftAutoName = placementNameFor('')
+  if (
+    existingPlacementName === previousAutoName ||
+    existingPlacementName === autoName ||
+    existingPlacementName === emptyDraftAutoName
+  ) {
+    return autoName
+  }
+  return existingPlacementName
+}
+
 export function createGitOpsClusterResource(options: {
   name: string
   namespace: string
   agentEnabled: boolean
   pushModelEnabled?: boolean
   existing?: GitOpsCluster
+  previousGitOpsClusterName?: string
 }): GitOpsClusterWizardData {
-  const { name, namespace, agentEnabled, pushModelEnabled = false, existing } = options
+  const { name, namespace, agentEnabled, pushModelEnabled = false, existing, previousGitOpsClusterName } = options
   const resource: GitOpsClusterWizardData = {
     apiVersion: GitOpsClusterApiVersion,
     kind: GitOpsClusterKind,
@@ -94,11 +123,10 @@ export function createGitOpsClusterResource(options: {
       placementRef: {
         kind: PlacementKind,
         apiVersion: PlacementApiVersionBeta,
-        // Only keep placementRef on live edit objects. Create drafts must rename with the form name.
-        name:
-          existing?.metadata?.uid && existing.spec?.placementRef?.name
-            ? existing.spec.placementRef.name
-            : placementNameFor(name),
+        name: resolvePlacementDraftName(name, existing?.spec?.placementRef?.name, {
+          isLive: Boolean(existing?.metadata?.uid),
+          previousGitOpsClusterName,
+        }),
       },
     },
     transformed: {
@@ -127,8 +155,9 @@ export function createPlacementResource(options: {
   namespace: string
   clusterSets?: string[]
   existing?: Placement
+  previousGitOpsClusterName?: string
 }): Placement {
-  const { name, namespace, clusterSets, existing } = options
+  const { name, namespace, clusterSets, existing, previousGitOpsClusterName } = options
   const defaultPredicates: NonNullable<Placement['spec']['predicates']> = [
     {
       requiredClusterSelector: {
@@ -181,9 +210,10 @@ export function createPlacementResource(options: {
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
-      // Only keep the Placement name when it already exists on the cluster (has uid).
-      // Create drafts start as "*-placement" and must rename as the user types the GitOpsCluster name.
-      name: existing?.metadata?.uid ? (existing.metadata.name ?? placementNameFor(name)) : placementNameFor(name),
+      name: resolvePlacementDraftName(name, existing?.metadata?.name, {
+        isLive: Boolean(existing?.metadata?.uid),
+        previousGitOpsClusterName,
+      }),
       namespace,
     },
     spec,
@@ -515,6 +545,8 @@ export interface BuildGitOpsClusterResourcesOptions {
   existingSubscription?: SubscriptionOperator
   existingPolicy?: Policy
   includeBindings?: boolean
+  /** Prior form name so draft Placement auto-rename still tracks typing without wiping YAML renames. */
+  previousGitOpsClusterName?: string
 }
 
 /**
@@ -536,21 +568,28 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     existingSubscription,
     existingPolicy,
     includeBindings = true,
+    previousGitOpsClusterName,
   } = options
 
+  const placement = createPlacementResource({
+    name,
+    namespace,
+    clusterSets,
+    existing: existingPlacement,
+    previousGitOpsClusterName,
+  })
   const gitOpsCluster = createGitOpsClusterResource({
     name,
     namespace,
     agentEnabled,
     pushModelEnabled,
     existing: existingGitOpsCluster,
+    previousGitOpsClusterName,
   })
-  const placement = createPlacementResource({
-    name,
-    namespace,
-    clusterSets,
-    existing: existingPlacement,
-  })
+  // Placement document is the name source of truth when present (YAML may customize it).
+  if (gitOpsCluster.spec?.placementRef && placement.metadata?.name) {
+    gitOpsCluster.spec.placementRef.name = placement.metadata.name
+  }
   // Placement (+ bindings) before GitOpsCluster so a failed GOC create does not leave a dangling placementRef.
   const resources: IResource[] = [placement]
 
@@ -819,6 +858,7 @@ export function stripTransformedFields(resources: IResource[]): IResource[] {
 /**
  * Wizard/YAML sync can drop the Placement document while leaving placementRef on the GitOpsCluster.
  * Re-attach a Placement before apply so create never succeeds with a dangling placementRef.
+ * When both exist, the Placement document name wins (preserves YAML renames).
  */
 export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[] {
   const stripped = stripTransformedFields(resources)
@@ -829,7 +869,9 @@ export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[
 
   const namespace = gitOpsCluster.metadata?.namespace ?? ''
   const name = gitOpsCluster.metadata?.name ?? ''
-  const placementRefName = gitOpsCluster.spec?.placementRef?.name || placementNameFor(name)
+  const existingPlacement = getPlacementFromResources(stripped)
+  const placementName =
+    existingPlacement?.metadata?.name || gitOpsCluster.spec?.placementRef?.name || placementNameFor(name)
 
   if (!gitOpsCluster.spec) {
     gitOpsCluster.spec = {}
@@ -838,21 +880,20 @@ export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[
     ...gitOpsCluster.spec.placementRef,
     kind: PlacementKind,
     apiVersion: PlacementApiVersionBeta,
-    name: placementRefName,
+    name: placementName,
   }
 
-  const existingPlacement = getPlacementFromResources(stripped)
   if (existingPlacement) {
     existingPlacement.metadata = {
       ...existingPlacement.metadata,
-      name: placementRefName,
+      name: placementName,
       namespace: existingPlacement.metadata?.namespace || namespace,
     }
     return orderGitOpsWizardResourcesForApply(stripped)
   }
 
   const placement = createPlacementResource({ name, namespace })
-  placement.metadata.name = placementRefName
+  placement.metadata.name = placementName
   return orderGitOpsWizardResourcesForApply([...stripped, placement])
 }
 

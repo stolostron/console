@@ -320,6 +320,53 @@ describe('gitOpsClusterResources', () => {
     expect(gitOps.spec?.placementRef?.name).toBe('klee-openshift-gitops-placement')
   })
 
+  it('preserves YAML Placement renames on create rebuild and ensure (not only *-placement2)', () => {
+    const customName = 'kike-openshift-gitops2-placement'
+    const draft = createPlacementResource({ name: 'kike-openshift-gitops', namespace: 'openshift-gitops' })
+    draft.metadata.name = customName
+
+    const rebuilt = createPlacementResource({
+      name: 'kike-openshift-gitops',
+      namespace: 'openshift-gitops',
+      existing: draft,
+      previousGitOpsClusterName: 'kike-openshift-gitops',
+    })
+    expect(rebuilt.metadata.name).toBe(customName)
+
+    const resources = buildGitOpsClusterResources({
+      name: 'kike-openshift-gitops',
+      namespace: 'openshift-gitops',
+      agentEnabled: false,
+      existingPlacement: draft,
+      previousGitOpsClusterName: 'kike-openshift-gitops',
+      existingGitOpsCluster: {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: GitOpsClusterKind,
+        metadata: { name: 'kike-openshift-gitops', namespace: 'openshift-gitops' },
+        spec: {
+          argoServer: { argoNamespace: 'openshift-gitops' },
+          placementRef: {
+            kind: PlacementKind,
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'kike-openshift-gitops-placement',
+          },
+        },
+      },
+    })
+    expect(resources.find((r) => r.kind === PlacementKind)?.metadata?.name).toBe(customName)
+    expect(
+      (resources.find((r) => r.kind === GitOpsClusterKind) as { spec?: { placementRef?: { name?: string } } }).spec
+        ?.placementRef?.name
+    ).toBe(customName)
+
+    const ensured = ensureGitOpsClusterPlacement(resources)
+    expect(ensured.find((r) => r.kind === PlacementKind)?.metadata?.name).toBe(customName)
+    expect(
+      (ensured.find((r) => r.kind === GitOpsClusterKind) as { spec?: { placementRef?: { name?: string } } }).spec
+        ?.placementRef?.name
+    ).toBe(customName)
+  })
+
   it('keeps existing ManagedClusterSetBindings when Placement clusterSets are cleared', () => {
     const binding = {
       apiVersion: 'cluster.open-cluster-management.io/v1beta2',

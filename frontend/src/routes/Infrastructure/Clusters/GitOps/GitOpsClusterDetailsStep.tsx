@@ -491,6 +491,7 @@ function AgentResourcesSync(
   const gitOpsCluster = getGitOpsClusterFromResources(resources)
   const placement = getPlacementFromResources(resources)
   const lastKey = useRef('')
+  const previousNameRef = useRef(gitOpsCluster?.metadata?.name ?? '')
 
   const name = gitOpsCluster?.metadata?.name ?? ''
   const namespace = gitOpsCluster?.metadata?.namespace ?? ''
@@ -508,6 +509,7 @@ function AgentResourcesSync(
     const needsRebuild = syncKey !== lastKey.current || agentEnabled !== resources.some((r) => r.kind === ArgoCDKind)
     if (!needsRebuild) return
 
+    const previousGitOpsClusterName = previousNameRef.current
     const clusterSets = clusterSetsKey ? clusterSetsKey.split(',') : []
     const { argoCD, existingPolicy, existingSubscription, existingAppProject, currentBindings } =
       resolveDraftAgentExtras(resources, {
@@ -537,11 +539,13 @@ function AgentResourcesSync(
       existingSubscription,
       existingPolicy,
       includeBindings: true,
+      previousGitOpsClusterName,
     })
 
     applyAgentFlagsToDraft(next, { name, agentEnabled, pushModelEnabled })
     preservePlacementDraftEdits(next, placement as PlacementResource | undefined)
 
+    previousNameRef.current = name
     lastKey.current = `${name}|${namespace}|${agentEnabled}|${pushModelEnabled}|${clusterSetsKey}|${next
       .map((r) => r.kind)
       .join(',')}`
