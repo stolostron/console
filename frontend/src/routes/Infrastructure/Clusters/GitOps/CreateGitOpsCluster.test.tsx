@@ -29,7 +29,7 @@ const mockCollectMissingPermissions = jest.fn<
 const mockReconcileGitOpsWizardResources = jest.fn<
   ReturnType<typeof GitOpsResources.reconcileGitOpsWizardResources>,
   Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>
->(async () => undefined)
+>(async () => ({ gitOpsCluster: 'created' }))
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
   const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources')
@@ -140,7 +140,7 @@ describe('CreateGitOpsCluster', () => {
     mockCollectMissingPermissions.mockReset()
     mockCollectMissingPermissions.mockResolvedValue([])
     mockReconcileGitOpsWizardResources.mockReset()
-    mockReconcileGitOpsWizardResources.mockResolvedValue(undefined)
+    mockReconcileGitOpsWizardResources.mockResolvedValue({ gitOpsCluster: 'created' })
     mockOnSubmit = undefined
     mockOnCancel = undefined
   })
@@ -183,9 +183,41 @@ describe('CreateGitOpsCluster', () => {
         expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'fleet' }) }),
       ])
     )
-    expect(addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+    expect(addAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'success',
+        title: 'GitOpsCluster created',
+        message: 'fleet was successfully created.',
+      })
+    )
     expect(submitForm).toHaveBeenCalled()
     expect(await screen.findByTestId('gitops-page')).toBeInTheDocument()
+  })
+
+  it('shows updated toast when GitOpsCluster already existed', async () => {
+    mockReconcileGitOpsWizardResources.mockResolvedValueOnce({ gitOpsCluster: 'updated' })
+    const { addAlert } = renderCreate()
+    await mockOnSubmit?.([
+      {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: 'GitOpsCluster',
+        metadata: { name: 'fleet', namespace: 'openshift-gitops' },
+        spec: {
+          placementRef: {
+            kind: 'Placement',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'fleet-placement',
+          },
+        },
+      },
+    ])
+    expect(addAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'success',
+        title: 'GitOpsCluster updated',
+        message: 'fleet was successfully updated.',
+      })
+    )
   })
 
   it('re-attaches a missing Placement before reconcile when only GitOpsCluster is submitted', async () => {

@@ -130,13 +130,15 @@ export function CreateGitOpsCluster() {
         }
 
         return reconcileGitOpsWizardResources(resources)
-          .then(() => {
-            const created = resources.find((resource) => resource.kind === GitOpsClusterKind)
+          .then((result) => {
+            const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
+            const name = gitOpsCluster?.metadata?.name
+            const wasUpdated = result.gitOpsCluster === 'updated'
             toast.addAlert({
-              title: t('GitOpsCluster created'),
-              message: t('{{name}} was successfully created.', {
-                name: created?.metadata?.name,
-              }),
+              title: wasUpdated ? t('GitOpsCluster updated') : t('GitOpsCluster created'),
+              message: wasUpdated
+                ? t('{{name}} was successfully updated.', { name })
+                : t('{{name}} was successfully created.', { name }),
               type: 'success',
               autoClose: true,
             })

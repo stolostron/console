@@ -471,7 +471,7 @@ describe('gitOpsClusterResources', () => {
       promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
     })
 
-    await reconcileGitOpsWizardResources([desired])
+    await expect(reconcileGitOpsWizardResources([desired])).resolves.toEqual({ gitOpsCluster: 'created' })
     expect(mockReconcileResources).toHaveBeenCalledWith(
       [expect.objectContaining({ kind: GitOpsClusterKind, metadata: expect.objectContaining({ name: 'fleet' }) })],
       []
@@ -483,7 +483,7 @@ describe('gitOpsClusterResources', () => {
       metadata: { ...desired.metadata, uid: 'live-uid', resourceVersion: '3' },
     }
     mockGetResource.mockReturnValue({ promise: Promise.resolve(live) })
-    await reconcileGitOpsWizardResources([desired])
+    await expect(reconcileGitOpsWizardResources([desired])).resolves.toEqual({ gitOpsCluster: 'updated' })
     expect(mockReconcileResources).toHaveBeenCalledWith(
       [
         expect.objectContaining({

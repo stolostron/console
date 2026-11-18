@@ -214,13 +214,15 @@ export function EditGitOpsCluster() {
         ) as IResource[]
 
         return reconcileGitOpsWizardResources(resources, previousOwned)
-          .then(() => {
-            const updated = resources.find((resource) => resource.kind === GitOpsClusterKind)
+          .then((result) => {
+            const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
+            const name = gitOpsCluster?.metadata?.name
+            const wasCreated = result.gitOpsCluster === 'created'
             toast.addAlert({
-              title: t('GitOpsCluster updated'),
-              message: t('{{name}} was successfully updated.', {
-                name: updated?.metadata?.name,
-              }),
+              title: wasCreated ? t('GitOpsCluster created') : t('GitOpsCluster updated'),
+              message: wasCreated
+                ? t('{{name}} was successfully created.', { name })
+                : t('{{name}} was successfully updated.', { name }),
               type: 'success',
               autoClose: true,
             })

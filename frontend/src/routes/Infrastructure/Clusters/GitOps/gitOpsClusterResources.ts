@@ -716,6 +716,13 @@ async function upsertResource(resource: IResource): Promise<'created' | 'updated
   }
 }
 
+export type GitOpsClusterUpsertResult = 'created' | 'updated'
+
+export interface ReconcileGitOpsWizardResult {
+  /** Outcome for the GitOpsCluster only — Placement/bindings are not surfaced in toasts. */
+  gitOpsCluster?: GitOpsClusterUpsertResult
+}
+
 /**
  * Apply the wizard YAML as-is: create resources that are missing and patch resources that already exist.
  * Argo CD, AppProject, and the operator Subscription are not deleted when they drop out of the YAML.
@@ -724,9 +731,10 @@ async function upsertResource(resource: IResource): Promise<'created' | 'updated
 export async function reconcileGitOpsWizardResources(
   desired: IResource[],
   previousOwned: IResource[] = []
-): Promise<void> {
+): Promise<ReconcileGitOpsWizardResult> {
   const ordered = orderGitOpsWizardResourcesForApply(desired)
   const createdInThisPass: IResource[] = []
+  let gitOpsCluster: GitOpsClusterUpsertResult | undefined
 
   try {
     // Apply desired resources sequentially so a failed upsert does not leave deletions already applied.
@@ -734,6 +742,9 @@ export async function reconcileGitOpsWizardResources(
       const result = await upsertResource(resource)
       if (result === 'created') {
         createdInThisPass.push(withoutServerMetadata(resource))
+      }
+      if (resource.kind === GitOpsClusterKind) {
+        gitOpsCluster = result
       }
     }
   } catch (err) {
@@ -755,6 +766,8 @@ export async function reconcileGitOpsWizardResources(
   if (removed.length > 0) {
     await reconcileResources([], removed)
   }
+
+  return { gitOpsCluster }
 }
 
 export interface MissingPermission {

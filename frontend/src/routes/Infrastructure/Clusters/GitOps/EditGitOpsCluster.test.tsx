@@ -33,7 +33,7 @@ const mockCollectMissingPermissions = jest.fn<
 const mockReconcileGitOpsWizardResources = jest.fn<
   ReturnType<typeof GitOpsResources.reconcileGitOpsWizardResources>,
   Parameters<typeof GitOpsResources.reconcileGitOpsWizardResources>
->(async () => undefined)
+>(async () => ({ gitOpsCluster: 'updated' }))
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources', () => {
   const actual = jest.requireActual('~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources')
@@ -171,7 +171,7 @@ describe('EditGitOpsCluster', () => {
     mockCollectMissingPermissions.mockReset()
     mockCollectMissingPermissions.mockResolvedValue([])
     mockReconcileGitOpsWizardResources.mockReset()
-    mockReconcileGitOpsWizardResources.mockResolvedValue(undefined)
+    mockReconcileGitOpsWizardResources.mockResolvedValue({ gitOpsCluster: 'updated' })
     mockOnSubmit = undefined
     mockOnCancel = undefined
     mockWizardResources = undefined
@@ -201,7 +201,13 @@ describe('EditGitOpsCluster', () => {
       expect.any(Array),
       expect.arrayContaining([expect.objectContaining({ kind: GitOpsClusterKind })])
     )
-    expect(addAlert).toHaveBeenCalledWith(expect.objectContaining({ type: 'success' }))
+    expect(addAlert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: 'success',
+        title: 'GitOpsCluster updated',
+        message: expect.stringMatching(/was successfully updated/),
+      })
+    )
     expect(submitForm).toHaveBeenCalled()
   })
 
