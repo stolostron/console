@@ -32,6 +32,7 @@ import { GetGitOpsClusters } from './CreatePushApplicationSet'
 import { get, set } from 'lodash'
 import { LostChangesContext } from '~/components/LostChanges'
 import { useTimezones } from '~/hooks/useTimezone'
+import { getApplicationModel } from '~/routes/Applications/helpers/resource-helper'
 
 export function WizardSyncEditor() {
   const resources = useItem() // Wizard framework sets this context
@@ -142,11 +143,7 @@ export function EditArgoApplicationSet({
         return
       }
 
-      if (
-        applicationSet?.spec.template?.metadata?.annotations?.['apps.open-cluster-management.io/ocm-managed-cluster']
-      ) {
-        setPullModel(true)
-      }
+      setPullModel(getApplicationModel(applicationSet) !== undefined)
       const copyOfAppSet = JSON.parse(JSON.stringify(applicationSet))
       const sources = get(applicationSet, 'spec.template.spec.sources')?.map((source: any) => {
         if (source.path) {
@@ -224,6 +221,7 @@ export function EditArgoApplicationSet({
         timeZones={timeZones}
         resources={existingResources}
         isPullModel={pullModel}
+        gitOpsModel={getApplicationModel(existingResources[0])}
         repoSecrets={secrets}
       />
     )

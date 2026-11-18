@@ -319,14 +319,14 @@ describe('Applications Page', () => {
   test('create dropdown navigates to argo pull model', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - Pull model'))
+    await clickElement(screen.getByText('Argo CD ManifestWork Pull model ApplicationSet'))
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
   })
 
   test('create dropdown navigates to argo push model', async () => {
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(screen.getByText('Argo CD ApplicationSet - Push model'))
+    await clickElement(screen.getByText('Argo CD Push model ApplicationSet'))
     expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
@@ -362,14 +362,14 @@ describe('Applications Page', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Type,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
-          `"application-0","Subscription","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
-          '"applicationset-0","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
-          '"applicationset-1","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
-          '"argoapplication-1","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
-          '"feng-remote-argo8","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
-          '"authentication-operator","OpenShift","authentication-operator-ns","None",-,"app=authentication-operator","-","-","-",-\n' +
-          '"authentication-operatorf","Flux","authentication-operator-ns","None",-,"kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
+        'Name,Type,Model,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
+          `"application-0","Subscription","-","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          '"applicationset-0","Application set","-","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"applicationset-1","Application set","-","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
+          '"argoapplication-1","Argo CD","-","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
+          '"feng-remote-argo8","Argo CD","-","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
+          '"authentication-operator","OpenShift","-","authentication-operator-ns","None",-,"app=authentication-operator","-","-","-",-\n' +
+          '"authentication-operatorf","Flux","-","authentication-operator-ns","None",-,"kustomize.toolkit.fluxcd.io/name=test-app,kustomize.toolkit.fluxcd.io/namespace=test-app-ns","-","-","-",-',
       ],
       { type: 'text/csv' }
     )

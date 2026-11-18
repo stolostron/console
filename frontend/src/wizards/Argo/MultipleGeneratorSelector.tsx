@@ -58,6 +58,7 @@ export interface CrossGeneratorSyncProps {
   onGeneratorStateChange?: (state: PrevGenState) => void
   defaultData?: IResource[] | unknown[]
   generatorPath: MutableRefObject<string>
+  isAgentPullModel?: boolean
 }
 
 export interface MultipleGeneratorSelectorProps {
@@ -69,6 +70,7 @@ export interface MultipleGeneratorSelectorProps {
   disableForm: boolean
   generatorPath: MutableRefObject<string>
   secrets: Secret[]
+  excludeClusterDecisionResource?: boolean
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
@@ -87,7 +89,10 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
       path={path}
       placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
       required={showValidation}
-      dropdownItems={Specifications.map((specification) => ({
+      dropdownItems={Specifications.filter(
+        (specification) =>
+          !props.excludeClusterDecisionResource || specification.name !== 'Cluster Decision Resource generator'
+      ).map((specification) => ({
         label: specification.description,
         action: () => createGeneratorFromSpecification(specification),
       }))}
@@ -528,10 +533,18 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
     if (hasListGen) {
       if (templateName !== `${appName}-${CLUSTER}`) {
         fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${CLUSTER}`)
-        fix(appSet, DESTINATION_NAME_PATH_SERVER, URL)
+        fix(
+          appSet,
+          props.isAgentPullModel ? 'spec.template.spec.destination.name' : DESTINATION_NAME_PATH_SERVER,
+          props.isAgentPullModel ? CLUSTER : URL
+        )
       }
     } else if (!isInitialSync && prevGenState.current.hasListGen !== hasListGen) {
-      fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
+      fix(
+        appSet,
+        props.isAgentPullModel ? 'spec.template.spec.destination.name' : DESTINATION_NAME_PATH_SERVER,
+        props.isAgentPullModel ? '{{name}}' : SERVER
+      )
     }
 
     // handle generators that don't affect template

@@ -32,6 +32,7 @@ import schema from './pullmodelschema.json'
 import { LostChangesContext } from '~/components/LostChanges'
 import { LoadingPage } from '~/components/LoadingPage'
 import { useTimezones } from '~/hooks/useTimezone'
+import { useApplicationGitOpsMode } from '~/hooks/useApplicationGitOpsMode'
 
 export default function CreatePullApplicationSetPage() {
   return <CreatePullApplicationSet />
@@ -101,6 +102,7 @@ export function CreatePullApplicationSet() {
   const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
   const secrets = useSharedValue(secretsState)
+  const { isArgoCDAgentModeEnabled } = useApplicationGitOpsMode()
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -143,8 +145,13 @@ export function CreatePullApplicationSet() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - Pull model') },
+        {
+          text: isArgoCDAgentModeEnabled
+            ? t('Create application set - Agent pull model')
+            : t('Create application set - Pull model'),
+        },
       ]}
+      gitOpsModel={isArgoCDAgentModeEnabled ? 'agent' : 'manifestwork'}
       clusters={managedClusters}
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}

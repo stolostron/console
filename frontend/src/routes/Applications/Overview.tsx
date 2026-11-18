@@ -2,6 +2,8 @@
 
 import {
   Content,
+  Flex,
+  FlexItem,
   Label,
   PageSection,
   Popover,
@@ -10,9 +12,15 @@ import {
   StackItem,
   ToolbarItem,
 } from '@patternfly/react-core'
+import { RhUiLongArrowRightIcon } from '@patternfly/react-icons'
+import textStyles from '@patternfly/react-styles/css/utilities/Text/text'
+import { ModalVariant } from '@patternfly/react-core/deprecated'
+import { useApplicationGitOpsMode } from '~/hooks/useApplicationGitOpsMode'
+import { CreateGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/CreateGitOpsCluster'
+import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, useNavigate } from 'react-router'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
@@ -53,6 +61,7 @@ import {
   AcmEmptyState,
   AcmInlineStatusGroup,
   AcmLabels,
+  AcmModal,
   AcmTable,
   AcmTableStateProvider,
   AcmVisitedLink,
@@ -77,12 +86,17 @@ import {
   getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
+  getApplicationModel,
 } from './helpers/resource-helper'
 import { isLocalSubscription } from './helpers/subscriptions'
 import { IApplicationResource } from './model/application-resource'
 import { ApplicationStatus } from './model/application-status'
 import { useFetchApplicationLabels } from './useFetchApplicationLabels'
 import { getApplicationId, getLabels, isOCPAppResource } from './utils'
+import {
+  APPLICATIONS_TABLE_ID as TABLE_ID,
+  initializeApplicationColumnOrder,
+} from '~/routes/Applications/helpers/initializeApplicationColumnOrder'
 
 const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
 const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
@@ -98,13 +112,12 @@ const fluxAnnotations = {
   git: ['kustomize.toolkit.fluxcd.io/name', 'kustomize.toolkit.fluxcd.io/namespace'],
 }
 
-const TABLE_ID = 'applicationTable'
-
 const filterId = 'type'
 
 export enum AppColumns {
   name = 0,
   type,
+  model,
   namespace,
   clusters,
   health,
@@ -511,6 +524,17 @@ export function ApplicationSourcesCell(props: {
 }
 
 export default function ApplicationsOverview() {
+  const [columnPreferencesReady, setColumnPreferencesReady] = useState(false)
+
+  useEffect(() => {
+    initializeApplicationColumnOrder()
+    setColumnPreferencesReady(true)
+  }, [])
+
+  return columnPreferencesReady ? <ApplicationsOverviewContent /> : null
+}
+
+function ApplicationsOverviewContent() {
   const { t } = useTranslation()
   const { applicationsState, channelsState, placementsState, subscriptionsState } = useSharedAtoms()
 
@@ -707,6 +731,39 @@ export default function ApplicationsOverview() {
         isFirstVisitChecked: true,
       },
       {
+        header: t('Model'),
+        cell: (resource) => {
+          const model = getApplicationModel(resource)
+          if (model === 'agent') {
+            return (
+              <Label color="blue" isCompact>
+                {t('Agent pull')}
+              </Label>
+            )
+          }
+          if (model === 'manifestwork') {
+            return (
+              <Label color="purple" isCompact>
+                {t('ManifestWork pull')}
+              </Label>
+            )
+          }
+          return <span>-</span>
+        },
+        tooltip: t('Displays the GitOps model for pull-model ApplicationSets.'),
+        transforms: [cellWidth(10)],
+        exportContent: (resource) => {
+          const model = getApplicationModel(resource)
+          if (model === 'agent') return t('Agent pull')
+          if (model === 'manifestwork') return t('ManifestWork pull')
+          return '-'
+        },
+        id: 'model',
+        order: 3,
+        isDefault: false,
+        isFirstVisitChecked: true,
+      },
+      {
         header: t('Namespace'),
         cell: (resource, search) => getApplicationNamespace(resource, search),
         sort: 'transformed.namespace',
@@ -719,7 +776,7 @@ export default function ApplicationsOverview() {
           return getAppNamespace(resource)
         },
         id: 'namespace',
-        order: 3,
+        order: 4,
         isDefault: true,
       },
       {
@@ -742,7 +799,7 @@ export default function ApplicationsOverview() {
           return getClusterCountString(t, clusterCount, clusterList, resource)
         },
         id: 'clusters',
-        order: 4,
+        order: 5,
         isDefault: true,
       },
       {
@@ -763,7 +820,7 @@ export default function ApplicationsOverview() {
           return sourceNames.length > 0 ? sourceNames.join(', ') : undefined
         },
         id: 'sources',
-        order: 5,
+        order: 6,
         isDefault: false,
         isFirstVisitChecked: false,
       },
@@ -775,7 +832,7 @@ export default function ApplicationsOverview() {
             .map(([key, value]) => `${key}=${value}`)
             .join(','),
         id: 'labels',
-        order: 6,
+        order: 7,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -792,7 +849,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'health')
         },
         id: 'health',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -809,7 +866,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'synced')
         },
         id: 'sync',
-        order: 8,
+        order: 9,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -826,7 +883,7 @@ export default function ApplicationsOverview() {
           return exportApplicationStatusGroup(resource, 'deployed')
         },
         id: 'pod',
-        order: 9,
+        order: 10,
         isDefault: false,
         isFirstVisitChecked: true,
       },
@@ -847,7 +904,7 @@ export default function ApplicationsOverview() {
           }
         },
         id: 'created',
-        order: 10,
+        order: 11,
         isDefault: false,
         isFirstVisitChecked: false,
       },
@@ -1002,6 +1059,10 @@ export default function ApplicationsOverview() {
   const canDeleteApplication = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationDefinition))
   const canCreateApplicationSet = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationSetDefinition))
   const canDeleteApplicationSet = useIsAnyNamespaceAuthorized(rbacDelete(ApplicationSetDefinition))
+  const { hasGitOpsCluster, isArgoCDAgentModeEnabled, isPushModelEnabled } = useApplicationGitOpsMode()
+  const canCreateGitOpsCluster = useIsAnyNamespaceAuthorized(rbacCreate(GitopsClusterDefinition))
+  const [isGitOpsWizardOpen, setIsGitOpsWizardOpen] = useState(false)
+  const closeGitOpsWizard = useCallback(() => setIsGitOpsWizardOpen(false), [])
 
   const rowActionResolver = useCallback(
     (resource: IResource<ApplicationStatus>) => {
@@ -1205,60 +1266,104 @@ export default function ApplicationsOverview() {
     ]
   )
 
-  const appCreationButton = useMemo(
-    () => (
+  const appCreationButton = useMemo(() => {
+    const dropdownItems: React.ComponentProps<typeof AcmDropdown>['dropdownItems'] = [
+      {
+        id: 'create-argo-pull-model',
+        text: isArgoCDAgentModeEnabled
+          ? t('Argo CD Agent Pull model ApplicationSet')
+          : t('Argo CD ManifestWork Pull model ApplicationSet'),
+        description: isArgoCDAgentModeEnabled
+          ? t(
+              'Deploy applications across managed clusters using pull mode with full status fidelity, resource trees, and live-state visibility.'
+            )
+          : t(
+              'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
+            ),
+        isDisabled: !canCreateApplicationSet,
+        tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
+      },
+      ...(isPushModelEnabled
+        ? [
+            {
+              id: 'create-argo',
+              text: t('Argo CD Push model ApplicationSet'),
+              description: t('Push application resources from the hub cluster out to managed clusters.'),
+              isDisabled: !canCreateApplicationSet,
+              tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
+            },
+          ]
+        : []),
+      {
+        id: 'create-subscription',
+        text: <DeprecatedTitle title={t('Subscription')} />,
+        description: t('Distribute subscription resources from the hub to managed clusters'),
+        isDisabled: !canCreateApplication,
+        tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
+      },
+    ]
+
+    if (!hasGitOpsCluster) {
+      dropdownItems.push({
+        id: 'configure-gitops',
+        separator: true,
+        isDisabled: !canCreateGitOpsCluster,
+        tooltip: !canCreateGitOpsCluster ? t('rbac.unauthorized') : '',
+        text: (
+          <Flex
+            component="span"
+            className={textStyles.textColorLink}
+            justifyContent={{ default: 'justifyContentSpaceBetween' }}
+            alignItems={{ default: 'alignItemsCenter' }}
+            flexWrap={{ default: 'nowrap' }}
+          >
+            <FlexItem component="span">{t('Set up GitOps configuration for Argo CD Agent Pull')}</FlexItem>
+            <FlexItem component="span">
+              <RhUiLongArrowRightIcon aria-hidden />
+            </FlexItem>
+          </Flex>
+        ),
+      })
+    }
+
+    return (
       <AcmDropdown
-        isDisabled={!canCreateApplication && !canCreateApplicationSet}
-        tooltip={!canCreateApplication && !canCreateApplicationSet ? t('rbac.unauthorized') : ''}
+        isDisabled={!canCreateApplication && !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)}
+        tooltip={
+          !canCreateApplication && !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)
+            ? t('rbac.unauthorized')
+            : ''
+        }
         id={'application-create'}
         onSelect={(id) => {
           if (id === 'create-argo') {
             void navigate(NavigationPath.createApplicationArgo)
           } else if (id === 'create-argo-pull-model') {
             void navigate(NavigationPath.createApplicationArgoPullModel)
+          } else if (id === 'configure-gitops') {
+            setIsGitOpsWizardOpen(true)
           } else {
             void navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}
-        dropdownItems={[
-          {
-            id: 'psuedo.group.label',
-            isAriaDisabled: true,
-            text: <span style={{ fontSize: '14px' }}>{t('Choose a type')}</span>,
-          },
-          {
-            id: 'create-argo-pull-model',
-            text: t('Argo CD ApplicationSet - Pull model'),
-            description: t(
-              'Considered the better choice for security although you cannot deploy to hub cluster. Managed clusters pull application resources directly from Git repositories.'
-            ),
-            isDisabled: !canCreateApplicationSet,
-            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
-          },
-          {
-            id: 'create-argo',
-            text: t('Argo CD ApplicationSet - Push model'),
-            description: t(
-              'Hub cluster pushes application resources to managed clusters requiring credentials for each cluster.'
-            ),
-            isDisabled: !canCreateApplicationSet,
-            tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
-          },
-          {
-            id: 'create-subscription',
-            text: <DeprecatedTitle title={t('Subscription')} />,
-            isDisabled: !canCreateApplication,
-            tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
-          },
-        ]}
+        menuWidth="min(40rem, calc(100vw - 2rem))"
+        dropdownItems={dropdownItems}
         isKebab={false}
         isPlain={false}
         isPrimary={true}
       />
-    ),
-    [canCreateApplication, canCreateApplicationSet, navigate, t]
-  )
+    )
+  }, [
+    canCreateApplication,
+    canCreateApplicationSet,
+    canCreateGitOpsCluster,
+    hasGitOpsCluster,
+    isArgoCDAgentModeEnabled,
+    isPushModelEnabled,
+    navigate,
+    t,
+  ])
 
   const compareAppTypesLink = useMemo(
     () => (
@@ -1268,7 +1373,19 @@ export default function ApplicationsOverview() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Pull model')}</Content>
+                <Content component="p">{t('Argo CD Agent Pull model ApplicationSet')}</Content>
+              </span>
+              <span>
+                <Content component="p">
+                  {t(
+                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                  )}
+                </Content>
+              </span>
+            </div>
+            <div style={{ paddingTop: '10px' }}>
+              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
+                <Content component="p">{t('Argo CD ManifestWork Pull model ApplicationSet')}</Content>
               </span>
               <span>
                 <Content component="p">
@@ -1280,7 +1397,7 @@ export default function ApplicationsOverview() {
             </div>
             <div style={{ paddingTop: '10px' }}>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ApplicationSet - Push model')}</Content>
+                <Content component="p">{t('Argo CD Push model ApplicationSet')}</Content>
               </span>
               <span>
                 <Content component="p">
@@ -1343,6 +1460,22 @@ export default function ApplicationsOverview() {
   return (
     <PageSection hasBodyWrapper={false}>
       <DeleteResourceModal {...modalProps} />
+      {isGitOpsWizardOpen && (
+        <AcmModal
+          title={t('Create GitOpsCluster')}
+          variant={ModalVariant.large}
+          showClose={false}
+          isOpen
+          onClose={closeGitOpsWizard}
+          hasNoBodyWrapper
+        >
+          <Flex direction={{ default: 'column' }} style={{ height: '75vh' }}>
+            <FlexItem flex={{ default: 'flex_1' }}>
+              <CreateGitOpsCluster isModal onCancel={closeGitOpsWizard} onSubmitSuccess={closeGitOpsWizard} />
+            </FlexItem>
+          </Flex>
+        </AcmModal>
+      )}
       {pluginModal}
       <AcmTableStateProvider localStorageKey={'applications-overview-table-state'}>
         <AcmTable<IApplicationResource>
