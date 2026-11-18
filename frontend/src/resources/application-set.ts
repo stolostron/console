@@ -10,6 +10,8 @@ export type ApplicationSetApiVersionType = 'argoproj.io/v1alpha1'
 export const ApplicationSetKind = 'ApplicationSet'
 export type ApplicationSetKindType = 'ApplicationSet'
 
+export const APPLICATION_SET_GITOPS_MODEL_ANNOTATION = 'apps.open-cluster-management.io/gitops-model'
+
 export const ApplicationSetDefinition: IResourceDefinition = {
   apiVersion: ApplicationSetApiVersion,
   kind: ApplicationSetKind,
@@ -47,7 +49,8 @@ export interface ApplicationSet extends IResource {
       spec?: {
         destination?: {
           namespace: string
-          server: string
+          server?: string
+          name?: string
         }
         project: string
         source?: ArgoSource
