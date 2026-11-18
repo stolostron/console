@@ -56,6 +56,7 @@ export function PlacementSection(props: {
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
+  syncPlacementBindingName?: boolean
 }) {
   const { t } = useTranslation()
   const { update } = useData()
@@ -267,7 +268,9 @@ export function PlacementSection(props: {
         <Fragment>
           {editMode === EditMode.Create && (
             <Fragment>
-              <Sync kind={PlacementKind} path="metadata.name" targetKind={PlacementBindingKind} />
+              {props.syncPlacementBindingName !== false && (
+                <Sync kind={PlacementKind} path="metadata.name" targetKind={PlacementBindingKind} />
+              )}
               <Sync
                 kind={PlacementKind}
                 path="metadata.name"
