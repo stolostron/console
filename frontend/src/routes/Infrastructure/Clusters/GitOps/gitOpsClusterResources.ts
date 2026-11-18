@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { rbacCreate, rbacGet, rbacPatch } from '~/lib/rbac-util'
+import { isEqual } from 'lodash'
+import { t } from 'i18next'
+import { rbacCreate, rbacDelete, rbacGet, rbacPatch } from '~/lib/rbac-util'
 import type { IResource } from '~/resources'
 import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
@@ -28,6 +30,8 @@ export const ArgoCDDefinition: IResource = { apiVersion: ArgoCDApiVersion, kind:
 export const AppProjectApiVersion = 'argoproj.io/v1alpha1'
 export const AppProjectKind = 'AppProject'
 export const AppProjectDefinition: IResource = { apiVersion: AppProjectApiVersion, kind: AppProjectKind }
+
+export const GITOPS_BINDING_OWNER_ANNOTATION = 'apps.open-cluster-management.io/gitopscluster'
 
 export const GITOPS_OPERATOR_SUBSCRIPTION_NAME = 'openshift-gitops-operator'
 export const GITOPS_OPERATOR_SUBSCRIPTION_NAMESPACE = 'openshift-gitops-operator'
@@ -156,8 +160,9 @@ export function createPlacementResource(options: {
   clusterSets?: string[]
   existing?: Placement
   previousGitOpsClusterName?: string
+  placementName?: string
 }): Placement {
-  const { name, namespace, clusterSets, existing, previousGitOpsClusterName } = options
+  const { name, namespace, clusterSets, existing, previousGitOpsClusterName, placementName } = options
   const defaultPredicates: NonNullable<Placement['spec']['predicates']> = [
     {
       requiredClusterSelector: {
@@ -210,10 +215,12 @@ export function createPlacementResource(options: {
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
-      name: resolvePlacementDraftName(name, existing?.metadata?.name, {
-        isLive: Boolean(existing?.metadata?.uid),
-        previousGitOpsClusterName,
-      }),
+      name:
+        placementName ??
+        resolvePlacementDraftName(name, existing?.metadata?.name, {
+          isLive: Boolean(existing?.metadata?.uid),
+          previousGitOpsClusterName,
+        }),
       namespace,
     },
     spec,
@@ -256,15 +263,34 @@ export function createManagedClusterSetBindings(options: {
   namespace: string
   clusterSets: string[]
   existingBindings?: ManagedClusterSetBinding[]
+  gitOpsClusterName?: string
 }): ManagedClusterSetBinding[] {
-  const { namespace, clusterSets, existingBindings = [] } = options
+  const { namespace, clusterSets, existingBindings = [], gitOpsClusterName } = options
   return clusterSets.map((clusterSet) => {
     const existing = existingBindings.find((binding) => bindingMatchesClusterSet(binding, namespace, clusterSet))
+    if (
+      existing &&
+      gitOpsClusterName &&
+      !resourceExistsOnCluster(existing) &&
+      existing.metadata.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
+    ) {
+      return {
+        ...existing,
+        metadata: {
+          ...existing.metadata,
+          annotations: { ...existing.metadata.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: gitOpsClusterName },
+        },
+      }
+    }
     return (
       existing ?? {
         apiVersion: ManagedClusterSetBindingApiVersion,
         kind: ManagedClusterSetBindingKind,
-        metadata: { name: clusterSet, namespace },
+        metadata: {
+          name: clusterSet,
+          namespace,
+          ...(gitOpsClusterName && { annotations: { [GITOPS_BINDING_OWNER_ANNOTATION]: gitOpsClusterName } }),
+        },
         spec: { clusterSet },
       }
     )
@@ -577,6 +603,10 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     clusterSets,
     existing: existingPlacement,
     previousGitOpsClusterName,
+    placementName:
+      !existingPlacement && existingGitOpsCluster && resourceExistsOnCluster(existingGitOpsCluster)
+        ? existingGitOpsCluster.spec?.placementRef?.name
+        : undefined,
   })
   const gitOpsCluster = createGitOpsClusterResource({
     name,
@@ -600,6 +630,7 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
         namespace,
         clusterSets: placementClusterSets,
         existingBindings,
+        gitOpsClusterName: name,
       })
     )
   } else if (includeBindings && existingBindings.length > 0) {
@@ -668,6 +699,44 @@ function sameResourceIdentity(a: IResource, b: IResource): boolean {
   return a.kind === b.kind && a.metadata?.namespace === b.metadata?.namespace && a.metadata?.name === b.metadata?.name
 }
 
+export function isGitOpsBindingOwnedBy(binding: IResource, gitOpsCluster: IResource): boolean {
+  if (!gitOpsCluster.metadata?.name) return false
+  return (
+    binding.metadata?.namespace === gitOpsCluster.metadata?.namespace &&
+    (binding.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION] === gitOpsCluster.metadata?.name ||
+      binding.metadata?.ownerReferences?.some(
+        (owner) =>
+          owner.kind === GitOpsClusterKind &&
+          owner.name === gitOpsCluster.metadata?.name &&
+          !!gitOpsCluster.metadata?.uid &&
+          owner.uid === gitOpsCluster.metadata.uid
+      ) === true)
+  )
+}
+
+/** Shared or unproven bindings stay; an empty clusterSets list references all namespace bindings. */
+export function getRemovedGitOpsWizardResources(
+  desired: IResource[],
+  previousOwned: IResource[],
+  placements?: Placement[]
+): IResource[] {
+  const gitOpsCluster = previousOwned.find((resource) => resource.kind === GitOpsClusterKind)
+  const ownPlacements = [...previousOwned, ...desired].filter((resource) => resource.kind === PlacementKind)
+  return previousOwned.filter((previous) => {
+    if (PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') || desired.some((item) => sameResourceIdentity(item, previous)))
+      return false
+    if (previous.kind !== ManagedClusterSetBindingKind) return true
+    if (!gitOpsCluster || !placements || !isGitOpsBindingOwnedBy(previous, gitOpsCluster)) return false
+    const binding = previous as ManagedClusterSetBinding
+    return !placements.some(
+      (placement) =>
+        placement.metadata.namespace === binding.metadata.namespace &&
+        !ownPlacements.some((own) => sameResourceIdentity(own, placement)) &&
+        (!placement.spec.clusterSets?.length || placement.spec.clusterSets.includes(binding.spec.clusterSet))
+    )
+  })
+}
+
 /** Shared hub objects stay when Agent is turned off. Everything else in the YAML is created, updated, or removed. */
 const PRESERVE_WHEN_ABSENT = new Set([ArgoCDKind, AppProjectKind, SubscriptionOperatorKind])
 
@@ -697,15 +766,75 @@ function withLiveIdentity(desired: IResource, live: IResource): IResource {
     resourceVersion: live.metadata?.resourceVersion,
     generation: live.metadata?.generation,
     creationTimestamp: live.metadata?.creationTimestamp,
+    ownerReferences: live.metadata?.ownerReferences,
   }
   return copy
 }
 
-async function upsertResource(resource: IResource): Promise<'created' | 'updated'> {
+function concurrentEditError(resource: IResource): ResourceError {
+  return new ResourceError(
+    ResourceErrorCode.Conflict,
+    t('{{kind}} {{name}} changed while this wizard was open. Reload the page and try again.', {
+      kind: resource.kind,
+      name: resource.metadata?.name,
+    })
+  )
+}
+
+/** Three-way merge: retain concurrent changes; arrays are atomic to avoid shifting edited indices. */
+function mergeResourceDraft(baseline: IResource, desired: IResource, live: IResource): IResource {
+  const isObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+  const merge = (before: unknown, draft: unknown, current: unknown): unknown => {
+    if (isEqual(before, draft)) return current
+    if (isEqual(before, current) || isEqual(draft, current)) return draft
+    if (isObject(before) && isObject(draft) && isObject(current)) {
+      const result = { ...current }
+      for (const key of new Set([...Object.keys(before), ...Object.keys(draft)])) {
+        const value = merge(before[key], draft[key], current[key])
+        if (value === undefined) delete result[key]
+        else result[key] = value
+      }
+      return result
+    }
+    throw concurrentEditError(desired)
+  }
+  return merge(
+    withoutServerMetadata(baseline),
+    withoutServerMetadata(desired),
+    withoutServerMetadata(live)
+  ) as IResource
+}
+
+async function upsertResource(resource: IResource, baseline?: IResource): Promise<'created' | 'updated'> {
   const createBody = withoutServerMetadata(resource)
   try {
     const live = await getResource(createBody).promise
-    await reconcileResources([withLiveIdentity(resource, live)], [live])
+    // Callers without an original baseline cannot safely merge a stale ArgoCD
+    // draft. Require a fresh draft rather than replacing its resourceVersion.
+    if (
+      !baseline &&
+      resource.kind === ArgoCDKind &&
+      resource.metadata?.resourceVersion &&
+      resource.metadata.resourceVersion !== live.metadata?.resourceVersion
+    ) {
+      throw concurrentEditError(resource)
+    }
+    const desired = baseline ? mergeResourceDraft(baseline, resource, live) : cloneResource(resource)
+    if (desired.kind === ManagedClusterSetBindingKind) {
+      // Finding an existing binding during upsert must never adopt a shared
+      // binding merely because the create draft carried our ownership marker.
+      const owner = live.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
+      if (owner) {
+        desired.metadata = {
+          ...desired.metadata,
+          annotations: { ...desired.metadata?.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: owner },
+        }
+      } else if (desired.metadata?.annotations) {
+        delete desired.metadata.annotations[GITOPS_BINDING_OWNER_ANNOTATION]
+      }
+    }
+    await reconcileResources([withLiveIdentity(desired, live)], [live])
     return 'updated'
   } catch (err) {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
@@ -730,7 +859,8 @@ export interface ReconcileGitOpsWizardResult {
  */
 export async function reconcileGitOpsWizardResources(
   desired: IResource[],
-  previousOwned: IResource[] = []
+  previousOwned: IResource[] = [],
+  options: { baseline?: IResource[]; placements?: Placement[] } = {}
 ): Promise<ReconcileGitOpsWizardResult> {
   const ordered = orderGitOpsWizardResourcesForApply(desired)
   const createdInThisPass: IResource[] = []
@@ -739,7 +869,10 @@ export async function reconcileGitOpsWizardResources(
   try {
     // Apply desired resources sequentially so a failed upsert does not leave deletions already applied.
     for (const resource of ordered) {
-      const result = await upsertResource(resource)
+      const result = await upsertResource(
+        resource,
+        options.baseline?.find((item) => sameResourceIdentity(item, resource))
+      )
       if (result === 'created') {
         createdInThisPass.push(withoutServerMetadata(resource))
       }
@@ -759,10 +892,7 @@ export async function reconcileGitOpsWizardResources(
     throw err
   }
 
-  const removed = previousOwned.filter(
-    (previous) =>
-      !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))
-  )
+  const removed = getRemovedGitOpsWizardResources(desired, previousOwned, options.placements)
   if (removed.length > 0) {
     await reconcileResources([], removed)
   }
@@ -794,7 +924,10 @@ async function resourceExistsLive(resource: IResource): Promise<boolean> {
   }
 }
 
-export async function collectMissingPermissions(resources: IResource[]): Promise<MissingPermission[]> {
+export async function collectMissingPermissions(
+  resources: IResource[],
+  removed: IResource[] = []
+): Promise<MissingPermission[]> {
   // Probe existence up front (Forbidden / non-NotFound errors propagate and stop preflight).
   const existenceFlags = await Promise.all(resources.map((resource) => resourceExistsLive(resource)))
 
@@ -815,6 +948,14 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
       checks.push(rbacGet(definition, namespace, name), rbacCreate(definition, namespace, name))
       labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'create', namespace, name })
     }
+  })
+
+  removed.forEach((resource) => {
+    const kind = resource.kind ?? 'Unknown'
+    const namespace = resource.metadata?.namespace
+    const name = resource.metadata?.name
+    checks.push(rbacDelete(definitionForKind(kind) ?? resource, namespace, name))
+    labels.push({ kind, verb: 'delete', namespace, name })
   })
 
   const attributes = await Promise.all(checks)

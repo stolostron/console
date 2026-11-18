@@ -56,7 +56,6 @@ import {
   isPushModelEnabled,
   policyNameFor,
   preferDraftManagedClusterSetBindings,
-  resourcesSignature,
   type GitOpsClusterWizardData,
   type MissingPermission,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -68,6 +67,7 @@ export interface GitOpsClusterDetailsStepProps {
   subscriptions: SubscriptionOperator[]
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
+  existingAppProject?: IResource
 }
 
 type PullModelId = 'agent' | 'manifestwork'
@@ -135,6 +135,7 @@ export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsSte
         subscriptions={props.subscriptions}
         policies={props.policies}
         existingBindings={props.existingBindings ?? []}
+        existingAppProject={props.existingAppProject}
       />
     </>
   )
@@ -479,6 +480,7 @@ function AgentResourcesSync(
     subscriptions: SubscriptionOperator[]
     policies: Policy[]
     existingBindings: ManagedClusterSetBinding[]
+    existingAppProject?: IResource
   }>
 ) {
   const resources = useItem() as IResource[]
@@ -530,7 +532,7 @@ function AgentResourcesSync(
         liveBindings: props.existingBindings,
       }),
       existingArgoCD: argoCD,
-      existingAppProject,
+      existingAppProject: existingAppProject ?? props.existingAppProject,
       existingSubscription,
       existingPolicy,
       includeBindings: true,
@@ -555,23 +557,30 @@ function GitOpsPermissionAlert() {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
   const [missing, setMissing] = useState<MissingPermission[]>([])
-  // Stable key so keystroke rebuilds (new array ref, same kinds/names) do not re-fire RBAC probes.
-  const signature = resourcesSignature(resources)
+  const resourcesRef = useRef(resources)
+  resourcesRef.current = resources
+  const identityKey = JSON.stringify(
+    resources
+      .map((resource) => [resource.kind, resource.metadata?.namespace, resource.metadata?.name])
+      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+  )
 
   useEffect(() => {
     let cancelled = false
-    void collectMissingPermissions(resources)
-      .then((result) => {
-        if (!cancelled) setMissing(result)
-      })
-      .catch(() => {
-        if (!cancelled) setMissing([])
-      })
+    const timeout = setTimeout(() => {
+      void collectMissingPermissions(resourcesRef.current)
+        .then((result) => {
+          if (!cancelled) setMissing(result)
+        })
+        .catch(() => {
+          if (!cancelled) setMissing([])
+        })
+    }, 300)
     return () => {
       cancelled = true
+      clearTimeout(timeout)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when resource identity/agent/push changes
-  }, [signature])
+  }, [identityKey])
 
   if (missing.length === 0) return null
 

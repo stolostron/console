@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { EditMode, Step } from '@patternfly-labs/react-form-wizard'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { axe } from 'jest-axe'
 import { MemoryRouter } from 'react-router'
@@ -124,6 +124,54 @@ describe('GitOpsClusterDetailsStep', () => {
     await user.click(screen.getByText('Argo CD Agent pull'))
 
     expect(await screen.findByText('Enable Push model with Argo CD Agent')).toBeInTheDocument()
+  })
+
+  it('debounces permission probes until name edits settle', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    const { unmount } = renderDetailsStep()
+    try {
+      await user.type(screen.getByRole('textbox', { name: /^Name\b/ }), 'fleet')
+      expect(collectMissingPermissions).not.toHaveBeenCalled()
+      await act(async () => {
+        jest.advanceTimersByTime(299)
+      })
+      expect(collectMissingPermissions).not.toHaveBeenCalled()
+      await act(async () => {
+        jest.advanceTimersByTime(1)
+      })
+      expect(collectMissingPermissions).toHaveBeenCalledTimes(1)
+      expect(collectMissingPermissions).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ kind: GitOpsClusterKind, metadata: expect.objectContaining({ name: 'fleet' }) }),
+        ])
+      )
+    } finally {
+      unmount()
+      jest.useRealTimers()
+    }
+  })
+
+  it('navigates from review to the rendered pull model cards without adding a wrapper layout box', async () => {
+    const user = userEvent.setup()
+    const originalScroll = HTMLElement.prototype.scrollIntoView
+    const scroll = jest.fn()
+    HTMLElement.prototype.scrollIntoView = scroll
+    const { unmount } = renderDetailsStep({ editMode: EditMode.Edit })
+    try {
+      await user.click(screen.getByRole('button', { name: 'Next' }))
+      const term = await screen.findByText('Pull model configuration')
+      await user.click(term)
+      await waitFor(() => expect(scroll).toHaveBeenCalled())
+      const target = scroll.mock.contexts[0] as HTMLElement
+      expect(target).toContainElement(screen.getByText('Argo CD Agent pull'))
+      expect(target).toContainElement(screen.getByText('Argo CD ManifestWork pull'))
+      expect(target).not.toBe(document.getElementById('pull-model-configuration'))
+      expect(document.getElementById('pull-model-configuration')).toHaveStyle({ display: 'contents' })
+    } finally {
+      unmount()
+      HTMLElement.prototype.scrollIntoView = originalScroll
+    }
   })
 
   it('disables name and namespace in edit mode', async () => {
