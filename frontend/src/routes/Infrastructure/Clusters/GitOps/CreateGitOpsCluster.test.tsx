@@ -98,7 +98,13 @@ const mockArgoCD: IResource = {
   metadata: { name: 'openshift-gitops', namespace: 'openshift-gitops' },
 }
 
-function renderCreate(options?: { addAlert?: jest.Mock; submitForm?: jest.Mock; cancelForm?: jest.Mock }) {
+function renderCreate(options?: {
+  addAlert?: jest.Mock
+  submitForm?: jest.Mock
+  cancelForm?: jest.Mock
+  onCancel?: () => void
+  onSubmitSuccess?: () => void
+}) {
   const addAlert = options?.addAlert ?? jest.fn()
   const submitForm = options?.submitForm ?? jest.fn()
   const cancelForm = options?.cancelForm ?? jest.fn()
@@ -122,7 +128,12 @@ function renderCreate(options?: { addAlert?: jest.Mock; submitForm?: jest.Mock; 
           <LostChangesContext.Provider value={createMockLostChangesContext(submitForm, cancelForm)}>
             <MemoryRouter initialEntries={[NavigationPath.createGitOps]}>
               <Routes>
-                <Route path={NavigationPath.createGitOps} element={<CreateGitOpsCluster />} />
+                <Route
+                  path={NavigationPath.createGitOps}
+                  element={
+                    <CreateGitOpsCluster onCancel={options?.onCancel} onSubmitSuccess={options?.onSubmitSuccess} />
+                  }
+                />
                 <Route path={NavigationPath.gitOps} element={<div id="gitops-page">GitOps</div>} />
               </Routes>
             </MemoryRouter>
@@ -245,6 +256,31 @@ describe('CreateGitOpsCluster', () => {
         expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'orphan' }) }),
       ])
     )
+  })
+
+  it('uses modal callbacks instead of navigating away from Applications', async () => {
+    const onCancel = jest.fn()
+    const onSubmitSuccess = jest.fn()
+    renderCreate({ onCancel, onSubmitSuccess })
+    mockOnCancel?.()
+    expect(onCancel).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('gitops-page')).not.toBeInTheDocument()
+    await mockOnSubmit?.([
+      {
+        apiVersion: 'apps.open-cluster-management.io/v1beta1',
+        kind: 'GitOpsCluster',
+        metadata: { name: 'fleet', namespace: 'openshift-gitops' },
+        spec: {
+          placementRef: {
+            kind: 'Placement',
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            name: 'fleet-placement',
+          },
+        },
+      },
+    ])
+    expect(onSubmitSuccess).toHaveBeenCalledTimes(1)
+    expect(screen.queryByTestId('gitops-page')).not.toBeInTheDocument()
   })
 
   it('blocks submit when permissions are missing', async () => {
