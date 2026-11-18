@@ -1373,25 +1373,21 @@ function ApplicationsOverviewContent() {
           <>
             <div>
               <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD Agent Pull model ApplicationSet')}</Content>
-              </span>
-              <span>
                 <Content component="p">
-                  {t(
-                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
-                  )}
+                  {isArgoCDAgentModeEnabled
+                    ? t('Argo CD Agent Pull model ApplicationSet')
+                    : t('Argo CD ManifestWork Pull model ApplicationSet')}
                 </Content>
               </span>
-            </div>
-            <div style={{ paddingTop: '10px' }}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">{t('Argo CD ManifestWork Pull model ApplicationSet')}</Content>
-              </span>
               <span>
                 <Content component="p">
-                  {t(
-                    'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
-                  )}
+                  {isArgoCDAgentModeEnabled
+                    ? t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters using the Argo CD Agent. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )
+                    : t(
+                        'ApplicationSet application where Argo CD application resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application by using the received application resource.'
+                      )}
                 </Content>
               </span>
             </div>
@@ -1431,7 +1427,7 @@ function ApplicationsOverviewContent() {
         </AcmButton>
       </Popover>
     ),
-    [t]
+    [isArgoCDAgentModeEnabled, t]
   )
 
   const additionalToolbarItems = useMemo(
