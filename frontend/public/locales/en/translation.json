@@ -970,6 +970,7 @@
   "Create a cluster from hosts that have been discovered and made available in your host inventory.": "Create a cluster from hosts that have been discovered and made available in your host inventory.",
   "Create a discovery setting": "Create a discovery setting",
   "Create a GitOpsCluster resource to connect managed clusters to GitOps and enable ApplicationSets deployment across your fleet.": "Create a GitOpsCluster resource to connect managed clusters to GitOps and enable ApplicationSets deployment across your fleet.",
+  "Create a GitOpsCluster to enable pull model ApplicationSet creation.": "Create a GitOpsCluster to enable pull model ApplicationSet creation.",
   "Create a ROSA HCP cluster using Terraform": "Create a ROSA HCP cluster using Terraform",
   "Create a Virtual Private Network (VPC) and necessary networking components.": "Create a Virtual Private Network (VPC) and necessary networking components.",
   "Create Amazon Web Services (AWS) Security Token Service (STS) credential": "Create Amazon Web Services (AWS) Security Token Service (STS) credential",

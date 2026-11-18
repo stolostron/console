@@ -1269,6 +1269,12 @@ function ApplicationsOverviewContent() {
   )
 
   const appCreationButton = useMemo(() => {
+    let pullModelTooltip = ''
+    if (!hasGitOpsCluster) {
+      pullModelTooltip = t('Create a GitOpsCluster to enable pull model ApplicationSet creation.')
+    } else if (!canCreateApplicationSet) {
+      pullModelTooltip = t('rbac.unauthorized')
+    }
     const dropdownItems: React.ComponentProps<typeof AcmDropdown>['dropdownItems'] = [
       {
         id: 'create-argo-pull-model',
@@ -1282,8 +1288,8 @@ function ApplicationsOverviewContent() {
           : t(
               'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
             ),
-        isDisabled: !canCreateApplicationSet,
-        tooltip: !canCreateApplicationSet ? t('rbac.unauthorized') : '',
+        isDisabled: !hasGitOpsCluster || !canCreateApplicationSet,
+        tooltip: pullModelTooltip,
       },
       ...(isPushModelEnabled
         ? [

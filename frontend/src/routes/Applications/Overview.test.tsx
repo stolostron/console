@@ -524,25 +524,29 @@ describe('Create application dropdown - GitOps agent mode', () => {
     expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
   })
 
-  test('offers ManifestWork creation and Agent setup when no GitOpsCluster exists', async () => {
+  test('disables ManifestWork creation with an explanation and keeps GitOps setup available when no GitOpsCluster exists', async () => {
+    const user = userEvent.setup()
     renderOverviewWithGitOpsClusters([])
 
     await waitForText('feng-remote-argo8')
     await clickElement(screen.getByRole('button', { name: /create application/i }))
     const pullOption = screen.getByRole('menuitem', { name: /ManifestWork pull model/i })
-    expect(pullOption).not.toHaveAttribute('aria-disabled', 'true')
+    expect(pullOption).toHaveAttribute('aria-disabled', 'true')
     expect(
       within(pullOption).getByText(
         'Deploy applications across managed clusters using basic pull mode. Managed clusters pull directly from Git with thin hub status.'
       )
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('menuitem', { name: 'Set up GitOps configuration for Argo CD Agent Pull' })
-    ).toBeInTheDocument()
+    const setupOption = screen.getByRole('menuitem', { name: 'Set up GitOps configuration for Argo CD Agent Pull' })
+    expect(setupOption).not.toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByRole('menuitem', { name: /Push model/i })).toBeInTheDocument()
     expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
-    await clickElement(pullOption)
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/argopullmodel')
+    await user.hover(pullOption)
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'Create a GitOpsCluster to enable pull model ApplicationSet creation.'
+    )
+    await user.click(pullOption)
+    expect(screen.getByTestId('location-display').textContent).toBe('/')
   })
 
   test('GitOps configuration link opens the creation wizard in a modal and cancels without navigation', async () => {
