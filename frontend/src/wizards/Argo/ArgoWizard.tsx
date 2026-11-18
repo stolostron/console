@@ -181,6 +181,9 @@ export function ArgoWizard(props: ArgoWizardProps) {
     : t(
         'Create an ApplicationSet that uses the ManifestWork pull model to distribute generated applications from the hub to selected managed clusters.'
       )
+  const pushModelDescription = t(
+    'Create an ApplicationSet that pushes generated applications from the hub to target clusters through an Argo CD instance.'
+  )
   const createPullTitle = isAgentPullModel
     ? t('Create application set - Agent pull model')
     : t('Create application set - Pull model')
@@ -505,8 +508,8 @@ export function ArgoWizard(props: ArgoWizardProps) {
         yaml={props.isModal ? false : undefined}
         yamlEditor={props.isModal ? undefined : props.yamlEditor}
         title={isPullModel ? pullTitle : pushTitle}
-        description={isPullModel ? gitOpsModelDescription : undefined}
-        label={isPullModel ? gitOpsModelLabel : undefined}
+        description={isPullModel ? gitOpsModelDescription : pushModelDescription}
+        label={isPullModel ? gitOpsModelLabel : t('GitOps model: Push')}
         labelColor={isAgentPullModel ? 'green' : 'grey'}
         defaultData={defaultData}
         editMode={editMode}

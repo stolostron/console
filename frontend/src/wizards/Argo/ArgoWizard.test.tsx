@@ -153,16 +153,31 @@ describe('ArgoWizard tests', () => {
   //=====================================================================
   //                      GIT
   //=====================================================================
-  test.each(['agent', 'manifestwork'] as const)(
-    'keeps the %s model description and badge across steps and with YAML open',
-    async (model) => {
+  test.each([
+    {
+      model: 'agent',
+      label: 'GitOps model: Argo CD Agent pull',
+      description: /Create an ApplicationSet that uses Argo CD Agent pull/,
+      title: 'Create application set - Agent pull model',
+    },
+    {
+      model: 'manifestwork',
+      label: 'GitOps model: ManifestWork pull',
+      description: /Create an ApplicationSet that uses the ManifestWork pull model/,
+      title: 'Create application set - Pull model',
+    },
+    {
+      model: 'push',
+      label: 'GitOps model: Push',
+      description:
+        'Create an ApplicationSet that pushes generated applications from the hub to target clusters through an Argo CD instance.',
+      title: 'Create application set - push model',
+    },
+  ] as const)(
+    'keeps the $model model description and badge across steps and with YAML open',
+    async ({ model, label, description, title }) => {
       nockIgnoreApiPaths()
       nockIgnorePlacementDebug()
-      const label = model === 'agent' ? 'GitOps model: Argo CD Agent pull' : 'GitOps model: ManifestWork pull'
-      const description =
-        model === 'agent'
-          ? /Create an ApplicationSet that uses Argo CD Agent pull/
-          : /Create an ApplicationSet that uses the ManifestWork pull model/
       const yamlEditor = () => <div>Application set YAML preview</div>
       const agentArgoServers = [
         {
@@ -180,15 +195,13 @@ describe('ArgoWizard tests', () => {
       ]
       render(
         <TestArgoWizard
-          isPullModel
-          gitOpsModel={model}
+          isPullModel={model !== 'push'}
+          gitOpsModel={model === 'push' ? undefined : model}
           yamlEditor={yamlEditor}
           argoServers={model === 'agent' ? agentArgoServers : props.argoServers}
         />
       )
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
-        model === 'agent' ? 'Create application set - Agent pull model' : 'Create application set - Pull model'
-      )
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(title)
       expect(screen.getByText(label)).toBeVisible()
       expect(screen.getByText(description)).toBeVisible()
       expect(await axe(screen.getByRole('heading', { level: 1 }).closest('section')!)).toHaveNoViolations()
