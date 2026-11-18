@@ -29,13 +29,8 @@ func TestComputePodStatusSkipsTerminating(t *testing.T) {
 	}
 }
 
-func TestIncStatusCountsArgoOnly(t *testing.T) {
+func TestIncStatusCountsArgo(t *testing.T) {
 	counts := map[string]map[string]int{"healthStatus": {}}
-	sub := App{Transform: Transform{Type: kindSubscriptionApp, Scores: Scores{colHealth: 0}, Statuses: StatusMap{"c": emptyClusterStatuses()}}}
-	incStatusCounts(counts, "healthStatus", sub, colHealth)
-	if len(counts["healthStatus"]) != 0 {
-		t.Fatal("subscription must not increment health")
-	}
 	argo := App{Transform: Transform{Type: kindArgo, Scores: Scores{colHealth: 0}, Statuses: StatusMap{"c": emptyClusterStatuses()}}}
 	incStatusCounts(counts, "healthStatus", argo, colHealth)
 	if counts["healthStatus"]["Healthy"] != 1 {

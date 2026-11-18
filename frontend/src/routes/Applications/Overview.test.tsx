@@ -13,7 +13,6 @@ import {
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterKind,
-  SubscriptionKind,
 } from '../../resources'
 import { getISOStringTimestamp } from '../../resources/utils'
 import { AcmToastGroup, AcmToastProvider } from '../../ui-components'
@@ -143,7 +142,6 @@ describe('Applications Page', () => {
   test('should display info', async () => {
     // wait for page to load
     await waitForText('feng-remote-argo8')
-    expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
 
@@ -184,24 +182,6 @@ describe('Applications Page', () => {
   test('should filter', async () => {
     // wait for page to load
     await waitForText('feng-remote-argo8')
-
-    // subscription
-
-    // Open filter
-    await clickElement(screen.getByText('Filter'))
-
-    expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
-    await clickElement(screen.getByRole('checkbox', { name: /subscription/i }))
-
-    // Close filter
-    await clickElement(screen.getByText('Filter'))
-    await waitFor(() => expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull())
-    expect(screen.queryByText(ApplicationSetKind)).toBeNull()
-    expect(screen.queryByText('Discovered')).toBeNull()
-    expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
-
-    // clear subscription filter
-    await clickElement(screen.getByRole('button', { name: /close subscription/i }))
 
     // argo apps
     // Open filter
@@ -266,24 +246,6 @@ describe('Applications Page', () => {
 
   test.each([
     {
-      name: 'view for subscription application',
-      appName: 'application-0',
-      action: 'View application',
-      route: '/multicloud/applications/details/namespace-0/application-0/details?apiVersion=application.app.k8s.io',
-    },
-    {
-      name: 'edit for subscription application',
-      appName: 'application-0',
-      action: 'Edit application',
-      route: '/multicloud/applications/edit/subscription/namespace-0/application-0?context=applications',
-    },
-    {
-      name: 'search for subscription application',
-      appName: 'application-0',
-      action: 'Search application',
-      route: '/multicloud/search',
-    },
-    {
       name: 'view for application set',
       appName: 'applicationset-0',
       action: 'View application',
@@ -330,13 +292,6 @@ describe('Applications Page', () => {
     expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
-  test('create dropdown navigates to subscription', async () => {
-    await waitForText('feng-remote-argo8')
-    await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(within(screen.getByRole('menu')).getByText('Subscription'))
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/subscription')
-  })
-
   test('export button should produce a file for download', async () => {
     nockAggegateRequest('applications', fetchAggregate.req, fetchAggregate.res)
 
@@ -363,7 +318,7 @@ describe('Applications Page', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Type,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
-          `"application-0","Subscription","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          `"application-0","-","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
           '"applicationset-0","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
           '"applicationset-1","Application set","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
           '"argoapplication-1","Argo CD","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +

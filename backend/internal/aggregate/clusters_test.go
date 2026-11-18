@@ -199,37 +199,6 @@ func TestApplicationClustersPaths(t *testing.T) {
 	}
 }
 
-func TestSubscriptionClustersAndLocalSkip(t *testing.T) {
-	app := map[string]any{
-		"metadata": map[string]any{
-			"annotations": map[string]any{
-				"apps.open-cluster-management.io/subscriptions": "ns/sub,ns/sub-local",
-			},
-		},
-	}
-	subs := []map[string]any{{
-		"metadata": map[string]any{"name": "sub", "namespace": "ns"},
-		"spec": map[string]any{
-			"placement": map[string]any{"placementRef": map[string]any{"name": "place"}},
-		},
-	}}
-	pd := []map[string]any{{
-		"metadata": map[string]any{
-			"labels": map[string]any{"cluster.open-cluster-management.io/placement": "place"},
-		},
-		"status": map[string]any{
-			"decisions": []any{map[string]any{"clusterName": "c1"}},
-		},
-	}}
-	got := subscriptionClusters(app, subs, pd)
-	if len(got) != 1 || got[0] != "c1" {
-		t.Fatalf("%v", got)
-	}
-	if !isLocalSubscription("ns/sub-local", []string{"ns/sub", "ns/sub-local"}) {
-		t.Fatal("local sub")
-	}
-}
-
 func TestArgoClusterAndDestinationKubeAPI(t *testing.T) {
 	e := NewEngine(nil, nil, nil)
 	hub := "local-cluster"

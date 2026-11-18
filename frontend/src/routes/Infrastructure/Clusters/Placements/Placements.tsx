@@ -20,10 +20,7 @@ import { generatePath, useNavigate } from 'react-router'
 import { NavigationPath } from '../../../../NavigationPath'
 import { HighlightSearchText } from '../../../../components/HighlightSearchText'
 import { Selector } from '../../../../resources/selector'
-import {
-  getLabels,
-  getMatchLabels,
-} from '../../../Applications/CreateSubscriptionApplication/controlData/ControlDataPlacement'
+import { getLabels, getMatchLabels } from '../../../Applications/helpers/placement-labels'
 import { useCallback, useMemo, useState } from 'react'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { getSearchLink } from '../../../Applications/helpers/resource-helper'

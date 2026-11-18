@@ -15,13 +15,13 @@ import { OutlinedQuestionCircleIcon, SyncAltIcon } from '@patternfly/react-icons
 import { cloneDeep } from 'lodash'
 import { Fragment, useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
-import { generatePath, Link } from 'react-router'
+import { Link } from 'react-router'
 import { getPlacementsForApplicationSet, PlacementLinkList } from '~/routes/Infrastructure/Clusters/Placements/utils'
 import { useLocalHubName } from '../../../../hooks/use-local-hub'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import AcmTimestamp from '../../../../lib/AcmTimestamp'
 import { canUser, getAuthorizedNamespaces, rbacCreate } from '../../../../lib/rbac-util'
-import { NavigationPath } from '../../../../NavigationPath'
+
 import {
   Application,
   ApplicationKind,
@@ -626,24 +626,7 @@ function createSubsCards(
               </div>
 
               <div className="sub-card-content">
-                {!sub.spec.timewindow?.windowtype ? (
-                  <Link
-                    to={generatePath(NavigationPath.editApplicationSubscription, {
-                      name: appResource?.metadata?.name!,
-                      namespace: appResource?.metadata?.namespace!,
-                    })}
-                  >
-                    <AcmButton
-                      id="set-time-window-link"
-                      component="a"
-                      variant={ButtonVariant.link}
-                      rel="noreferrer"
-                      size="sm"
-                    >
-                      {t('Set time window')}
-                    </AcmButton>
-                  </Link>
-                ) : (
+                {!sub.spec.timewindow?.windowtype ? null : (
                   <TimeWindowLabels
                     subName={sub.metadata.name as string}
                     type={sub.spec.timewindow?.windowtype}
