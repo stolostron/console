@@ -5,9 +5,7 @@ import { request } from '../mock-request'
 
 describe('global hub', function () {
   it('should return the boolean', async function () {
-    nock(process.env.CLUSTER_API_URL).get('/apis').reply(200, {
-      status: 200,
-    })
+    nock(process.env.CLUSTER_API_URL).get('/api').reply(200)
     nock(process.env.CLUSTER_API_URL)
       .get('/apis/apiextensions.k8s.io/v1/customresourcedefinitions') // .reply(200, { isGlobalHub: true })
       .reply(200, {
