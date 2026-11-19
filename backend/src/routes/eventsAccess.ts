@@ -38,7 +38,7 @@ export type KindGetAccess =
 
 export type AccessResource = { kind: string; apiVersion: string; metadata?: { name?: string; namespace?: string } }
 
-/** SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only. */
+/** SSRR requires a namespace; cluster-scoped kinds other than Namespace are reviewed in this probe namespace. */
 const CLUSTER_SCOPED_RULES_NAMESPACE = 'default'
 
 export function isClusterScopedKind(kind: string): boolean {
@@ -74,6 +74,11 @@ function resourcePluralName(kind: string): string {
 }
 
 function rulesNamespaceFor(resource: AccessResource): string {
+  // The apiserver attributes a Namespace get to the namespace matching the object name, so a Role
+  // bound in that namespace can grant it; review Namespace objects in their own namespace.
+  if (resource.kind === 'Namespace') {
+    return resource.metadata?.name || CLUSTER_SCOPED_RULES_NAMESPACE
+  }
   if (isClusterScopedKind(resource.kind)) {
     return CLUSTER_SCOPED_RULES_NAMESPACE
   }
