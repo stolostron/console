@@ -94,10 +94,10 @@ func TestFuseFilterStableEqualScoreOrder(t *testing.T) {
 
 func TestFuseFilterPrefersBetterScoreBeforeTieBreak(t *testing.T) {
 	items := []App{
-		{Transform: Transform{Name: "zzzz", Namespace: "default"}},                       // no match
-		{Transform: Transform{Name: "abcx-app", Namespace: "default"}},                   // approximate
-		{Transform: Transform{Name: "abcd-exact", Namespace: "default"}},                 // exact substring
-		{Transform: Transform{Name: "abcd-also", Namespace: "other"}},                    // exact substring, later name
+		{Transform: Transform{Name: "zzzz", Namespace: "default"}},       // no match
+		{Transform: Transform{Name: "abcx-app", Namespace: "default"}},   // approximate
+		{Transform: Transform{Name: "abcd-exact", Namespace: "default"}}, // exact substring
+		{Transform: Transform{Name: "abcd-also", Namespace: "other"}},    // exact substring, later name
 	}
 	got := fuseFilter(items, "abcd")
 	if len(got) != 3 {
