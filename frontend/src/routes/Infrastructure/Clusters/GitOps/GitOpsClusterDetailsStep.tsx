@@ -408,8 +408,7 @@ function resolveDraftAgentExtras(
   const policyName = policyNameFor(name)
   const existingPolicy =
     (resources.find(
-      (item) =>
-        item.kind === 'Policy' && item.metadata?.namespace === namespace && item.metadata?.name === policyName
+      (item) => item.kind === 'Policy' && item.metadata?.namespace === namespace && item.metadata?.name === policyName
     ) as Policy | undefined) ??
     policies.find((policy) => policy.metadata.namespace === namespace && policy.metadata.name === policyName)
   const existingSubscription =
