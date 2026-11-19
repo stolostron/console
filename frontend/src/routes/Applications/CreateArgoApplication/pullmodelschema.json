@@ -228,7 +228,8 @@
                       "type": "object",
                       "properties": {
                         "apps.open-cluster-management.io/ocm-managed-cluster": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         },
                         "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": {
                           "type": "string"
@@ -265,7 +266,8 @@
                           "type": "string"
                         },
                         "name": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         }
                       }
                     },
@@ -276,9 +278,19 @@
                   "required": ["project", "destination"]
                 }
               },
-              "required": ["metadata", "spec"],
-              "anyOf": [
-                {
+              "required": ["metadata", "spec"]
+            }
+          },
+          "required": ["generators", "template"]
+        }
+      },
+      "required": ["apiVersion", "metadata", "spec"],
+      "anyOf": [
+        {
+          "properties": {
+            "spec": {
+              "properties": {
+                "template": {
                   "properties": {
                     "metadata": {
                       "properties": {
@@ -293,8 +305,30 @@
                       "required": ["annotations"]
                     }
                   }
-                },
-                {
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "metadata": {
+              "properties": {
+                "annotations": {
+                  "type": "object",
+                  "properties": {
+                    "apps.open-cluster-management.io/gitops-model": {
+                      "const": "agent"
+                    }
+                  },
+                  "required": ["apps.open-cluster-management.io/gitops-model"]
+                }
+              },
+              "required": ["annotations"]
+            },
+            "spec": {
+              "properties": {
+                "template": {
                   "properties": {
                     "spec": {
                       "properties": {
@@ -305,13 +339,11 @@
                     }
                   }
                 }
-              ]
+              }
             }
-          },
-          "required": ["generators", "template"]
+          }
         }
-      },
-      "required": ["apiVersion", "metadata", "spec"]
+      ]
     }
   },
   {

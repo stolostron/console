@@ -351,13 +351,13 @@ export function ArgoWizard(props: ArgoWizardProps) {
               ],
               template: {
                 metadata: {
-                  annotations: isAgentPullModel
-                    ? undefined
-                    : {
-                        'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
-                        'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
-                        'argocd.argoproj.io/skip-reconcile': 'true',
-                      },
+                  ...(!isAgentPullModel && {
+                    annotations: {
+                      'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                      'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                      'argocd.argoproj.io/skip-reconcile': 'true',
+                    },
+                  }),
                   name: '-{{name}}',
                   labels: {
                     'velero.io/exclude-from-backup': 'true',

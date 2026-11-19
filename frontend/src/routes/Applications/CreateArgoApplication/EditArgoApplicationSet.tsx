@@ -9,7 +9,7 @@ import {
 } from '@patternfly-labs/react-form-wizard'
 import type { EditorValidationStatus } from '@patternfly-labs/react-form-wizard'
 import { ArgoWizard } from '~/wizards/Argo/ArgoWizard'
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import { useSharedValue, useSharedAtoms, useSharedSelectors } from '~/shared-atoms'
 import { LoadingPage } from '~/components/LoadingPage'
 import { SyncEditor } from '~/components/SyncEditor/SyncEditor'
@@ -28,13 +28,14 @@ import type { ApplicationSet, IResource, Placement } from '~/resources'
 import { listResources, reconcileResources } from '~/resources/utils'
 import { AcmToastContext } from '~/ui-components'
 import pushmodelschema from './pushmodelschema.json'
+import pullmodelschema from './pullmodelschema.json'
 import { GetGitOpsClusters } from './CreatePushApplicationSet'
 import { get, set } from 'lodash'
 import { LostChangesContext } from '~/components/LostChanges'
 import { useTimezones } from '~/hooks/useTimezone'
 import { getApplicationModel } from '~/routes/Applications/helpers/resource-helper'
 
-export function WizardSyncEditor() {
+export function WizardSyncEditor({ isPullModel = false }: { isPullModel?: boolean }) {
   const resources = useItem() // Wizard framework sets this context
   const defaultItem = useDefaultItem()
   const { update } = useData() // Wizard framework sets this context
@@ -47,7 +48,7 @@ export function WizardSyncEditor() {
       variant="toolbar"
       resources={resources}
       defaultResources={defaultItem}
-      schema={pushmodelschema}
+      schema={isPullModel ? pullmodelschema : pushmodelschema}
       filters={['*.metadata.managedFields']}
       highlightEditorPath={highlightEditorPath}
       onEditorChange={(changes, resetDefaultSnapshot): void => {
@@ -58,10 +59,6 @@ export function WizardSyncEditor() {
       }}
     />
   )
-}
-
-function getWizardSyncEditor() {
-  return <WizardSyncEditor />
 }
 
 export interface EditArgoApplicationSetProps {
@@ -113,6 +110,7 @@ export function EditArgoApplicationSet({
   const [pullModel, setPullModel] = useState<boolean>(false)
   const [applicationSets, setApplicationSets] = useState<ApplicationSet[]>()
   const [loadingAppSets, setLoadingAppSets] = useState(true)
+  const getWizardSyncEditor = useCallback(() => <WizardSyncEditor isPullModel={pullModel} />, [pullModel])
 
   // instead of burdoning shared state with appsets, use old fashioned fetch
   // opening wizard may take longer, but argo wizards are probably seldom used

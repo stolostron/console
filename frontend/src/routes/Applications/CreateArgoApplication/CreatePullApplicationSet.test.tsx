@@ -1,5 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { cloneDeep, set } from 'lodash'
+import YAML from 'yaml'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -71,6 +73,7 @@ import {
 import { gitOpsOperators } from '~/routes/Applications/Application.sharedmocks'
 import { CreatePullApplicationSet } from './CreatePullApplicationSet'
 import { EditApplicationSetPage } from './EditApplicationSetPage'
+import { APPLICATION_SET_GITOPS_MODEL_ANNOTATION } from '~/resources/application-set'
 
 const gitOpsCluster: GitOpsCluster = {
   apiVersion: GitOpsClusterApiVersion,
@@ -492,6 +495,16 @@ describe('Create Argo Application Set', () => {
     )
     await waitForText('GitOps model: Argo CD Agent pull')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Create application set - Agent pull model')
+    await clickByRole('switch', { name: 'YAML' })
+    const editor = screen.getByRole('textbox', { name: 'monaco' })
+    await waitFor(() => expect(editor).not.toHaveValue(''))
+    const applicationSet = YAML.parseAllDocuments((editor as HTMLTextAreaElement).value)
+      .map((document) => document.toJSON())
+      .find((resource) => resource.kind === ApplicationSetKind)
+    expect(applicationSet.metadata.annotations).toEqual({ [APPLICATION_SET_GITOPS_MODEL_ANNOTATION]: 'agent' })
+    expect(applicationSet.spec.template.metadata).not.toHaveProperty('annotations')
+    expect(applicationSet.spec.template.metadata.labels).toEqual({ 'velero.io/exclude-from-backup': 'true' })
+    await clickByRole('switch', { name: 'YAML' })
   })
 
   test.each([{ agentMode: false }, { agentMode: true }])(
@@ -627,25 +640,34 @@ describe('Create Argo Application Set', () => {
     await waitForNocks(createHelmAppSetNocks)
   })
 
-  test('can render Edit Argo Application Page', async () => {
-    const applicationSetNock = nockList(
-      {
-        apiVersion: 'argoproj.io/v1alpha1',
-        kind: 'applicationsets',
-      },
-      [argoAppSetGit]
-    )
-    render(
-      <StateProvider>
-        <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
-          <Routes>
-            <Route path={NavigationPath.editApplicationArgo} element={<EditApplicationSetPage />} />
-          </Routes>
-        </MemoryRouter>
-      </StateProvider>
-    )
+  test.each([false, true])(
+    'opens the Pull edit wizard for Agent mode %s without global GitOps configuration',
+    async (agent) => {
+      const resource = cloneDeep(argoAppSetGit)
+      if (agent) {
+        resource.metadata.annotations = { [APPLICATION_SET_GITOPS_MODEL_ANNOTATION]: 'agent' }
+        set(resource, 'spec.template.metadata.annotations', {})
+        set(resource, 'spec.template.spec.destination', { name: '{{name}}', namespace: 'guestbook' })
+      }
+      const applicationSetNock = nockList(
+        {
+          apiVersion: 'argoproj.io/v1alpha1',
+          kind: 'applicationsets',
+        },
+        [resource]
+      )
+      render(
+        <StateProvider>
+          <MemoryRouter initialEntries={[NavigationPath.editApplicationArgo]}>
+            <Routes>
+              <Route path={NavigationPath.editApplicationArgo} element={<EditApplicationSetPage />} />
+            </Routes>
+          </MemoryRouter>
+        </StateProvider>
+      )
 
-    await waitForNocks([applicationSetNock])
-    await waitForText('Edit application set - Pull model')
-  })
+      await waitForNocks([applicationSetNock])
+      await waitForText(agent ? 'Edit application set - Agent pull model' : 'Edit application set - Pull model')
+    }
+  )
 })
