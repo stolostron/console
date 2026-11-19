@@ -95,7 +95,7 @@ func TestFuseFilterStableEqualScoreOrder(t *testing.T) {
 func TestFuseFilterPrefersBetterScoreBeforeTieBreak(t *testing.T) {
 	items := []App{
 		{Transform: Transform{Name: "zzzz", Namespace: "default"}},       // no match
-		{Transform: Transform{Name: "abcx-app", Namespace: "default"}},   // approximate
+		{Transform: Transform{Name: "a-abcx-app", Namespace: "default"}}, // approximate; name sorts before exacts
 		{Transform: Transform{Name: "abcd-exact", Namespace: "default"}}, // exact substring
 		{Transform: Transform{Name: "abcd-also", Namespace: "other"}},    // exact substring, later name
 	}
@@ -106,7 +106,8 @@ func TestFuseFilterPrefersBetterScoreBeforeTieBreak(t *testing.T) {
 	if got[0].Transform.Name != "abcd-also" || got[1].Transform.Name != "abcd-exact" {
 		t.Fatalf("exact matches first by name: %+v", got)
 	}
-	if got[2].Transform.Name != "abcx-app" {
+	// Name-only order would put a-abcx-app first; score must keep it last.
+	if got[2].Transform.Name != "a-abcx-app" {
 		t.Fatalf("approximate after exact: %+v", got)
 	}
 }

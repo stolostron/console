@@ -802,6 +802,40 @@ describe('AcmTable', () => {
     expect(names()).toEqual(['alpha-appset', 'zeta-appset'])
   })
 
+  test('search prefers better fuse score over larger row key', async () => {
+    const makeItem = (uid: number, firstName: string): IExampleData => ({
+      uid,
+      firstName,
+      last_name: 'ApplicationSet',
+      gender: 'Healthy',
+      email: `${firstName}@example.com`,
+      cluster: 'local-cluster',
+      ip_address: '10.0.0.1',
+    })
+    // Exact substring match has larger key; approximate match would sort first by key alone.
+    const items = [makeItem(1, 'a-abcx-app'), makeItem(9, 'abcd-exact')]
+    const columns: AcmTableProps<IExampleData>['columns'] = [
+      { header: 'First Name', sort: 'firstName', cell: 'firstName', search: 'firstName' },
+      { header: 'UID', sort: 'uid', cell: 'uid', search: 'uid' },
+    ]
+    const { getByPlaceholderText, container } = render(
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          aria-label="Score before key table"
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          items={items}
+          columns={columns}
+          keyFn={(item) => item.uid.toString()}
+        />
+      </MemoryRouter>
+    )
+    await typeElement(getByPlaceholderText(placeholderString), 'abcd')
+    const names = Array.from(container.querySelectorAll('tbody tr [data-label="First Name"]')).map(
+      (el) => el.textContent
+    )
+    expect(names).toEqual(['abcd-exact', 'a-abcx-app'])
+  })
+
   const sortTest = async () => {
     const { getByText, container } = render(<Table />)
 
