@@ -192,7 +192,8 @@ describe('CreateGitOpsCluster', () => {
       expect.arrayContaining([
         expect.objectContaining({ kind: 'Placement', metadata: expect.objectContaining({ name: 'fleet-placement' }) }),
         expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'fleet' }) }),
-      ])
+      ]),
+      expect.any(Function)
     )
     expect(addAlert).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -254,7 +255,8 @@ describe('CreateGitOpsCluster', () => {
           metadata: expect.objectContaining({ name: 'orphan-placement', namespace: 'openshift-gitops' }),
         }),
         expect.objectContaining({ kind: 'GitOpsCluster', metadata: expect.objectContaining({ name: 'orphan' }) }),
-      ])
+      ]),
+      expect.any(Function)
     )
   })
 

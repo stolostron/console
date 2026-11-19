@@ -454,6 +454,7 @@ function AgentResourcesSync(
     existingAppProject?: IResource
   }>
 ) {
+  const { t } = useTranslation()
   const resources = useItem() as IResource[]
   const { update } = useData()
   const gitOpsCluster = getGitOpsClusterFromResources(resources)
@@ -491,27 +492,30 @@ function AgentResourcesSync(
         policies: props.policies,
       })
 
-    const next = buildGitOpsClusterResources({
-      name: name || 'gitopscluster',
-      namespace,
-      agentEnabled,
-      pushModelEnabled,
-      clusterSets,
-      existingGitOpsCluster: gitOpsCluster,
-      existingPlacement: placement as PlacementResource | undefined,
-      existingBindings: preferDraftManagedClusterSetBindings({
+    const next = buildGitOpsClusterResources(
+      {
+        name: name || 'gitopscluster',
         namespace,
+        agentEnabled,
+        pushModelEnabled,
         clusterSets,
-        draftBindings: currentBindings,
-        liveBindings: props.existingBindings,
-      }),
-      existingArgoCD: argoCD,
-      existingAppProject: existingAppProject ?? props.existingAppProject,
-      existingSubscription,
-      existingPolicy,
-      includeBindings: true,
-      previousGitOpsClusterName,
-    })
+        existingGitOpsCluster: gitOpsCluster,
+        existingPlacement: placement as PlacementResource | undefined,
+        existingBindings: preferDraftManagedClusterSetBindings({
+          namespace,
+          clusterSets,
+          draftBindings: currentBindings,
+          liveBindings: props.existingBindings,
+        }),
+        existingArgoCD: argoCD,
+        existingAppProject: existingAppProject ?? props.existingAppProject,
+        existingSubscription,
+        existingPolicy,
+        includeBindings: true,
+        previousGitOpsClusterName,
+      },
+      t
+    )
 
     applyAgentFlagsToDraft(next, { name, agentEnabled, pushModelEnabled })
     preservePlacementDraftEdits(next, placement as PlacementResource | undefined)
@@ -532,6 +536,7 @@ function AgentResourcesSync(
     update,
     props.existingAppProject,
     props.editMode,
+    t,
   ])
 
   return null

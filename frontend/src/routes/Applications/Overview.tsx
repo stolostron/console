@@ -20,7 +20,7 @@ import { CreateGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/Cre
 import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useEffect, useMemo, useState, type JSX } from 'react'
+import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, useNavigate } from 'react-router'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
@@ -524,14 +524,8 @@ export function ApplicationSourcesCell(props: {
 }
 
 export default function ApplicationsOverview() {
-  const [columnPreferencesReady, setColumnPreferencesReady] = useState(false)
-
-  useEffect(() => {
-    initializeApplicationColumnOrder()
-    setColumnPreferencesReady(true)
-  }, [])
-
-  return columnPreferencesReady ? <ApplicationsOverviewContent /> : null
+  useState(initializeApplicationColumnOrder)
+  return <ApplicationsOverviewContent />
 }
 
 function ApplicationsOverviewContent() {

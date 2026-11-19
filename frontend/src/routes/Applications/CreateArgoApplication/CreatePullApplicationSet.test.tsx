@@ -1,9 +1,11 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import { axe } from 'jest-axe'
 import { cloneDeep, set } from 'lodash'
 import YAML from 'yaml'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
+import { defaultContext, PluginDataContext } from '~/lib/PluginDataContext'
 import {
   channelsState,
   gitOpsClustersState,
@@ -451,6 +453,46 @@ describe('Create Argo Application Set', () => {
       </StateProvider>
     )
   }
+
+  test.each([false, true])(
+    'waits for resource loading before guarding the direct Pull URL; GitOpsCluster arrives: %s',
+    async (gitOpsClusterArrives) => {
+      let loadGitOpsCluster = () => {}
+      const renderRoute = (loadCompleted: boolean) => (
+        <PluginDataContext.Provider value={{ ...defaultContext, loadCompleted }}>
+          <StateProvider
+            initializeStore={(store) => {
+              store.set(subscriptionOperatorsState, gitOpsOperators)
+              loadGitOpsCluster = () => store.set(gitOpsClustersState, [gitOpsCluster])
+            }}
+          >
+            <MemoryRouter initialEntries={[NavigationPath.createApplicationArgoPullModel]}>
+              <Routes>
+                <Route path={NavigationPath.createApplicationArgoPullModel} element={<CreatePullApplicationSet />} />
+                <Route path={NavigationPath.applications} element={<h1>Applications landing</h1>} />
+              </Routes>
+            </MemoryRouter>
+          </StateProvider>
+        </PluginDataContext.Provider>
+      )
+
+      const { container, rerender } = render(renderRoute(false))
+      expect(screen.getByRole('heading', { name: 'Loading' })).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: 'Applications landing' })).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: 'Create application set - Pull model' })).not.toBeInTheDocument()
+      expect(await axe(container)).toHaveNoViolations()
+
+      if (gitOpsClusterArrives) {
+        nockList({ apiVersion: ApplicationSetApiVersion, kind: ApplicationSetKind }, [])
+        act(loadGitOpsCluster)
+      }
+      rerender(renderRoute(true))
+
+      const expectedHeading = gitOpsClusterArrives ? 'Create application set - Pull model' : 'Applications landing'
+      expect(await screen.findByRole('heading', { name: expectedHeading, level: 1 })).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: 'Next' }) !== null).toBe(gitOpsClusterArrives)
+    }
+  )
 
   test('shows ManifestWork pull model badge when agent mode is disabled', async () => {
     nockList(

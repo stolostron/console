@@ -66,7 +66,6 @@ export interface MultipleGeneratorSelectorProps {
   disableForm: boolean
   generatorPath: MutableRefObject<string>
   secrets: Secret[]
-  excludeClusterDecisionResource?: boolean
 }
 
 export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps) {
@@ -85,10 +84,7 @@ export function MultipleGeneratorSelector(props: MultipleGeneratorSelectorProps)
       path={path}
       placeholder={generators?.length >= 2 ? undefined : t('Add generator')}
       required={showValidation}
-      dropdownItems={Specifications.filter(
-        (specification) =>
-          !props.excludeClusterDecisionResource || specification.name !== 'Cluster Decision Resource generator'
-      ).map((specification) => ({
+      dropdownItems={Specifications.map((specification) => ({
         label: specification.description,
         action: () => createGeneratorFromSpecification(specification),
       }))}

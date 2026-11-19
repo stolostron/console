@@ -239,6 +239,7 @@ describe('EditGitOpsCluster', () => {
 
     expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
       expect.any(Array),
+      expect.any(Function),
       expect.arrayContaining([expect.objectContaining({ kind: GitOpsClusterKind })]),
       expect.objectContaining({ baseline: expect.any(Array), placements: expect.any(Array) })
     )
@@ -282,6 +283,7 @@ describe('EditGitOpsCluster', () => {
     await mockOnSubmit?.(mockWizardResources ?? [])
     expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
       expect.any(Array),
+      expect.any(Function),
       expect.any(Array),
       expect.objectContaining({ baseline: expect.arrayContaining([mockPlacement]) })
     )
@@ -355,6 +357,7 @@ describe('EditGitOpsCluster', () => {
     expect(mockGetResource).toHaveBeenCalledTimes(1)
     expect(mockReconcileGitOpsWizardResources).toHaveBeenCalledWith(
       expect.any(Array),
+      expect.any(Function),
       expect.any(Array),
       expect.objectContaining({ baseline: expect.arrayContaining([project]) })
     )
@@ -392,7 +395,7 @@ describe('EditGitOpsCluster', () => {
     await mockOnSubmit?.([mockGitOpsCluster])
     await mockOnSubmit?.([mockGitOpsCluster])
     for (const call of mockReconcileGitOpsWizardResources.mock.calls) {
-      expect(call[2]?.baseline?.some((resource) => resource.kind === 'AppProject')).toBe(false)
+      expect(call[3]?.baseline?.some((resource) => resource.kind === 'AppProject')).toBe(false)
     }
   })
 

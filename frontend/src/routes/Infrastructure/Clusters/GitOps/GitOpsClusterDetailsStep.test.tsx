@@ -1,4 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
+import { t } from 'i18next'
 
 import { EditMode, Step } from '@patternfly-labs/react-form-wizard'
 import { act, render, screen, waitFor } from '@testing-library/react'
@@ -45,13 +46,16 @@ function renderDetailsStep(options?: {
   const namespaces = options?.namespaces ?? ['openshift-gitops']
   const defaultData =
     options?.resources ??
-    buildGitOpsClusterResources({
-      name: editMode === EditMode.Edit ? 'existing-goc' : '',
-      namespace: namespaces[0] ?? '',
-      agentEnabled: false,
-      pushModelEnabled: false,
-      includeBindings: false,
-    })
+    buildGitOpsClusterResources(
+      {
+        name: editMode === EditMode.Edit ? 'existing-goc' : '',
+        namespace: namespaces[0] ?? '',
+        agentEnabled: false,
+        pushModelEnabled: false,
+        includeBindings: false,
+      },
+      t
+    )
 
   return render(
     <MemoryRouter>
@@ -131,11 +135,14 @@ describe('GitOpsClusterDetailsStep', () => {
   it('keeps an existing Basic-mode addon configuration when opening and changing models', async () => {
     const user = userEvent.setup()
     const addon = { enabled: true, overrideExistingConfigs: true, argoCDAgent: { enabled: false, mode: 'managed' } }
-    const resources = buildGitOpsClusterResources({
-      name: 'existing-goc',
-      namespace: 'openshift-gitops',
-      agentEnabled: false,
-    })
+    const resources = buildGitOpsClusterResources(
+      {
+        name: 'existing-goc',
+        namespace: 'openshift-gitops',
+        agentEnabled: false,
+      },
+      t
+    )
     const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind) as GitOpsCluster
     gitOpsCluster.spec = { ...gitOpsCluster.spec, gitopsAddon: addon }
     renderDetailsStep({ editMode: EditMode.Edit, resources })
@@ -259,13 +266,16 @@ describe('GitOpsClusterDetailsStep', () => {
   it('disables name and namespace in edit mode', async () => {
     renderDetailsStep({
       editMode: EditMode.Edit,
-      resources: buildGitOpsClusterResources({
-        name: 'existing-goc',
-        namespace: 'openshift-gitops',
-        agentEnabled: false,
-        pushModelEnabled: false,
-        includeBindings: false,
-      }),
+      resources: buildGitOpsClusterResources(
+        {
+          name: 'existing-goc',
+          namespace: 'openshift-gitops',
+          agentEnabled: false,
+          pushModelEnabled: false,
+          includeBindings: false,
+        },
+        t
+      ),
     })
 
     const nameInput = await screen.findByDisplayValue('existing-goc')
@@ -326,15 +336,18 @@ describe('GitOpsClusterDetailsStep', () => {
       spec: { clusterSet: 'kike-cs' },
     } as ManagedClusterSetBinding
 
-    const resources = buildGitOpsClusterResources({
-      name: 'fleet',
-      namespace: 'openshift-gitops',
-      agentEnabled: false,
-      pushModelEnabled: false,
-      clusterSets: ['kike-cs'],
-      existingBindings: [draftBinding],
-      includeBindings: true,
-    })
+    const resources = buildGitOpsClusterResources(
+      {
+        name: 'fleet',
+        namespace: 'openshift-gitops',
+        agentEnabled: false,
+        pushModelEnabled: false,
+        clusterSets: ['kike-cs'],
+        existingBindings: [draftBinding],
+        includeBindings: true,
+      },
+      t
+    )
 
     renderDetailsStep({
       resources,

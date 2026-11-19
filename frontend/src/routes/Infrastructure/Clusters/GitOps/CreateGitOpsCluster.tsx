@@ -121,7 +121,7 @@ export function CreateGitOpsCluster(
       }}
       breadcrumb={[{ text: t('GitOps'), to: NavigationPath.gitOps }, { text: t('Create GitOpsCluster') }]}
       onSubmit={async (data) => {
-        const resources = ensureGitOpsClusterPlacement(data as IResource[])
+        const resources = ensureGitOpsClusterPlacement(data as IResource[], t)
         const missing = await collectMissingPermissions(resources)
         if (missing.length > 0) {
           toast.addAlert({
@@ -133,7 +133,7 @@ export function CreateGitOpsCluster(
           throw new Error(t('Missing permissions to create one or more required resources.'))
         }
 
-        return reconcileGitOpsWizardResources(resources)
+        return reconcileGitOpsWizardResources(resources, t)
           .then((result) => {
             const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
             const name = gitOpsCluster?.metadata?.name

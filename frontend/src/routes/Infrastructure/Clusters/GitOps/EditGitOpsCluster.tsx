@@ -205,21 +205,24 @@ export function EditGitOpsCluster() {
         )
         setExistingAppProject(project)
         setExistingResources(
-          buildGitOpsClusterResources({
-            name,
-            namespace,
-            agentEnabled,
-            pushModelEnabled: isPushModelEnabled(wizardGitOps),
-            clusterSets: placement?.spec?.clusterSets,
-            existingGitOpsCluster: wizardGitOps,
-            existingPlacement: placement,
-            existingBindings: relatedBindings,
-            existingArgoCD: argoCD,
-            existingAppProject: project,
-            existingSubscription,
-            existingPolicy,
-            includeBindings: true,
-          })
+          buildGitOpsClusterResources(
+            {
+              name,
+              namespace,
+              agentEnabled,
+              pushModelEnabled: isPushModelEnabled(wizardGitOps),
+              clusterSets: placement?.spec?.clusterSets,
+              existingGitOpsCluster: wizardGitOps,
+              existingPlacement: placement,
+              existingBindings: relatedBindings,
+              existingArgoCD: argoCD,
+              existingAppProject: project,
+              existingSubscription,
+              existingPolicy,
+              includeBindings: true,
+            },
+            t
+          )
         )
       })
       .catch((error: Error) => {
@@ -241,6 +244,7 @@ export function EditGitOpsCluster() {
     namespace,
     navigate,
     loadExistingAppProject,
+    t,
   ])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
@@ -272,7 +276,7 @@ export function EditGitOpsCluster() {
       resources={existingResources}
       yamlEditor={getWizardSyncEditor}
       onSubmit={async (data) => {
-        const resources = ensureGitOpsClusterPlacement(data as IResource[])
+        const resources = ensureGitOpsClusterPlacement(data as IResource[], t)
         // Also guard YAML edits that bypass the pull-model card's lookup.
         if (
           isAgentEnabled(resources.find((resource) => resource.kind === GitOpsClusterKind) as GitOpsClusterWizardData)
@@ -301,7 +305,7 @@ export function EditGitOpsCluster() {
           throw new Error(t('Missing permissions to update one or more required resources.'))
         }
 
-        return reconcileGitOpsWizardResources(resources, previousOwned, {
+        return reconcileGitOpsWizardResources(resources, t, previousOwned, {
           baseline: baselineResources.current,
           placements,
         })

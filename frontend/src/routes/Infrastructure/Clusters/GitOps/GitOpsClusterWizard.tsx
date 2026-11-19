@@ -54,17 +54,20 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
     if (props.resources && props.resources.length > 0) {
       return props.resources
     }
-    return buildGitOpsClusterResources({
-      name: '',
-      namespace: props.namespaces[0] ?? '',
-      agentEnabled: false,
-      pushModelEnabled: false,
-      existingBindings: props.existingBindings,
-      existingArgoCD: props.argoCDs[0],
-      existingSubscription: props.subscriptions[0],
-      includeBindings: false,
-    })
-  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions])
+    return buildGitOpsClusterResources(
+      {
+        name: '',
+        namespace: props.namespaces[0] ?? '',
+        agentEnabled: false,
+        pushModelEnabled: false,
+        existingBindings: props.existingBindings,
+        existingArgoCD: props.argoCDs[0],
+        existingSubscription: props.subscriptions[0],
+        includeBindings: false,
+      },
+      t
+    )
+  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions, t])
 
   return (
     <WizardPage

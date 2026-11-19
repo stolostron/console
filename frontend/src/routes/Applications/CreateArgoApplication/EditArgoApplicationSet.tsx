@@ -174,6 +174,7 @@ export function EditArgoApplicationSet({
   }, [applicationSets, name, namespace, onApplicationSetNotFound, placements])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
+  const existingApplicationSet = existingResources?.find((resource) => resource.kind === ApplicationSetKind)
 
   const content =
     existingResources === undefined || loadingAppSets || !applicationSets ? (
@@ -219,7 +220,7 @@ export function EditArgoApplicationSet({
         timeZones={timeZones}
         resources={existingResources}
         isPullModel={pullModel}
-        gitOpsModel={getApplicationModel(existingResources[0])}
+        gitOpsModel={existingApplicationSet ? getApplicationModel(existingApplicationSet) : undefined}
         repoSecrets={secrets}
       />
     )

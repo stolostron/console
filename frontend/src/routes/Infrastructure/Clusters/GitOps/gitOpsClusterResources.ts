@@ -1,7 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { get, isEqual } from 'lodash'
-import { t } from 'i18next'
+import type { TFunction } from 'i18next'
 import { rbacCreate, rbacDelete, rbacGet, rbacPatch } from '~/lib/rbac-util'
 import type { IResource } from '~/resources'
 import { getResource, listResources, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
@@ -601,7 +601,7 @@ export interface BuildGitOpsClusterResourcesOptions {
  * Recommended SyncEditor / apply order (dependencies before GitOpsCluster):
  * [Placement, ManagedClusterSetBinding(s)?, GitOpsCluster, ArgoCD?, AppProject?, Subscription?, Policy?]
  */
-export function buildGitOpsClusterResources(options: BuildGitOpsClusterResourcesOptions): IResource[] {
+export function buildGitOpsClusterResources(options: BuildGitOpsClusterResourcesOptions, t: TFunction): IResource[] {
   const {
     name,
     namespace,
@@ -623,7 +623,7 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     (existingGitOpsCluster && resourceExistsOnCluster(existingGitOpsCluster)) ||
     (existingPlacement && resourceExistsOnCluster(existingPlacement))
   ) {
-    validatePlacementNamespace(existingGitOpsCluster, existingPlacement, namespace)
+    validatePlacementNamespace(existingGitOpsCluster, existingPlacement, t, namespace)
   }
 
   const placement = createPlacementResource({
@@ -808,7 +808,7 @@ function withLiveIdentity(desired: IResource, live: IResource): IResource {
   return copy
 }
 
-function concurrentEditError(resource: IResource): ResourceError {
+function concurrentEditError(resource: IResource, t: TFunction): ResourceError {
   return new ResourceError(
     ResourceErrorCode.Conflict,
     t('{{kind}} {{name}} changed while this wizard was open. Reload the page and try again.', {
@@ -819,7 +819,7 @@ function concurrentEditError(resource: IResource): ResourceError {
 }
 
 /** Three-way merge: retain concurrent changes; arrays are atomic to avoid shifting edited indices. */
-function mergeResourceDraft(baseline: IResource, desired: IResource, live: IResource): IResource {
+function mergeResourceDraft(baseline: IResource, desired: IResource, live: IResource, t: TFunction): IResource {
   const isObject = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null && !Array.isArray(value)
   const merge = (before: unknown, draft: unknown, current: unknown): unknown => {
@@ -834,7 +834,7 @@ function mergeResourceDraft(baseline: IResource, desired: IResource, live: IReso
       }
       return result
     }
-    throw concurrentEditError(desired)
+    throw concurrentEditError(desired, t)
   }
   return merge(
     withoutServerMetadata(baseline),
@@ -845,6 +845,7 @@ function mergeResourceDraft(baseline: IResource, desired: IResource, live: IReso
 
 async function upsertResource(
   resource: IResource,
+  t: TFunction,
   baseline?: IResource,
   hasEditBaseline = false,
   onUpdated?: (live: IResource, applied: IResource) => void
@@ -862,9 +863,9 @@ async function upsertResource(
       resource.metadata?.resourceVersion &&
       resource.metadata.resourceVersion !== live.metadata?.resourceVersion
     ) {
-      throw concurrentEditError(resource)
+      throw concurrentEditError(resource, t)
     }
-    const desired = baseline ? mergeResourceDraft(baseline, resource, live) : cloneResource(resource)
+    const desired = baseline ? mergeResourceDraft(baseline, resource, live, t) : cloneResource(resource)
     if (desired.kind === ManagedClusterSetBindingKind) {
       // Finding an existing binding during upsert must never adopt a shared
       // binding merely because the create draft carried our ownership marker.
@@ -898,7 +899,7 @@ async function upsertResource(
           versionChanged ||
           (error.code === ResourceErrorCode.UnprocessableEntity && /test.*fail|fail.*test/i.test(error.message)))
       ) {
-        throw concurrentEditError(resource)
+        throw concurrentEditError(resource, t)
       }
       throw error
     }
@@ -926,7 +927,11 @@ export interface ReconcileGitOpsWizardResult {
   gitOpsCluster?: GitOpsClusterUpsertResult
 }
 
-async function prepareAgentResources(desired: IResource[], baseline: IResource[] = []): Promise<IResource[]> {
+async function prepareAgentResources(
+  desired: IResource[],
+  t: TFunction,
+  baseline: IResource[] = []
+): Promise<IResource[]> {
   const gitOpsCluster = getGitOpsClusterFromResources(desired)
   const agentEnabled = isAgentEnabled(gitOpsCluster)
   const draft = findGitOpsOperatorSubscription(
@@ -977,11 +982,12 @@ async function prepareAgentResources(desired: IResource[], baseline: IResource[]
  */
 export async function reconcileGitOpsWizardResources(
   desired: IResource[],
+  t: TFunction,
   previousOwned: IResource[] = [],
   options: { baseline?: IResource[]; placements?: Placement[] } = {}
 ): Promise<ReconcileGitOpsWizardResult> {
-  validatePlacementNamespace(getGitOpsClusterFromResources(desired), getPlacementFromResources(desired))
-  desired = await prepareAgentResources(desired, options.baseline)
+  validatePlacementNamespace(getGitOpsClusterFromResources(desired), getPlacementFromResources(desired), t)
+  desired = await prepareAgentResources(desired, t, options.baseline)
   const ordered = orderGitOpsWizardResourcesForApply(desired)
   const createdInThisPass: IResource[] = []
   let updatedGitOpsCluster: { live: IResource; applied: IResource } | undefined
@@ -992,6 +998,7 @@ export async function reconcileGitOpsWizardResources(
     for (const resource of ordered) {
       const result = await upsertResource(
         resource,
+        t,
         options.baseline?.find((item) => sameResourceIdentity(item, resource)),
         options.baseline !== undefined,
         (live, applied) => {
@@ -1023,7 +1030,7 @@ export async function reconcileGitOpsWizardResources(
           const current = await getResource(applied).promise
           const currentRef: unknown = get(current, 'spec.placementRef')
           if (!isEqual(currentRef, beforeRef)) {
-            if (!isEqual(currentRef, afterRef)) throw concurrentEditError(current)
+            if (!isEqual(currentRef, afterRef)) throw concurrentEditError(current, t)
             const restored = cloneResource(current) as GitOpsCluster
             if (restored.spec) restored.spec.placementRef = cloneResource(live as GitOpsCluster).spec?.placementRef
             await reconcileResources([restored], [current], { requireResourceVersion: true })
@@ -1207,7 +1214,7 @@ export function stripTransformedFields(resources: IResource[]): IResource[] {
  * Re-attach a Placement before apply so create never succeeds with a dangling placementRef.
  * When both exist, the Placement document name wins (preserves YAML renames).
  */
-export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[] {
+export function ensureGitOpsClusterPlacement(resources: IResource[], t: TFunction): IResource[] {
   const stripped = stripTransformedFields(resources)
   const gitOpsCluster = getGitOpsClusterFromResources(stripped)
   if (!gitOpsCluster) {
@@ -1220,7 +1227,7 @@ export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[
     gitOpsCluster.spec?.argoServer?.argoNamespace ||
     existingPlacement?.metadata.namespace ||
     ''
-  validatePlacementNamespace(gitOpsCluster, existingPlacement, namespace)
+  validatePlacementNamespace(gitOpsCluster, existingPlacement, t, namespace)
   gitOpsCluster.metadata = { ...gitOpsCluster.metadata, namespace }
   const name = gitOpsCluster.metadata?.name ?? ''
   const placementName =
@@ -1250,7 +1257,12 @@ export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[
   return orderGitOpsWizardResourcesForApply([...stripped, placement])
 }
 
-function validatePlacementNamespace(gitOpsCluster?: GitOpsCluster, placement?: Placement, selectedNamespace?: string) {
+function validatePlacementNamespace(
+  gitOpsCluster: GitOpsCluster | undefined,
+  placement: Placement | undefined,
+  t: TFunction,
+  selectedNamespace?: string
+) {
   const namespace = gitOpsCluster?.metadata?.namespace || selectedNamespace
   if (namespace && placement?.metadata?.namespace && namespace !== placement.metadata.namespace) {
     throw new Error(t('GitOpsCluster and its Placement must use the same namespace.'))

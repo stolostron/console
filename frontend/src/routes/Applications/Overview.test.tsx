@@ -3,6 +3,7 @@
 import { act, render, screen, waitFor, within } from '@testing-library/react'
 import { axe } from 'jest-axe'
 import userEvent from '@testing-library/user-event'
+import { Profiler, type ProfilerOnRenderCallback } from 'react'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import {
@@ -435,7 +436,8 @@ describe('Applications Page', () => {
 function renderOverviewWithGitOpsClusters(
   gitOpsClusters: GitOpsCluster[],
   argoCDs: IResource[] = [],
-  items = applicationAggregate.res.items
+  items = applicationAggregate.res.items,
+  onRender?: ProfilerOnRenderCallback
 ) {
   nockIgnoreRBAC()
   nockIgnoreApiPaths()
@@ -463,7 +465,13 @@ function renderOverviewWithGitOpsClusters(
             }}
           >
             <LocationDisplay />
-            <Overview />
+            {onRender ? (
+              <Profiler id="applications-overview" onRender={onRender}>
+                <Overview />
+              </Profiler>
+            ) : (
+              <Overview />
+            )}
           </PluginContext.Provider>
         </MemoryRouter>
       </AcmToastProvider>
@@ -480,6 +488,29 @@ describe('Applications saved column order', () => {
   ]
   beforeEach(() => storageKeys.forEach((key) => localStorage.removeItem(key)))
   afterEach(() => storageKeys.forEach((key) => localStorage.removeItem(key)))
+
+  test('renders page content on the first commit while migrating saved columns', async () => {
+    const order = ['name', 'type', 'namespace', 'labels', 'model']
+    localStorage.setItem('applicationTableSavedCols', JSON.stringify(order))
+    localStorage.setItem('applicationTableSavedColOrder', JSON.stringify(order))
+    const mountedWithContent: boolean[] = []
+
+    renderOverviewWithGitOpsClusters([], [], applicationAggregate.res.items, (_id, phase) => {
+      if (phase === 'mount') {
+        const hasTable = screen.queryByRole('grid', { name: 'Applications table' }) !== null
+        const hasLoadingState = screen.queryAllByRole('progressbar').length > 0
+        const hasEmptyState = screen.queryByRole('heading', { name: "You don't have any applications yet" }) !== null
+        mountedWithContent.push(hasTable || hasLoadingState || hasEmptyState)
+      }
+    })
+
+    expect(mountedWithContent).toEqual([true])
+    await waitForText('feng-remote-argo8')
+    const headers = within(screen.getByRole('grid', { name: 'Applications table' }))
+      .getAllByRole('columnheader')
+      .map((header) => header.textContent)
+    expect(headers.slice(0, 5)).toEqual(['Name', 'Type', 'Model', 'Namespace', 'Labels'])
+  })
 
   test('renders Model third when it was previously saved at the end', async () => {
     const order = ['name', 'type', 'namespace', 'labels', 'model']
