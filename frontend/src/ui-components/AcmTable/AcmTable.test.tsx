@@ -765,6 +765,43 @@ describe('AcmTable', () => {
     expect(queryByText('1 / 105')).toBeInTheDocument()
   })
 
+  test('search result order is stable when items reshuffle', async () => {
+    const makeItem = (uid: number, firstName: string): IExampleData => ({
+      uid,
+      firstName,
+      last_name: 'ApplicationSet',
+      gender: 'Healthy',
+      email: `${firstName}@example.com`,
+      cluster: 'local-cluster',
+      ip_address: '10.0.0.1',
+    })
+    const orderA = [makeItem(2, 'zeta-appset'), makeItem(1, 'alpha-appset')]
+    const orderB = [makeItem(1, 'alpha-appset'), makeItem(2, 'zeta-appset')]
+    const columns: AcmTableProps<IExampleData>['columns'] = [
+      { header: 'First Name', sort: 'firstName', cell: 'firstName', search: 'firstName' },
+      { header: 'UID', sort: 'uid', cell: 'uid', search: 'uid' },
+    ]
+    const StableSearchTable = ({ items }: { items: IExampleData[] }) => (
+      <MemoryRouter>
+        <AcmTable<IExampleData>
+          aria-label="Stable search table"
+          emptyState={<AcmEmptyState title="No addresses found" message="You do not have any addresses yet" />}
+          items={items}
+          columns={columns}
+          keyFn={(item) => item.uid.toString()}
+        />
+      </MemoryRouter>
+    )
+    const { getByPlaceholderText, container, rerender } = render(<StableSearchTable items={orderA} />)
+    await typeElement(getByPlaceholderText(placeholderString), 'appset')
+    const names = () =>
+      Array.from(container.querySelectorAll('tbody tr [data-label="First Name"]')).map((el) => el.textContent)
+    expect(names()).toEqual(['alpha-appset', 'zeta-appset'])
+
+    rerender(<StableSearchTable items={orderB} />)
+    expect(names()).toEqual(['alpha-appset', 'zeta-appset'])
+  })
+
   const sortTest = async () => {
     const { getByText, container } = render(<Table />)
 
