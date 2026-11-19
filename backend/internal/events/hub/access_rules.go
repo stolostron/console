@@ -13,7 +13,7 @@ import (
 	applog "github.com/stolostron/console/backend/internal/log"
 )
 
-// SSRR requires a namespace; cluster-scoped kinds are reviewed in this probe namespace only.
+// SSRR requires a namespace; cluster-scoped kinds other than Namespace use this probe namespace.
 const clusterScopedRulesNamespace = "default"
 
 type kindAccessType int
@@ -64,9 +64,9 @@ func (a *SSARAccess) clusterScoped(kind string) bool {
 	return false
 }
 
-// rulesNamespaceFor picks the SelfSubjectRulesReview namespace: default for cluster-scoped kinds.
+// rulesNamespaceFor uses the target namespace for Namespace access and default for other cluster-scoped kinds.
 func rulesNamespaceFor(kind, namespace string, clusterScoped bool) string {
-	if clusterScoped {
+	if clusterScoped && kind != "Namespace" {
 		return clusterScopedRulesNamespace
 	}
 	if namespace != "" {
@@ -251,7 +251,7 @@ func (a *SSARAccess) applyKindGetAccess(
 
 // canGetResource is the SSRR cascade after cluster list fails; cluster-scoped non-deny always confirms with get.
 func (a *SSARAccess) canGetResource(ctx context.Context, token, group, resource, kind, name, namespace string) (bool, error) {
-	access := a.resolveKindGetAccess(ctx, token, kind, namespace, group, resource)
+	access := a.resolveKindGetAccess(ctx, token, kind, ssarNamespace(kind, name, namespace), group, resource)
 	if a.clusterScoped(kind) && access.typ != kindAccessDenyAll {
 		return a.ssarGet(ctx, token, group, resource, kind, name, namespace)
 	}
