@@ -65,6 +65,26 @@ func TestFilterAndSortApplications(t *testing.T) {
 	}
 }
 
+func TestSortApplicationsTieBreakStable(t *testing.T) {
+	mk := func(name, ns, uid, sources string) App {
+		return App{
+			Object:    map[string]any{"metadata": map[string]any{"name": name, "namespace": ns, "uid": uid}},
+			Transform: Transform{Name: name, Namespace: ns, Sources: sources},
+		}
+	}
+	// Equal sources; input order reversed between runs.
+	runA := []App{mk("b-app", "ns", "uid-b", "git"), mk("a-app", "ns", "uid-a", "git")}
+	runB := []App{mk("a-app", "ns", "uid-a", "git"), mk("b-app", "ns", "uid-b", "git")}
+	sortedA := sortApplications(colSources, false, runA)
+	sortedB := sortApplications(colSources, false, runB)
+	if sortedA[0].Transform.Name != "a-app" || sortedA[1].Transform.Name != "b-app" {
+		t.Fatalf("tie-break by name: %+v", sortedA)
+	}
+	if sortedA[0].Transform.Name != sortedB[0].Transform.Name || sortedA[1].Transform.Name != sortedB[1].Transform.Name {
+		t.Fatalf("unstable: A=%+v B=%+v", sortedA, sortedB)
+	}
+}
+
 func TestTruncateSourceName(t *testing.T) {
 	if got := truncateSourceName("helloworld", maxSourceNameLength); got != "helloworld" {
 		t.Fatalf("short source %q", got)

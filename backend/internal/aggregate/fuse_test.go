@@ -64,3 +64,49 @@ func TestFuseMatchesApplicationSources(t *testing.T) {
 		t.Fatalf("%+v", got)
 	}
 }
+
+func TestFuseFilterStableEqualScoreOrder(t *testing.T) {
+	// Same search relevance (exact substring) but different primary keys.
+	// Input order is deliberately reversed between runs.
+	mk := func(name, ns, uid string) App {
+		return App{
+			Object:    map[string]any{"metadata": map[string]any{"name": name, "namespace": ns, "uid": uid}},
+			Transform: Transform{Name: name, Namespace: ns},
+		}
+	}
+	pattern := "appset"
+	runA := []App{mk("zeta-appset", "ns-b", "uid-2"), mk("alpha-appset", "ns-a", "uid-1")}
+	runB := []App{mk("alpha-appset", "ns-a", "uid-1"), mk("zeta-appset", "ns-b", "uid-2")}
+	gotA := fuseFilter(runA, pattern)
+	gotB := fuseFilter(runB, pattern)
+	if len(gotA) != 2 || len(gotB) != 2 {
+		t.Fatalf("len A=%d B=%d", len(gotA), len(gotB))
+	}
+	for i := range gotA {
+		if gotA[i].Transform.Name != gotB[i].Transform.Name {
+			t.Fatalf("unstable at %d: %s vs %s", i, gotA[i].Transform.Name, gotB[i].Transform.Name)
+		}
+	}
+	if gotA[0].Transform.Name != "alpha-appset" || gotA[1].Transform.Name != "zeta-appset" {
+		t.Fatalf("want name tie-break order, got %s then %s", gotA[0].Transform.Name, gotA[1].Transform.Name)
+	}
+}
+
+func TestFuseFilterPrefersBetterScoreBeforeTieBreak(t *testing.T) {
+	items := []App{
+		{Transform: Transform{Name: "zzzz", Namespace: "default"}},                       // no match
+		{Transform: Transform{Name: "abcx-app", Namespace: "default"}},                   // approximate
+		{Transform: Transform{Name: "abcd-exact", Namespace: "default"}},                 // exact substring
+		{Transform: Transform{Name: "abcd-also", Namespace: "other"}},                    // exact substring, later name
+	}
+	got := fuseFilter(items, "abcd")
+	if len(got) != 3 {
+		t.Fatalf("%+v", got)
+	}
+	if got[0].Transform.Name != "abcd-also" || got[1].Transform.Name != "abcd-exact" {
+		t.Fatalf("exact matches first by name: %+v", got)
+	}
+	if got[2].Transform.Name != "abcx-app" {
+		t.Fatalf("approximate after exact: %+v", got)
+	}
+}
