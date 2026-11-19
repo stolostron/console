@@ -182,7 +182,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
         'Create an ApplicationSet that uses the ManifestWork pull model to distribute generated applications from the hub to selected managed clusters.'
       )
   const pushModelDescription = t(
-    'Create an ApplicationSet that pushes generated applications from the hub to target clusters through an Argo CD instance.'
+    'Create an ApplicationSet that pushes generated applications from the hub through an Argo CD instance outside openshift-gitops.'
   )
   const createPullTitle = isAgentPullModel
     ? t('Create application set - Agent pull model')

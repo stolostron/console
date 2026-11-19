@@ -170,7 +170,7 @@ describe('ArgoWizard tests', () => {
       model: 'push',
       label: 'GitOps model: Push',
       description:
-        'Create an ApplicationSet that pushes generated applications from the hub to target clusters through an Argo CD instance.',
+        'Create an ApplicationSet that pushes generated applications from the hub through an Argo CD instance outside openshift-gitops.',
       title: 'Create application set - push model',
     },
   ] as const)(
