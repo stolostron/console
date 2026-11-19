@@ -547,7 +547,9 @@ func sortApplications(index int, desc bool, items []App) []App {
 				if a == b {
 					return appTieBreak(out[i], out[j])
 				}
-				return false
+				// Empty values sort last in ascending order so mixed empty/non-empty
+				// pairs stay stable across input reshuffles.
+				return a != ""
 			}
 			if a != b {
 				return a < b
