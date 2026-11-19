@@ -78,7 +78,8 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
       onCancel={props.onCancel}
       breadcrumb={props.breadcrumb}
       editMode={editMode}
-      yamlEditor={props.yamlEditor}
+      yaml={!props.isModal}
+      yamlEditor={props.isModal ? undefined : props.yamlEditor}
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">

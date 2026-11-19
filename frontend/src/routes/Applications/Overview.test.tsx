@@ -580,34 +580,71 @@ describe('Create application dropdown - GitOps agent mode', () => {
     expect(screen.getByTestId('location-display').textContent).toBe('/')
   })
 
-  test('GitOps configuration link opens the creation wizard in a modal and cancels without navigation', async () => {
-    nockIgnorePlacementDebug()
-    nockList({ apiVersion: 'apps.open-cluster-management.io/v1beta1', kind: 'GitOpsCluster' }, []).persist()
-    nockGet(
-      {
-        apiVersion: 'cluster.open-cluster-management.io/v1beta1',
-        kind: 'Placement',
-        metadata: { name: 'gitopscluster-placement' },
-      },
-      undefined,
-      404
-    ).persist()
-    renderOverviewWithGitOpsClusters([])
+  test.each(['Cancel', 'Close'])(
+    'GitOps setup opens a form-only modal with a description and closes using %s without navigation',
+    async (closeButton) => {
+      const previousYamlPreference = localStorage.getItem('yaml')
+      localStorage.setItem('yaml', 'true')
+      try {
+        nockIgnorePlacementDebug()
+        nockList({ apiVersion: 'apps.open-cluster-management.io/v1beta1', kind: 'GitOpsCluster' }, []).persist()
+        nockGet(
+          {
+            apiVersion: 'cluster.open-cluster-management.io/v1beta1',
+            kind: 'Placement',
+            metadata: { name: 'gitopscluster-placement' },
+          },
+          undefined,
+          404
+        ).persist()
+        renderOverviewWithGitOpsClusters([])
 
-    await waitForText('feng-remote-argo8')
-    await clickElement(screen.getByRole('button', { name: /create application/i }))
+        await waitForText('feng-remote-argo8')
+        await clickElement(screen.getByRole('button', { name: /create application/i }))
 
-    const configureLink = screen.getByText('Set up GitOps configuration for Argo CD Agent Pull')
-    expect(configureLink).toBeInTheDocument()
+        const configureLink = screen.getByText('Set up GitOps configuration for Argo CD Agent Pull')
+        expect(configureLink).toBeInTheDocument()
 
-    await clickElement(configureLink)
-    const dialog = screen.getByRole('dialog')
-    expect(within(dialog).getByRole('heading', { name: 'Create GitOpsCluster' })).toBeInTheDocument()
-    expect(within(dialog).getByRole('textbox', { name: /name/i })).toBeInTheDocument()
-    await clickElement(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(screen.getByTestId('location-display').textContent).toBe('/')
-  })
+        await clickElement(configureLink)
+        const dialog = screen.getByRole('dialog')
+        expect(within(dialog).getByRole('heading', { name: 'Create GitOps configuration' })).toBeInTheDocument()
+        expect(dialog).toHaveAccessibleDescription(
+          'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
+        )
+        expect(
+          within(dialog).getByText(
+            'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
+          )
+        ).toBeVisible()
+        expect(within(dialog).getByRole('textbox', { name: /name/i })).toBeInTheDocument()
+        const modalBody = Array.from(dialog.children).find((child) =>
+          child.contains(within(dialog).getByRole('textbox', { name: /name/i }))
+        )
+        expect(modalBody).toBeDefined()
+        expect(getComputedStyle(modalBody!).flexGrow).toBe('1')
+        expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
+        expect(within(dialog).queryByRole('textbox', { name: /monaco/i, hidden: true })).not.toBeInTheDocument()
+        expect(within(dialog).queryByRole('switch', { name: 'YAML' })).not.toBeInTheDocument()
+        expect(localStorage.getItem('yaml')).toBe('true')
+        // Match the existing GitOps details checks for reused IDs in the shared wizard fields.
+        expect(
+          await axe(dialog, {
+            rules: {
+              'duplicate-id': { enabled: false },
+              'duplicate-id-active': { enabled: false },
+              'duplicate-id-aria': { enabled: false },
+            },
+          })
+        ).toHaveNoViolations()
+        await clickElement(within(dialog).getByRole('button', { name: closeButton }))
+        expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+        expect(screen.getByTestId('location-display').textContent).toBe('/')
+      } finally {
+        if (previousYamlPreference === null) localStorage.removeItem('yaml')
+        else localStorage.setItem('yaml', previousYamlPreference)
+      }
+    }
+  )
 
   test('ignores completion and cancellation callbacks from a closed GitOps wizard session', async () => {
     mockWizardCallbacks = []

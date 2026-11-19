@@ -1,7 +1,9 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
+import { css } from '@emotion/css'
 import {
   Content,
+  Divider,
   Flex,
   FlexItem,
   Label,
@@ -1464,15 +1466,25 @@ function ApplicationsOverviewContent() {
       <DeleteResourceModal {...modalProps} />
       {gitOpsWizardSession && (
         <AcmModal
-          title={t('Create GitOpsCluster')}
+          title={t('Create GitOps configuration')}
+          description={
+            <span id="gitops-configuration-description">
+              {t(
+                'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
+              )}
+            </span>
+          }
+          aria-describedby="gitops-configuration-description"
           variant={ModalVariant.large}
-          showClose={false}
+          className={css({ height: '85vh' })}
+          showClose
           isOpen
           onClose={closeGitOpsWizard}
           hasNoBodyWrapper
         >
-          <Flex direction={{ default: 'column' }} style={{ height: '75vh' }}>
-            <FlexItem flex={{ default: 'flex_1' }}>
+          <Divider />
+          <Flex direction={{ default: 'column' }} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
+            <FlexItem flex={{ default: 'flex_1' }} style={{ minHeight: 0, overflow: 'hidden' }}>
               <CreateGitOpsCluster isModal onCancel={closeGitOpsWizard} onSubmitSuccess={closeGitOpsWizard} />
             </FlexItem>
           </Flex>
