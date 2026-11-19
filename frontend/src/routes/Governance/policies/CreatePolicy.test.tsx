@@ -64,7 +64,7 @@ describe('Create Policy Page', () => {
     nockIgnorePlacementDebug()
   })
 
-  test('can create policy', async () => {
+  test('keeps the policy-derived binding name when creating a custom placement', async () => {
     // create form
     const { container } = render(<TestCreatePolicyPage />)
     await waitForText('Create policy', true)
@@ -98,6 +98,11 @@ describe('Create Policy Page', () => {
 
     // new placement
     await clickElement(screen.getByRole('button', { name: 'New placement' }))
+    const placementNameInput = screen.getByRole<HTMLInputElement>('textbox', { name: /name name/i })
+    await typeElement(placementNameInput, 'custom-placement', {
+      initialSelectionStart: 0,
+      initialSelectionEnd: placementNameInput.value.length,
+    })
     await clickElement(screen.getAllByRole('button', { name: /action/i })[0])
     await clickElement(screen.getByPlaceholderText(/select the label/i))
     await clickElement(screen.getByRole('option', { name: /cloud/i }))
@@ -120,7 +125,7 @@ describe('Create Policy Page', () => {
       apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Placement',
       metadata: {
-        name: 'policy1-placement',
+        name: 'custom-placement',
         namespace: 'test',
       },
       spec: {
@@ -167,7 +172,7 @@ describe('Create Policy Page', () => {
       placementRef: {
         apiGroup: 'cluster.open-cluster-management.io',
         kind: 'Placement',
-        name: 'policy1-placement',
+        name: 'custom-placement',
       },
       subjects: [
         {

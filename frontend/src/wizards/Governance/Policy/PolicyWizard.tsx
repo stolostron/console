@@ -48,6 +48,7 @@ import { WizardPage } from '../../WizardPage'
 import { NavigationPath } from '../../../NavigationPath'
 import { IResource } from '../../common/resources/IResource'
 import { IClusterSetBinding } from '../../common/resources/IClusterSetBinding'
+import { PlacementKind } from '../../common/resources/IPlacement'
 import { PlacementBindingKind } from '../../common/resources/IPlacementBinding'
 import { PolicyApiGroup, PolicyKind, PolicyType } from '../../common/resources/IPolicy'
 import { useValidation } from '../../../hooks/useValidation'
@@ -108,7 +109,21 @@ export function PolicyWizard(props: {
         {props.editMode !== EditMode.Edit && (
           <Fragment>
             <Sync kind={PolicyKind} path="metadata.namespace" />
-            <Sync kind={PolicyKind} path="metadata.name" suffix="-placement" />
+            <Sync
+              kind={PolicyKind}
+              path="metadata.name"
+              targetKind={PlacementKind}
+              targetPath="metadata.name"
+              suffix="-placement"
+              preserveTargetOverride
+            />
+            <Sync
+              kind={PolicyKind}
+              path="metadata.name"
+              targetKind={PlacementBindingKind}
+              targetPath="metadata.name"
+              suffix="-placement"
+            />
             <Sync
               kind={PolicyKind}
               path="metadata.name"
@@ -209,6 +224,7 @@ export function PolicyWizard(props: {
           }}
           allowNoPlacement
           withoutOnlineClusterCondition
+          syncPlacementBindingName={false}
         />
       </Step>
       <Step label={t('Policy annotations')} id="security-groups">
