@@ -223,6 +223,19 @@ const mockClusterCuratorRunningOther: ClusterCurator = {
     conditions: [conditionCuratorJobRunning],
   },
 }
+const mockClusterCuratorChannelChangeRereconciling: ClusterCurator = {
+  ...mockClusterCurator,
+  spec: {
+    desiredCuration: 'upgrade',
+    upgrade: {
+      channel: 'stable-1.2',
+      desiredUpdate: '',
+    },
+  },
+  status: {
+    conditions: [conditionCuratorJobRunning],
+  },
+}
 
 const mockHostedCluster: HostedClusterK8sResource = {
   apiVersion: HostedClusterApiVersion,
@@ -1072,7 +1085,7 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.upgradePercentage).toEqual('11%')
     expect(d1?.upgradeInfo.isUpgrading).toBeTruthy()
   })
-  it('should return false for ready for update if curator is running, or if currently updating, or if managed by ocm', () => {
+  it('should return false for ready for update if curator is upgrading', () => {
     const d1 = getDistributionInfo(
       mockManagedClusterInfoUpdating,
       mockManagedCluster,
@@ -1091,6 +1104,8 @@ describe('getDistributionInfo', () => {
     expect(d2?.upgradeInfo.isUpgrading).toBeTruthy()
     expect(d2?.upgradeInfo.isReadySelectChannels).toBeFalsy()
     expect(d2?.upgradeInfo.isReadyUpdates).toBeFalsy()
+  })
+  it('should allow ready for update when curator is running a non-upgrade operation', () => {
     const d3 = getDistributionInfo(
       mockManagedClusterInfoHasAvailableUpdates,
       mockManagedCluster,
@@ -1099,7 +1114,7 @@ describe('getDistributionInfo', () => {
     )
     expect(d3?.upgradeInfo.isUpgrading).toBeFalsy()
     expect(d3?.upgradeInfo.isReadySelectChannels).toBeFalsy()
-    expect(d3?.upgradeInfo.isReadyUpdates).toBeFalsy()
+    expect(d3?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
   it('should return false for ready to update if the cluster is managed by ocm', () => {
     const d1 = getDistributionInfo(
@@ -1152,6 +1167,17 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
     expect(d1?.upgradeInfo.currentChannel).toEqual('stable-1.2')
     expect(d1?.upgradeInfo.desiredChannel).toEqual('stable-1.3')
+  })
+  it('should show ready for update when curator re-reconciles after channel change completion', () => {
+    const d1 = getDistributionInfo(
+      mockManagedClusterInfoHasAvailableUpdates,
+      mockManagedCluster,
+      mockClusterDeployment,
+      mockClusterCuratorChannelChangeRereconciling
+    )
+    expect(d1?.upgradeInfo.isSelectingChannel).toBeFalsy()
+    expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d1?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
   it('should not return upgrading for 3.11 clusters', () => {
     const d1 = getDistributionInfo(
