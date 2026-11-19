@@ -43,6 +43,8 @@ import PlacementDetailsPage from './Placements/PlacementDetails/PlacementDetails
 import PlacementOverviewPageContent from './Placements/PlacementDetails/PlacementOverview/PlacementOverview'
 import CreatePlacement from './Placements/CreatePlacement/CreatePlacement'
 import { EditPlacement } from './Placements/CreatePlacement/EditPlacement'
+import CreateGitOpsCluster from '~/routes/Infrastructure/Clusters/GitOps/CreateGitOpsCluster'
+import { EditGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/EditGitOpsCluster'
 import { PrerequisitesPage } from './ManagedClusters/components/rosahcp/PrerequisitesPage/PrerequisitesPage'
 import { RosaHCPWrapper } from './ManagedClusters/components/rosahcp/RosaHCPWrapper'
 import { useSharedValue, useSharedAtoms } from '~/shared-atoms'
@@ -143,6 +145,14 @@ export default function Clusters() {
       </Route>
       <Route path={clustersChildPath(NavigationPath.createPlacement)} element={<CreatePlacement />} />
       <Route path={clustersChildPath(NavigationPath.editPlacement)} element={<EditPlacement />} />
+      <Route
+        path={clustersChildPath(NavigationPath.createGitOps)}
+        element={isACMAvailable ? <CreateGitOpsCluster /> : <Navigate to={NavigationPath.managedClusters} replace />}
+      />
+      <Route
+        path={clustersChildPath(NavigationPath.editGitOps)}
+        element={isACMAvailable ? <EditGitOpsCluster /> : <Navigate to={NavigationPath.managedClusters} replace />}
+      />
       <Route element={<PlacementDetailsPage />}>
         <Route path={clustersChildPath(NavigationPath.placementOverview)} element={<PlacementOverviewPageContent />} />
       </Route>

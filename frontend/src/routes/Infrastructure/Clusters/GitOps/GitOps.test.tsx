@@ -7,7 +7,7 @@ import nock from 'nock'
 import { generatePath, MemoryRouter } from 'react-router'
 import { gitOpsClustersState, managedClusterSetBindingsState, placementsState } from '~/atoms'
 import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '~/lib/nock-util'
-import { rbacDelete } from '~/lib/rbac-util'
+import { rbacDelete, rbacPatch } from '~/lib/rbac-util'
 import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '~/NavigationPath'
 import { PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
@@ -128,6 +128,24 @@ describe('GitOps', () => {
     expect(screen.getAllByText('-')).toHaveLength(3)
   })
 
+  it('shows placementRef as plain text when the Placement resource is missing', () => {
+    render(
+      <StateProvider
+        initializeStore={(store) => {
+          store.set(gitOpsClustersState, [resource])
+          store.set(placementsState, [])
+          store.set(managedClusterSetBindingsState, [])
+        }}
+      >
+        <MemoryRouter>
+          <GitOps />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    expect(screen.getByText('fleet-placement (not found)')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'fleet-placement' })).not.toBeInTheDocument()
+  })
+
   it('includes all namespace bindings when the Placement does not restrict cluster sets', () => {
     renderGitOps([resource], [])
     expect(screen.getByText('actual-binding')).toBeInTheDocument()
@@ -135,11 +153,20 @@ describe('GitOps', () => {
     expect(screen.queryByText('other-namespace-binding')).not.toBeInTheDocument()
   })
 
-  it('shows an empty state with no create action', async () => {
+  it('shows an empty state with create action', async () => {
+    nockIgnoreRBAC()
     const { container } = renderGitOps([])
     expect(screen.getByRole('heading', { name: 'No GitOps configuration set up' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Create/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create GitOpsCluster' })).toBeInTheDocument()
     expect(await axe(container)).toHaveNoViolations()
+  })
+
+  it('offers Edit in the actions menu when a resource exists', async () => {
+    nockIgnoreRBAC()
+    renderGitOps()
+    await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
+    expect(await screen.findByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
   })
 
   it('displays the single resource without a search textbox', () => {
@@ -236,13 +263,18 @@ describe('GitOps', () => {
   })
 
   it('disables delete when the resource-specific RBAC check denies permission', async () => {
-    const request = nockRBAC(
+    const deleteRequest = nockRBAC(
       await rbacDelete(GitopsClusterDefinition, resource.metadata.namespace, resource.metadata.name),
       false
     )
+    const editRequest = nockRBAC(
+      await rbacPatch(GitopsClusterDefinition, resource.metadata.namespace, resource.metadata.name),
+      true
+    )
     renderGitOps()
     await userEvent.click(screen.getByRole('button', { name: 'Actions' }))
-    await waitFor(() => expect(request.isDone()).toBe(true))
+    await waitFor(() => expect(deleteRequest.isDone()).toBe(true))
+    await waitFor(() => expect(editRequest.isDone()).toBe(true))
     await waitFor(() =>
       expect(screen.getByRole('menuitem', { name: 'Delete' })).toHaveAttribute('aria-disabled', 'true')
     )
@@ -251,12 +283,13 @@ describe('GitOps', () => {
     screen.getByRole('menuitem', { name: 'Delete' }).focus()
     await userEvent.keyboard('{Enter}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(request.isDone()).toBe(true)
+    expect(deleteRequest.isDone()).toBe(true)
   })
 
   it('enables delete when the SSAR check throws a network error', async () => {
     const scope = nock(process.env.JEST_DEFAULT_HOST as string)
       .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+      .times(2)
       .replyWithError('Network error')
     renderGitOps()
     await userEvent.click(screen.getByRole('button', { name: 'Actions' }))

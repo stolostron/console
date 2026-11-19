@@ -1,6 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import {
   Alert,
   Card,
@@ -24,18 +24,18 @@ import {
   StackItem,
   Title,
 } from '@patternfly/react-core'
-import { generatePath, Link } from 'react-router'
-import { RbacDropdown } from '~/components/Rbac'
+import { generatePath, Link, useNavigate } from 'react-router'
+import { RbacButton, RbacDropdown } from '~/components/Rbac'
 import { useTranslation } from '~/lib/acm-i18next'
-import { rbacDelete } from '~/lib/rbac-util'
-import { NavigationPath } from '~/NavigationPath'
+import { ViewDocumentationLink, DOC_LINKS } from '~/lib/doc-util'
+import { rbacCreate, rbacDelete, rbacPatch } from '~/lib/rbac-util'
+import { navigateToBackCancelLocation, NavigationPath } from '~/NavigationPath'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
 import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmEmptyState, AcmPageContent, AcmSelect } from '~/ui-components'
 import { DeleteGitOpsClusterModal } from '~/routes/Infrastructure/Clusters/GitOps/DeleteGitOpsClusterModal'
 import { getGitOpsClusterNames } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterStatus'
-import { ViewDocumentationLink, DOC_LINKS } from '~/lib/doc-util'
 
 const resourceKey = (resource: GitOpsCluster) => `${resource.metadata.namespace}/${resource.metadata.name}`
 
@@ -51,6 +51,7 @@ function getAgentModeLabel(mode: string, t: (key: string) => string) {
 
 export default function GitOps() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { gitOpsClustersState } = useSharedAtoms()
   const resources = useSharedValue(gitOpsClustersState)
   const [selectedKey, setSelectedKey] = useState('')
@@ -61,6 +62,26 @@ export default function GitOps() {
   const closeDelete = () => setDeleting(undefined)
   const onSelectResource = (value: string | undefined) => setSelectedKey(value ?? '')
 
+  const emptyCreate = useCallback(
+    () => (
+      <Stack hasGutter>
+        <StackItem>
+          <RbacButton
+            id="create-gitopscluster-empty"
+            onClick={() => navigateToBackCancelLocation(navigate, NavigationPath.createGitOps)}
+            rbac={[rbacCreate(GitopsClusterDefinition)]}
+          >
+            {t('Create GitOpsCluster')}
+          </RbacButton>
+        </StackItem>
+        <StackItem>
+          <ViewDocumentationLink doclink={DOC_LINKS.GITOPS_CLUSTER_AGENT_PULL} />
+        </StackItem>
+      </Stack>
+    ),
+    [navigate, t]
+  )
+
   return (
     <AcmPageContent id="gitops">
       <PageSection hasBodyWrapper={false}>
@@ -70,7 +91,7 @@ export default function GitOps() {
             message={t(
               'Create a GitOpsCluster resource to connect managed clusters to GitOps and enable ApplicationSets deployment across your fleet.'
             )}
-            action={<ViewDocumentationLink doclink={DOC_LINKS.GITOPS_CLUSTER_AGENT_PULL} />}
+            action={emptyCreate()}
           />
         ) : (
           <Stack hasGutter>
@@ -121,6 +142,7 @@ function GitOpsOverview({
   onDelete: (resource: GitOpsCluster) => void
 }>) {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const { placementsState, managedClusterSetBindingsState } = useSharedAtoms()
   const placements = useSharedValue(placementsState)
   const bindings = useSharedValue(managedClusterSetBindingsState)
@@ -140,6 +162,20 @@ function GitOpsOverview({
   const agentMode = resource.spec?.gitopsAddon?.argoCDAgent?.mode ?? 'managed'
   const agentModeLabel = getAgentModeLabel(agentMode, t)
   const actions = [
+    {
+      id: 'edit-gitops',
+      text: t('Edit'),
+      isAriaDisabled: true,
+      click: () => {
+        void navigate(
+          generatePath(NavigationPath.editGitOps, {
+            namespace: resource.metadata.namespace!,
+            name: resource.metadata.name!,
+          })
+        )
+      },
+      rbac: [rbacPatch(GitopsClusterDefinition, resource.metadata.namespace, resource.metadata.name)],
+    },
     {
       id: 'delete-gitops',
       text: t('Delete'),
@@ -194,15 +230,17 @@ function GitOpsOverview({
                   <DescriptionListGroup>
                     <DescriptionListTerm>{t('Placement')}</DescriptionListTerm>
                     <DescriptionListDescription>
-                      {placementName ? (
+                      {placement ? (
                         <Link
                           to={generatePath(NavigationPath.placementOverview, {
                             namespace: resource.metadata.namespace!,
-                            name: placementName,
+                            name: placement.metadata.name!,
                           })}
                         >
-                          {placementName}
+                          {placement.metadata.name}
                         </Link>
+                      ) : placementName ? (
+                        t('{{name}} (not found)', { name: placementName })
                       ) : (
                         '-'
                       )}

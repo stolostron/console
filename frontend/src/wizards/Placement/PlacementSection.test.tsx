@@ -29,16 +29,20 @@ jest.mock('../../shared-atoms', () => ({
   useSharedAtoms: () => ({ settingsState: 'settingsState' }),
 }))
 
-jest.mock('./usePlacementDebug', () => ({
-  usePlacementDebug: jest.fn(() => ({
-    matched: [],
-    notMatched: [],
-    totalClusters: 0,
-    matchedCount: undefined,
-    loading: false,
-    error: undefined,
-  })),
-}))
+jest.mock('./usePlacementDebug', () => {
+  const actual = jest.requireActual('./usePlacementDebug')
+  return {
+    ...actual,
+    usePlacementDebug: jest.fn(() => ({
+      matched: [],
+      notMatched: [],
+      totalClusters: 0,
+      matchedCount: undefined,
+      loading: false,
+      error: undefined,
+    })),
+  }
+})
 
 jest.mock('./MatchedClustersModal', () => ({
   MatchedClustersModal: () => null,

@@ -4,7 +4,7 @@ import { Alert, Button, ButtonVariant, Tooltip } from '@patternfly/react-core'
 import { useEffect } from 'react'
 import { useTranslation } from '../../lib/acm-i18next'
 import { IPlacement } from '../common/resources/IPlacement'
-import { PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
+import { getPlacementMatchErrorDetail, PlacementDebugState, usePlacementDebug } from './usePlacementDebug'
 
 export const PlacementMatchFooter = (props: {
   placement: IPlacement | undefined
@@ -33,7 +33,7 @@ export const PlacementMatchFooter = (props: {
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '1rem' }}>
           <span>{t('Matched by Placement')}:</span>{' '}
           {error ? (
-            <Tooltip content={error.message || t('An unknown error occurred.')}>
+            <Tooltip content={getPlacementMatchErrorDetail(error, t)}>
               <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
             </Tooltip>
           ) : matchedLabel === '-' ? (

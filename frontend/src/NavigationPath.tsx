@@ -123,6 +123,8 @@ export enum NavigationPath {
   // Infrastructure - Clusters - Placements
   placements = '/multicloud/infrastructure/clusters/placements',
   gitOps = '/multicloud/infrastructure/clusters/gitops',
+  createGitOps = '/multicloud/infrastructure/clusters/gitops/create',
+  editGitOps = '/multicloud/infrastructure/clusters/gitops/edit/:namespace/:name',
   createPlacement = '/multicloud/infrastructure/clusters/placements/create',
   editPlacement = '/multicloud/infrastructure/clusters/placements/edit/:namespace/:name',
   placementDetails = '/multicloud/infrastructure/clusters/placements/details/:namespace/:name',

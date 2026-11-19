@@ -102,5 +102,11 @@ export function WizCustomWrapper(props: WizCustomWrapperProps) {
     isGroup,
   ])
 
-  return <div id={id}>{children}</div>
+  // display:contents keeps registration/id without adding a form-section layout box
+  // (an empty wrapper was creating a large gap between adjacent alerts/fields).
+  return (
+    <div id={id} style={{ display: 'contents' }}>
+      {children}
+    </div>
+  )
 }
