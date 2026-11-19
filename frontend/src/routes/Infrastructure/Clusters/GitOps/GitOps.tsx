@@ -34,7 +34,6 @@ import type { GitOpsCluster } from '~/resources/gitops-cluster'
 import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
 import { AcmEmptyState, AcmPageContent, AcmSelect } from '~/ui-components'
-import { usePageContext } from '~/routes/Infrastructure/Clusters/ClustersPage'
 import { DeleteGitOpsClusterModal } from '~/routes/Infrastructure/Clusters/GitOps/DeleteGitOpsClusterModal'
 import { getGitOpsClusterNames } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterStatus'
 
@@ -50,20 +49,6 @@ function getAgentModeLabel(mode: string, t: (key: string) => string) {
   return mode
 }
 
-function CreateGitOpsButton() {
-  const { t } = useTranslation()
-  const navigate = useNavigate()
-  return (
-    <RbacButton
-      id="create-gitopscluster"
-      onClick={() => navigateToBackCancelLocation(navigate, NavigationPath.createGitOps)}
-      rbac={[rbacCreate(GitopsClusterDefinition)]}
-    >
-      {t('Create GitOpsCluster')}
-    </RbacButton>
-  )
-}
-
 export default function GitOps() {
   const { t } = useTranslation()
   const navigate = useNavigate()
@@ -76,9 +61,6 @@ export default function GitOps() {
     (resources.length === 1 ? resources[0] : undefined)
   const closeDelete = () => setDeleting(undefined)
   const onSelectResource = (value: string | undefined) => setSelectedKey(value ?? '')
-
-  // Only one GitOpsCluster is supported — show Create in header when empty
-  usePageContext(resources.length === 0, CreateGitOpsButton)
 
   const emptyCreate = useCallback(
     () => (

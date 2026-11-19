@@ -54,7 +54,9 @@ import {
   getGitOpsClusterFromResources,
   getPlacementFromResources,
   isPushModelEnabled,
+  policyNameFor,
   preferDraftManagedClusterSetBindings,
+  resourcesSignature,
   type GitOpsClusterWizardData,
   type MissingPermission,
 } from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
@@ -403,16 +405,13 @@ function resolveDraftAgentExtras(
   const argoCD =
     (resources.find((item) => item.kind === ArgoCDKind && item.metadata?.namespace === namespace) as
       IResource | undefined) ?? findArgoCDInNamespace(argoCDs, namespace)
+  const policyName = policyNameFor(name)
   const existingPolicy =
     (resources.find(
       (item) =>
-        item.kind === 'Policy' &&
-        item.metadata?.namespace === namespace &&
-        item.metadata?.name === `${name}-argocd-policy`
+        item.kind === 'Policy' && item.metadata?.namespace === namespace && item.metadata?.name === policyName
     ) as Policy | undefined) ??
-    policies.find(
-      (policy) => policy.metadata.namespace === namespace && policy.metadata.name === `${name}-argocd-policy`
-    )
+    policies.find((policy) => policy.metadata.namespace === namespace && policy.metadata.name === policyName)
   const existingSubscription =
     (resources.find((item) => item.kind === 'Subscription') as SubscriptionOperator | undefined) ??
     subscriptions.find(
@@ -557,6 +556,8 @@ function GitOpsPermissionAlert() {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
   const [missing, setMissing] = useState<MissingPermission[]>([])
+  // Stable key so keystroke rebuilds (new array ref, same kinds/names) do not re-fire RBAC probes.
+  const signature = resourcesSignature(resources)
 
   useEffect(() => {
     let cancelled = false
@@ -570,7 +571,8 @@ function GitOpsPermissionAlert() {
     return () => {
       cancelled = true
     }
-  }, [resources])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- re-check only when resource identity/agent/push changes
+  }, [signature])
 
   if (missing.length === 0) return null
 
