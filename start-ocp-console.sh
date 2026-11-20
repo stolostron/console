@@ -7,7 +7,7 @@ source ./oauth-client-name.sh
 ./scripts/check-hub-alignment.sh
 source ./backend/.env
 
-CONSOLE_VERSION=${CONSOLE_VERSION:=5.0}
+CONSOLE_VERSION=${CONSOLE_VERSION:=4.22}
 KUBEVIRT_PORT=${KUBEVIRT_PORT:=""}
 ODF_PORT=${ODF_PORT:=""}
 GITOPS_PORT=${GITOPS_PORT:=""}
