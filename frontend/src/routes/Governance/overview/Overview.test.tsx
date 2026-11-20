@@ -201,6 +201,7 @@ describe('Overview Page', () => {
       },
     }
 
+    const metricNock = nockPostRequest('/metrics?governance', {})
     const pluginData = {
       ...defaultContext,
       loadStarted: true,
@@ -221,6 +222,7 @@ describe('Overview Page', () => {
       </PluginDataContext.Provider>
     )
 
+    await waitForNock(metricNock)
     // Before the fix this rendered two separate rows/spans for the same logical
     // standard (one from the untrimmed " NIST SP 800-53" split token).
     expect(screen.getAllByText('NIST SP 800-53').length).toBe(1)
