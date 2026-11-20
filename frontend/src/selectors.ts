@@ -3,6 +3,7 @@
 import {
   clusterCuratorsState,
   clusterExtensionsState,
+  gitOpsClustersState,
   managedClustersState,
   secretsState,
   settingsState,
@@ -146,3 +147,12 @@ export const acmOperatorSubscriptionsValue = atom((get) =>
 export const kubevirtOperatorSubscriptionsValue = atom((get) =>
   findInstalledSubscription('kubevirt-hyperconverged', get)
 )
+
+export const isArgoCDAgentModeEnabledValue = atom((get) => {
+  const gitOpsClusters = get(gitOpsClustersState)
+  return gitOpsClusters.some(
+    (gitOpsCluster) =>
+      gitOpsCluster.spec?.gitopsAddon?.enabled === true &&
+      gitOpsCluster.spec?.gitopsAddon?.argoCDAgent?.enabled === true
+  )
+})

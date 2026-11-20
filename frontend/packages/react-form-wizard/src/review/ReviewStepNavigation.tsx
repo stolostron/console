@@ -350,12 +350,21 @@ function clearReviewEditHighlight(highlightEl: HTMLElement) {
 }
 
 function reviewEditHighlightTarget(el: HTMLElement): HTMLElement {
+  // Custom review wrappers use display: contents to avoid empty layout boxes.
+  // Scroll and outline their rendered content instead of the boxless wrapper.
+  if (window.getComputedStyle(el).display === 'contents') {
+    for (const child of Array.from(el.children)) {
+      if (child instanceof HTMLElement && !child.hidden && window.getComputedStyle(child).display !== 'none') {
+        return reviewEditHighlightTarget(child)
+      }
+    }
+  }
   if (el instanceof HTMLInputElement) {
     let parent = el.parentElement
     while (parent && parent.tagName === 'SPAN') {
       parent = parent.parentElement
     }
-    return parent ?? el
+    return parent && window.getComputedStyle(parent).display !== 'contents' ? parent : el
   }
   return el
 }

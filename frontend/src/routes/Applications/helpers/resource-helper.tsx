@@ -9,6 +9,8 @@ import {
   Application,
   ApplicationDefinition,
   ApplicationSet,
+  ApplicationSetApiVersion,
+  ApplicationSetKind,
   ArgoApplication,
   ArgoApplicationApiVersion,
   ArgoApplicationKind,
@@ -31,6 +33,7 @@ import { Cluster } from '../../../resources/utils'
 import { getArgoDestinationCluster } from '../ApplicationDetails/ApplicationTopology/model/topologyArgo'
 import { getSubscriptionAnnotations, isLocalSubscription } from './subscriptions'
 import AcmTimestamp from '../../../lib/AcmTimestamp'
+import { APPLICATION_SET_GITOPS_MODEL_ANNOTATION } from '~/resources/application-set'
 
 export const CHANNEL_TYPES = ['git', 'helmrepo', 'namespace', 'objectbucket']
 export const hostingSubAnnotationStr = 'apps.open-cluster-management.io/hosting-subscription'
@@ -107,6 +110,19 @@ export const isArgoPullModel = (resource: ApplicationSet) => {
     return true
   }
   return false
+}
+
+export type ApplicationGitOpsModel = 'agent' | 'manifestwork'
+
+export const getApplicationModel = (resource: IResource): ApplicationGitOpsModel | undefined => {
+  if (resource.apiVersion !== ApplicationSetApiVersion || resource.kind !== ApplicationSetKind) return undefined
+  const applicationSet = resource as ApplicationSet
+  // Propagation metadata identifies existing ManifestWork applications even after the hub switches modes.
+  if (isArgoPullModel(applicationSet)) return 'manifestwork'
+  if (applicationSet.metadata?.annotations?.[APPLICATION_SET_GITOPS_MODEL_ANNOTATION] === 'agent') return 'agent'
+  // Unannotated Agent and Push manifests can both use a CDR generator and a
+  // named destination. That shape alone cannot identify a deployment model.
+  return undefined
 }
 
 export const getClusterCount = (clusterList: string[], hubClusterName: string): ClusterCount => {

@@ -841,6 +841,38 @@ describe('AcmTable', () => {
     window.localStorage.removeItem(`${tableId}SavedCols`)
     window.localStorage.removeItem(`${tableId}SavedColOrder`)
   })
+  test('does not repeat a server request when only column definitions are recreated', async () => {
+    const setRequestView = jest.fn()
+    const getTable = () => (
+      <Table
+        setRequestView={setRequestView}
+        resultView={{
+          page: 1,
+          loading: false,
+          refresh: jest.fn(),
+          items: [],
+          emptyResult: false,
+          processedItemCount: testItems.length,
+          isPreProcessed: true,
+        }}
+        columns={[{ header: 'Name', sort: 'firstName', cell: 'firstName', id: 'name' }]}
+        useRowActions={false}
+      />
+    )
+    const { rerender } = render(getTable())
+    await waitFor(() => expect(setRequestView).toHaveBeenCalledTimes(1))
+
+    rerender(getTable())
+
+    expect(setRequestView).toHaveBeenCalledTimes(1)
+
+    await clickElement(screen.getByText('Name'))
+
+    expect(setRequestView).toHaveBeenCalledTimes(2)
+    expect(setRequestView).toHaveBeenLastCalledWith(
+      expect.objectContaining({ sortBy: expect.objectContaining({ id: 'name', direction: 'desc' }) })
+    )
+  })
   test('page size can be updated', async () => {
     const { getByLabelText, getAllByLabelText, getByText, container } = render(
       <Table useExtraToolbarControls={false} useSearch={false} useTableActions={false} />

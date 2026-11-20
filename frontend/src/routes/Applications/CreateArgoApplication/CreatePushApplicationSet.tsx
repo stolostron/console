@@ -32,6 +32,7 @@ import pushmodelschema from './pushmodelschema.json'
 import { LostChangesContext } from '~/components/LostChanges'
 import { LoadingPage } from '~/components/LoadingPage'
 import { useTimezones } from '~/hooks/useTimezone'
+import { useApplicationGitOpsMode } from '~/hooks/useApplicationGitOpsMode'
 
 export default function CreatePushApplicationSetPage() {
   return <CreatePushApplicationSet />
@@ -101,6 +102,7 @@ export function CreatePushApplicationSet() {
   const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
   const secrets = useSharedValue(secretsState)
+  const { isArgoCDAgentModeEnabled } = useApplicationGitOpsMode()
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -167,6 +169,7 @@ export function CreatePushApplicationSet() {
       }
       timeZones={timeZones}
       repoSecrets={secrets}
+      preferClustersGenerator={isArgoCDAgentModeEnabled}
     />
   )
 }

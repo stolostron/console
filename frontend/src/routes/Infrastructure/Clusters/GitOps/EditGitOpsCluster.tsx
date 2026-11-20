@@ -8,7 +8,8 @@ import {
   useHighlightEditorPath,
   useItem,
 } from '@patternfly-labs/react-form-wizard'
-import { useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { Alert } from '@patternfly/react-core'
 import { useNavigate, useParams } from 'react-router'
 import { LoadingPage } from '~/components/LoadingPage'
 import { LostChangesContext } from '~/components/LostChanges'
@@ -16,19 +17,24 @@ import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor
 import { useTranslation } from '~/lib/acm-i18next'
 import { isType } from '~/lib/is-type'
 import { NavigationPath } from '~/NavigationPath'
+import { PluginContext } from '~/lib/PluginContext'
 import type { IResource } from '~/resources'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
 import { ManagedClusterSetBindingKind } from '~/resources/managed-cluster-set-binding'
 import { PlacementKind } from '~/resources/placement'
 import { PolicyKind } from '~/resources/policy'
 import { useSharedAtoms, useSharedValue } from '~/shared-atoms'
+import { getResource, ResourceError, ResourceErrorCode } from '~/resources/utils'
 import { AcmToastContext } from '~/ui-components'
 import {
   buildGitOpsClusterResources,
+  AppProjectDefinition,
   collectMissingPermissions,
   ensureGitOpsClusterPlacement,
   findGitOpsOperatorSubscription,
   formatMissingPermissions,
+  getRemovedGitOpsWizardResources,
+  isGitOpsBindingOwnedBy,
   isAgentEnabled,
   isPushModelEnabled,
   policyNameFor,
@@ -78,6 +84,8 @@ export function EditGitOpsCluster() {
   const params = useParams()
   const { name = '', namespace = '' } = params
   const navigate = useNavigate()
+  const { dataContext } = useContext(PluginContext)
+  const { loadCompleted } = useContext(dataContext)
   const {
     argoCDsState,
     namespacesState,
@@ -99,6 +107,30 @@ export function EditGitOpsCluster() {
   const subscriptions = useSharedValue(subscriptionOperatorsState)
   const policies = useSharedValue(policiesState)
   const [existingResources, setExistingResources] = useState<IResource[] | undefined>()
+  const [existingAppProject, setExistingAppProject] = useState<IResource>()
+  const [loadError, setLoadError] = useState<Error>()
+  const baselineResources = useRef<IResource[]>([])
+  const appProjectLookup = useRef<{ namespace: string; promise: Promise<IResource | undefined> } | undefined>(undefined)
+  const getExistingAppProject = useCallback(() => {
+    if (appProjectLookup.current?.namespace !== namespace) {
+      const promise = getResource({ ...AppProjectDefinition, metadata: { name: 'default', namespace } }).promise.catch(
+        (error: unknown) => {
+          if (error instanceof ResourceError && error.code === ResourceErrorCode.NotFound) return undefined
+          throw error
+        }
+      )
+      appProjectLookup.current = { namespace, promise }
+    }
+    return appProjectLookup.current.promise
+  }, [namespace])
+  const loadExistingAppProject = useCallback(async () => {
+    const project = await getExistingAppProject()
+    if (project && !baselineResources.current.some((resource) => resource.kind === project.kind)) {
+      baselineResources.current = [...baselineResources.current, JSON.parse(JSON.stringify(project)) as IResource]
+    }
+    setExistingAppProject(project)
+    return project
+  }, [getExistingAppProject])
 
   const availableNamespaces =
     argoCDs.length > 0
@@ -106,6 +138,9 @@ export function EditGitOpsCluster() {
       : namespaces.map((ns) => ns.metadata.name).filter(isType)
 
   useEffect(() => {
+    // Array atoms have no per-kind readiness flag. LOADED means the Placement
+    // snapshot (including an empty snapshot) and related watches have completed.
+    if (!loadCompleted || existingResources !== undefined) return
     const gitOpsCluster = gitOpsClusters.find(
       (resource) => resource.metadata.name === name && resource.metadata.namespace === namespace
     )
@@ -149,32 +184,78 @@ export function EditGitOpsCluster() {
     )
     const existingSubscription = findGitOpsOperatorSubscription(subscriptions)
 
-    // Freeze the wizard baseline after the first successful load. Watched updates must not replace
-    // Wizard defaultData alone (stale resourceVersion / lost draft). Upsert re-reads live objects on submit.
-    // AppProject is not in Recoil; collectMissingPermissions probes the live object when the draft has no uid.
-    setExistingResources((previous) => {
-      if (previous !== undefined) {
-        return previous
-      }
-      return buildGitOpsClusterResources({
-        name,
-        namespace,
-        agentEnabled,
-        pushModelEnabled: isPushModelEnabled(wizardGitOps),
-        clusterSets: placement?.spec?.clusterSets,
-        existingGitOpsCluster: wizardGitOps,
-        existingPlacement: placement,
-        existingBindings: relatedBindings,
-        existingArgoCD: argoCD,
-        existingSubscription,
-        existingPolicy,
-        includeBindings: true,
+    let cancelled = false
+    // ManifestWork does not use AppProject. Agent loads it before generating a draft.
+    void (agentEnabled ? loadExistingAppProject() : Promise.resolve(undefined))
+      .then((project) => {
+        if (cancelled) return
+        setLoadError(undefined)
+        baselineResources.current = JSON.parse(
+          JSON.stringify(
+            [
+              gitOpsCluster,
+              placement,
+              ...relatedBindings,
+              argoCD,
+              project,
+              existingSubscription,
+              existingPolicy,
+            ].filter(isType)
+          )
+        )
+        setExistingAppProject(project)
+        setExistingResources(
+          buildGitOpsClusterResources(
+            {
+              name,
+              namespace,
+              agentEnabled,
+              pushModelEnabled: isPushModelEnabled(wizardGitOps),
+              clusterSets: placement?.spec?.clusterSets,
+              existingGitOpsCluster: wizardGitOps,
+              existingPlacement: placement,
+              existingBindings: relatedBindings,
+              existingArgoCD: argoCD,
+              existingAppProject: project,
+              existingSubscription,
+              existingPolicy,
+              includeBindings: true,
+            },
+            t
+          )
+        )
       })
-    })
-  }, [gitOpsClusters, placements, argoCDs, clusterSetBindings, policies, subscriptions, name, namespace, navigate])
+      .catch((error: Error) => {
+        if (!cancelled) setLoadError(error)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [
+    loadCompleted,
+    existingResources,
+    gitOpsClusters,
+    placements,
+    argoCDs,
+    clusterSetBindings,
+    policies,
+    subscriptions,
+    name,
+    namespace,
+    navigate,
+    loadExistingAppProject,
+    t,
+  ])
 
   const { cancelForm, submitForm } = useContext(LostChangesContext)
 
+  if (loadError) {
+    return (
+      <Alert isInline variant="danger" title={t('Failed to load GitOpsCluster')}>
+        {loadError.message}
+      </Alert>
+    )
+  }
   if (existingResources === undefined) {
     return <LoadingPage />
   }
@@ -190,11 +271,30 @@ export function EditGitOpsCluster() {
       subscriptions={subscriptions}
       policies={policies}
       existingBindings={clusterSetBindings}
+      existingAppProject={existingAppProject}
+      loadExistingAppProject={loadExistingAppProject}
       resources={existingResources}
       yamlEditor={getWizardSyncEditor}
       onSubmit={async (data) => {
-        const resources = ensureGitOpsClusterPlacement(data as IResource[])
-        const missing = await collectMissingPermissions(resources)
+        const resources = ensureGitOpsClusterPlacement(data as IResource[], t)
+        // Also guard YAML edits that bypass the pull-model card's lookup.
+        if (
+          isAgentEnabled(resources.find((resource) => resource.kind === GitOpsClusterKind) as GitOpsClusterWizardData)
+        ) {
+          // A project first discovered at Save has no wizard baseline: the
+          // create-only reconciliation rule retains its live configuration.
+          await getExistingAppProject()
+        }
+        const gitOpsCluster = existingResources.find((resource) => resource.kind === GitOpsClusterKind)!
+        const previousOwned = stripTransformedFields(baselineResources.current).filter(
+          (resource) =>
+            resource.kind === GitOpsClusterKind ||
+            resource.kind === PlacementKind ||
+            resource.kind === PolicyKind ||
+            (resource.kind === ManagedClusterSetBindingKind && isGitOpsBindingOwnedBy(resource, gitOpsCluster))
+        ) as IResource[]
+        const removed = getRemovedGitOpsWizardResources(resources, previousOwned, placements)
+        const missing = await collectMissingPermissions(resources, removed)
         if (missing.length > 0) {
           toast.addAlert({
             title: t('Missing permissions'),
@@ -205,15 +305,10 @@ export function EditGitOpsCluster() {
           throw new Error(t('Missing permissions to update one or more required resources.'))
         }
 
-        const previousOwned = stripTransformedFields(existingResources).filter(
-          (resource) =>
-            resource.kind === GitOpsClusterKind ||
-            resource.kind === PlacementKind ||
-            resource.kind === ManagedClusterSetBindingKind ||
-            resource.kind === PolicyKind
-        ) as IResource[]
-
-        return reconcileGitOpsWizardResources(resources, previousOwned)
+        return reconcileGitOpsWizardResources(resources, t, previousOwned, {
+          baseline: baselineResources.current,
+          placements,
+        })
           .then((result) => {
             const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
             const name = gitOpsCluster?.metadata?.name

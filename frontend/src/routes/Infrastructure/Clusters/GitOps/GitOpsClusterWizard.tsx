@@ -41,6 +41,9 @@ export interface GitOpsClusterWizardProps {
   subscriptions: SubscriptionOperator[]
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
+  existingAppProject?: IResource
+  loadExistingAppProject?: () => Promise<IResource | undefined>
+  isModal?: boolean
 }
 
 export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
@@ -51,27 +54,32 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
     if (props.resources && props.resources.length > 0) {
       return props.resources
     }
-    return buildGitOpsClusterResources({
-      name: '',
-      namespace: props.namespaces[0] ?? '',
-      agentEnabled: false,
-      pushModelEnabled: false,
-      existingBindings: props.existingBindings,
-      existingArgoCD: props.argoCDs[0],
-      existingSubscription: props.subscriptions[0],
-      includeBindings: false,
-    })
-  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions])
+    return buildGitOpsClusterResources(
+      {
+        name: '',
+        namespace: props.namespaces[0] ?? '',
+        agentEnabled: false,
+        pushModelEnabled: false,
+        existingBindings: props.existingBindings,
+        existingArgoCD: props.argoCDs[0],
+        existingSubscription: props.subscriptions[0],
+        includeBindings: false,
+      },
+      t
+    )
+  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions, t])
 
   return (
     <WizardPage
       id="gitopscluster-wizard"
+      isModal={props.isModal}
       title={props.title}
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}
       breadcrumb={props.breadcrumb}
       editMode={editMode}
-      yamlEditor={props.yamlEditor}
+      yaml={!props.isModal}
+      yamlEditor={props.isModal ? undefined : props.yamlEditor}
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
@@ -82,6 +90,8 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
           subscriptions={props.subscriptions}
           policies={props.policies}
           existingBindings={props.existingBindings}
+          existingAppProject={props.existingAppProject}
+          loadExistingAppProject={props.loadExistingAppProject}
         />
       </Step>
       <Step label={t('Target clusters')} id="target-clusters">

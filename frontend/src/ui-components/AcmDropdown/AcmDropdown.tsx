@@ -16,7 +16,7 @@ import {
   PopperProps,
 } from '@patternfly/react-core'
 import { TooltipWrapper } from '../utils'
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { EllipsisVIcon } from '@patternfly/react-icons'
 import { t } from 'i18next'
 
@@ -39,6 +39,7 @@ export type AcmDropdownProps = Props & {
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
   dropdownPosition?: PopperProps['placement']
+  menuWidth?: PopperProps['width']
 }
 
 export type AcmDropdownItems = {
@@ -103,10 +104,10 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
               menuItem
             )
             return (
-              <>
-                {item.separator && <Divider key={item.id} />}
+              <Fragment key={item.id}>
+                {item.separator && <Divider key={item.id} component="li" />}
                 {wrappedMenuItem}
-              </>
+              </Fragment>
             )
           })}
         </MenuList>
@@ -152,6 +153,7 @@ const MenuItems = forwardRef<HTMLDivElement, MenuItemProps>((props, ref) => {
  * @param props.isPrimary - Whether to use primary button styling
  * @param props.tooltip - Tooltip text for the dropdown button
  * @param props.dropdownPosition - Position of the dropdown menu
+ * @param props.menuWidth - Optional width of the dropdown menu
  *
  * @returns A dropdown menu component
  */
@@ -199,6 +201,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
       const selectedItem = findItemById(dropdownItems, String(itemId))
 
       if (!itemId) return // prevents triggering if no itemId
+      if (selectedItem?.isDisabled || selectedItem?.isAriaDisabled) return
 
       // prevent triggering if it's a flyout parent
       if (selectedItem?.flyoutMenu?.length) return
@@ -356,6 +359,7 @@ export function AcmDropdown(props: AcmDropdownProps) {
           enableFlip={true}
           preventOverflow={true}
           placement={props.dropdownPosition ?? (isKebab ? 'bottom-end' : 'bottom-start')}
+          width={props.menuWidth}
           popper={<MenuItems ref={menuRef} menuItems={dropdownItems} onSelect={handleSelect} />}
         />
       </div>
