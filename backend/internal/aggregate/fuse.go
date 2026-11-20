@@ -3,6 +3,7 @@
 package aggregate
 
 import (
+	"sort"
 	"strings"
 	"unicode/utf8"
 )
@@ -10,13 +11,20 @@ import (
 // fuseThreshold is the maximum normalised edit-distance score for a match (Fuse.js 6.6.2 default).
 const fuseThreshold = 0.3
 
+type scoredApp struct {
+	app   App
+	score float64
+}
+
 // fuseFilter ports Fuse.js 6.6.2 ignoreLocation + threshold 0.3 over the
-// application fields exposed as searchable table columns.
+// application fields exposed as searchable table columns. Matches are ordered
+// by ascending score (best first), then by a deterministic name/namespace/uid
+// tie-break so cache rebuild order cannot reshuffle equal-score rows.
 func fuseFilter(items []App, pattern string) []App {
 	if pattern == "" {
 		return items
 	}
-	out := make([]App, 0, len(items))
+	matched := make([]scoredApp, 0, len(items))
 	for _, item := range items {
 		texts := []string{item.Transform.Name, item.Transform.Namespace, item.Transform.Sources}
 		if len(item.Transform.Clusters) > 0 {
@@ -29,8 +37,18 @@ func fuseFilter(items []App, pattern string) []App {
 			}
 		}
 		if best <= fuseThreshold {
-			out = append(out, item)
+			matched = append(matched, scoredApp{app: item, score: best})
 		}
+	}
+	sort.SliceStable(matched, func(i, j int) bool {
+		if matched[i].score != matched[j].score {
+			return matched[i].score < matched[j].score
+		}
+		return appTieBreak(matched[i].app, matched[j].app)
+	})
+	out := make([]App, len(matched))
+	for i := range matched {
+		out[i] = matched[i].app
 	}
 	return out
 }

@@ -595,12 +595,25 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
+        includeScore: true,
         keys: selectedSortedCols
           .map((column, i) => (column.search ? `column-${i}` : undefined))
           .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
-      const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
+      // Fuse ranks by score; includeScore is required so scoreDiff is meaningful.
+      // Equal scores keep input order. Tie-break on key so poll/rebuild reshuffles
+      // of items[] cannot reorder equal-score matches.
+      const filtered = fuse
+        .search<ITableItem<T>>(internalSearch)
+        .sort((a, b) => {
+          const scoreDiff = (a.score ?? 0) - (b.score ?? 0)
+          if (scoreDiff !== 0) {
+            return scoreDiff
+          }
+          return compareStrings(a.item.key, b.item.key)
+        })
+        .map((result) => result.item)
       return { filtered, filteredCount: filtered.length }
     } else {
       return { filtered: tableItems, filteredCount: totalCount }
