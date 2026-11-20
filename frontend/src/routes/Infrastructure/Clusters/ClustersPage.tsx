@@ -2,6 +2,7 @@
 
 import { createContext, ElementType, Fragment, ReactNode, Suspense, useContext, useEffect, useState } from 'react'
 import { Outlet, useLocation } from 'react-router'
+import { PluginContext } from '~/lib/PluginContext'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { DOC_LINKS } from '../../../lib/doc-util'
 import { NavigationPath } from '../../../NavigationPath'
@@ -38,6 +39,7 @@ export const usePageContext = (showActions: boolean, Component: ElementType, Cus
 }
 
 export function ClustersPage() {
+  const { isACMAvailable } = useContext(PluginContext)
   const [actions, setActions] = useState<undefined | ReactNode>(undefined)
   const location = useLocation()
   const { t } = useTranslation()
@@ -73,6 +75,14 @@ export function ClustersPage() {
       to: NavigationPath.placements,
     },
   ]
+  if (isACMAvailable) {
+    tabs.push({
+      key: 'infra-gitops',
+      title: t('GitOps'),
+      isActive: location.pathname.startsWith(NavigationPath.gitOps),
+      to: NavigationPath.gitOps,
+    })
+  }
 
   return (
     <AcmPage

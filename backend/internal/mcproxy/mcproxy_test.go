@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"sync"
+	"sync/atomic"
 	"testing"
 
 	"github.com/stolostron/console/backend/internal/auth"
@@ -31,9 +33,17 @@ func newHandler(t *testing.T, upstream http.Handler) http.Handler {
 	})
 }
 
+func drainResponse(t *testing.T, resp *http.Response) {
+	t.Helper()
+	if _, err := io.Copy(io.Discard, resp.Body); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestUnauthorizedWithoutToken(t *testing.T) {
+	var called atomic.Bool
 	h := newHandler(t, http.HandlerFunc(func(http.ResponseWriter, *http.Request) {
-		t.Fatal("upstream should not be called")
+		called.Store(true)
 	}))
 	ts := httptest.NewServer(h)
 	t.Cleanup(ts.Close)
@@ -43,20 +53,27 @@ func TestUnauthorizedWithoutToken(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
+	}
+	if called.Load() {
+		t.Fatal("upstream should not be called")
 	}
 }
 
 func TestRewritesPathAndSetsHeaders(t *testing.T) {
 	var capturedPath, capturedQuery, capturedAuth, capturedHost, capturedOrigin, capturedMethod string
+	var capturedMu sync.Mutex
 	h := newHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedPath = r.URL.Path
 		capturedQuery = r.URL.RawQuery
 		capturedAuth = r.Header.Get("Authorization")
 		capturedHost = r.Host
 		capturedOrigin = r.Header.Get("Origin")
 		capturedMethod = r.Method
+		capturedMu.Unlock()
 		w.Header().Set("X-Upstream", "yes")
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"ok":true}`))
@@ -71,10 +88,15 @@ func TestRewritesPathAndSetsHeaders(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("status %d body %s", resp.StatusCode, body)
 	}
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedPath != "/testcluster/api/v1/pods" {
 		t.Fatalf("path %q", capturedPath)
 	}
@@ -100,8 +122,11 @@ func TestRewritesPathAndSetsHeaders(t *testing.T) {
 
 func TestCookieToken(t *testing.T) {
 	var capturedAuth string
+	var capturedMu sync.Mutex
 	h := newHandler(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		capturedMu.Lock()
 		capturedAuth = r.Header.Get("Authorization")
+		capturedMu.Unlock()
 		w.WriteHeader(http.StatusOK)
 	}))
 	ts := httptest.NewServer(h)
@@ -113,7 +138,10 @@ func TestCookieToken(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
+	capturedMu.Lock()
+	defer capturedMu.Unlock()
 	if capturedAuth != "Bearer cookie-token" {
 		t.Fatalf("auth %q", capturedAuth)
 	}
@@ -132,7 +160,8 @@ func TestPassesThroughStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusForbidden {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -154,7 +183,8 @@ func TestValidateFailureStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	resp.Body.Close()
+	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("status %d", resp.StatusCode)
 	}
@@ -176,6 +206,7 @@ func TestUnreachableUpstream(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer resp.Body.Close()
+	drainResponse(t, resp)
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("status %d", resp.StatusCode)
 	}

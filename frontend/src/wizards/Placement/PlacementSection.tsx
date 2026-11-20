@@ -43,7 +43,7 @@ import { IResource } from '../common/resources/IResource'
 import { MatchedClustersModal } from './MatchedClustersModal'
 import { Placement, Placements } from './Placement'
 import { PlacementBindings } from './PlacementBinding'
-import { usePlacementDebug } from './usePlacementDebug'
+import { getPlacementMatchErrorDetail, usePlacementDebug } from './usePlacementDebug'
 
 export function PlacementSection(props: {
   bindingSubjectKind: string
@@ -56,6 +56,7 @@ export function PlacementSection(props: {
   createClusterSetCallback?: () => void
   allowNoPlacement?: boolean
   withoutOnlineClusterCondition?: boolean
+  syncPlacementBindingName?: boolean
 }) {
   const { t } = useTranslation()
   const { update } = useData()
@@ -194,7 +195,7 @@ export function PlacementSection(props: {
         <div style={{ padding: '0 1rem 1rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
           <span>{t('Matched by Placement')}:</span>{' '}
           {error ? (
-            <Tooltip content={error.message || t('An unknown error occurred.')}>
+            <Tooltip content={getPlacementMatchErrorDetail(error, t)}>
               <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
             </Tooltip>
           ) : (
@@ -267,7 +268,9 @@ export function PlacementSection(props: {
         <Fragment>
           {editMode === EditMode.Create && (
             <Fragment>
-              <Sync kind={PlacementKind} path="metadata.name" targetKind={PlacementBindingKind} />
+              {props.syncPlacementBindingName !== false && (
+                <Sync kind={PlacementKind} path="metadata.name" targetKind={PlacementBindingKind} />
+              )}
               <Sync
                 kind={PlacementKind}
                 path="metadata.name"
@@ -327,7 +330,7 @@ export function PlacementSection(props: {
         <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {/* Placement info alert */}
           {error ? (
-            <Tooltip content={error.message || t('An unknown error occurred.')}>
+            <Tooltip content={getPlacementMatchErrorDetail(error, t)}>
               <Alert variant="warning" isInline isPlain title={t('Unable to determine cluster matches.')} />
             </Tooltip>
           ) : (

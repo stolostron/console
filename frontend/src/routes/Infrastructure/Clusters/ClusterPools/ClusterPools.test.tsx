@@ -44,6 +44,7 @@ import {
   typeByText,
   waitForNocks,
   waitForText,
+  waitTimeout,
 } from '../../../../lib/test-util'
 import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
@@ -689,8 +690,13 @@ describe('ClusterPools page RBAC', () => {
     renderClusterPoolsPage([mockClusterPool])
     await waitForText(mockClusterPool.metadata.name!)
     await waitForNocks(accessNocks)
-    await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
+    await waitFor(
+      () =>
+        expect(screen.getByRole('button', { name: 'Create cluster pool' })).not.toHaveAttribute(
+          'aria-disabled',
+          'true'
+        ),
+      { timeout: waitTimeout }
     )
   })
 

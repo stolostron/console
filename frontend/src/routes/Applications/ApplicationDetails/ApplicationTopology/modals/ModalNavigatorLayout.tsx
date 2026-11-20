@@ -2,22 +2,23 @@
 
 import { ReactNode } from 'react'
 import { Drawer, DrawerContent, DrawerContentBody, DrawerPanelContent } from '@patternfly/react-core'
-import { ResourceNavigator, type ResourceNavigatorProps } from './ResourceNavigator'
 import './ResourceNavigator.css'
 
-type TopologyModalNavigatorLayoutProps = {
-  showNavigator: boolean
-  navigatorProps: ResourceNavigatorProps
+type ModalNavigatorLayoutProps = {
+  /** Defaults to true. Set to false to hide the navigator panel and render only `children`. */
+  showNavigator?: boolean
+  /** Navigator component rendered in the left-hand panel, e.g. ResourceNavigator or RepositoryNavigator. */
+  navigator: ReactNode
   children: ReactNode
 }
 
 const NAVIGATOR_PANEL_PERCENT = 28
 
-export function TopologyModalNavigatorLayout({
-  showNavigator,
-  navigatorProps,
+export function ModalNavigatorLayout({
+  showNavigator = true,
+  navigator,
   children,
-}: Readonly<TopologyModalNavigatorLayoutProps>) {
+}: Readonly<ModalNavigatorLayoutProps>) {
   if (!showNavigator) {
     return <>{children}</>
   }
@@ -32,9 +33,7 @@ export function TopologyModalNavigatorLayout({
       maxSize="40%"
       resizeAriaLabel="Resize resource navigator"
     >
-      <div className="resource-navigator-panel-body">
-        <ResourceNavigator {...navigatorProps} />
-      </div>
+      <div className="resource-navigator-panel-body">{navigator}</div>
     </DrawerPanelContent>
   )
 

@@ -28,7 +28,8 @@ export const decorate = (
   protectedRanges: any[],
   filteredRows: number[],
   highlightEditorPath: string,
-  secrets?: (string | string[])[]
+  secrets?: (string | string[])[],
+  isReadOnly = false
 ) => {
   const decorations: any[] = []
   const squigglyTooltips: any[] = []
@@ -42,11 +43,13 @@ export const decorate = (
       .filter(Boolean)
       .map(({ $p }: { $p: (string | number)[] }) => JSON.stringify($p))
   )
-  addChangeDecorations(isCustomEdit, monaco, changes, change, secretPaths, decorations)
+  if (!isReadOnly) {
+    addChangeDecorations(isCustomEdit, monaco, changes, change, secretPaths, decorations)
 
-  // if form is making changes, layer any editor changes decorations on top of form changes
-  if (preservedUserEdits.length) {
-    addChangeDecorations(true, monaco, preservedUserEdits, change, secretPaths, decorations)
+    // if form is making changes, layer any editor changes decorations on top of form changes
+    if (preservedUserEdits.length) {
+      addChangeDecorations(true, monaco, preservedUserEdits, change, secretPaths, decorations)
+    }
   }
 
   // add protected decorations

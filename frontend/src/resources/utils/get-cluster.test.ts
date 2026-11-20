@@ -1110,7 +1110,7 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.upgradePercentage).toEqual('11%')
     expect(d1?.upgradeInfo.isUpgrading).toBeTruthy()
   })
-  it('should return false for ready for update while currently updating', () => {
+  it('should return false for ready for update if curator is upgrading', () => {
     const d1 = getDistributionInfo(
       mockManagedClusterInfoUpdating,
       mockManagedCluster,
@@ -1130,7 +1130,7 @@ describe('getDistributionInfo', () => {
     expect(d2?.upgradeInfo.isReadySelectChannels).toBeFalsy()
     expect(d2?.upgradeInfo.isReadyUpdates).toBeFalsy()
   })
-  it('should allow updates while a non-upgrade curator operation is running', () => {
+  it('should allow ready for update when curator is running a non-upgrade operation', () => {
     const d = getDistributionInfo(
       mockManagedClusterInfoHasAvailableUpdates,
       mockManagedCluster,
@@ -1193,17 +1193,17 @@ describe('getDistributionInfo', () => {
     expect(d1?.upgradeInfo.currentChannel).toEqual('stable-1.2')
     expect(d1?.upgradeInfo.desiredChannel).toEqual('stable-1.3')
   })
-  it('should allow updates when the curator re-reconciles after channel selection', () => {
-    const d = getDistributionInfo(
+  it('should show ready for update when curator re-reconciles after channel change completion', () => {
+    const d1 = getDistributionInfo(
       mockManagedClusterInfoHasAvailableUpdates,
       mockManagedCluster,
       mockClusterDeployment,
       mockClusterCuratorChannelChangeRereconciling
     )
-    expect(d?.upgradeInfo.isSelectingChannel).toBeFalsy()
-    expect(d?.upgradeInfo.isUpgrading).toBeFalsy()
-    expect(d?.upgradeInfo.hooksInProgress).toBeFalsy()
-    expect(d?.upgradeInfo.isReadyUpdates).toBeTruthy()
+    expect(d1?.upgradeInfo.isSelectingChannel).toBeFalsy()
+    expect(d1?.upgradeInfo.isUpgrading).toBeFalsy()
+    expect(d1?.upgradeInfo.hooksInProgress).toBeFalsy()
+    expect(d1?.upgradeInfo.isReadyUpdates).toBeTruthy()
   })
   it('should not allow updates while upgrade posthooks are running after the target version is reached', () => {
     const d = getDistributionInfo(

@@ -85,6 +85,7 @@ export interface TopologyProps {
   onEditYaml?: (node: TopologyNode, highlightEditorPath?: string) => void
   onEditApplications?: (node: TopologyNode) => void
   onViewLogs?: (node: TopologyNode) => void
+  onViewRepo?: (node: TopologyNode) => void
   onSyncResources?: (node: TopologyNode) => void
   onLaunchArgo?: (node: TopologyNode) => void
 }
@@ -111,6 +112,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   onEditAppSet,
   onEditYaml,
   onViewLogs,
+  onViewRepo,
   onSyncResources,
   onLaunchArgo,
   channelControl,
@@ -158,6 +160,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
           hubClusterName={hubClusterName}
           onEditYaml={onEditYaml}
           onViewLogs={onViewLogs}
+          onViewRepo={onViewRepo}
         />
       ) : undefined,
       !selectedNodeId
@@ -173,9 +176,16 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
   const alertsKeyAtProcessingStartRef = useRef<string>(undefined)
   const prevIsProcessingSaveRef = useRef(false)
 
-  const isCreatingProgressing = elements.nodes.some(
-    (node: TopologyNode) => node.type === 'applicationset' && Boolean(node.specs?.isCreatingProgressing)
-  )
+  // "Progressing..." is driven by all ApplicationSet clusters / save state. When the
+  // toolbar cluster filter is active, keep both overlay sources false so filtered-out
+  // clusters (or a global save) do not cover alerts for the selected cluster(s).
+  const hasActiveClusterFilter = Boolean(toolbarControl.activeClusters && toolbarControl.activeClusters.length > 0)
+  const isCreatingProgressing =
+    !hasActiveClusterFilter &&
+    elements.nodes.some(
+      (node: TopologyNode) => node.type === 'applicationset' && Boolean(node.specs?.isCreatingProgressing)
+    )
+  const showProcessingSave = Boolean(isProcessingSave) && !hasActiveClusterFilter
 
   useEffect(() => {
     if (isProcessingSave && !prevIsProcessingSaveRef.current) {
@@ -218,7 +228,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
     return () => clearTimeout(timer)
   }, [isProcessingSave, processingSaveStart, onClearProcessingSave])
 
-  const showAlerts = (alerts && alerts.length > 0) || isProcessingSave || isAnalyzing || isCreatingProgressing
+  const showAlerts = (alerts && alerts.length > 0) || showProcessingSave || isAnalyzing || isCreatingProgressing
 
   return (
     <TopologyView
@@ -249,7 +259,7 @@ const TopologyContent: React.FC<TopologyContentProps> = ({
             alerts={alerts ?? []}
             currentAlertsKey={currentAlertsKey ?? '[]'}
             isAnalyzing={isAnalyzing}
-            isProcessingSave={isProcessingSave}
+            isProcessingSave={showProcessingSave}
             isCreatingProgressing={isCreatingProgressing}
             onEditAppSet={onEditAppSet}
             onEditYaml={onEditYaml}
@@ -286,6 +296,7 @@ export const Topology = ({
   onEditYaml,
   onEditApplications,
   onViewLogs,
+  onViewRepo,
   onSyncResources,
   onLaunchArgo,
 }: TopologyProps) => {
@@ -295,8 +306,9 @@ export const Topology = ({
       onViewLogs,
       onEditYaml,
       onEditApplications,
+      onViewRepo,
     }),
-    [onRefreshResources, onViewLogs, onEditYaml, onEditApplications]
+    [onRefreshResources, onViewLogs, onEditYaml, onEditApplications, onViewRepo]
   )
   const controllerRef = useRef<Controller>(undefined)
   let controller = controllerRef.current
@@ -402,6 +414,7 @@ export const Topology = ({
           onEditAppSet={onEditAppSet}
           onEditYaml={onEditYaml}
           onViewLogs={onViewLogs}
+          onViewRepo={onViewRepo}
           onSyncResources={onSyncResources}
           onLaunchArgo={onLaunchArgo}
         />

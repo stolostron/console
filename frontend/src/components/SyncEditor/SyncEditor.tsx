@@ -41,6 +41,7 @@ export interface SyncEditorProps extends HTMLProps<HTMLPreElement> {
   editableUidSiblings?: boolean
   syncs?: unknown
   readonly?: boolean
+  wordWrap?: editorTypes.IEditorOptions['wordWrap']
   mock?: boolean
   autoCreateNs?: boolean
   onClose?: () => void
@@ -68,6 +69,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
     syncs,
     filters,
     readonly,
+    wordWrap = 'wordWrapColumn',
     mock,
     autoCreateNs,
     onStatusChange,
@@ -141,7 +143,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
   const [editorHasFocus, setEditorHasFocus] = useState<boolean>(false)
   const [diffEditorHasFocus, setDiffEditorHasFocus] = useState<boolean>(false)
   const [editorHasErrors, setEditorHasErrors] = useState<boolean>(false)
-  const [showCondensed, setShowCondensed] = useState<boolean>(false)
   const [hasUndo, setHasUndo] = useState<boolean>(false)
   const [hasRedo, setHasRedo] = useState<boolean>(false)
   const [showChanges, setShowChanges] = useState<boolean>(initialShowChanges ?? readShowChangesPreference)
@@ -520,7 +521,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             protectedRanges,
             filteredRows,
             editorHighlightPath,
-            secrets
+            secrets,
+            readonly
           )
           setSquigglyTooltips(squigglyTooltips)
           setLastFormComparison(formComparison)
@@ -722,7 +724,8 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
             protectedRanges,
             filteredRows,
             editorHighlightPath,
-            secrets
+            secrets,
+            readonly
           )
           setSquigglyTooltips(squigglyTooltips)
           setUserEdits(changes)
@@ -864,7 +867,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
         lastLayoutSize.current = { width, height }
         lastLayoutEditor.current = editor
         editor.layout({ width, height })
-        setShowCondensed(width < 500)
       }
     },
     [editorHasErrors, variant]
@@ -913,7 +915,6 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           isFullHeight={!showDiffView}
           isLineNumbersVisible={true}
           isReadOnly={readonly}
-          isMinimapVisible={true}
           onChange={editorChange}
           language={Language.yaml}
           customControls={variant === 'toolbar' ? toolbarControls : undefined}
@@ -921,8 +922,7 @@ export function SyncEditor(props: SyncEditorProps): JSX.Element {
           showEditor={!showDiffView}
           options={{
             theme: getTheme(),
-            wordWrap: 'wordWrapColumn',
-            wordWrapColumn: showCondensed ? 512 : 256,
+            wordWrap,
             scrollBeyondLastLine: true,
             smoothScrolling: true,
             glyphMargin: true,

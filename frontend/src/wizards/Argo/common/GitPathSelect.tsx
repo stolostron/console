@@ -1,13 +1,20 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { ItemContext, useData, useItem, WizAsyncSelect } from '@patternfly-labs/react-form-wizard'
-import { useCallback, useContext } from 'react'
+import { Button, Tooltip } from '@patternfly/react-core'
+import { EyeIcon } from '@patternfly/react-icons'
+import { useCallback, useContext, useState } from 'react'
 import set from 'set-value'
 import { useTranslation } from '../../../lib/acm-i18next'
 import { Channel, GitSourceCache, getGitPathList, sortWithCachedFirst } from '../ArgoWizard'
 import { getGitChannelPaths } from '../../../resources'
 import { usePrevious } from '../../../components/usePrevious'
 import { Secret } from '../../../resources'
+import {
+  IViewRepositoryModalProps,
+  ViewRepositoryModal,
+} from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/modals/ViewRepositoryModal'
+import type { TopologyNode } from '../../../routes/Applications/ApplicationDetails/ApplicationTopology/types'
 
 type GitPathSelectProps = {
   channels: Channel[]
@@ -17,11 +24,14 @@ type GitPathSelectProps = {
 
 export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSelectProps) => {
   const { t } = useTranslation()
-  const repoURL = useItem('repoURL')
-  const revision = useItem('targetRevision')
-  const path = useItem('path')
+  const repoURL = useItem('repoURL') as string | undefined
+  const revision = useItem('targetRevision') as string | undefined
+  const path = useItem('path') as string | undefined
   const item = useContext(ItemContext)
   const { update } = useData()
+  const [viewRepositoryModalProps, setViewRepositoryModalProps] = useState<IViewRepositoryModalProps | { open: false }>(
+    { open: false }
+  )
 
   const previousRepoURL = usePrevious(repoURL)
   const previousRevision = usePrevious(revision)
@@ -31,7 +41,7 @@ export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSele
       return Promise.resolve([])
     }
 
-    const cachedPaths = gitSourceCache?.pathsByRepoURLAndRevision[repoURL]?.[revision] ?? []
+    const cachedPaths = gitSourceCache?.pathsByRepoURLAndRevision[repoURL ?? '']?.[revision] ?? []
     const channel = channels?.find((channel) => channel?.spec?.pathname === repoURL)
     const secret = secrets?.find((secret) => {
       if (!repoURL) {
@@ -47,7 +57,7 @@ export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSele
       }
       return false
     })
-    if (secret) {
+    if (secret && repoURL) {
       return getGitChannelPaths(
         repoURL,
         revision,
@@ -83,6 +93,31 @@ export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSele
     ).then((paths) => sortWithCachedFirst(cachedPaths, paths))
   }, [channels, gitSourceCache, repoURL, revision, secrets])
 
+  const handleViewRepo = useCallback(() => {
+    if (!repoURL) {
+      return
+    }
+    const node: TopologyNode = {
+      name: repoURL,
+      namespace: '',
+      type: 'git',
+      specs: {
+        resources: [
+          {
+            repoURL,
+            path: path ?? '',
+            targetRevision: revision || 'HEAD',
+          },
+        ],
+      },
+    }
+    setViewRepositoryModalProps({
+      open: true,
+      close: () => setViewRepositoryModalProps({ open: false }),
+      node,
+    })
+  }, [path, repoURL, revision])
+
   // Clear path when repoURL or revision changes (update during render)
   const repoChanged = previousRepoURL !== repoURL && previousRepoURL !== undefined
   const revisionChanged = previousRevision !== revision && previousRevision !== undefined
@@ -93,13 +128,28 @@ export const GitPathSelect = ({ channels, secrets, gitSourceCache }: GitPathSele
   }
 
   return (
-    <WizAsyncSelect
-      path="path"
-      label={t('Path')}
-      labelHelp={t('The location of the resources on the Git repository.')}
-      placeholder={t('Enter or select a repository path')}
-      isCreatable
-      asyncCallback={gitPathsAsyncCallback}
-    />
+    <>
+      <WizAsyncSelect
+        path="path"
+        label={t('Path')}
+        labelHelp={t('The location of the resources on the Git repository.')}
+        placeholder={t('Enter or select a repository path')}
+        isCreatable
+        asyncCallback={gitPathsAsyncCallback}
+        extraButtons={
+          <Tooltip content={t('View repository')}>
+            <Button
+              id="git-path-view-repo-button"
+              variant="control"
+              icon={<EyeIcon />}
+              aria-label={t('View repository')}
+              isDisabled={!repoURL}
+              onClick={handleViewRepo}
+            />
+          </Tooltip>
+        }
+      />
+      <ViewRepositoryModal {...viewRepositoryModalProps} />
+    </>
   )
 }

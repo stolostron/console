@@ -168,7 +168,8 @@ export interface WatchEvent {
     apiVersion: string
     metadata: {
       name: string
-      namespace: string
+      // Cluster-scoped resources omit namespace; DELETED events may send an empty string.
+      namespace?: string
       resourceVersion: string
     }
   }

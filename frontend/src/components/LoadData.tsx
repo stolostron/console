@@ -186,6 +186,7 @@ import { useQuery } from '../lib/useQuery'
 import { MultiClusterHubComponent } from '../resources/multi-cluster-hub-component'
 import { ClaimMappings } from '~/resources/authentication'
 import { usePageActivity } from '../lib/usePageActivity'
+import { updateSetterCache } from './updateSetterCache'
 
 type StateSetter<Value> = (value: Value | ((currentValue: Value) => Value)) => void
 
@@ -733,27 +734,6 @@ function resetMapperCaches(
           mcaches[gv][k] = {}
         }
       }
-    }
-  }
-}
-
-function updateSetterCache(
-  caches: Record<string, Record<string, Record<string, IResource>>>,
-  groupVersion: string,
-  kind: string,
-  watchEvents: WatchEvent[]
-) {
-  const cache = caches[groupVersion]?.[kind]
-  for (const watchEvent of watchEvents) {
-    const key = `${watchEvent.object.metadata.namespace}/${watchEvent.object.metadata.name}`
-    switch (watchEvent.type) {
-      case 'ADDED':
-      case 'MODIFIED':
-        cache[key] = watchEvent.object
-        break
-      case 'DELETED':
-        delete cache[key]
-        break
     }
   }
 }

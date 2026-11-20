@@ -15,6 +15,38 @@ export interface PlacementDebugState {
   error: Error | undefined
 }
 
+type Translate = (key: string, options?: Record<string, unknown>) => string
+
+/**
+ * User-facing detail for placement-debug failures. Avoids exposing raw HTTP status
+ * text such as "404 NotFound" in tooltips and alerts.
+ */
+export function getPlacementMatchErrorDetail(error: Error | undefined, t: Translate): string {
+  if (!error?.message) {
+    return t('An unknown error occurred.')
+  }
+
+  const statusMatch = /^(\d{3})\b/.exec(error.message)
+  const statusCode = statusMatch ? Number(statusMatch[1]) : undefined
+
+  switch (statusCode) {
+    case 401:
+    case 403:
+      return t('You do not have permission to preview which clusters match this Placement.')
+    case 404:
+      return t('Placement match preview is not available. The placement debug service was not found on this cluster.')
+    case 502:
+    case 503:
+    case 504:
+      return t('Placement match preview is temporarily unavailable. Try again later.')
+    default:
+      if (statusCode !== undefined) {
+        return t('Placement match preview failed. Cluster matches cannot be determined right now.')
+      }
+      return error.message
+  }
+}
+
 function isCompleteExpression(expr: IExpression): boolean {
   if (!expr.key) return false
   if (!expr.operator) return false

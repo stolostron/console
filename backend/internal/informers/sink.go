@@ -58,16 +58,17 @@ func (h resourceHandler) OnDelete(obj any) {
 	if !ok {
 		return
 	}
+	metadata := map[string]any{"name": u.GetName()}
+	if !h.spec.ClusterScoped {
+		metadata["namespace"] = u.GetNamespace()
+	}
 	h.sink.OnResource(ResourceEvent{
 		Type: EventDeleted,
 		GVR:  h.gvr,
 		Object: &unstructured.Unstructured{Object: map[string]any{
 			"apiVersion": h.spec.APIVersion,
 			"kind":       h.spec.Kind,
-			"metadata": map[string]any{
-				"name":      u.GetName(),
-				"namespace": u.GetNamespace(),
-			},
+			"metadata":   metadata,
 		}},
 	})
 }

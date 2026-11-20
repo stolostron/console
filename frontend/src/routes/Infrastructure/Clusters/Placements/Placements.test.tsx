@@ -100,6 +100,9 @@ const Component = ({ placements = [mockPlacement1, mockPlacement2] }: { placemen
   </StateProvider>
 )
 
+beforeEach(() => nock.cleanAll())
+afterEach(() => nock.cleanAll())
+
 describe('Placements page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()

@@ -38,16 +38,20 @@ jest.mock('../common/useLabelValuesMap', () => ({
   useLabelValuesMap: () => ({}),
 }))
 
-jest.mock('./usePlacementDebug', () => ({
-  usePlacementDebug: jest.fn(() => ({
-    matched: [],
-    notMatched: [],
-    totalClusters: 0,
-    matchedCount: undefined,
-    loading: false,
-    error: undefined,
-  })),
-}))
+jest.mock('./usePlacementDebug', () => {
+  const actual = jest.requireActual('./usePlacementDebug')
+  return {
+    ...actual,
+    usePlacementDebug: jest.fn(() => ({
+      matched: [],
+      notMatched: [],
+      totalClusters: 0,
+      matchedCount: undefined,
+      loading: false,
+      error: undefined,
+    })),
+  }
+})
 
 jest.mock('./MatchedClustersModal', () => ({
   MatchedClustersModal: () => null,
@@ -283,7 +287,29 @@ describe('Placement', () => {
       <Placement namespaceClusterSetNames={[]} clusters={[]} showPlacementPreview placementDebugState={debugState} />
     )
 
-    expect(screen.getByText('Unable to determine cluster matches.')).toBeInTheDocument()
+    expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent(
+      'Placement match preview failed. Cluster matches cannot be determined right now.'
+    )
+  })
+
+  it('maps 404 placement-debug errors to a clear message', () => {
+    const debugState: PlacementDebugState = {
+      matched: [],
+      notMatched: [],
+      totalClusters: 0,
+      matchedCount: undefined,
+      loading: false,
+      error: new Error('404 NotFound'),
+    }
+
+    render(
+      <Placement namespaceClusterSetNames={[]} clusters={[]} showPlacementPreview placementDebugState={debugState} />
+    )
+
+    expect(screen.getByTestId('custom-wrapper-value')).toHaveTextContent(
+      'Placement match preview is not available. The placement debug service was not found on this cluster.'
+    )
+    expect(screen.queryByText('404 NotFound')).not.toBeInTheDocument()
   })
 
   it('does not show alert when cluster has clusterSets in spec', () => {

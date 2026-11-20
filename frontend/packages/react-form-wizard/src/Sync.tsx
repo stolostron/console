@@ -1,15 +1,24 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import get from 'get-value'
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import set from 'set-value'
 import { useData } from './contexts/DataContext'
 import { useItem } from './contexts/ItemContext'
 import { IResource } from './common/resource'
 
-export function Sync(props: { kind: string; path: string; targetKind?: string; targetPath?: string; suffix?: string }) {
+export function Sync(props: {
+  kind: string
+  path: string
+  targetKind?: string
+  targetPath?: string
+  suffix?: string
+  /** Only fill an empty target or update one that still has the last synchronized value. */
+  preserveTargetOverride?: boolean
+}) {
   const resources = useItem() as IResource[]
   const { update } = useData()
   const [value, setValue] = useState('')
+  const lastSynchronizedValue = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     let changed = false
@@ -27,7 +36,12 @@ export function Sync(props: { kind: string; path: string; targetKind?: string; t
           // if (props.addIndex) newValue = newValue + '-' + index.toString()
           if (props.suffix) newValue += props.suffix
           const existingValue = get(resource, props.targetPath ?? props.path)
-          if (existingValue !== newValue) {
+          const shouldSync =
+            !props.preserveTargetOverride ||
+            !existingValue ||
+            existingValue === lastSynchronizedValue.current ||
+            existingValue === newValue
+          if (shouldSync && existingValue !== newValue) {
             changed = true
             set(resource, props.targetPath ?? props.path, newValue, { preservePaths: false })
           }
@@ -35,7 +49,20 @@ export function Sync(props: { kind: string; path: string; targetKind?: string; t
       }
     }
     if (changed) update()
-  }, [props.kind, props.path, props.suffix, props.targetKind, props.targetPath, resources, update, value])
+    if (props.preserveTargetOverride && typeof value === 'string') {
+      lastSynchronizedValue.current = props.suffix ? `${value}${props.suffix}` : value
+    }
+  }, [
+    props.kind,
+    props.path,
+    props.suffix,
+    props.targetKind,
+    props.targetPath,
+    props.preserveTargetOverride,
+    resources,
+    update,
+    value,
+  ])
 
   useEffect(() => {
     if (Array.isArray(resources)) {
