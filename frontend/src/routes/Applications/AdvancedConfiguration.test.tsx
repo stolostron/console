@@ -11,7 +11,7 @@ import {
   placementsState,
   subscriptionsState,
 } from '../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
+import { nockIgnoreAnyNamespaceRBAC, nockIgnoreApiPaths, nockIgnoreRBAC, nockSearch } from '../../lib/nock-util'
 import {
   clickByLabel,
   clickByTestId,
@@ -277,6 +277,7 @@ async function openRowAction(appName: string, actionName: string) {
 describe('advanced configuration page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
+    nockIgnoreAnyNamespaceRBAC()
     nockIgnoreApiPaths()
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)
@@ -391,6 +392,7 @@ describe('getPlacementDecisionClusterCount', () => {
 describe('Export from application tables', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
+    nockIgnoreAnyNamespaceRBAC()
     nockIgnoreApiPaths()
     nockSearch(mockSearchQueryArgoApps, mockSearchResponseArgoApps)
     nockSearch(mockSearchQueryOCPApplications, mockSearchResponseOCPApplications)

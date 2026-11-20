@@ -303,6 +303,22 @@ export function nockIgnoreRBAC() {
   return scope
 }
 
+export function nockIgnoreAnyNamespaceRBAC() {
+  return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .persist()
+    .post('/rbac/any-namespace', () => true)
+    .optionally()
+    .reply(
+      200,
+      { allowed: true },
+      {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+      }
+    )
+}
+
 export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true) {
   return nockCreate(
     {
@@ -319,6 +335,25 @@ export function nockRBAC(resourceAttributes: ResourceAttributes, allowed = true)
       status: { allowed },
     } as SelfSubjectAccessReview
   )
+}
+
+export function nockAnyNamespaceRBAC(
+  resourceAttributes: ResourceAttributes,
+  namespaces: string[],
+  allowed: boolean,
+  statusCode = 200
+) {
+  return nocked(process.env.JEST_DEFAULT_HOST as string, { encodedQueryParams: true })
+    .post('/rbac/any-namespace', (body) => isEqual(body, { resourceAttributes, namespaces }))
+    .reply(
+      statusCode,
+      { allowed },
+      {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Access-Control-Allow-Credentials': 'true',
+      }
+    )
 }
 
 interface AnsibleCredentialPostBody {

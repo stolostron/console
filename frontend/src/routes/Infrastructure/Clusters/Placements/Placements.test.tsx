@@ -5,7 +5,12 @@ import nock from 'nock'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { namespacesState, placementsState } from '../../../../atoms'
-import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/nock-util'
+import {
+  nockAnyNamespaceRBAC,
+  nockIgnoreAnyNamespaceRBAC,
+  nockIgnoreApiPaths,
+  nockIgnoreRBAC,
+} from '../../../../lib/nock-util'
 import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind, SelfSubjectAccessReview } from '../../../../resources'
@@ -58,7 +63,6 @@ const createPlacementAccess = {
   verb: 'create',
   resource: 'placements',
   group: 'cluster.open-cluster-management.io',
-  namespace: mockNamespace.metadata.name,
 }
 
 function nockNonAdminAccess() {
@@ -80,8 +84,9 @@ function nockNonAdminAccess() {
 
 function nockCreatePlacementAccess(allowed: boolean) {
   nockNonAdminAccess()
-  const createNock = nockRBAC(createPlacementAccess, allowed)
+  const createNock = nockAnyNamespaceRBAC(createPlacementAccess, [mockNamespace.metadata.name!], allowed)
   nockIgnoreRBAC()
+  nockIgnoreAnyNamespaceRBAC()
   return [createNock]
 }
 
@@ -106,6 +111,7 @@ afterEach(() => nock.cleanAll())
 describe('Placements page', () => {
   beforeEach(() => {
     nockIgnoreRBAC()
+    nockIgnoreAnyNamespaceRBAC()
     nockIgnoreApiPaths()
   })
 

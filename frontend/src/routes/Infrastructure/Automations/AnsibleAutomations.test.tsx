@@ -22,6 +22,7 @@ import { clusterCuratorsState, namespacesState, secretsState, subscriptionOperat
 import {
   mockBadRequestStatus,
   nockDelete,
+  nockIgnoreAnyNamespaceRBAC,
   nockIgnoreApiPaths,
   nockIgnoreOperatorCheck,
   nockIgnoreRBAC,
@@ -212,6 +213,7 @@ describe('Automations page', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
     nockIgnoreRBAC()
+    nockIgnoreAnyNamespaceRBAC()
     nockIgnoreApiPaths()
     nockIgnoreOperatorCheck()
   })
