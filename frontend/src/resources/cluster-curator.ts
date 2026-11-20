@@ -47,6 +47,9 @@ export interface ClusterCurator {
     scale?: CuratorAction
     destroy?: CuratorAction
   }
+  operation?: {
+    retryPosthook?: 'installPosthook' | 'upgradePosthook'
+  }
   status?: {
     conditions: V1CustomResourceDefinitionCondition[]
   }
