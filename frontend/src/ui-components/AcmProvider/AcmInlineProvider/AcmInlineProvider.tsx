@@ -1,6 +1,7 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
 import { css } from '@emotion/css'
+import { Tooltip } from '@patternfly/react-core'
 import { Provider, ProviderLongTextMap, ProviderIconMap } from '../'
 import { AcmIcon } from '../../AcmIcons/AcmIcons'
 
@@ -15,7 +16,18 @@ const container = css({
   whiteSpace: 'nowrap',
 })
 
-export function AcmInlineProvider(props: { provider: Provider }) {
+export function AcmInlineProvider(props: { provider: Provider; iconOnly?: boolean }) {
+  if (props.iconOnly) {
+    const label = ProviderLongTextMap[props.provider]
+    return (
+      <Tooltip content={label}>
+        {/* eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- focus is required so keyboard users can reveal the tooltip */}
+        <span role="img" aria-label={label} tabIndex={0} className={container}>
+          <AcmIcon icon={ProviderIconMap[props.provider]} />
+        </span>
+      </Tooltip>
+    )
+  }
   return (
     <div className={container}>
       <AcmIcon icon={ProviderIconMap[props.provider]} />

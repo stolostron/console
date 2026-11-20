@@ -44,6 +44,8 @@ import { ClusterClaimModal, ClusterClaimModalProps } from './components/ClusterC
 import { ScaleClusterPoolModal, ScaleClusterPoolModalProps } from './components/ScaleClusterPoolModal'
 import { UpdateReleaseImageModal, UpdateReleaseImageModalProps } from './components/UpdateReleaseImageModal'
 import { getMappedClusterPoolClusters } from '../ClusterSets/components/useClusters'
+import { ClusterLocationLine } from '~/components/Clusters/ClusterLocationLine'
+import { ClusterLocation, getClusterLocation } from '~/lib/cluster-location'
 
 export default function ClusterPoolsPage() {
   const alertContext = useContext(AcmAlertContext)
@@ -147,10 +149,27 @@ export default function ClusterPoolsPage() {
   )
 }
 
-function determineProvider(clusterPool: ClusterPool) {
+export function determineProvider(clusterPool: ClusterPool) {
   if (clusterPool.spec?.platform?.aws) return Provider.aws
   if (clusterPool.spec?.platform?.gcp) return Provider.gcp
   if (clusterPool.spec?.platform?.azure) return Provider.azure
+}
+
+export function getClusterPoolLocation(pool: ClusterPool): ClusterLocation {
+  const location = getClusterLocation(pool.metadata.labels)
+  if (location.region) return location
+  const platform = pool.spec?.platform
+  const region = platform?.aws?.region || platform?.gcp?.region || platform?.azure?.region
+  return region ? { ...location, region } : location
+}
+
+export function ClusterPoolName(props: { clusterPool: ClusterPool }) {
+  const provider = determineProvider(props.clusterPool)
+  return (
+    <span style={{ whiteSpace: 'nowrap' }}>
+      {provider && <AcmInlineProvider iconOnly provider={provider} />} {props.clusterPool.metadata.name}
+    </span>
+  )
 }
 
 function ClusterPoolProvider(props: { clusterPool: ClusterPool }) {
@@ -234,7 +253,7 @@ export function ClusterPoolsTable(props: {
     () => [
       {
         header: t('table.name'),
-        cell: (clusterPool: ClusterPool) => <span style={{ whiteSpace: 'nowrap' }}>{clusterPool.metadata.name}</span>,
+        cell: (clusterPool: ClusterPool) => <ClusterPoolName clusterPool={clusterPool} />,
         sort: 'metadata.name',
       },
       {
@@ -331,7 +350,7 @@ export function ClusterPoolsTable(props: {
             sort: 'metadata.name',
             search: 'metadata.name',
             cell: (clusterPool: ClusterPool) => {
-              return clusterPool.metadata.name
+              return <ClusterPoolName clusterPool={clusterPool} />
             },
             exportContent: (clusterPool: ClusterPool) => {
               return clusterPool.metadata.name
@@ -415,6 +434,21 @@ export function ClusterPoolsTable(props: {
               if (provider) {
                 return ProviderLongTextMap[provider]
               }
+            },
+          },
+          {
+            header: t('Location'),
+            cell: (clusterPool: ClusterPool) => {
+              const location = getClusterPoolLocation(clusterPool)
+              return location.region || location.zone || location.datacenter ? (
+                <ClusterLocationLine location={location} />
+              ) : (
+                '-'
+              )
+            },
+            exportContent: (clusterPool: ClusterPool) => {
+              const { region, zone, datacenter } = getClusterPoolLocation(clusterPool)
+              return [region, zone, datacenter].filter(Boolean).join(' · ') || '-'
             },
           },
           {

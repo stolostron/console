@@ -17,7 +17,7 @@ import {
 } from '../../../../resources'
 import { Cluster, ClusterStatus } from '../../../../resources/utils'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import nock from 'nock'
 import { Scope } from 'nock/types'
 import { MemoryRouter } from 'react-router'
@@ -46,7 +46,7 @@ import {
   waitForText,
   waitTimeout,
 } from '../../../../lib/test-util'
-import ClusterPoolsPage, { ClusterPoolsTable } from './ClusterPools'
+import ClusterPoolsPage, { ClusterPoolName, ClusterPoolsTable, getClusterPoolLocation } from './ClusterPools'
 import { Provider } from '../../../../ui-components'
 
 const mockNamespace: Namespace = {
@@ -587,6 +587,23 @@ describe('ClusterPools page', () => {
   })
 })
 
+describe('ClusterPoolsTable name cell', () => {
+  test('renders provider icon and location column in the table', () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    render(
+      <StateProvider>
+        <MemoryRouter>
+          <ClusterPoolsTable clusterPools={[mockClusterPool]} clusters={[mockCluster]} emptyState={''} />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    const row = screen.getByText('test-pool').closest('tr') as HTMLElement
+    expect(within(row).getAllByRole('img', { name: 'Amazon Web Services' }).length).toBeGreaterThan(0)
+    expect(within(row).getByText('us-east-1')).toBeInTheDocument()
+  })
+})
+
 describe('Export from clusterpool table', () => {
   test('export button should produce a file for download', async () => {
     nockIgnoreRBAC()
@@ -608,8 +625,8 @@ describe('Export from clusterpool table', () => {
 
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Cluster status,Available clusters,Infrastructure,Distribution version\n' +
-          '"test-pool","test-pool-namespace",-,"1 out of 2","Amazon Web Services","-"',
+        'Name,Namespace,Cluster status,Available clusters,Infrastructure,Location,Distribution version\n' +
+          '"test-pool","test-pool-namespace",-,"1 out of 2","Amazon Web Services","us-east-1","-"',
       ],
       { type: 'text/csv' }
     )
@@ -718,5 +735,81 @@ describe('ClusterPools page RBAC', () => {
     await waitFor(() =>
       expect(screen.getByRole('link', { name: 'Create cluster pool' })).not.toHaveAttribute('aria-disabled', 'true')
     )
+  })
+})
+
+describe('ClusterPool location', () => {
+  const vspherePool = {
+    ...mockClusterPool,
+    spec: { ...mockClusterPool.spec, platform: {} },
+  } as ClusterPool
+
+  test('getClusterPoolLocation reads region from spec.platform.aws.region when no label', () => {
+    expect(getClusterPoolLocation(mockClusterPool)).toEqual({ region: 'us-east-1' })
+  })
+
+  test.each([
+    ['gcp', 'us-central1'],
+    ['azure', 'eastus'],
+  ])('getClusterPoolLocation reads region from spec.platform.%s.region when no label', (platform, region) => {
+    const pool = {
+      ...mockClusterPool,
+      spec: { ...mockClusterPool.spec, platform: { [platform]: { credentialsSecretRef: { name: 's' }, region } } },
+    } as ClusterPool
+    expect(getClusterPoolLocation(pool)).toEqual({ region })
+  })
+
+  test('getClusterPoolLocation prefers the region label over the spec region', () => {
+    const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { region: 'eu-west-1' } } }
+    expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
+  })
+
+  test('getClusterPoolLocation combines label zone with the spec region', () => {
+    const labeled = { ...mockClusterPool, metadata: { ...mockClusterPool.metadata, labels: { zone: 'us-east-1a' } } }
+    expect(getClusterPoolLocation(labeled)).toEqual({ zone: 'us-east-1a', region: 'us-east-1' })
+  })
+
+  test('getClusterPoolLocation prefers the topology region label over the spec region', () => {
+    const labeled = {
+      ...mockClusterPool,
+      metadata: { ...mockClusterPool.metadata, labels: { 'topology.kubernetes.io/region': 'eu-west-1' } },
+    }
+    expect(getClusterPoolLocation(labeled)).toEqual({ region: 'eu-west-1' })
+  })
+
+  test('getClusterPoolLocation returns empty location for an unsupported platform', () => {
+    expect(getClusterPoolLocation(vspherePool)).toEqual({})
+  })
+
+  test('ClusterPoolName renders provider icon and name only for an AWS pool', () => {
+    render(<ClusterPoolName clusterPool={mockClusterPool} />)
+    expect(screen.getByRole('img', { name: 'Amazon Web Services' })).toBeInTheDocument()
+    expect(screen.getByText('test-pool')).toBeInTheDocument()
+    expect(screen.queryByText('us-east-1')).not.toBeInTheDocument()
+  })
+
+  test('Location column renders region, zone and datacenter from pool labels', () => {
+    nockIgnoreRBAC()
+    nockIgnoreApiPaths()
+    const labeled = {
+      ...mockClusterPool,
+      metadata: { ...mockClusterPool.metadata, labels: { region: 'USW1', zone: 'USW1B', datacenter: 'DC-East' } },
+    }
+    render(
+      <StateProvider>
+        <MemoryRouter>
+          <ClusterPoolsTable clusterPools={[labeled]} clusters={[mockCluster]} emptyState={''} />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    expect(screen.getByRole('columnheader', { name: 'Location' })).toBeInTheDocument()
+    expect(screen.getByText('USW1 · USW1B')).toBeInTheDocument()
+    expect(screen.getByLabelText('Datacenter: DC-East')).toBeInTheDocument()
+  })
+
+  test('ClusterPoolName renders only the name for an unsupported platform', () => {
+    render(<ClusterPoolName clusterPool={vspherePool} />)
+    expect(screen.getByText('test-pool')).toBeInTheDocument()
+    expect(screen.queryByRole('img')).not.toBeInTheDocument()
   })
 })

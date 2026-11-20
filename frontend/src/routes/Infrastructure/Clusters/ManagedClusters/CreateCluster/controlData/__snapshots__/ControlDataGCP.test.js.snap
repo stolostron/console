@@ -209,6 +209,36 @@ exports[`Cluster creation control data for GCP generates correctly 1`] = `
     },
   },
   {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
     "available": [
       "amd64",
       "arm64",
@@ -1300,6 +1330,36 @@ exports[`Cluster creation control data for GCP generates correctly for MCE 1`] =
       "notification": "Value must be alphanumeric.",
       "required": false,
       "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
@@ -3422,6 +3482,36 @@ exports[`Cluster creation control data for GCP generates correctly with SNO enab
       "notification": "Value must be alphanumeric.",
       "required": false,
       "tester": /\\^\\[A-Za-z0-9-_\\]\\+\\$/,
+    },
+  },
+  {
+    "active": "",
+    "id": "zone",
+    "name": "Zone",
+    "reverse": "ClusterDeployment[0].metadata.labels.zone",
+    "tooltip": "Optional. The zone where the cluster runs, for example us-east-1a. Added as the zone label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
+    },
+  },
+  {
+    "active": "",
+    "id": "locationDatacenter",
+    "name": "Datacenter",
+    "reverse": "ClusterDeployment[0].metadata.labels.datacenter",
+    "tooltip": "Optional. The datacenter where the cluster runs. Added as the datacenter label on the cluster. Use up to 63 letters, numbers, dashes, underscores, and periods, starting and ending with a letter or number.",
+    "type": "text",
+    "validation": {
+      "notification": "Value must be 63 characters or fewer, start and end with a letter or number, and contain only letters, numbers, dashes, underscores, and periods.",
+      "required": false,
+      "tester": {
+        "test": [Function],
+      },
     },
   },
   {
