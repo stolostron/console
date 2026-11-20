@@ -712,6 +712,49 @@ func TestSSRRRetryAfterUnavailable(t *testing.T) {
 	}
 }
 
+func TestSSRRNamespaceScopedAccess(t *testing.T) {
+	for _, getAllowed := range []bool{true, false} {
+		t.Run(fmt.Sprintf("getAllowed=%t", getAllowed), func(t *testing.T) {
+			rec := &authRec{}
+			client := newAuthClient(rec, func(ns string) (authzv1.SubjectRulesReviewStatus, error) {
+				if ns == "team-a" || ns == "team-b" {
+					return authzv1.SubjectRulesReviewStatus{
+						ResourceRules: []authzv1.ResourceRule{{
+							Verbs: []string{"get"}, APIGroups: []string{""}, Resources: []string{"namespaces"},
+						}},
+					}, nil
+				}
+				return emptyRules(), nil
+			}, func(call ssarCall) bool {
+				return getAllowed && call.verb == "get" && call.resource == "namespaces" &&
+					call.namespace == call.name && (call.name == "team-a" || call.name == "team-b")
+			})
+			a := NewSSARAccessWithClient(func(string) (kubernetes.Interface, error) { return client, nil })
+			namespaces := []string{"default", "team-a", "team-b", "other"}
+			for range 2 {
+				for _, namespace := range namespaces {
+					want := getAllowed && (namespace == "team-a" || namespace == "team-b")
+					if got := mustAllow(t, a, "namespace-admin", modifiedNS(namespace)); got != want {
+						t.Fatalf("namespace %s: allowed=%t, want %t", namespace, got, want)
+					}
+				}
+			}
+			ssar, ssrr := rec.snapshot()
+			if len(ssrr) != len(namespaces) {
+				t.Fatalf("expected one rules review per namespace, got %v", ssrr)
+			}
+			for i, namespace := range namespaces {
+				if ssrr[i] != namespace {
+					t.Fatalf("rules review %d: namespace=%s, want %s", i, ssrr[i], namespace)
+				}
+			}
+			if countVerb(ssar, "list") != 1 || countVerb(ssar, "get") != 2 {
+				t.Fatalf("expected one cluster list and two namespace get reviews, got %v", ssar)
+			}
+		})
+	}
+}
+
 func TestSSRRDenyAllNamespaceSkipsGet(t *testing.T) {
 	rec := &authRec{}
 	client := newAuthClient(rec, func(string) (authzv1.SubjectRulesReviewStatus, error) {
