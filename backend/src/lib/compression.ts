@@ -1,6 +1,8 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream'
+import { promisify } from 'node:util'
+import type { Zlib } from 'node:zlib'
 import {
   createBrotliCompress,
   createBrotliDecompress,
@@ -8,16 +10,14 @@ import {
   createGunzip,
   createGzip,
   createInflate,
-  inflateRaw,
   deflateRaw,
-  type Zlib,
+  inflateRaw,
 } from 'node:zlib'
+import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
+import { getEventDict } from '../routes/events'
+import type { IResource } from './../resources/resource'
 import { logger } from './logger'
 import type { ServerSideEvent, WatchEvent } from './server-side-events'
-import { getEventDict } from '../routes/events'
-import { getAppDict, type ICompressedResource, type ITransformedResource } from '../routes/aggregators/applications'
-import { promisify } from 'node:util'
-import type { IResource } from './../resources/resource'
 
 const MAX_RECENTLY_ADDED = 200
 
@@ -26,6 +26,7 @@ type Dictionary = {
   map: Record<string, string>
   add: (key: string) => string
   get: (inx: number) => string
+  has: (key: string) => string
   recentlyAdded: string[]
   snapshotSize: () => number
   drainRecentlyAdded: () => string[]
@@ -48,6 +49,9 @@ export function createDictionary(): Dictionary {
   const get = (inx: number) => {
     return arr[inx]
   }
+  const has = (key: string) => {
+    return map[key]
+  }
   const snapshotSize = () => arr.length
   const drainRecentlyAdded = () => recentlyAdded.splice(0)
   return {
@@ -55,6 +59,7 @@ export function createDictionary(): Dictionary {
     map,
     add,
     get,
+    has,
     recentlyAdded,
     snapshotSize,
     drainRecentlyAdded,
@@ -81,6 +86,7 @@ type UncompressedResourceType = Record<string, any> | Record<string, any[]> | st
 type CompressedResourceType = Record<number, any> | Record<number, any[]> | string | number
 
 const NUMBER_MARKER = '#!%'
+const JSON_MARKER = '#!&'
 
 // Detects ISO 8601 timestamps to avoid permanently indexing unique time values.
 // Covers: "2026-05-27T20:18:12Z" (20), "2026-05-27T20:18:12.000Z" (24), "2026-05-27T20:18:12+05:30" (25)
@@ -95,8 +101,44 @@ export function isTimestamp(s: string): boolean {
   )
 }
 
+export class FifoSet<T> {
+  private readonly values: T[] = []
+  private readonly membership: Set<T> = new Set()
+  private readonly capacity?: number
+
+  constructor(capacity?: number) {
+    this.capacity = capacity
+  }
+
+  has(value: T): boolean {
+    return this.membership.has(value)
+  }
+
+  add(value: T): void {
+    if (!this.membership.has(value)) {
+      this.values.push(value)
+      this.membership.add(value)
+
+      if (this.capacity !== undefined && this.values.length > this.capacity) {
+        const evicted = this.values.shift()
+        if (evicted !== undefined) this.membership.delete(evicted)
+      }
+    }
+  }
+
+  delete(value: T): void {
+    if (this.membership.has(value)) {
+      this.membership.delete(value)
+      const index = this.values.indexOf(value)
+      if (index >= 0) this.values.splice(index, 1)
+    }
+  }
+}
+
+const bigStrings: FifoSet<string> = new FifoSet(200)
+
 export async function deflateResource(resource: IResource, dictionary: Dictionary): Promise<Buffer> {
-  const res = compressResource(resource as UncompressedResourceType, dictionary)
+  const res = compressResource(resource, dictionary)
   let buffer
   try {
     buffer = await promisify(deflateRaw)(JSON.stringify(res))
@@ -113,7 +155,6 @@ export async function deflateResource(resource: IResource, dictionary: Dictionar
 function compressResource(resource: UncompressedResourceType, dictionary: Dictionary): CompressedResourceType {
   if (resource) {
     if (Array.isArray(resource)) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-call
       return resource.map((item: UncompressedResourceType) => compressResource(item, dictionary))
     } else if (typeof resource === 'object') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -134,8 +175,9 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
             res[dictionary.add(key)] = resource[key]
           } else {
             const inx = dictionary.add(key)
-            if (valueInDictionaryKeys.has(key)) {
-              res[inx] = dictionary.add(resource[key] as string)
+            // Guard against non-string values (e.g. nested CRD OpenAPI schema objects) corrupting the shared dictionary.
+            if (valueInDictionaryKeys.has(key) && typeof resource[key] === 'string') {
+              res[inx] = dictionary.add(resource[key])
             } else {
               res[inx] = compressResource(resource[key] as UncompressedResourceType, dictionary)
             }
@@ -144,12 +186,37 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
       }
       return res
     } else if (typeof resource === 'string') {
-      if (resource.length < 32 && !resource.endsWith('==')) {
+      if (
+        (resource.length > 128 && resource.startsWith('{') && !resource.startsWith('{{')) ||
+        resource.startsWith('[')
+      ) {
+        // if the resource is a large json string, compress the inner json
+        try {
+          const innerJson = JSON.parse(resource) as UncompressedResourceType
+          return `${JSON_MARKER}${JSON.stringify(compressResource(innerJson, dictionary))}`
+        } catch (error) {
+          // drop thru
+        }
+      }
+      if (resource.length < 32 && !resource.endsWith('=')) {
         // skip indexing of all timestamps
         if (isTimestamp(resource)) {
           return resource
         }
         // index short strings that aren't a base64
+        return dictionary.add(resource)
+      }
+      // if already in dictionary, return the index
+      const exists = dictionary.has(resource)
+      if (exists) {
+        return exists
+      }
+      // if the string is not in the dictionary, add it to the bigStrings set
+      if (!bigStrings.has(resource)) {
+        bigStrings.add(resource)
+      } else {
+        // if we've seen this string, add to the dictionary
+        bigStrings.delete(resource)
         return dictionary.add(resource)
       }
     } else if (typeof resource === 'number' && Number.isInteger(resource)) {
@@ -163,7 +230,7 @@ function compressResource(resource: UncompressedResourceType, dictionary: Dictio
 export async function inflateResource(buffer: Buffer, dictionary: Dictionary): Promise<IResource> {
   let inflated
   try {
-    inflated = (await promisify(inflateRaw)(buffer)).toString()
+    inflated = (await promisify(inflateRaw)(new Uint8Array(buffer))).toString()
   } catch (err: unknown) {
     logger.error({
       msg: 'Error from inflateRaw during inflateResource',
@@ -176,11 +243,18 @@ export async function inflateResource(buffer: Buffer, dictionary: Dictionary): P
 }
 
 export async function inflateEvent(event: ServerSideEvent): Promise<ServerSideEvent> {
-  const { id, data } = event
-  const { type, object } = data as WatchEvent
+  const { id, name, namespace, data } = event
+  if (!data || typeof data !== 'object') return event
+  const watchEvent = data as WatchEvent & { meta?: unknown }
+  const { type, object } = watchEvent
   return !object
     ? event
-    : { id, data: { type, object: Buffer.isBuffer(object) ? await inflateResource(object, getEventDict()) : object } }
+    : {
+        id,
+        name,
+        namespace,
+        data: { type, object: Buffer.isBuffer(object) ? await inflateResource(object, getEventDict()) : object },
+      }
 }
 
 export async function inflateApps(apps: ICompressedResource[]): Promise<ITransformedResource[]> {
@@ -211,6 +285,8 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
       for (const inx in resource) {
         if (Object.prototype.hasOwnProperty.call(resource, inx)) {
           const key = dictionary.get(Number(inx))
+          // Dictionary corruption would produce a non-string key; skip rather than crashing on key.includes().
+          if (typeof key !== 'string') continue
           if (
             valueAsIsKeys.has(key) ||
             (key === 'message' && inx in resource && !Number.isInteger(Number(resource[inx]))) ||
@@ -230,8 +306,14 @@ function decompressResource(resource: CompressedResourceType, dictionary: Dictio
       return res
     } else if (Number.isInteger(Number(resource))) {
       return dictionary.get(Number(resource))
-    } else if (typeof resource === 'string' && resource.startsWith(NUMBER_MARKER)) {
-      return Number(resource.substring(NUMBER_MARKER.length))
+    } else if (typeof resource === 'string') {
+      if (resource.startsWith(NUMBER_MARKER)) {
+        return Number(resource.substring(NUMBER_MARKER.length))
+      }
+      if (resource.startsWith(JSON_MARKER)) {
+        const innerJson = JSON.parse(resource.substring(JSON_MARKER.length)) as CompressedResourceType
+        return JSON.stringify(decompressResource(innerJson, dictionary))
+      }
     }
   }
   return resource
