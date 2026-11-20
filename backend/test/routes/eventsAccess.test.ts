@@ -694,4 +694,64 @@ describe('eventsAccess', () => {
       expect(ssarScope.isDone()).toBe(false)
     })
   })
+  /**
+   * ACM-51001: the apiserver attributes a Namespace get to the namespace matching the object
+   * name, so a Role bound in that namespace can grant it. Namespace objects must be reviewed
+   * in their own namespace, not the `default` probe used for other cluster-scoped kinds.
+   */
+  describe('namespace-scoped access (ACM-51001)', () => {
+    const namespace = (name: string) => ({
+      kind: 'Namespace',
+      apiVersion: 'v1',
+      metadata: { name },
+    })
+    const namespaceGetRules = {
+      incomplete: false,
+      resourceRules: [{ verbs: ['get'], apiGroups: [''], resources: ['namespaces'] }],
+    }
+
+    it('should allow Namespace gets for admins granted in that namespace', async () => {
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews')
+        .twice()
+        .reply(200, (_uri: string, requestBody: unknown) => ({
+          status: ['team-a', 'team-b'].includes(rulesReviewNamespace(requestBody)) ? namespaceGetRules : emptyRules,
+        }))
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews', (body: unknown) => {
+          const attrs = parseSsarResourceAttributes(body)
+          return (
+            attrs?.verb === 'get' &&
+            attrs?.resource === 'namespaces' &&
+            attrs?.namespace === attrs?.name &&
+            (attrs?.name === 'team-a' || attrs?.name === 'team-b')
+          )
+        })
+        .twice()
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(namespace('team-a'), 'namespace-admin-token')).toBe(true)
+      expect(await canGetResource(namespace('team-b'), 'namespace-admin-token')).toBe(true)
+      expect(ssarScope.isDone()).toBe(true)
+    })
+
+    it('should deny Namespace gets outside the granted namespaces', async () => {
+      const reviews: string[] = []
+      nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectrulesreviews', (body: unknown) => {
+          reviews.push(rulesReviewNamespace(body))
+          return true
+        })
+        .times(2)
+        .reply(200, { status: emptyRules })
+      const ssarScope = nock(apiUrl())
+        .post('/apis/authorization.k8s.io/v1/selfsubjectaccessreviews')
+        .reply(200, { status: { allowed: true } })
+
+      expect(await canGetResource(namespace('default'), 'namespace-admin-token')).toBe(false)
+      expect(await canGetResource(namespace('other'), 'namespace-admin-token')).toBe(false)
+      expect(reviews).toEqual(['default', 'other'])
+      expect(ssarScope.isDone()).toBe(false)
+    })
+  })
 })
