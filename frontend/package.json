@@ -43,7 +43,7 @@
   },
   "dependencies": {
     "@apollo/client": "3.14.1",
-    "@babel/runtime": "^7.29.13",
+    "@babel/runtime": "^7.29.14",
     "@emotion/css": "^11.13.5",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -111,7 +111,7 @@
   "devDependencies": {
     "@babel/core": "^7.29.13",
     "@babel/plugin-transform-runtime": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
+    "@babel/preset-env": "^7.29.14",
     "@babel/preset-react": "^7.29.7",
     "@babel/preset-typescript": "^7.29.7",
     "@jest/types": "^29.6.3",
