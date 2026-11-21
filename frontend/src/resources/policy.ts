@@ -31,13 +31,20 @@ export interface Policy {
   metadata: Metadata
   spec: {
     disabled: boolean
+    dependencies?: PolicyDependency[]
     'policy-templates'?: PolicyTemplate[]
     remediationAction?: string
   }
   status?: {
     compliant?: 'Compliant' | 'NonCompliant' | 'Pending'
     details?: PolicyStatusDetails[]
-    placement?: { placementBinding: string; placement?: string; policySet?: string }[]
+    placement?: {
+      placementBinding: string
+      placement?: string
+      policySet?: string
+      decisions?: { clusterName: string; clusterNamespace?: string }[]
+      exclusions?: { clusterName: string }[]
+    }[]
     status?: { clustername: string; clusternamespace: string; compliant?: string }[]
   }
   // This not from API, this will be added at console
@@ -45,7 +52,17 @@ export interface Policy {
   throttled?: boolean
 }
 
+export interface PolicyDependency {
+  apiVersion: string
+  kind: string
+  name: string
+  namespace?: string
+  compliance: 'Compliant' | 'NonCompliant' | 'Pending'
+}
+
 export interface PolicyTemplate {
+  extraDependencies?: PolicyDependency[]
+  ignorePending?: boolean
   objectDefinition: {
     apiVersion: string
     kind: string
