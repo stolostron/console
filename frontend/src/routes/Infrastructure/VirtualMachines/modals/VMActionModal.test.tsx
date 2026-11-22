@@ -1,5 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import type { TFunction } from 'i18next'
 import { StateProvider } from '~/lib/state-provider'
 import { isFineGrainedRbacEnabledState } from '../../../../atoms'
 import { fleetResourceRequest } from '../../../../resources/utils/fleet-resource-request'
@@ -52,7 +53,7 @@ jest.mock('../../../../resources/utils/fleet-resource-request', () => ({
 }))
 
 describe('handleVMActions access-restricted toasts', () => {
-  const t = (key: string) => key
+  const t = ((key: string) => key) as unknown as TFunction
   const item = {
     kind: 'VirtualMachine',
     name: 'testVM',
