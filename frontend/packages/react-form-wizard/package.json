@@ -88,6 +88,6 @@
     "watch": "^1.0.2"
   },
   "optionalDependencies": {
-    "cypress": "^15.21.1"
+    "cypress": "^15.21.2"
   }
 }
