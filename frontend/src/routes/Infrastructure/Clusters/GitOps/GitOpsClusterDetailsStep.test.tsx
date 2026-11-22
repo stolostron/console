@@ -190,7 +190,8 @@ describe('GitOpsClusterDetailsStep', () => {
       expect(collectMissingPermissions).toHaveBeenCalledWith(
         expect.arrayContaining([
           expect.objectContaining({ kind: GitOpsClusterKind, metadata: expect.objectContaining({ name: 'fleet' }) }),
-        ])
+        ]),
+        []
       )
     } finally {
       unmount()
@@ -207,20 +208,54 @@ describe('GitOpsClusterDetailsStep', () => {
       await act(async () => {
         jest.advanceTimersByTime(300)
       })
-      expect(
-        screen.getByText('You do not have permission to create or update all required resources.')
-      ).toBeInTheDocument()
+      expect(screen.getByText('You do not have permission to apply all required resource changes.')).toBeInTheDocument()
       await user.type(screen.getByRole('textbox', { name: /^Name\b/ }), 'new')
       expect(
-        screen.queryByText('You do not have permission to create or update all required resources.')
+        screen.queryByText('You do not have permission to apply all required resource changes.')
       ).not.toBeInTheDocument()
       await act(async () => {
         jest.advanceTimersByTime(300)
       })
       expect(collectMissingPermissions).toHaveBeenCalledTimes(2)
       expect(
-        screen.queryByText('You do not have permission to create or update all required resources.')
+        screen.queryByText('You do not have permission to apply all required resource changes.')
       ).not.toBeInTheDocument()
+    } finally {
+      unmount()
+      jest.useRealTimers()
+    }
+  })
+
+  it('retains the last successful permission result when a later review fails without showing it for other identities', async () => {
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
+    collectMissingPermissions
+      .mockRejectedValue(new Error('Permission review unavailable'))
+      .mockResolvedValueOnce([{ kind: GitOpsClusterKind, verb: 'create', name: 'old' }])
+    const { unmount } = renderDetailsStep()
+    try {
+      const name = screen.getByRole('textbox', { name: /^Name\b/ })
+      await user.type(name, 'old')
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(screen.getByText('create GitOpsCluster (old)')).toBeInTheDocument()
+
+      await user.clear(name)
+      await user.type(name, 'new')
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(collectMissingPermissions).toHaveBeenCalledTimes(2)
+      expect(screen.queryByText('create GitOpsCluster (old)')).not.toBeInTheDocument()
+
+      await user.clear(name)
+      await user.type(name, 'old')
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(collectMissingPermissions).toHaveBeenCalledTimes(3)
+      expect(screen.getByText('create GitOpsCluster (old)')).toBeInTheDocument()
     } finally {
       unmount()
       jest.useRealTimers()
@@ -311,9 +346,7 @@ describe('GitOpsClusterDetailsStep', () => {
     })
 
     await waitFor(() =>
-      expect(
-        screen.getByText('You do not have permission to create or update all required resources.')
-      ).toBeInTheDocument()
+      expect(screen.getByText('You do not have permission to apply all required resource changes.')).toBeInTheDocument()
     )
   })
 

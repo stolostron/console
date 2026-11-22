@@ -4131,7 +4131,7 @@
   "You can include any combination of filters and keywords to make your search more specific.": "You can include any combination of filters and keywords to make your search more specific.",
   "You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.": "You cannot create new clusters from deleted credentials. Clusters that you previously created will not be affected.",
   "You do not have any recommendations yet.": "You do not have any recommendations yet.",
-  "You do not have permission to create or update all required resources.": "You do not have permission to create or update all required resources.",
+  "You do not have permission to apply all required resource changes.": "You do not have permission to apply all required resource changes.",
   "You do not have permission to preview which clusters match this Placement.": "You do not have permission to preview which clusters match this Placement.",
   "You don't have any {{kindHead}} policies.": "You don't have any {{kindHead}} policies.",
   "You don't have any applications yet": "You don't have any applications yet",

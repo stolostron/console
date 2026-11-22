@@ -260,6 +260,15 @@ export function EditGitOpsCluster() {
     return <LoadingPage />
   }
 
+  const gitOpsCluster = existingResources.find((resource) => resource.kind === GitOpsClusterKind)!
+  const previousOwned = stripTransformedFields(baselineResources.current).filter(
+    (resource) =>
+      resource.kind === GitOpsClusterKind ||
+      resource.kind === PlacementKind ||
+      resource.kind === PolicyKind ||
+      (resource.kind === ManagedClusterSetBindingKind && isGitOpsBindingOwnedBy(resource, gitOpsCluster))
+  ) as IResource[]
+
   return (
     <GitOpsClusterWizard
       title={t('Edit GitOpsCluster')}
@@ -274,6 +283,8 @@ export function EditGitOpsCluster() {
       existingAppProject={existingAppProject}
       loadExistingAppProject={loadExistingAppProject}
       resources={existingResources}
+      previousOwned={previousOwned}
+      placements={placements}
       yamlEditor={getWizardSyncEditor}
       onSubmit={async (data) => {
         const resources = ensureGitOpsClusterPlacement(data as IResource[], t)
@@ -285,14 +296,6 @@ export function EditGitOpsCluster() {
           // create-only reconciliation rule retains its live configuration.
           await getExistingAppProject()
         }
-        const gitOpsCluster = existingResources.find((resource) => resource.kind === GitOpsClusterKind)!
-        const previousOwned = stripTransformedFields(baselineResources.current).filter(
-          (resource) =>
-            resource.kind === GitOpsClusterKind ||
-            resource.kind === PlacementKind ||
-            resource.kind === PolicyKind ||
-            (resource.kind === ManagedClusterSetBindingKind && isGitOpsBindingOwnedBy(resource, gitOpsCluster))
-        ) as IResource[]
         const removed = getRemovedGitOpsWizardResources(resources, previousOwned, placements)
         const missing = await collectMissingPermissions(resources, removed)
         if (missing.length > 0) {

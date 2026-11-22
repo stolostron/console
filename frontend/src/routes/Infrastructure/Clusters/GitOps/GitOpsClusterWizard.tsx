@@ -16,7 +16,7 @@ import { useLocalHubName } from '~/hooks/use-local-hub'
 import { useTranslation } from '~/lib/acm-i18next'
 import { NavigationPath } from '~/NavigationPath'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
-import { PlacementKind } from '~/resources/placement'
+import { PlacementKind, type Placement } from '~/resources/placement'
 import type { Policy } from '~/resources/policy'
 import type { SubscriptionOperator } from '~/resources/subscription-operator'
 import { IClusterSetBinding } from '~/wizards/common/resources/IClusterSetBinding'
@@ -37,6 +37,8 @@ export interface GitOpsClusterWizardProps {
   clusterSetBindings: IClusterSetBinding[]
   clusters: IResource[]
   resources?: IResource[]
+  previousOwned?: IResource[]
+  placements?: Placement[]
   argoCDs: IResource[]
   subscriptions: SubscriptionOperator[]
   policies: Policy[]
@@ -92,6 +94,8 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
           existingBindings={props.existingBindings}
           existingAppProject={props.existingAppProject}
           loadExistingAppProject={props.loadExistingAppProject}
+          previousOwned={props.previousOwned}
+          placements={props.placements}
         />
       </Step>
       <Step label={t('Target clusters')} id="target-clusters">

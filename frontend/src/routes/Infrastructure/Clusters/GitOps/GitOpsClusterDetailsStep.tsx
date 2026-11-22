@@ -53,6 +53,7 @@ import {
   formatMissingPermissions,
   getGitOpsClusterFromResources,
   getPlacementFromResources,
+  getRemovedGitOpsWizardResources,
   isAgentEnabled,
   isPushModelEnabled,
   policyNameFor,
@@ -70,6 +71,8 @@ export interface GitOpsClusterDetailsStepProps {
   existingBindings?: ManagedClusterSetBinding[]
   existingAppProject?: IResource
   loadExistingAppProject?: () => Promise<IResource | undefined>
+  previousOwned?: IResource[]
+  placements?: PlacementResource[]
 }
 
 type PullModelId = 'agent' | 'manifestwork'
@@ -95,7 +98,7 @@ export function GitOpsClusterDetailsStep(props: Readonly<GitOpsClusterDetailsSte
 
   return (
     <>
-      <GitOpsPermissionAlert />
+      <GitOpsPermissionAlert previousOwned={props.previousOwned} placements={props.placements} />
       <WizItemSelector selectKey="kind" selectValue={GitOpsClusterKind}>
         <Section label={t('Details')}>
           <WizTextInput
@@ -542,28 +545,29 @@ function AgentResourcesSync(
   return null
 }
 
-function GitOpsPermissionAlert() {
+function GitOpsPermissionAlert(props: Readonly<{ previousOwned?: IResource[]; placements?: PlacementResource[] }>) {
   const { t } = useTranslation()
   const resources = useItem() as IResource[]
+  const removed = getRemovedGitOpsWizardResources(resources, props.previousOwned ?? [], props.placements)
   const [checked, setChecked] = useState<{ identityKey: string; missing: MissingPermission[] }>()
-  const resourcesRef = useRef(resources)
-  resourcesRef.current = resources
+  const reviewRef = useRef({ resources, removed })
+  reviewRef.current = { resources, removed }
   const identityKey = JSON.stringify(
-    resources
-      .map((resource) => [resource.kind, resource.metadata?.namespace, resource.metadata?.name])
-      .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+    [resources, removed].map((items) =>
+      items
+        .map((resource) => [resource.kind, resource.metadata?.namespace, resource.metadata?.name])
+        .sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)))
+    )
   )
 
   useEffect(() => {
     let cancelled = false
     const timeout = setTimeout(() => {
-      void collectMissingPermissions(resourcesRef.current)
+      void collectMissingPermissions(reviewRef.current.resources, reviewRef.current.removed)
         .then((result) => {
           if (!cancelled) setChecked({ identityKey, missing: result })
         })
-        .catch(() => {
-          if (!cancelled) setChecked({ identityKey, missing: [] })
-        })
+        .catch(() => undefined)
     }, 300)
     return () => {
       cancelled = true
@@ -578,7 +582,7 @@ function GitOpsPermissionAlert() {
     <Alert
       isInline
       variant="danger"
-      title={t('You do not have permission to create or update all required resources.')}
+      title={t('You do not have permission to apply all required resource changes.')}
       style={{ marginBottom: 'var(--pf-t--global--spacer--md)' }}
     >
       <List>

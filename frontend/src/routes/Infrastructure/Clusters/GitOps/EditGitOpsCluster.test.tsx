@@ -60,12 +60,16 @@ let mockOnSubmit: ((data: unknown) => Promise<unknown>) | undefined
 let mockOnCancel: (() => void) | undefined
 let mockWizardResources: IResource[] | undefined
 let mockLoadExistingAppProject: (() => Promise<IResource | undefined>) | undefined
+let mockPreviousOwned: IResource[] | undefined
+let mockPlacements: IResource[] | undefined
 
 jest.mock('~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard', () => ({
   GitOpsClusterWizard: (props: {
     title: string
     resources?: IResource[]
     loadExistingAppProject?: () => Promise<IResource | undefined>
+    previousOwned?: IResource[]
+    placements?: IResource[]
     onSubmit: (data: unknown) => Promise<unknown>
     onCancel: () => void
   }) => {
@@ -73,6 +77,8 @@ jest.mock('~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard', () => (
     mockOnCancel = props.onCancel
     mockWizardResources = props.resources
     mockLoadExistingAppProject = props.loadExistingAppProject
+    mockPreviousOwned = props.previousOwned
+    mockPlacements = props.placements
     return <div id="gitopscluster-wizard">{props.title}</div>
   },
 }))
@@ -210,6 +216,8 @@ describe('EditGitOpsCluster', () => {
     mockOnCancel = undefined
     mockWizardResources = undefined
     mockLoadExistingAppProject = undefined
+    mockPreviousOwned = undefined
+    mockPlacements = undefined
     mockGetResource.mockReset()
     mockGetResource.mockImplementation(() => ({
       promise: Promise.reject(new ResourceError(ResourceErrorCode.NotFound)),
@@ -262,6 +270,23 @@ describe('EditGitOpsCluster', () => {
     await expect(mockOnSubmit?.(mockWizardResources ?? [])).rejects.toThrow(/Missing permissions/)
     expect(mockReconcileGitOpsWizardResources).not.toHaveBeenCalled()
     expect(addAlert).toHaveBeenCalledWith(expect.objectContaining({ title: 'Missing permissions' }))
+  })
+
+  it('provides the inline review with the same baseline and Placements used by submit to check deletions', async () => {
+    renderEdit()
+    await screen.findByTestId('gitopscluster-wizard')
+    expect(mockPreviousOwned).toEqual([mockGitOpsCluster, mockPlacement])
+    expect(mockPlacements).toEqual([mockPlacement])
+    const resources = JSON.parse(JSON.stringify(mockWizardResources)) as IResource[]
+    const placement = resources.find((resource) => resource.kind === PlacementKind)!
+    placement.metadata!.name = 'new-targets'
+    mockCollectMissingPermissions.mockResolvedValue([
+      { kind: PlacementKind, verb: 'delete', namespace: 'openshift-gitops', name: mockPlacement.metadata.name },
+    ])
+
+    await expect(mockOnSubmit?.(resources)).rejects.toThrow(/Missing permissions/)
+    expect(mockCollectMissingPermissions).toHaveBeenCalledWith(expect.any(Array), [mockPlacement])
+    expect(mockReconcileGitOpsWizardResources).not.toHaveBeenCalled()
   })
 
   it('navigates to GitOps on cancel', async () => {
