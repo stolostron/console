@@ -1047,6 +1047,21 @@ describe('convertSearchItemToResource', () => {
       expect(result.status?.conditions).toEqual([{ type: 'Ready', status: 'True' }])
     })
 
+    it('should map _description to metadata.annotations.description', () => {
+      const vmItem = {
+        ...baseSearchItem,
+        kind: 'VirtualMachine',
+        apigroup: 'kubevirt.io',
+        _description: 'My VM description',
+      }
+
+      const result = convert(vmItem)
+
+      expect(result.metadata?.annotations).toEqual({
+        description: 'My VM description',
+      })
+    })
+
     it('should handle VirtualMachine with dataVolumeNames', () => {
       const vmItem = {
         ...baseSearchItem,
