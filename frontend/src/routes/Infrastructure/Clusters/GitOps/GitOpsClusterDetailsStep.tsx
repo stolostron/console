@@ -426,7 +426,6 @@ function applyAgentFlagsToDraft(
         argoCDAgent: { ...existingAddon?.argoCDAgent, enabled: true },
       },
     }
-    return
   }
 }
 

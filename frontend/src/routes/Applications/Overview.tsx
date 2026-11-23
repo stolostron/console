@@ -22,7 +22,7 @@ import { CreateGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/Cre
 import { GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import { cellWidth } from '@patternfly/react-table'
 import { get } from 'lodash'
-import { useCallback, useContext, useMemo, useState, type JSX } from 'react'
+import { useCallback, useContext, useMemo, useRef, useState, type JSX } from 'react'
 import type { TFunction } from 'i18next'
 import { generatePath, useNavigate } from 'react-router'
 import { HighlightSearchText } from '../../components/HighlightSearchText'
@@ -525,8 +525,36 @@ export function ApplicationSourcesCell(props: {
   )
 }
 
+function ApplicationModelCell({ resource }: Readonly<{ resource: IApplicationResource }>) {
+  const { t } = useTranslation()
+  const model = getApplicationModel(resource)
+  if (model === 'agent') {
+    return (
+      <Label color="blue" isCompact>
+        {t('Agent pull')}
+      </Label>
+    )
+  }
+  if (model === 'manifestwork') {
+    return (
+      <Label color="purple" isCompact>
+        {t('ManifestWork pull')}
+      </Label>
+    )
+  }
+  return <span>-</span>
+}
+
+function renderApplicationModelCell(resource: IApplicationResource) {
+  return <ApplicationModelCell resource={resource} />
+}
+
 export default function ApplicationsOverview() {
-  useState(initializeApplicationColumnOrder)
+  const columnPreferencesInitialized = useRef(false)
+  if (!columnPreferencesInitialized.current) {
+    initializeApplicationColumnOrder()
+    columnPreferencesInitialized.current = true
+  }
   return <ApplicationsOverviewContent />
 }
 
@@ -728,24 +756,7 @@ function ApplicationsOverviewContent() {
       },
       {
         header: t('Model'),
-        cell: (resource) => {
-          const model = getApplicationModel(resource)
-          if (model === 'agent') {
-            return (
-              <Label color="blue" isCompact>
-                {t('Agent pull')}
-              </Label>
-            )
-          }
-          if (model === 'manifestwork') {
-            return (
-              <Label color="purple" isCompact>
-                {t('ManifestWork pull')}
-              </Label>
-            )
-          }
-          return <span>-</span>
-        },
+        cell: renderApplicationModelCell,
         tooltip: t('Displays the GitOps model for pull-model ApplicationSets.'),
         transforms: [cellWidth(10)],
         exportContent: (resource) => {

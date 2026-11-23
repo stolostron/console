@@ -7,6 +7,7 @@ import i18n from 'i18next'
 import JestFetchMock from 'jest-fetch-mock'
 import 'jest-axe/extend-expect'
 import get from 'lodash/get'
+import cloneDeep from 'lodash/cloneDeep'
 import { diff } from 'jest-diff'
 import nock from 'nock'
 import ResizeObserverPolyfill from 'resize-observer-polyfill'
@@ -66,6 +67,8 @@ global.EventSource = class EventSource {
 }
 
 globalThis.TextEncoder = TextEncoder as unknown as typeof globalThis.TextEncoder
+// JSDOM does not expose Node's native structuredClone global.
+globalThis.structuredClone ??= cloneDeep
 
 configure({ testIdAttribute: 'id' })
 jest.setTimeout(240 * 1000)

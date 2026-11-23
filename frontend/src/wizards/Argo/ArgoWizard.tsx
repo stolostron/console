@@ -19,6 +19,7 @@ import { Button, Content, Flex, FlexItem, ToggleGroup, ToggleGroupItem } from '@
 import { Modal, ModalVariant } from '@patternfly/react-core/deprecated'
 import { css } from '@emotion/css'
 import { get, set } from 'lodash'
+import type { TFunction } from 'i18next'
 import { Fragment, ReactNode, useMemo, useRef, useState } from 'react'
 import { CreateCredentialModal } from '../../components/CreateCredentialModal'
 import { GitOpsOperatorAlert } from '../../components/GitOpsOperatorAlert'
@@ -154,6 +155,233 @@ export interface ArgoWizardProps {
   preferClustersGenerator?: boolean
 }
 
+interface ArgoWizardModelOptions {
+  isPullModel: boolean
+  isAgentPullModel: boolean
+  isEditing: boolean
+}
+
+function getArgoWizardPresentation(
+  options: ArgoWizardModelOptions,
+  t: TFunction
+): {
+  title: string
+  description: string
+  label: string
+  labelColor: 'green' | 'grey'
+} {
+  if (!options.isPullModel) {
+    return {
+      title: options.isEditing ? t('Edit application set - push model') : t('Create application set - push model'),
+      description: t(
+        'Create an ApplicationSet that pushes generated applications from the hub through an Argo CD instance outside openshift-gitops.'
+      ),
+      label: t('GitOps model: Push'),
+      labelColor: 'grey',
+    }
+  }
+  if (options.isAgentPullModel) {
+    return {
+      title: options.isEditing
+        ? t('Edit application set - Agent pull model')
+        : t('Create application set - Agent pull model'),
+      description: t(
+        'Create an ApplicationSet that uses Argo CD Agent pull to reconcile generated applications from managed clusters while the hub keeps application status, resource trees, and live-state comparison.'
+      ),
+      label: t('GitOps model: Argo CD Agent pull'),
+      labelColor: 'green',
+    }
+  }
+  return {
+    title: options.isEditing ? t('Edit application set - Pull model') : t('Create application set - Pull model'),
+    description: t(
+      'Create an ApplicationSet that uses the ManifestWork pull model to distribute generated applications from the hub to selected managed clusters.'
+    ),
+    label: t('GitOps model: ManifestWork pull'),
+    labelColor: 'grey',
+  }
+}
+
+function createPullModelResources(isAgentPullModel: boolean, agentNamespace: string) {
+  return [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: {
+        name: '',
+        namespace: isAgentPullModel ? agentNamespace : '',
+        ...(isAgentPullModel && { annotations: { [APPLICATION_SET_GITOPS_MODEL_ANNOTATION]: 'agent' } }),
+      },
+      spec: {
+        syncPolicy: {
+          preserveResourcesOnDeletion: false,
+        },
+        generators: [
+          {
+            clusterDecisionResource: {
+              configMapRef: 'acm-placement',
+              labelSelector: {
+                matchLabels: {
+                  'cluster.open-cluster-management.io/placement': '-placement',
+                },
+              },
+              requeueAfterSeconds: 180,
+            },
+          },
+        ],
+        template: {
+          metadata: {
+            ...(!isAgentPullModel && {
+              annotations: {
+                'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
+                'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
+                'argocd.argoproj.io/skip-reconcile': 'true',
+              },
+            }),
+            name: '-{{name}}',
+            labels: {
+              'velero.io/exclude-from-backup': 'true',
+              ...(!isAgentPullModel && { 'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true' }),
+            },
+          },
+          spec: {
+            project: 'default',
+            sources: [],
+            destination: isAgentPullModel
+              ? { namespace: '', name: '{{name}}' }
+              : { namespace: '', server: '{{server}}' },
+            syncPolicy: {
+              automated: {
+                enabled: true,
+                selfHeal: true,
+                prune: true,
+              },
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+        },
+      },
+    },
+    {
+      ...PlacementType,
+      metadata: { name: '', namespace: isAgentPullModel ? agentNamespace : '' },
+      spec: {
+        tolerations: [
+          {
+            key: 'cluster.open-cluster-management.io/unreachable',
+            operator: 'Exists',
+          },
+          {
+            key: 'cluster.open-cluster-management.io/unavailable',
+            operator: 'Exists',
+          },
+        ],
+        predicates: [
+          {
+            // ArgoCD pull model doesn't support the hub cluster
+            requiredClusterSelector: {
+              labelSelector: {
+                matchExpressions: [
+                  {
+                    key: 'local-cluster',
+                    operator: 'NotIn',
+                    values: ['true'],
+                  },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    },
+  ]
+}
+
+function createPushModelResources(preferClustersGenerator: boolean) {
+  return [
+    {
+      apiVersion: 'argoproj.io/v1alpha1',
+      kind: 'ApplicationSet',
+      metadata: { name: '', namespace: '' },
+      spec: {
+        generators: preferClustersGenerator
+          ? [
+              {
+                clusters: {
+                  selector: {
+                    matchLabels: {},
+                  },
+                },
+              },
+            ]
+          : [
+              {
+                clusterDecisionResource: {
+                  configMapRef: 'acm-placement',
+                  labelSelector: {
+                    matchLabels: {
+                      'cluster.open-cluster-management.io/placement': '-placement',
+                    },
+                  },
+                  requeueAfterSeconds: 180,
+                },
+              },
+            ],
+        template: {
+          metadata: {
+            name: '-{{name}}',
+            labels: {
+              'velero.io/exclude-from-backup': 'true',
+            },
+          },
+          spec: {
+            project: 'default',
+            sources: [],
+            destination: { namespace: '', server: '{{server}}' },
+            syncPolicy: {
+              automated: {
+                enabled: true,
+                selfHeal: true,
+                prune: true,
+              },
+              syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
+            },
+          },
+        },
+      },
+    },
+    {
+      ...PlacementType,
+      metadata: { name: '', namespace: '' },
+      spec: {
+        tolerations: [
+          {
+            key: 'cluster.open-cluster-management.io/unreachable',
+            operator: 'Exists',
+          },
+          {
+            key: 'cluster.open-cluster-management.io/unavailable',
+            operator: 'Exists',
+          },
+        ],
+      },
+    },
+  ]
+}
+
+function getArgoWizardDefaults(
+  resources: ArgoWizardProps['resources'],
+  options: { isPullModel: boolean; isAgentPullModel: boolean; agentNamespace: string; preferClustersGenerator: boolean }
+) {
+  if (resources && resources.length > 0) return { editMode: EditMode.Edit, defaultData: resources }
+  return {
+    editMode: EditMode.Create,
+    defaultData: options.isPullModel
+      ? createPullModelResources(options.isAgentPullModel, options.agentNamespace)
+      : createPushModelResources(options.preferClustersGenerator),
+  }
+}
+
 export function ArgoWizard(props: ArgoWizardProps) {
   const { resources, isPullModel = false, preferClustersGenerator = false } = props
   const isAgentPullModel = isPullModel && props.gitOpsModel === 'agent'
@@ -171,27 +399,7 @@ export function ArgoWizard(props: ArgoWizardProps) {
   const sources = applicationSet?.spec.template.spec.sources
 
   const { t } = useTranslation()
-  const gitOpsModelLabel = isAgentPullModel
-    ? t('GitOps model: Argo CD Agent pull')
-    : t('GitOps model: ManifestWork pull')
-  const gitOpsModelDescription = isAgentPullModel
-    ? t(
-        'Create an ApplicationSet that uses Argo CD Agent pull to reconcile generated applications from managed clusters while the hub keeps application status, resource trees, and live-state comparison.'
-      )
-    : t(
-        'Create an ApplicationSet that uses the ManifestWork pull model to distribute generated applications from the hub to selected managed clusters.'
-      )
-  const pushModelDescription = t(
-    'Create an ApplicationSet that pushes generated applications from the hub through an Argo CD instance outside openshift-gitops.'
-  )
-  const createPullTitle = isAgentPullModel
-    ? t('Create application set - Agent pull model')
-    : t('Create application set - Pull model')
-  const editPullTitle = isAgentPullModel
-    ? t('Edit application set - Agent pull model')
-    : t('Edit application set - Pull model')
-  const pullTitle = resources ? editPullTitle : createPullTitle
-  const pushTitle = resources ? t('Edit application set - push model') : t('Create application set - push model')
+  const presentation = getArgoWizardPresentation({ isPullModel, isAgentPullModel, isEditing: Boolean(resources) }, t)
   const { validateAppSetName } = useValidation()
 
   const hubClusterName = useLocalHubName()
@@ -315,176 +523,12 @@ export function ArgoWizard(props: ArgoWizardProps) {
     contentAriaLabel: t('Argo application content'),
   })
 
-  let defaultData
-
-  let editMode = EditMode.Create
-  if (resources && resources.length > 0) {
-    editMode = EditMode.Edit
-    defaultData = resources
-  } else {
-    defaultData = isPullModel
-      ? [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            kind: 'ApplicationSet',
-            metadata: {
-              name: '',
-              namespace: isAgentPullModel ? agentNamespace : '',
-              ...(isAgentPullModel && { annotations: { [APPLICATION_SET_GITOPS_MODEL_ANNOTATION]: 'agent' } }),
-            },
-            spec: {
-              syncPolicy: {
-                preserveResourcesOnDeletion: false,
-              },
-              generators: [
-                {
-                  clusterDecisionResource: {
-                    configMapRef: 'acm-placement',
-                    labelSelector: {
-                      matchLabels: {
-                        'cluster.open-cluster-management.io/placement': '-placement',
-                      },
-                    },
-                    requeueAfterSeconds: 180,
-                  },
-                },
-              ],
-              template: {
-                metadata: {
-                  ...(!isAgentPullModel && {
-                    annotations: {
-                      'apps.open-cluster-management.io/ocm-managed-cluster': '{{name}}',
-                      'apps.open-cluster-management.io/ocm-managed-cluster-app-namespace': 'openshift-gitops',
-                      'argocd.argoproj.io/skip-reconcile': 'true',
-                    },
-                  }),
-                  name: '-{{name}}',
-                  labels: {
-                    'velero.io/exclude-from-backup': 'true',
-                    ...(!isAgentPullModel && { 'apps.open-cluster-management.io/pull-to-ocm-managed-cluster': 'true' }),
-                  },
-                },
-                spec: {
-                  project: 'default',
-                  sources: [],
-                  destination: isAgentPullModel
-                    ? { namespace: '', name: '{{name}}' }
-                    : { namespace: '', server: '{{server}}' },
-                  syncPolicy: {
-                    automated: {
-                      enabled: true,
-                      selfHeal: true,
-                      prune: true,
-                    },
-                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                  },
-                },
-              },
-            },
-          },
-          {
-            ...PlacementType,
-            metadata: { name: '', namespace: isAgentPullModel ? agentNamespace : '' },
-            spec: {
-              tolerations: [
-                {
-                  key: 'cluster.open-cluster-management.io/unreachable',
-                  operator: 'Exists',
-                },
-                {
-                  key: 'cluster.open-cluster-management.io/unavailable',
-                  operator: 'Exists',
-                },
-              ],
-              predicates: [
-                {
-                  // ArgoCD pull model doesn't support the hub cluster
-                  requiredClusterSelector: {
-                    labelSelector: {
-                      matchExpressions: [
-                        {
-                          key: 'local-cluster',
-                          operator: 'NotIn',
-                          values: ['true'],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        ]
-      : [
-          {
-            apiVersion: 'argoproj.io/v1alpha1',
-            kind: 'ApplicationSet',
-            metadata: { name: '', namespace: '' },
-            spec: {
-              generators: preferClustersGenerator
-                ? [
-                    {
-                      clusters: {
-                        selector: {
-                          matchLabels: {},
-                        },
-                      },
-                    },
-                  ]
-                : [
-                    {
-                      clusterDecisionResource: {
-                        configMapRef: 'acm-placement',
-                        labelSelector: {
-                          matchLabels: {
-                            'cluster.open-cluster-management.io/placement': '-placement',
-                          },
-                        },
-                        requeueAfterSeconds: 180,
-                      },
-                    },
-                  ],
-              template: {
-                metadata: {
-                  name: '-{{name}}',
-                  labels: {
-                    'velero.io/exclude-from-backup': 'true',
-                  },
-                },
-                spec: {
-                  project: 'default',
-                  sources: [],
-                  destination: { namespace: '', server: '{{server}}' },
-                  syncPolicy: {
-                    automated: {
-                      enabled: true,
-                      selfHeal: true,
-                      prune: true,
-                    },
-                    syncOptions: ['CreateNamespace=true', 'PruneLast=true'],
-                  },
-                },
-              },
-            },
-          },
-          {
-            ...PlacementType,
-            metadata: { name: '', namespace: '' },
-            spec: {
-              tolerations: [
-                {
-                  key: 'cluster.open-cluster-management.io/unreachable',
-                  operator: 'Exists',
-                },
-                {
-                  key: 'cluster.open-cluster-management.io/unavailable',
-                  operator: 'Exists',
-                },
-              ],
-            },
-          },
-        ]
-  }
+  const { defaultData, editMode } = getArgoWizardDefaults(resources, {
+    isPullModel,
+    isAgentPullModel,
+    agentNamespace,
+    preferClustersGenerator,
+  })
 
   return (
     <Fragment>
@@ -507,10 +551,10 @@ export function ArgoWizard(props: ArgoWizardProps) {
         isModal={props.isModal}
         yaml={props.isModal ? false : undefined}
         yamlEditor={props.isModal ? undefined : props.yamlEditor}
-        title={isPullModel ? pullTitle : pushTitle}
-        description={isPullModel ? gitOpsModelDescription : pushModelDescription}
-        label={isPullModel ? gitOpsModelLabel : t('GitOps model: Push')}
-        labelColor={isAgentPullModel ? 'green' : 'grey'}
+        title={presentation.title}
+        description={presentation.description}
+        label={presentation.label}
+        labelColor={presentation.labelColor}
         defaultData={defaultData}
         editMode={editMode}
         onCancel={props.onCancel}

@@ -843,6 +843,46 @@ function mergeResourceDraft(baseline: IResource, desired: IResource, live: IReso
   ) as IResource
 }
 
+function preserveLiveBindingOwner(desired: IResource, live: IResource) {
+  if (desired.kind !== ManagedClusterSetBindingKind) return
+  // Finding an existing binding must not adopt it using a create draft's ownership marker.
+  const owner = live.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
+  if (owner) {
+    desired.metadata = {
+      ...desired.metadata,
+      annotations: { ...desired.metadata?.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: owner },
+    }
+  } else if (desired.metadata?.annotations) {
+    delete desired.metadata.annotations[GITOPS_BINDING_OWNER_ANNOTATION]
+  }
+}
+
+async function isConcurrentPatchError(error: unknown, resource: IResource, live: IResource): Promise<boolean> {
+  if (!(error instanceof ResourceError)) return false
+  if (error.code === ResourceErrorCode.Conflict) return true
+  if (error.code !== ResourceErrorCode.UnprocessableEntity) return false
+  // Some API errors omit the failing test's details. Refetch before classifying
+  // a validation error, without masking the original error if that read fails.
+  try {
+    const current = await getResource(withoutServerMetadata(resource)).promise
+    return (
+      current.metadata?.resourceVersion !== live.metadata?.resourceVersion ||
+      /test.*fail|fail.*test/i.test(error.message)
+    )
+  } catch {
+    return false
+  }
+}
+
+async function patchResourceDraft(resource: IResource, desired: IResource, live: IResource, t: TFunction) {
+  try {
+    await reconcileResources([withLiveIdentity(desired, live)], [live], { requireResourceVersion: true })
+  } catch (error) {
+    if (await isConcurrentPatchError(error, resource, live)) throw concurrentEditError(resource, t)
+    throw error
+  }
+}
+
 async function upsertResource(
   resource: IResource,
   t: TFunction,
@@ -866,43 +906,8 @@ async function upsertResource(
       throw concurrentEditError(resource, t)
     }
     const desired = baseline ? mergeResourceDraft(baseline, resource, live, t) : cloneResource(resource)
-    if (desired.kind === ManagedClusterSetBindingKind) {
-      // Finding an existing binding during upsert must never adopt a shared
-      // binding merely because the create draft carried our ownership marker.
-      const owner = live.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
-      if (owner) {
-        desired.metadata = {
-          ...desired.metadata,
-          annotations: { ...desired.metadata?.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: owner },
-        }
-      } else if (desired.metadata?.annotations) {
-        delete desired.metadata.annotations[GITOPS_BINDING_OWNER_ANNOTATION]
-      }
-    }
-    try {
-      await reconcileResources([withLiveIdentity(desired, live)], [live], { requireResourceVersion: true })
-    } catch (error) {
-      let versionChanged = false
-      if (error instanceof ResourceError && error.code === ResourceErrorCode.UnprocessableEntity) {
-        // Some API errors omit the failing test's details. Check whether the
-        // merge version is stale without masking unrelated validation errors.
-        try {
-          const current = await getResource(createBody).promise
-          versionChanged = current.metadata?.resourceVersion !== live.metadata?.resourceVersion
-        } catch {
-          throw error
-        }
-      }
-      if (
-        error instanceof ResourceError &&
-        (error.code === ResourceErrorCode.Conflict ||
-          versionChanged ||
-          (error.code === ResourceErrorCode.UnprocessableEntity && /test.*fail|fail.*test/i.test(error.message)))
-      ) {
-        throw concurrentEditError(resource, t)
-      }
-      throw error
-    }
+    preserveLiveBindingOwner(desired, live)
+    await patchResourceDraft(resource, desired, live, t)
     onUpdated?.(live, desired)
     return 'updated'
   } catch (err) {
@@ -975,6 +980,122 @@ async function prepareAgentResources(
   return [...desired.filter((resource) => resource !== draft), subscription]
 }
 
+interface GitOpsReconcileOptions {
+  baseline?: IResource[]
+  placements?: Placement[]
+}
+
+interface GitOpsApplyState {
+  created: IResource[]
+  updatedGitOpsCluster?: { live: IResource; applied: IResource }
+  gitOpsCluster?: GitOpsClusterUpsertResult
+}
+
+function applyGitOpsWizardResources(
+  desired: IResource[],
+  t: TFunction,
+  state: GitOpsApplyState,
+  baseline?: IResource[]
+): Promise<void> {
+  // Wait for each operation before starting its dependent, and stop on the first failure.
+  return orderGitOpsWizardResourcesForApply(desired).reduce(async (previous, resource) => {
+    await previous
+    const result = await upsertResource(
+      resource,
+      t,
+      baseline?.find((item) => sameResourceIdentity(item, resource)),
+      baseline !== undefined,
+      (live, applied) => {
+        if (resource.kind === GitOpsClusterKind) state.updatedGitOpsCluster = { live, applied }
+      }
+    )
+    if (result === 'created') state.created.push(withoutServerMetadata(resource))
+    if (resource.kind === GitOpsClusterKind) state.gitOpsCluster = result
+  }, Promise.resolve())
+}
+
+async function restorePreviousPlacementReference(
+  state: GitOpsApplyState,
+  t: TFunction
+): Promise<IResource | undefined> {
+  if (!state.updatedGitOpsCluster) return undefined
+  const { live, applied } = state.updatedGitOpsCluster
+  const beforeRef: unknown = get(live, 'spec.placementRef')
+  const afterRef: unknown = get(applied, 'spec.placementRef')
+  const createdPlacement = state.created.find(
+    (resource) =>
+      resource.kind === PlacementKind &&
+      resource.metadata?.namespace === applied.metadata?.namespace &&
+      resource.metadata?.name === get(afterRef, 'name')
+  )
+  if (!createdPlacement || isEqual(beforeRef, afterRef)) return undefined
+  try {
+    const current = await getResource(applied).promise
+    const currentRef: unknown = get(current, 'spec.placementRef')
+    if (isEqual(currentRef, beforeRef)) return undefined
+    if (!isEqual(currentRef, afterRef)) throw concurrentEditError(current, t)
+    const restored = cloneResource(current) as GitOpsCluster
+    if (restored.spec) restored.spec.placementRef = cloneResource(live as GitOpsCluster).spec?.placementRef
+    await reconcileResources([restored], [current], { requireResourceVersion: true })
+  } catch {
+    // Retain the new target if restoring its reference failed.
+    return createdPlacement
+  }
+  return undefined
+}
+
+async function rollbackCreatedGitOpsResources(created: IResource[], retainedPlacement?: IResource) {
+  // Undo dependents before their Placement. Retain its namespace bindings if restoration failed.
+  const rollback = [...created]
+    .reverse()
+    .filter(
+      (resource) =>
+        resource !== retainedPlacement &&
+        !(
+          retainedPlacement &&
+          resource.kind === ManagedClusterSetBindingKind &&
+          resource.metadata?.namespace === retainedPlacement.metadata?.namespace
+        )
+    )
+  try {
+    if (rollback.length > 0) await reconcileResources([], rollback, { ignoreNotFound: true })
+  } catch {
+    // Prefer surfacing the original apply failure over a rollback error.
+  }
+}
+
+async function loadCleanupPlacements(
+  desired: IResource[],
+  previousOwned: IResource[],
+  t: TFunction,
+  placements?: Placement[]
+): Promise<Placement[] | undefined> {
+  const bindingCandidates = getRemovedGitOpsWizardResources(desired, previousOwned, []).filter(
+    (resource) => resource.kind === ManagedClusterSetBindingKind
+  )
+  if (bindingCandidates.length === 0) return placements
+  // Read references after desired Placements have been applied, immediately before cleanup.
+  try {
+    const namespaces = [...new Set(bindingCandidates.map((binding) => binding.metadata?.namespace))]
+    return (
+      await Promise.all(
+        namespaces.map(
+          (namespace) =>
+            listResources<Placement>({
+              apiVersion: PlacementApiVersionBeta,
+              kind: PlacementKind,
+              metadata: { namespace },
+            }).promise
+        )
+      )
+    ).flat()
+  } catch {
+    throw new Error(
+      t('GitOps resources were saved, but binding cleanup could not complete. Unable to load current Placements.')
+    )
+  }
+}
+
 /**
  * Apply the wizard YAML as-is: create resources that are missing and patch resources that already exist.
  * Argo CD, AppProject, and the operator Subscription are not deleted when they drop out of the YAML.
@@ -984,123 +1105,30 @@ export async function reconcileGitOpsWizardResources(
   desired: IResource[],
   t: TFunction,
   previousOwned: IResource[] = [],
-  options: { baseline?: IResource[]; placements?: Placement[] } = {}
+  options: GitOpsReconcileOptions = {}
 ): Promise<ReconcileGitOpsWizardResult> {
   validatePlacementNamespace(getGitOpsClusterFromResources(desired), getPlacementFromResources(desired), t)
   desired = await prepareAgentResources(desired, t, options.baseline)
-  const ordered = orderGitOpsWizardResourcesForApply(desired)
-  const createdInThisPass: IResource[] = []
-  let updatedGitOpsCluster: { live: IResource; applied: IResource } | undefined
-  let gitOpsCluster: GitOpsClusterUpsertResult | undefined
-
+  const state: GitOpsApplyState = { created: [] }
   try {
-    // Apply desired resources sequentially so a failed upsert does not leave deletions already applied.
-    for (const resource of ordered) {
-      const result = await upsertResource(
-        resource,
-        t,
-        options.baseline?.find((item) => sameResourceIdentity(item, resource)),
-        options.baseline !== undefined,
-        (live, applied) => {
-          if (resource.kind === GitOpsClusterKind) updatedGitOpsCluster = { live, applied }
-        }
-      )
-      if (result === 'created') {
-        createdInThisPass.push(withoutServerMetadata(resource))
-      }
-      if (resource.kind === GitOpsClusterKind) {
-        gitOpsCluster = result
-      }
-    }
-  } catch (err) {
-    let retainedPlacement: IResource | undefined
-    let partialApply = false
-    if (updatedGitOpsCluster) {
-      const { live, applied } = updatedGitOpsCluster
-      const beforeRef: unknown = get(live, 'spec.placementRef')
-      const afterRef: unknown = get(applied, 'spec.placementRef')
-      const createdPlacement = createdInThisPass.find(
-        (resource) =>
-          resource.kind === PlacementKind &&
-          resource.metadata?.namespace === applied.metadata?.namespace &&
-          resource.metadata?.name === get(afterRef, 'name')
-      )
-      if (createdPlacement && !isEqual(beforeRef, afterRef)) {
-        try {
-          const current = await getResource(applied).promise
-          const currentRef: unknown = get(current, 'spec.placementRef')
-          if (!isEqual(currentRef, beforeRef)) {
-            if (!isEqual(currentRef, afterRef)) throw concurrentEditError(current, t)
-            const restored = cloneResource(current) as GitOpsCluster
-            if (restored.spec) restored.spec.placementRef = cloneResource(live as GitOpsCluster).spec?.placementRef
-            await reconcileResources([restored], [current], { requireResourceVersion: true })
-          }
-        } catch {
-          partialApply = true
-          retainedPlacement = createdPlacement
-        }
-      }
-    }
-    if (createdInThisPass.length > 0) {
-      try {
-        // Reverse order: undo GitOpsCluster before Placement when both were created this pass.
-        const rollback = [...createdInThisPass]
-          .reverse()
-          .filter(
-            (resource) =>
-              resource !== retainedPlacement &&
-              !(
-                retainedPlacement &&
-                resource.kind === ManagedClusterSetBindingKind &&
-                resource.metadata?.namespace === retainedPlacement.metadata?.namespace
-              )
-          )
-        if (rollback.length > 0) await reconcileResources([], rollback, { ignoreNotFound: true })
-      } catch {
-        // Prefer surfacing the original apply failure over a rollback error.
-      }
-    }
-    if (partialApply)
+    await applyGitOpsWizardResources(desired, t, state, options.baseline)
+  } catch (error) {
+    const retainedPlacement = await restorePreviousPlacementReference(state, t)
+    await rollbackCreatedGitOpsResources(state.created, retainedPlacement)
+    if (retainedPlacement) {
       throw new Error(
         t(
           'Some GitOps resources were saved. The previous Placement reference could not be restored, so the new Placement was retained.'
         )
       )
-    throw err
-  }
-
-  let placements = options.placements
-  // Check references at cleanup time, after all desired Placements have been applied.
-  const bindingCandidates = getRemovedGitOpsWizardResources(desired, previousOwned, []).filter(
-    (resource) => resource.kind === ManagedClusterSetBindingKind
-  )
-  if (bindingCandidates.length > 0) {
-    try {
-      const namespaces = [...new Set(bindingCandidates.map((binding) => binding.metadata?.namespace))]
-      placements = (
-        await Promise.all(
-          namespaces.map(
-            (namespace) =>
-              listResources<Placement>({
-                apiVersion: PlacementApiVersionBeta,
-                kind: PlacementKind,
-                metadata: { namespace },
-              }).promise
-          )
-        )
-      ).flat()
-    } catch {
-      throw new Error(
-        t('GitOps resources were saved, but binding cleanup could not complete. Unable to load current Placements.')
-      )
     }
-  }
-  const removed = getRemovedGitOpsWizardResources(desired, previousOwned, placements)
-  if (removed.length > 0) {
-    await reconcileResources([], removed, { ignoreNotFound: true })
+    throw error
   }
 
-  return { gitOpsCluster }
+  const placements = await loadCleanupPlacements(desired, previousOwned, t, options.placements)
+  const removed = getRemovedGitOpsWizardResources(desired, previousOwned, placements)
+  if (removed.length > 0) await reconcileResources([], removed, { ignoreNotFound: true })
+  return { gitOpsCluster: state.gitOpsCluster }
 }
 
 export interface MissingPermission {
@@ -1233,9 +1261,7 @@ export function ensureGitOpsClusterPlacement(resources: IResource[], t: TFunctio
   const placementName =
     existingPlacement?.metadata?.name || gitOpsCluster.spec?.placementRef?.name || placementNameFor(name)
 
-  if (!gitOpsCluster.spec) {
-    gitOpsCluster.spec = {}
-  }
+  gitOpsCluster.spec ??= {}
   gitOpsCluster.spec.placementRef = {
     ...gitOpsCluster.spec.placementRef,
     kind: PlacementKind,

@@ -35,7 +35,7 @@ import { LostChangesContext } from '~/components/LostChanges'
 import { useTimezones } from '~/hooks/useTimezone'
 import { getApplicationModel } from '~/routes/Applications/helpers/resource-helper'
 
-export function WizardSyncEditor({ isPullModel = false }: { isPullModel?: boolean }) {
+export function WizardSyncEditor({ isPullModel = false }: Readonly<{ isPullModel?: boolean }>) {
   const resources = useItem() // Wizard framework sets this context
   const defaultItem = useDefaultItem()
   const { update } = useData() // Wizard framework sets this context

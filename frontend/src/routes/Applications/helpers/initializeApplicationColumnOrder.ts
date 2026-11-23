@@ -28,8 +28,8 @@ const CURRENT_COLUMN_IDS = [
   'pod',
   'created',
 ]
-const REQUIRED_COLUMN_IDS = ['name', 'namespace', 'clusters']
-const DEFAULT_VISIBLE_IDS = CURRENT_COLUMN_IDS.filter((id) => id !== 'sources' && id !== 'created')
+const REQUIRED_COLUMN_IDS = new Set(['name', 'namespace', 'clusters'])
+const DEFAULT_VISIBLE_IDS = new Set(CURRENT_COLUMN_IDS.filter((id) => id !== 'sources' && id !== 'created'))
 
 function migrateSort(key: string, previousVisible: string[], nextVisible: string[]) {
   const raw = getItemWithExpiration(key)
@@ -62,8 +62,7 @@ export function initializeApplicationColumnOrder() {
     const visible = (ids: string[], selection: string[]) =>
       ids.filter(
         (id) =>
-          REQUIRED_COLUMN_IDS.includes(id) ||
-          (selection.length === 0 ? DEFAULT_VISIBLE_IDS.includes(id) : selection.includes(id))
+          REQUIRED_COLUMN_IDS.has(id) || (selection.length === 0 ? DEFAULT_VISIBLE_IDS.has(id) : selection.includes(id))
       )
     const before = visible(localSavedColOrder, localSavedCols)
     const after = visible(order, selected).filter((id) => CURRENT_COLUMN_IDS.includes(id))

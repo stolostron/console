@@ -87,20 +87,30 @@ export function getBackendUrl() {
   return process.env.REACT_APP_BACKEND_PATH ?? ''
 }
 
+function patchModifiedResources(
+  modifiedResources: IResource[],
+  existingResources: IResource[],
+  options: { dryRun?: boolean; requireResourceVersion?: boolean } = {}
+): Promise<void> {
+  return modifiedResources.reduce(async (previous, resource) => {
+    await previous
+    const existing = existingResources.find((item) => item.metadata?.uid === resource.metadata?.uid)
+    if (!existing) return
+    const patch = jsonpatch.compare(existing, resource)
+    if (patch.length === 0) return
+    if (options.requireResourceVersion && existing.metadata?.resourceVersion) {
+      patch.unshift({ op: 'test', path: '/metadata/resourceVersion', value: existing.metadata.resourceVersion })
+    }
+    await patchResource(existing, patch, options.dryRun ? { dryRun: true } : undefined).promise
+  }, Promise.resolve())
+}
+
 export async function reconcileResources(
   desiredResources: IResource[],
   existingResources: IResource[],
   options?: { abortController?: AbortController; requireResourceVersion?: boolean; ignoreNotFound?: boolean }
 ) {
   const abortController = options?.abortController
-  const resourcePatch = (existing: IResource, desired: IResource) => {
-    const patch = jsonpatch.compare(existing, desired)
-    if (patch.length && options?.requireResourceVersion && existing.metadata?.resourceVersion) {
-      patch.unshift({ op: 'test', path: '/metadata/resourceVersion', value: existing.metadata.resourceVersion })
-    }
-    return patch
-  }
-
   const namespaceResources = desiredResources
     .filter((desired) => !existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
     .filter((resource) => resource.kind === NamespaceKind)
@@ -140,15 +150,10 @@ export async function reconcileResources(
     await createResources(addedResources, { dryRun: true, abortController })
 
     // Dry Run - Modified Resources
-    for (const resource of modifiedResources) {
-      const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
-      if (existing) {
-        const patch = resourcePatch(existing, resource)
-        if (patch.length) {
-          await patchResource(existing, patch, { dryRun: true }).promise
-        }
-      }
-    }
+    await patchModifiedResources(modifiedResources, existingResources, {
+      dryRun: true,
+      requireResourceVersion: options?.requireResourceVersion,
+    })
 
     // Dry Run - Deleted Resources
     await deleteResources(deletedResources, { dryRun: true, abortController, ignoreNotFound: options?.ignoreNotFound })
@@ -158,15 +163,9 @@ export async function reconcileResources(
 
     // Update Resources
     try {
-      for (const resource of modifiedResources) {
-        const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
-        if (existing) {
-          const patch = resourcePatch(existing, resource)
-          if (patch.length) {
-            await patchResource(existing, patch).promise
-          }
-        }
-      }
+      await patchModifiedResources(modifiedResources, existingResources, {
+        requireResourceVersion: options?.requireResourceVersion,
+      })
     } catch (err) {
       // modifications failed, delete the previously created
       void deleteResources(addedResources).catch(noop)

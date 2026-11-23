@@ -126,7 +126,7 @@ export function EditGitOpsCluster() {
   const loadExistingAppProject = useCallback(async () => {
     const project = await getExistingAppProject()
     if (project && !baselineResources.current.some((resource) => resource.kind === project.kind)) {
-      baselineResources.current = [...baselineResources.current, JSON.parse(JSON.stringify(project)) as IResource]
+      baselineResources.current = [...baselineResources.current, structuredClone(project)]
     }
     setExistingAppProject(project)
     return project
@@ -190,17 +190,9 @@ export function EditGitOpsCluster() {
       .then((project) => {
         if (cancelled) return
         setLoadError(undefined)
-        baselineResources.current = JSON.parse(
-          JSON.stringify(
-            [
-              gitOpsCluster,
-              placement,
-              ...relatedBindings,
-              argoCD,
-              project,
-              existingSubscription,
-              existingPolicy,
-            ].filter(isType)
+        baselineResources.current = structuredClone(
+          [gitOpsCluster, placement, ...relatedBindings, argoCD, project, existingSubscription, existingPolicy].filter(
+            isType
           )
         )
         setExistingAppProject(project)
