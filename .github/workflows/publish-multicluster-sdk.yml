@@ -36,6 +36,7 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org/"
           cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
@@ -54,7 +55,7 @@ jobs:
           echo "TAG=$(echo $TAG)" >> $GITHUB_ENV
       
       - name: Update package reference in frontend
-        run: npm update @stolstron/multicluster-sdk
+        run: npm update @stolostron/multicluster-sdk
         working-directory: frontend
 
       - name: Build package
