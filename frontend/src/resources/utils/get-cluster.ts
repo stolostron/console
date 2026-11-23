@@ -1009,6 +1009,12 @@ export function getDistributionInfo(
     upgradeInfo.hooksInProgress =
       checkCuratorConditionInProgress(CuratorCondition.prehook, curatorConditions) ||
       checkCuratorConditionInProgress(CuratorCondition.posthook, curatorConditions)
+    // The curator can start an upgrade posthook before publishing its hook condition.
+    const retryPosthook = clusterCurator?.operation?.retryPosthook
+    const canRunUpgradePosthook =
+      clusterCurator?.spec?.upgrade?.posthook != null &&
+      (retryPosthook ? retryPosthook === 'upgradePosthook' : isUpgradeCuration && !!desiredVersionCC)
+    const upgradePosthookCanStillRun = !curatorIsIdle && canRunUpgradePosthook
     const curatorIsUpgrading = curatorUpgradeVersionValid && isUpgradeCuration && !curatorIsIdle
     const isSelectingChannel =
       isUpgradeCuration &&
@@ -1053,7 +1059,8 @@ export function getDistributionInfo(
       !upgradeInfo.upgradeFailed &&
       (!isManagedOpenShift || isAROClassic) &&
       !upgradeInfo.isUpgrading &&
-      !isSelectingChannel
+      !isSelectingChannel &&
+      !upgradePosthookCanStillRun
     upgradeInfo.isReadyUpdates = !!isReadyUpdates
 
     upgradeInfo.availableChannels = managedClusterInfo?.status?.distributionInfo?.ocp.desired?.channels || []
