@@ -518,8 +518,22 @@ func sortColumnIndex(sortBy *SortBy) (int, bool) {
 	return 0, false
 }
 
+// appTieBreak returns true when a should sort before b on equal primary keys.
+// Name, then namespace, then uid — keeps equal-score / equal-column rows stable
+// across cache rebuilds that change slice order.
+func appTieBreak(a, b App) bool {
+	if a.Transform.Name != b.Transform.Name {
+		return a.Transform.Name < b.Transform.Name
+	}
+	if a.Transform.Namespace != b.Transform.Namespace {
+		return a.Transform.Namespace < b.Transform.Namespace
+	}
+	return metaUID(a.Object) < metaUID(b.Object)
+}
+
 // sortApplications sorts by the given column index. String columns sort
 // lexicographically; score columns sort worst-first (higher score = worse).
+// Equal primary values use appTieBreak so order does not depend on input order.
 func sortApplications(index int, desc bool, items []App) []App {
 	out := append([]App(nil), items...)
 	stringCols := map[int]struct{}{colName: {}, colType: {}, colNamespace: {}, colClusters: {}, colSources: {}, colCreated: {}}
@@ -530,14 +544,26 @@ func sortApplications(index int, desc bool, items []App) []App {
 			a := transformString(out[i], index)
 			b := transformString(out[j], index)
 			if a == "" || b == "" {
-				return false
+				if a == b {
+					return appTieBreak(out[i], out[j])
+				}
+				// Empty values sort last in ascending order so mixed empty/non-empty
+				// pairs stay stable across input reshuffles.
+				return a != ""
 			}
-			return a < b
+			if a != b {
+				return a < b
+			}
+			return appTieBreak(out[i], out[j])
 		}
 	} else if _, ok := scoreCols[index]; ok {
 		less = func(i, j int) bool {
 			// Node comparator is bScore - aScore (higher score first).
-			return out[i].Transform.Scores[index] > out[j].Transform.Scores[index]
+			ai, aj := out[i].Transform.Scores[index], out[j].Transform.Scores[index]
+			if ai != aj {
+				return ai > aj
+			}
+			return appTieBreak(out[i], out[j])
 		}
 	}
 	sort.SliceStable(out, less)
