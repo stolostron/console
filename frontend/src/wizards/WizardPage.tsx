@@ -14,6 +14,7 @@ import {
 } from 'react'
 import { Step, Wizard } from '@patternfly-labs/react-form-wizard'
 import type { StepProps, WizardProps } from '@patternfly-labs/react-form-wizard'
+import { createPortal } from 'react-dom'
 import { AcmErrorBoundary, AcmPage, AcmPageContent, AcmPageHeader } from '../ui-components'
 import './WizardPage.css'
 import { LostChangesMonitor, LostChangesPrompt } from '../components/LostChanges'
@@ -22,6 +23,10 @@ export type WizardPageProps = {
   breadcrumb?: { text: string; to?: string }[]
   yaml?: boolean
   yamlEditor?: () => ReactNode
+  /** Render the shared YAML switch in an external header, such as a modal header. */
+  yamlSwitchTarget?: HTMLElement | null
+  /** Read and save the full-page YAML preference. Disable for session-only toggles. */
+  persistYaml?: boolean
   isLoading?: boolean
   isModal?: boolean
   label?: ReactNode
@@ -54,19 +59,27 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
     id,
     yaml,
     yamlEditor = getWizardYamlEditor,
+    yamlSwitchTarget,
+    persistYaml = true,
     isModal,
     label,
     labelColor,
     ...wizardProps
   } = props
 
-  const [drawerExpanded, setDrawerExpanded] = useState(yaml !== false && localStorage.getItem('yaml') === 'true')
+  const [drawerExpanded, setDrawerExpanded] = useState(
+    () => yaml !== false && persistYaml && localStorage.getItem('yaml') === 'true'
+  )
   const toggleDrawerExpanded = useCallback(() => {
     setDrawerExpanded((drawerExpanded) => {
-      localStorage.setItem('yaml', (!drawerExpanded).toString())
+      if (persistYaml) localStorage.setItem('yaml', (!drawerExpanded).toString())
       return !drawerExpanded
     })
-  }, [])
+  }, [persistYaml])
+
+  const yamlSwitch = yaml !== false && (
+    <Switch id="yaml-switch" label="YAML" isChecked={drawerExpanded} onChange={toggleDrawerExpanded} />
+  )
 
   const [wizardHeight, setWizardHeight] = useState<number>()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -93,6 +106,7 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
   if (isModal) {
     return (
       <div ref={containerRef} className="wizard-modal-page">
+        {yamlSwitchTarget && createPortal(yamlSwitch, yamlSwitchTarget)}
         <AcmErrorBoundary>
           <PageSection hasBodyWrapper={false} type="wizard" isFilled className="wizard-modal-section">
             {wizard}
@@ -112,16 +126,7 @@ export function WizardPage(props: { id: string } & WizardPageProps) {
           labelColor={labelColor}
           labelPosition="right"
           breadcrumb={breadcrumb}
-          switches={
-            yaml !== false && (
-              <Switch
-                id="yaml-switch"
-                label="YAML"
-                isChecked={drawerExpanded}
-                onChange={() => toggleDrawerExpanded()}
-              />
-            )
-          }
+          switches={yamlSwitch}
         />
       }
     >

@@ -12,6 +12,7 @@ import {
   PopoverPosition,
   Stack,
   StackItem,
+  Title,
   ToolbarItem,
 } from '@patternfly/react-core'
 import { RhUiLongArrowRightIcon } from '@patternfly/react-icons'
@@ -1069,6 +1070,7 @@ function ApplicationsOverviewContent() {
   const { hasGitOpsCluster, isArgoCDAgentModeEnabled, isPushModelEnabled } = useApplicationGitOpsMode()
   const canCreateGitOpsCluster = useIsAnyNamespaceAuthorized(rbacCreate(GitopsClusterDefinition))
   const [gitOpsWizardSession, setGitOpsWizardSession] = useState<object>()
+  const [gitOpsYamlSwitchTarget, setGitOpsYamlSwitchTarget] = useState<HTMLDivElement | null>(null)
   const closeGitOpsWizard = useCallback(() => {
     setGitOpsWizardSession((current) => (current === gitOpsWizardSession ? undefined : current))
   }, [gitOpsWizardSession])
@@ -1477,16 +1479,30 @@ function ApplicationsOverviewContent() {
       <DeleteResourceModal {...modalProps} />
       {gitOpsWizardSession && (
         <AcmModal
-          title={t('Create GitOps configuration')}
-          description={
-            <span id="gitops-configuration-description">
-              {t(
-                'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
-              )}
-            </span>
+          header={
+            <>
+              <Flex alignItems={{ default: 'alignItemsCenter' }} spaceItems={{ default: 'spaceItemsLg' }}>
+                <FlexItem>
+                  <Title headingLevel="h1" size="xl" id="gitops-configuration-title">
+                    {t('Create GitOps configuration')}
+                  </Title>
+                </FlexItem>
+                <FlexItem>
+                  <div ref={setGitOpsYamlSwitchTarget} />
+                </FlexItem>
+              </Flex>
+              <Content component="p" id="gitops-configuration-description">
+                {t(
+                  'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
+                )}
+              </Content>
+            </>
           }
+          aria-labelledby="gitops-configuration-title"
           aria-describedby="gitops-configuration-description"
           variant={ModalVariant.large}
+          width="90vw"
+          maxWidth="1800px"
           className={css({ height: '85vh' })}
           showClose
           isOpen
@@ -1496,7 +1512,12 @@ function ApplicationsOverviewContent() {
           <Divider />
           <Flex direction={{ default: 'column' }} style={{ flex: 1, minHeight: 0, overflow: 'hidden' }}>
             <FlexItem flex={{ default: 'flex_1' }} style={{ minHeight: 0, overflow: 'hidden' }}>
-              <CreateGitOpsCluster isModal onCancel={closeGitOpsWizard} onSubmitSuccess={closeGitOpsWizard} />
+              <CreateGitOpsCluster
+                isModal
+                yamlSwitchTarget={gitOpsYamlSwitchTarget}
+                onCancel={closeGitOpsWizard}
+                onSubmitSuccess={closeGitOpsWizard}
+              />
             </FlexItem>
           </Flex>
         </AcmModal>
