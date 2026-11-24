@@ -484,7 +484,7 @@ describe('Applications saved column order', () => {
 })
 
 describe('Create application dropdown - GitOps agent mode', () => {
-  test('offers Agent pull, Push, and Subscription without setup when Agent and Push are enabled', async () => {
+  test('offers Agent pull and Push without setup when Agent and Push are enabled', async () => {
     const argoCD = {
       apiVersion: 'argoproj.io/v1beta1',
       kind: 'ArgoCD',
@@ -504,7 +504,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
       )
     ).toBeInTheDocument()
     expect(menu.getByRole('menuitem', { name: /Argo CD Push model ApplicationSet/ })).toBeInTheDocument()
-    expect(menu.getByText('Subscription')).toBeInTheDocument()
+    expect(menu.queryByText('Subscription')).not.toBeInTheDocument()
     expect(menu.queryByText('Set up GitOps configuration for Argo CD Agent Pull')).not.toBeInTheDocument()
     expect(menu.queryByText('Argo CD ManifestWork Pull model ApplicationSet')).not.toBeInTheDocument()
     await clickElement(pullOption)
@@ -527,7 +527,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
     const setupOption = screen.getByRole('menuitem', { name: 'Set up GitOps configuration for Argo CD Agent Pull' })
     expect(setupOption).not.toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByRole('menuitem', { name: /Push model/i })).toBeInTheDocument()
-    expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+    expect(within(screen.getByRole('menu')).queryByText('Subscription')).not.toBeInTheDocument()
     await user.hover(pullOption)
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'Create a GitOpsCluster to enable pull model ApplicationSet creation.'
@@ -648,7 +648,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
       await clickElement(screen.getByRole('button', { name: /create application/i }))
       expect(screen.queryByRole('menuitem', { name: /Push model/i }) !== null).toBe(enabled)
       expect(screen.getByRole('menuitem', { name: /Agent pull model/i })).not.toHaveAttribute('aria-disabled', 'true')
-      expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+      expect(within(screen.getByRole('menu')).queryByText('Subscription')).not.toBeInTheDocument()
     }
   )
 
@@ -783,7 +783,7 @@ describe('Create application dropdown', () => {
       )
     ).toBeInTheDocument()
     expect(within(popup).getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
-    expect(within(popup).getByText('Subscription')).toBeInTheDocument()
+    expect(within(popup).queryByText('Subscription')).not.toBeInTheDocument()
     expect(await axe(popup)).toHaveNoViolations()
   })
 
@@ -798,6 +798,6 @@ describe('Create application dropdown', () => {
     expect(popup.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
     expect(popup.getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
     expect(popup.getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
-    expect(popup.getByText('Subscription')).toBeInTheDocument()
+    expect(popup.queryByText('Subscription')).not.toBeInTheDocument()
   })
 })
