@@ -37,10 +37,6 @@ import { IPlacement } from '../common/resources/IPlacement'
 import { useShowValidation } from '@patternfly-labs/react-form-wizard/lib/src/contexts/ShowValidationProvider'
 import { Secret } from '../../resources'
 
-const URL = '{{.url}}'
-const CLUSTER = '{{.cluster}}'
-const SERVER = '{{server}}'
-const PATH_BASENAME = '{{path.basename}}'
 const TEMPLATE_NAME_PATH = 'spec.template.metadata.name'
 const DESTINATION_NAME_PATH_NAMESPACE = 'spec.template.spec.destination.namespace'
 const DESTINATION_NAME_PATH_SERVER = 'spec.template.spec.destination.server'
@@ -58,6 +54,7 @@ export interface CrossGeneratorSyncProps {
   onGeneratorStateChange?: (state: PrevGenState) => void
   defaultData?: IResource[] | unknown[]
   generatorPath: MutableRefObject<string>
+  isAgentPullModel?: boolean
 }
 
 export interface MultipleGeneratorSelectorProps {
@@ -441,10 +438,17 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
   const matrixGenerator = appSet ? get(appSet, 'spec.generators.0.matrix') : undefined
   props.generatorPath.current = matrixGenerator ? 'spec.generators.0.matrix.generators' : 'spec.generators'
   const generatorString = appSet ? JSON.stringify(get(appSet, props.generatorPath.current)) : undefined
+  const goTemplate = !!appSet && get(appSet, 'spec.goTemplate') === true
 
   // fixup yaml based on what generators are selected
   useEffect(() => {
     if (!appSet) return
+    const parameter = (name: string) => `{{${goTemplate ? '.' : ''}${name}}}`
+    const cluster = parameter('cluster')
+    const url = parameter('url')
+    const server = parameter('server')
+    const name = parameter('name')
+    const pathBasename = parameter('path.basename')
 
     let shouldUpdate = false
 
@@ -507,14 +511,10 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
 
     // Handle git generator
     if (hasGitGen) {
-      if (
-        !templateName.startsWith(appName) ||
-        !templateName.includes('{{name}}') ||
-        !templateName.includes(PATH_BASENAME)
-      ) {
-        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}-${PATH_BASENAME}`)
+      if (!templateName.startsWith(appName) || !templateName.includes(name) || !templateName.includes(pathBasename)) {
+        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${name}-${pathBasename}`)
         if (editMode !== EditMode.Edit) {
-          fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, `${PATH_BASENAME}`)
+          fix(appSet, DESTINATION_NAME_PATH_NAMESPACE, pathBasename)
         }
       }
     } else if (!isInitialSync && prevGenState.current.hasGitGen !== hasGitGen) {
@@ -526,18 +526,26 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
 
     // Handle list generator
     if (hasListGen) {
-      if (templateName !== `${appName}-${CLUSTER}`) {
-        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${CLUSTER}`)
-        fix(appSet, DESTINATION_NAME_PATH_SERVER, URL)
+      if (templateName !== `${appName}-${cluster}`) {
+        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${cluster}`)
+        fix(
+          appSet,
+          props.isAgentPullModel ? 'spec.template.spec.destination.name' : DESTINATION_NAME_PATH_SERVER,
+          props.isAgentPullModel ? cluster : url
+        )
       }
     } else if (!isInitialSync && prevGenState.current.hasListGen !== hasListGen) {
-      fix(appSet, DESTINATION_NAME_PATH_SERVER, SERVER)
+      fix(
+        appSet,
+        props.isAgentPullModel ? 'spec.template.spec.destination.name' : DESTINATION_NAME_PATH_SERVER,
+        props.isAgentPullModel ? name : server
+      )
     }
 
     // handle generators that don't affect template
     if (!hasGitGen && !hasListGen) {
-      if (templateName !== `${appName}-{{name}}`) {
-        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-{{name}}`)
+      if (templateName !== `${appName}-${name}`) {
+        fix(appSet, TEMPLATE_NAME_PATH, `${appName}-${name}`)
       }
     }
 
@@ -604,7 +612,7 @@ export function CrossGeneratorSync(props: CrossGeneratorSyncProps) {
       update()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appName, appNamespace, placementName, props.generatorPath.current, generatorString])
+  }, [appName, appNamespace, placementName, props.generatorPath.current, generatorString, goTemplate])
 
   return <></>
 }

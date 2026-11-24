@@ -1,8 +1,10 @@
 /* Copyright Contributors to the Open Cluster Management project */
 
-import { rbacCreate, rbacGet, rbacPatch } from '~/lib/rbac-util'
+import { get, isEqual } from 'lodash'
+import type { TFunction } from 'i18next'
+import { rbacCreate, rbacDelete, rbacGet, rbacPatch } from '~/lib/rbac-util'
 import type { IResource } from '~/resources'
-import { getResource, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
+import { getResource, listResources, reconcileResources, ResourceError, ResourceErrorCode } from '~/resources/utils'
 import type { GitOpsCluster } from '~/resources/gitops-cluster'
 import { GitOpsClusterApiVersion, GitOpsClusterKind, GitopsClusterDefinition } from '~/resources/gitops-cluster'
 import {
@@ -28,6 +30,8 @@ export const ArgoCDDefinition: IResource = { apiVersion: ArgoCDApiVersion, kind:
 export const AppProjectApiVersion = 'argoproj.io/v1alpha1'
 export const AppProjectKind = 'AppProject'
 export const AppProjectDefinition: IResource = { apiVersion: AppProjectApiVersion, kind: AppProjectKind }
+
+export const GITOPS_BINDING_OWNER_ANNOTATION = 'apps.open-cluster-management.io/gitopscluster'
 
 export const GITOPS_OPERATOR_SUBSCRIPTION_NAME = 'openshift-gitops-operator'
 export const GITOPS_OPERATOR_SUBSCRIPTION_NAMESPACE = 'openshift-gitops-operator'
@@ -144,7 +148,15 @@ export function createGitOpsClusterResource(options: {
       },
     }
   } else if (resource.spec) {
-    delete resource.spec.gitopsAddon
+    const addon = existing?.spec?.gitopsAddon
+    if (addon) {
+      resource.spec.gitopsAddon = {
+        ...addon,
+        ...(addon.argoCDAgent && { argoCDAgent: { ...addon.argoCDAgent, enabled: false } }),
+      }
+    } else {
+      delete resource.spec.gitopsAddon
+    }
   }
 
   return resource
@@ -156,8 +168,9 @@ export function createPlacementResource(options: {
   clusterSets?: string[]
   existing?: Placement
   previousGitOpsClusterName?: string
+  placementName?: string
 }): Placement {
-  const { name, namespace, clusterSets, existing, previousGitOpsClusterName } = options
+  const { name, namespace, clusterSets, existing, previousGitOpsClusterName, placementName } = options
   const defaultPredicates: NonNullable<Placement['spec']['predicates']> = [
     {
       requiredClusterSelector: {
@@ -192,7 +205,7 @@ export function createPlacementResource(options: {
         operator: 'Exists',
       },
     ],
-    predicates: existing?.spec?.predicates?.length ? existing.spec.predicates : defaultPredicates,
+    ...(existing ? {} : { predicates: defaultPredicates }),
   }
 
   if (clusterSets !== undefined) {
@@ -210,10 +223,12 @@ export function createPlacementResource(options: {
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
-      name: resolvePlacementDraftName(name, existing?.metadata?.name, {
-        isLive: Boolean(existing?.metadata?.uid),
-        previousGitOpsClusterName,
-      }),
+      name:
+        placementName ??
+        resolvePlacementDraftName(name, existing?.metadata?.name, {
+          isLive: Boolean(existing?.metadata?.uid),
+          previousGitOpsClusterName,
+        }),
       namespace,
     },
     spec,
@@ -256,15 +271,34 @@ export function createManagedClusterSetBindings(options: {
   namespace: string
   clusterSets: string[]
   existingBindings?: ManagedClusterSetBinding[]
+  gitOpsClusterName?: string
 }): ManagedClusterSetBinding[] {
-  const { namespace, clusterSets, existingBindings = [] } = options
+  const { namespace, clusterSets, existingBindings = [], gitOpsClusterName } = options
   return clusterSets.map((clusterSet) => {
     const existing = existingBindings.find((binding) => bindingMatchesClusterSet(binding, namespace, clusterSet))
+    if (
+      existing &&
+      gitOpsClusterName &&
+      !resourceExistsOnCluster(existing) &&
+      existing.metadata.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
+    ) {
+      return {
+        ...existing,
+        metadata: {
+          ...existing.metadata,
+          annotations: { ...existing.metadata.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: gitOpsClusterName },
+        },
+      }
+    }
     return (
       existing ?? {
         apiVersion: ManagedClusterSetBindingApiVersion,
         kind: ManagedClusterSetBindingKind,
-        metadata: { name: clusterSet, namespace },
+        metadata: {
+          name: clusterSet,
+          namespace,
+          ...(gitOpsClusterName && { annotations: { [GITOPS_BINDING_OWNER_ANNOTATION]: gitOpsClusterName } }),
+        },
         spec: { clusterSet },
       }
     )
@@ -352,7 +386,10 @@ export function findGitOpsOperatorSubscription(
   )
 }
 
-export function mergeGitOpsOperatorSubscription(existing?: SubscriptionOperator): SubscriptionOperator {
+export function mergeGitOpsOperatorSubscription(
+  existing?: SubscriptionOperator,
+  argoCD?: IResource
+): SubscriptionOperator {
   const base: SubscriptionOperator = existing
     ? cloneResource(existing)
     : {
@@ -366,7 +403,18 @@ export function mergeGitOpsOperatorSubscription(existing?: SubscriptionOperator)
       }
 
   const env = [...(base.spec.config?.env ?? [])]
-  for (const required of AGENT_SUBSCRIPTION_ENV) {
+  const name = argoCD?.metadata?.name ?? 'openshift-gitops'
+  const namespace = argoCD?.metadata?.namespace ?? 'openshift-gitops'
+  const redisService = `${name}-${get(argoCD, 'spec.ha.enabled') === true ? 'redis-ha-haproxy' : 'redis'}`
+  const requiredEnv = AGENT_SUBSCRIPTION_ENV.map((item) => {
+    if (item.name === 'ARGOCD_PRINCIPAL_REDIS_SERVER_ADDRESS') return { name: item.name, value: `${redisService}:6379` }
+    if (item.name === 'ARGOCD_CLUSTER_CONFIG_NAMESPACES') {
+      const current = env.find((value) => value.name === item.name)?.value ?? item.value
+      return { name: item.name, value: [...new Set([...current.split(','), namespace])].join(',') }
+    }
+    return item
+  })
+  for (const required of requiredEnv) {
     const index = env.findIndex((item) => item.name === required.name)
     if (index >= 0) {
       env[index] = { ...env[index], value: required.value }
@@ -553,7 +601,7 @@ export interface BuildGitOpsClusterResourcesOptions {
  * Recommended SyncEditor / apply order (dependencies before GitOpsCluster):
  * [Placement, ManagedClusterSetBinding(s)?, GitOpsCluster, ArgoCD?, AppProject?, Subscription?, Policy?]
  */
-export function buildGitOpsClusterResources(options: BuildGitOpsClusterResourcesOptions): IResource[] {
+export function buildGitOpsClusterResources(options: BuildGitOpsClusterResourcesOptions, t: TFunction): IResource[] {
   const {
     name,
     namespace,
@@ -571,12 +619,23 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
     previousGitOpsClusterName,
   } = options
 
+  if (
+    (existingGitOpsCluster && resourceExistsOnCluster(existingGitOpsCluster)) ||
+    (existingPlacement && resourceExistsOnCluster(existingPlacement))
+  ) {
+    validatePlacementNamespace(existingGitOpsCluster, existingPlacement, t, namespace)
+  }
+
   const placement = createPlacementResource({
     name,
     namespace,
     clusterSets,
     existing: existingPlacement,
     previousGitOpsClusterName,
+    placementName:
+      !existingPlacement && existingGitOpsCluster && resourceExistsOnCluster(existingGitOpsCluster)
+        ? existingGitOpsCluster.spec?.placementRef?.name
+        : undefined,
   })
   const gitOpsCluster = createGitOpsClusterResource({
     name,
@@ -600,6 +659,7 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
         namespace,
         clusterSets: placementClusterSets,
         existingBindings,
+        gitOpsClusterName: name,
       })
     )
   } else if (includeBindings && existingBindings.length > 0) {
@@ -614,10 +674,11 @@ export function buildGitOpsClusterResources(options: BuildGitOpsClusterResources
   resources.push(gitOpsCluster)
 
   if (agentEnabled) {
+    const argoCD = mergeHubArgoCD(existingArgoCD, { namespace, pushEnabled: pushModelEnabled })
     resources.push(
-      mergeHubArgoCD(existingArgoCD, { namespace, pushEnabled: pushModelEnabled }),
+      argoCD,
       createDefaultAppProject(namespace, existingAppProject),
-      mergeGitOpsOperatorSubscription(existingSubscription),
+      mergeGitOpsOperatorSubscription(existingSubscription, argoCD),
       createArgoCDAgentPolicy({
         gitOpsClusterName: name,
         namespace,
@@ -668,6 +729,51 @@ function sameResourceIdentity(a: IResource, b: IResource): boolean {
   return a.kind === b.kind && a.metadata?.namespace === b.metadata?.namespace && a.metadata?.name === b.metadata?.name
 }
 
+export function isGitOpsBindingOwnedBy(binding: IResource, gitOpsCluster: IResource): boolean {
+  if (!gitOpsCluster.metadata?.name) return false
+  return (
+    binding.metadata?.namespace === gitOpsCluster.metadata?.namespace &&
+    (binding.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION] === gitOpsCluster.metadata?.name ||
+      binding.metadata?.ownerReferences?.some(
+        (owner) =>
+          owner.kind === GitOpsClusterKind &&
+          owner.name === gitOpsCluster.metadata?.name &&
+          !!gitOpsCluster.metadata?.uid &&
+          owner.uid === gitOpsCluster.metadata.uid
+      ) === true)
+  )
+}
+
+/** Shared or unproven bindings stay; an empty clusterSets list references all namespace bindings. */
+export function getRemovedGitOpsWizardResources(
+  desired: IResource[],
+  previousOwned: IResource[],
+  placements?: Placement[]
+): IResource[] {
+  const gitOpsCluster = previousOwned.find((resource) => resource.kind === GitOpsClusterKind)
+  const desiredPlacements = desired.filter((resource) => resource.kind === PlacementKind) as Placement[]
+  const editedPlacements = [...previousOwned, ...desiredPlacements].filter(
+    (resource) => resource.kind === PlacementKind
+  )
+  // Desired versions override live snapshots; removed prior Placements cannot keep bindings alive.
+  const remainingPlacements = [
+    ...desiredPlacements,
+    ...(placements ?? []).filter((placement) => !editedPlacements.some((own) => sameResourceIdentity(own, placement))),
+  ]
+  return previousOwned.filter((previous) => {
+    if (PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') || desired.some((item) => sameResourceIdentity(item, previous)))
+      return false
+    if (previous.kind !== ManagedClusterSetBindingKind) return true
+    if (!gitOpsCluster || !placements || !isGitOpsBindingOwnedBy(previous, gitOpsCluster)) return false
+    const binding = previous as ManagedClusterSetBinding
+    return !remainingPlacements.some(
+      (placement) =>
+        placement.metadata.namespace === binding.metadata.namespace &&
+        (!placement.spec.clusterSets?.length || placement.spec.clusterSets.includes(binding.spec.clusterSet))
+    )
+  })
+}
+
 /** Shared hub objects stay when Agent is turned off. Everything else in the YAML is created, updated, or removed. */
 const PRESERVE_WHEN_ABSENT = new Set([ArgoCDKind, AppProjectKind, SubscriptionOperatorKind])
 
@@ -697,18 +803,121 @@ function withLiveIdentity(desired: IResource, live: IResource): IResource {
     resourceVersion: live.metadata?.resourceVersion,
     generation: live.metadata?.generation,
     creationTimestamp: live.metadata?.creationTimestamp,
+    ownerReferences: live.metadata?.ownerReferences,
   }
   return copy
 }
 
-async function upsertResource(resource: IResource): Promise<'created' | 'updated'> {
+function concurrentEditError(resource: IResource, t: TFunction): ResourceError {
+  return new ResourceError(
+    ResourceErrorCode.Conflict,
+    t('{{kind}} {{name}} changed while this wizard was open. Reload the page and try again.', {
+      kind: resource.kind,
+      name: resource.metadata?.name,
+    })
+  )
+}
+
+/** Three-way merge: retain concurrent changes; arrays are atomic to avoid shifting edited indices. */
+function mergeResourceDraft(baseline: IResource, desired: IResource, live: IResource, t: TFunction): IResource {
+  const isObject = (value: unknown): value is Record<string, unknown> =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+  const merge = (before: unknown, draft: unknown, current: unknown): unknown => {
+    if (isEqual(before, draft)) return current
+    if (isEqual(before, current) || isEqual(draft, current)) return draft
+    if (isObject(before) && isObject(draft) && isObject(current)) {
+      const result = { ...current }
+      for (const key of new Set([...Object.keys(before), ...Object.keys(draft)])) {
+        const value = merge(before[key], draft[key], current[key])
+        if (value === undefined) delete result[key]
+        else result[key] = value
+      }
+      return result
+    }
+    throw concurrentEditError(desired, t)
+  }
+  return merge(
+    withoutServerMetadata(baseline),
+    withoutServerMetadata(desired),
+    withoutServerMetadata(live)
+  ) as IResource
+}
+
+function preserveLiveBindingOwner(desired: IResource, live: IResource) {
+  if (desired.kind !== ManagedClusterSetBindingKind) return
+  // Finding an existing binding must not adopt it using a create draft's ownership marker.
+  const owner = live.metadata?.annotations?.[GITOPS_BINDING_OWNER_ANNOTATION]
+  if (owner) {
+    desired.metadata = {
+      ...desired.metadata,
+      annotations: { ...desired.metadata?.annotations, [GITOPS_BINDING_OWNER_ANNOTATION]: owner },
+    }
+  } else if (desired.metadata?.annotations) {
+    delete desired.metadata.annotations[GITOPS_BINDING_OWNER_ANNOTATION]
+  }
+}
+
+async function isConcurrentPatchError(error: unknown, resource: IResource, live: IResource): Promise<boolean> {
+  if (!(error instanceof ResourceError)) return false
+  if (error.code === ResourceErrorCode.Conflict) return true
+  if (error.code !== ResourceErrorCode.UnprocessableEntity) return false
+  // Some API errors omit the failing test's details. Refetch before classifying
+  // a validation error, without masking the original error if that read fails.
+  try {
+    const current = await getResource(withoutServerMetadata(resource)).promise
+    return (
+      current.metadata?.resourceVersion !== live.metadata?.resourceVersion ||
+      /test.*fail|fail.*test/i.test(error.message)
+    )
+  } catch {
+    return false
+  }
+}
+
+async function patchResourceDraft(resource: IResource, desired: IResource, live: IResource, t: TFunction) {
+  try {
+    await reconcileResources([withLiveIdentity(desired, live)], [live], { requireResourceVersion: true })
+  } catch (error) {
+    if (await isConcurrentPatchError(error, resource, live)) throw concurrentEditError(resource, t)
+    throw error
+  }
+}
+
+async function upsertResource(
+  resource: IResource,
+  t: TFunction,
+  baseline?: IResource,
+  hasEditBaseline = false,
+  onUpdated?: (live: IResource, applied: IResource) => void
+): Promise<'created' | 'updated'> {
   const createBody = withoutServerMetadata(resource)
   try {
     const live = await getResource(createBody).promise
-    await reconcileResources([withLiveIdentity(resource, live)], [live])
+    // A generated default project is create-only if none existed when the edit began.
+    if (hasEditBaseline && !baseline && resource.kind === AppProjectKind) return 'updated'
+    // Callers without an original baseline cannot safely merge a stale ArgoCD
+    // draft. Require a fresh draft rather than replacing its resourceVersion.
+    if (
+      !baseline &&
+      resource.kind === ArgoCDKind &&
+      resource.metadata?.resourceVersion &&
+      resource.metadata.resourceVersion !== live.metadata?.resourceVersion
+    ) {
+      throw concurrentEditError(resource, t)
+    }
+    const desired = baseline ? mergeResourceDraft(baseline, resource, live, t) : cloneResource(resource)
+    preserveLiveBindingOwner(desired, live)
+    await patchResourceDraft(resource, desired, live, t)
+    onUpdated?.(live, desired)
     return 'updated'
   } catch (err) {
     if (err instanceof ResourceError && err.code === ResourceErrorCode.NotFound) {
+      if (
+        resource.kind === SubscriptionOperatorKind &&
+        get(resource, 'spec.name') === GITOPS_OPERATOR_SUBSCRIPTION_NAME
+      ) {
+        throw new Error(t('Install the OpenShift GitOps operator before enabling Argo CD Agent.'))
+      }
       await reconcileResources([createBody], [])
       return 'created'
     }
@@ -723,6 +932,170 @@ export interface ReconcileGitOpsWizardResult {
   gitOpsCluster?: GitOpsClusterUpsertResult
 }
 
+async function prepareAgentResources(
+  desired: IResource[],
+  t: TFunction,
+  baseline: IResource[] = []
+): Promise<IResource[]> {
+  const gitOpsCluster = getGitOpsClusterFromResources(desired)
+  const agentEnabled = isAgentEnabled(gitOpsCluster)
+  const draft = findGitOpsOperatorSubscription(
+    desired.filter((resource) => resource.kind === SubscriptionOperatorKind) as SubscriptionOperator[]
+  )
+  if (!agentEnabled && !draft) return desired
+  const namespace = gitOpsCluster?.spec?.argoServer?.argoNamespace ?? gitOpsCluster?.metadata.namespace
+  const argoCD = desired.find((resource) => resource.kind === ArgoCDKind && resource.metadata?.namespace === namespace)
+  const suffix = get(argoCD, 'spec.ha.enabled') === true ? '-redis-ha-haproxy' : '-redis'
+  if (
+    agentEnabled &&
+    (!argoCD?.metadata?.name ||
+      argoCD.metadata.name.length + suffix.length > 63 ||
+      get(argoCD, 'spec.redis.enabled') === false)
+  ) {
+    throw new Error(t('Unable to determine the Redis service for the selected Argo CD instance.'))
+  }
+  const original = findGitOpsOperatorSubscription(
+    baseline.filter((resource) => resource.kind === SubscriptionOperatorKind) as SubscriptionOperator[]
+  )
+  let live: SubscriptionOperator
+  try {
+    live = await getResource<SubscriptionOperator>(
+      draft ??
+        original ??
+        ({
+          ...SubscriptionOperatorDefinition,
+          metadata: { name: GITOPS_OPERATOR_SUBSCRIPTION_NAME, namespace: GITOPS_OPERATOR_SUBSCRIPTION_NAMESPACE },
+        } as SubscriptionOperator)
+    ).promise
+  } catch (error) {
+    if (!(error instanceof ResourceError) || error.code !== ResourceErrorCode.NotFound) throw error
+    throw new Error(t('Install the OpenShift GitOps operator before enabling Argo CD Agent.'))
+  }
+  if (live.spec?.name !== GITOPS_OPERATOR_SUBSCRIPTION_NAME || !live.spec.source || !live.spec.sourceNamespace) {
+    throw new Error(t('Install the OpenShift GitOps operator before enabling Argo CD Agent.'))
+  }
+  if (!draft) return desired
+  const combined = { ...live, ...draft, spec: { ...live.spec, ...draft?.spec } }
+  const subscription = agentEnabled ? mergeGitOpsOperatorSubscription(combined, argoCD) : combined
+  return [...desired.filter((resource) => resource !== draft), subscription]
+}
+
+interface GitOpsReconcileOptions {
+  baseline?: IResource[]
+  placements?: Placement[]
+}
+
+interface GitOpsApplyState {
+  created: IResource[]
+  updatedGitOpsCluster?: { live: IResource; applied: IResource }
+  gitOpsCluster?: GitOpsClusterUpsertResult
+}
+
+function applyGitOpsWizardResources(
+  desired: IResource[],
+  t: TFunction,
+  state: GitOpsApplyState,
+  baseline?: IResource[]
+): Promise<void> {
+  // Wait for each operation before starting its dependent, and stop on the first failure.
+  return orderGitOpsWizardResourcesForApply(desired).reduce(async (previous, resource) => {
+    await previous
+    const result = await upsertResource(
+      resource,
+      t,
+      baseline?.find((item) => sameResourceIdentity(item, resource)),
+      baseline !== undefined,
+      (live, applied) => {
+        if (resource.kind === GitOpsClusterKind) state.updatedGitOpsCluster = { live, applied }
+      }
+    )
+    if (result === 'created') state.created.push(withoutServerMetadata(resource))
+    if (resource.kind === GitOpsClusterKind) state.gitOpsCluster = result
+  }, Promise.resolve())
+}
+
+async function restorePreviousPlacementReference(
+  state: GitOpsApplyState,
+  t: TFunction
+): Promise<IResource | undefined> {
+  if (!state.updatedGitOpsCluster) return undefined
+  const { live, applied } = state.updatedGitOpsCluster
+  const beforeRef: unknown = get(live, 'spec.placementRef')
+  const afterRef: unknown = get(applied, 'spec.placementRef')
+  const createdPlacement = state.created.find(
+    (resource) =>
+      resource.kind === PlacementKind &&
+      resource.metadata?.namespace === applied.metadata?.namespace &&
+      resource.metadata?.name === get(afterRef, 'name')
+  )
+  if (!createdPlacement || isEqual(beforeRef, afterRef)) return undefined
+  try {
+    const current = await getResource(applied).promise
+    const currentRef: unknown = get(current, 'spec.placementRef')
+    if (isEqual(currentRef, beforeRef)) return undefined
+    if (!isEqual(currentRef, afterRef)) throw concurrentEditError(current, t)
+    const restored = cloneResource(current) as GitOpsCluster
+    if (restored.spec) restored.spec.placementRef = cloneResource(live as GitOpsCluster).spec?.placementRef
+    await reconcileResources([restored], [current], { requireResourceVersion: true })
+  } catch {
+    // Retain the new target if restoring its reference failed.
+    return createdPlacement
+  }
+  return undefined
+}
+
+async function rollbackCreatedGitOpsResources(created: IResource[], retainedPlacement?: IResource) {
+  // Undo dependents before their Placement. Retain its namespace bindings if restoration failed.
+  const rollback = [...created]
+    .reverse()
+    .filter(
+      (resource) =>
+        resource !== retainedPlacement &&
+        !(
+          retainedPlacement &&
+          resource.kind === ManagedClusterSetBindingKind &&
+          resource.metadata?.namespace === retainedPlacement.metadata?.namespace
+        )
+    )
+  try {
+    if (rollback.length > 0) await reconcileResources([], rollback, { ignoreNotFound: true })
+  } catch {
+    // Prefer surfacing the original apply failure over a rollback error.
+  }
+}
+
+async function loadCleanupPlacements(
+  desired: IResource[],
+  previousOwned: IResource[],
+  t: TFunction,
+  placements?: Placement[]
+): Promise<Placement[] | undefined> {
+  const bindingCandidates = getRemovedGitOpsWizardResources(desired, previousOwned, []).filter(
+    (resource) => resource.kind === ManagedClusterSetBindingKind
+  )
+  if (bindingCandidates.length === 0) return placements
+  // Read references after desired Placements have been applied, immediately before cleanup.
+  try {
+    const namespaces = [...new Set(bindingCandidates.map((binding) => binding.metadata?.namespace))]
+    return (
+      await Promise.all(
+        namespaces.map(
+          (namespace) =>
+            listResources<Placement>({
+              apiVersion: PlacementApiVersionBeta,
+              kind: PlacementKind,
+              metadata: { namespace },
+            }).promise
+        )
+      )
+    ).flat()
+  } catch {
+    throw new Error(
+      t('GitOps resources were saved, but binding cleanup could not complete. Unable to load current Placements.')
+    )
+  }
+}
+
 /**
  * Apply the wizard YAML as-is: create resources that are missing and patch resources that already exist.
  * Argo CD, AppProject, and the operator Subscription are not deleted when they drop out of the YAML.
@@ -730,44 +1103,32 @@ export interface ReconcileGitOpsWizardResult {
  */
 export async function reconcileGitOpsWizardResources(
   desired: IResource[],
-  previousOwned: IResource[] = []
+  t: TFunction,
+  previousOwned: IResource[] = [],
+  options: GitOpsReconcileOptions = {}
 ): Promise<ReconcileGitOpsWizardResult> {
-  const ordered = orderGitOpsWizardResourcesForApply(desired)
-  const createdInThisPass: IResource[] = []
-  let gitOpsCluster: GitOpsClusterUpsertResult | undefined
-
+  validatePlacementNamespace(getGitOpsClusterFromResources(desired), getPlacementFromResources(desired), t)
+  desired = await prepareAgentResources(desired, t, options.baseline)
+  const state: GitOpsApplyState = { created: [] }
   try {
-    // Apply desired resources sequentially so a failed upsert does not leave deletions already applied.
-    for (const resource of ordered) {
-      const result = await upsertResource(resource)
-      if (result === 'created') {
-        createdInThisPass.push(withoutServerMetadata(resource))
-      }
-      if (resource.kind === GitOpsClusterKind) {
-        gitOpsCluster = result
-      }
+    await applyGitOpsWizardResources(desired, t, state, options.baseline)
+  } catch (error) {
+    const retainedPlacement = await restorePreviousPlacementReference(state, t)
+    await rollbackCreatedGitOpsResources(state.created, retainedPlacement)
+    if (retainedPlacement) {
+      throw new Error(
+        t(
+          'Some GitOps resources were saved. The previous Placement reference could not be restored, so the new Placement was retained.'
+        )
+      )
     }
-  } catch (err) {
-    if (createdInThisPass.length > 0) {
-      try {
-        // Reverse order: undo GitOpsCluster before Placement when both were created this pass.
-        await reconcileResources([], [...createdInThisPass].reverse())
-      } catch {
-        // Prefer surfacing the original apply failure over a rollback error.
-      }
-    }
-    throw err
+    throw error
   }
 
-  const removed = previousOwned.filter(
-    (previous) =>
-      !PRESERVE_WHEN_ABSENT.has(previous.kind ?? '') && !desired.some((item) => sameResourceIdentity(item, previous))
-  )
-  if (removed.length > 0) {
-    await reconcileResources([], removed)
-  }
-
-  return { gitOpsCluster }
+  const placements = await loadCleanupPlacements(desired, previousOwned, t, options.placements)
+  const removed = getRemovedGitOpsWizardResources(desired, previousOwned, placements)
+  if (removed.length > 0) await reconcileResources([], removed, { ignoreNotFound: true })
+  return { gitOpsCluster: state.gitOpsCluster }
 }
 
 export interface MissingPermission {
@@ -778,9 +1139,6 @@ export interface MissingPermission {
 }
 
 async function resourceExistsLive(resource: IResource): Promise<boolean> {
-  if (resourceExistsOnCluster(resource)) {
-    return true
-  }
   try {
     await getResource(withoutServerMetadata(resource)).promise
     return true
@@ -794,7 +1152,10 @@ async function resourceExistsLive(resource: IResource): Promise<boolean> {
   }
 }
 
-export async function collectMissingPermissions(resources: IResource[]): Promise<MissingPermission[]> {
+export async function collectMissingPermissions(
+  resources: IResource[],
+  removed: IResource[] = []
+): Promise<MissingPermission[]> {
   // Probe existence up front (Forbidden / non-NotFound errors propagate and stop preflight).
   const existenceFlags = await Promise.all(resources.map((resource) => resourceExistsLive(resource)))
 
@@ -815,6 +1176,14 @@ export async function collectMissingPermissions(resources: IResource[]): Promise
       checks.push(rbacGet(definition, namespace, name), rbacCreate(definition, namespace, name))
       labels.push({ kind, verb: 'get', namespace, name }, { kind, verb: 'create', namespace, name })
     }
+  })
+
+  removed.forEach((resource) => {
+    const kind = resource.kind ?? 'Unknown'
+    const namespace = resource.metadata?.namespace
+    const name = resource.metadata?.name
+    checks.push(rbacDelete(definitionForKind(kind) ?? resource, namespace, name))
+    labels.push({ kind, verb: 'delete', namespace, name })
   })
 
   const attributes = await Promise.all(checks)
@@ -873,22 +1242,26 @@ export function stripTransformedFields(resources: IResource[]): IResource[] {
  * Re-attach a Placement before apply so create never succeeds with a dangling placementRef.
  * When both exist, the Placement document name wins (preserves YAML renames).
  */
-export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[] {
+export function ensureGitOpsClusterPlacement(resources: IResource[], t: TFunction): IResource[] {
   const stripped = stripTransformedFields(resources)
   const gitOpsCluster = getGitOpsClusterFromResources(stripped)
   if (!gitOpsCluster) {
     return orderGitOpsWizardResourcesForApply(stripped)
   }
 
-  const namespace = gitOpsCluster.metadata?.namespace ?? ''
-  const name = gitOpsCluster.metadata?.name ?? ''
   const existingPlacement = getPlacementFromResources(stripped)
+  const namespace =
+    gitOpsCluster.metadata?.namespace ||
+    gitOpsCluster.spec?.argoServer?.argoNamespace ||
+    existingPlacement?.metadata.namespace ||
+    ''
+  validatePlacementNamespace(gitOpsCluster, existingPlacement, t, namespace)
+  gitOpsCluster.metadata = { ...gitOpsCluster.metadata, namespace }
+  const name = gitOpsCluster.metadata?.name ?? ''
   const placementName =
     existingPlacement?.metadata?.name || gitOpsCluster.spec?.placementRef?.name || placementNameFor(name)
 
-  if (!gitOpsCluster.spec) {
-    gitOpsCluster.spec = {}
-  }
+  gitOpsCluster.spec ??= {}
   gitOpsCluster.spec.placementRef = {
     ...gitOpsCluster.spec.placementRef,
     kind: PlacementKind,
@@ -908,6 +1281,18 @@ export function ensureGitOpsClusterPlacement(resources: IResource[]): IResource[
   const placement = createPlacementResource({ name, namespace })
   placement.metadata.name = placementName
   return orderGitOpsWizardResourcesForApply([...stripped, placement])
+}
+
+function validatePlacementNamespace(
+  gitOpsCluster: GitOpsCluster | undefined,
+  placement: Placement | undefined,
+  t: TFunction,
+  selectedNamespace?: string
+) {
+  const namespace = gitOpsCluster?.metadata?.namespace || selectedNamespace
+  if (namespace && placement?.metadata?.namespace && namespace !== placement.metadata.namespace) {
+    throw new Error(t('GitOpsCluster and its Placement must use the same namespace.'))
+  }
 }
 
 export function resourcesSignature(resources: IResource[]): string {

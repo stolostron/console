@@ -87,13 +87,30 @@ export function getBackendUrl() {
   return process.env.REACT_APP_BACKEND_PATH ?? ''
 }
 
+function patchModifiedResources(
+  modifiedResources: IResource[],
+  existingResources: IResource[],
+  options: { dryRun?: boolean; requireResourceVersion?: boolean } = {}
+): Promise<void> {
+  return modifiedResources.reduce(async (previous, resource) => {
+    await previous
+    const existing = existingResources.find((item) => item.metadata?.uid === resource.metadata?.uid)
+    if (!existing) return
+    const patch = jsonpatch.compare(existing, resource)
+    if (patch.length === 0) return
+    if (options.requireResourceVersion && existing.metadata?.resourceVersion) {
+      patch.unshift({ op: 'test', path: '/metadata/resourceVersion', value: existing.metadata.resourceVersion })
+    }
+    await patchResource(existing, patch, options.dryRun ? { dryRun: true } : undefined).promise
+  }, Promise.resolve())
+}
+
 export async function reconcileResources(
   desiredResources: IResource[],
   existingResources: IResource[],
-  options?: { abortController?: AbortController }
+  options?: { abortController?: AbortController; requireResourceVersion?: boolean; ignoreNotFound?: boolean }
 ) {
   const abortController = options?.abortController
-
   const namespaceResources = desiredResources
     .filter((desired) => !existingResources.find((existing) => existing.metadata?.uid === desired.metadata?.uid))
     .filter((resource) => resource.kind === NamespaceKind)
@@ -133,33 +150,22 @@ export async function reconcileResources(
     await createResources(addedResources, { dryRun: true, abortController })
 
     // Dry Run - Modified Resources
-    for (const resource of modifiedResources) {
-      const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
-      if (existing) {
-        const patch = jsonpatch.compare(existing, resource)
-        if (patch.length) {
-          await patchResource(existing, patch, { dryRun: true })
-        }
-      }
-    }
+    await patchModifiedResources(modifiedResources, existingResources, {
+      dryRun: true,
+      requireResourceVersion: options?.requireResourceVersion,
+    })
 
     // Dry Run - Deleted Resources
-    await deleteResources(deletedResources, { dryRun: true, abortController })
+    await deleteResources(deletedResources, { dryRun: true, abortController, ignoreNotFound: options?.ignoreNotFound })
 
     // Create Resources
     await createResources(addedResources, { deleteCreatedOnError: true, abortController })
 
     // Update Resources
     try {
-      for (const resource of modifiedResources) {
-        const existing = existingResources.find((existing) => existing.metadata?.uid === resource.metadata?.uid)
-        if (existing) {
-          const patch = jsonpatch.compare(existing, resource)
-          if (patch.length) {
-            await patchResource(existing, patch)
-          }
-        }
-      }
+      await patchModifiedResources(modifiedResources, existingResources, {
+        requireResourceVersion: options?.requireResourceVersion,
+      })
     } catch (err) {
       // modifications failed, delete the previously created
       void deleteResources(addedResources).catch(noop)
@@ -167,7 +173,7 @@ export async function reconcileResources(
     }
 
     // Delete Resources
-    await deleteResources(deletedResources, { abortController })
+    await deleteResources(deletedResources, { abortController, ignoreNotFound: options?.ignoreNotFound })
   } catch (err) {
     if (namespaceCreated) {
       // Delete created namespaces as we have an error
@@ -232,6 +238,7 @@ export async function deleteResources(
   options?: {
     dryRun?: boolean
     abortController?: AbortController
+    ignoreNotFound?: boolean
   }
 ): Promise<void> {
   const abortController = options?.abortController
@@ -240,6 +247,10 @@ export async function deleteResources(
     abortController?.signal.addEventListener('abort', requestResult.abort)
     try {
       await requestResult.promise
+    } catch (error) {
+      if (!(options?.ignoreNotFound && error instanceof ResourceError && error.code === ResourceErrorCode.NotFound)) {
+        throw error
+      }
     } finally {
       abortController?.signal.removeEventListener('abort', requestResult.abort)
     }

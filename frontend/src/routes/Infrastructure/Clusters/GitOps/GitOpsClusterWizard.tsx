@@ -16,7 +16,7 @@ import { useLocalHubName } from '~/hooks/use-local-hub'
 import { useTranslation } from '~/lib/acm-i18next'
 import { NavigationPath } from '~/NavigationPath'
 import type { ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
-import { PlacementKind } from '~/resources/placement'
+import { PlacementKind, type Placement } from '~/resources/placement'
 import type { Policy } from '~/resources/policy'
 import type { SubscriptionOperator } from '~/resources/subscription-operator'
 import { IClusterSetBinding } from '~/wizards/common/resources/IClusterSetBinding'
@@ -37,10 +37,15 @@ export interface GitOpsClusterWizardProps {
   clusterSetBindings: IClusterSetBinding[]
   clusters: IResource[]
   resources?: IResource[]
+  previousOwned?: IResource[]
+  placements?: Placement[]
   argoCDs: IResource[]
   subscriptions: SubscriptionOperator[]
   policies: Policy[]
   existingBindings?: ManagedClusterSetBinding[]
+  existingAppProject?: IResource
+  loadExistingAppProject?: () => Promise<IResource | undefined>
+  isModal?: boolean
 }
 
 export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
@@ -51,27 +56,32 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
     if (props.resources && props.resources.length > 0) {
       return props.resources
     }
-    return buildGitOpsClusterResources({
-      name: '',
-      namespace: props.namespaces[0] ?? '',
-      agentEnabled: false,
-      pushModelEnabled: false,
-      existingBindings: props.existingBindings,
-      existingArgoCD: props.argoCDs[0],
-      existingSubscription: props.subscriptions[0],
-      includeBindings: false,
-    })
-  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions])
+    return buildGitOpsClusterResources(
+      {
+        name: '',
+        namespace: props.namespaces[0] ?? '',
+        agentEnabled: false,
+        pushModelEnabled: false,
+        existingBindings: props.existingBindings,
+        existingArgoCD: props.argoCDs[0],
+        existingSubscription: props.subscriptions[0],
+        includeBindings: false,
+      },
+      t
+    )
+  }, [props.resources, props.namespaces, props.existingBindings, props.argoCDs, props.subscriptions, t])
 
   return (
     <WizardPage
       id="gitopscluster-wizard"
+      isModal={props.isModal}
       title={props.title}
       onSubmit={props.onSubmit}
       onCancel={props.onCancel}
       breadcrumb={props.breadcrumb}
       editMode={editMode}
-      yamlEditor={props.yamlEditor}
+      yaml={!props.isModal}
+      yamlEditor={props.isModal ? undefined : props.yamlEditor}
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
@@ -82,6 +92,10 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
           subscriptions={props.subscriptions}
           policies={props.policies}
           existingBindings={props.existingBindings}
+          existingAppProject={props.existingAppProject}
+          loadExistingAppProject={props.loadExistingAppProject}
+          previousOwned={props.previousOwned}
+          placements={props.placements}
         />
       </Step>
       <Step label={t('Target clusters')} id="target-clusters">

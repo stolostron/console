@@ -228,7 +228,8 @@
                       "type": "object",
                       "properties": {
                         "apps.open-cluster-management.io/ocm-managed-cluster": {
-                          "type": "string"
+                          "type": "string",
+                          "minLength": 1
                         },
                         "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace": {
                           "type": "string"
@@ -236,12 +237,7 @@
                         "argocd.argoproj.io/skip-reconcile": {
                           "type": "string"
                         }
-                      },
-                      "required": [
-                        "apps.open-cluster-management.io/ocm-managed-cluster",
-                        "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace",
-                        "argocd.argoproj.io/skip-reconcile"
-                      ]
+                      }
                     },
                     "labels": {
                       "type": "object",
@@ -252,7 +248,7 @@
                       }
                     }
                   },
-                  "required": ["name", "annotations"]
+                  "required": ["name"]
                 },
                 "spec": {
                   "type": "object",
@@ -268,6 +264,10 @@
                         },
                         "server": {
                           "type": "string"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1
                         }
                       }
                     },
@@ -284,7 +284,66 @@
           "required": ["generators", "template"]
         }
       },
-      "required": ["apiVersion", "metadata", "spec"]
+      "required": ["apiVersion", "metadata", "spec"],
+      "anyOf": [
+        {
+          "properties": {
+            "spec": {
+              "properties": {
+                "template": {
+                  "properties": {
+                    "metadata": {
+                      "properties": {
+                        "annotations": {
+                          "required": [
+                            "apps.open-cluster-management.io/ocm-managed-cluster",
+                            "apps.open-cluster-management.io/ocm-managed-cluster-app-namespace",
+                            "argocd.argoproj.io/skip-reconcile"
+                          ]
+                        }
+                      },
+                      "required": ["annotations"]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "metadata": {
+              "properties": {
+                "annotations": {
+                  "type": "object",
+                  "properties": {
+                    "apps.open-cluster-management.io/gitops-model": {
+                      "const": "agent"
+                    }
+                  },
+                  "required": ["apps.open-cluster-management.io/gitops-model"]
+                }
+              },
+              "required": ["annotations"]
+            },
+            "spec": {
+              "properties": {
+                "template": {
+                  "properties": {
+                    "spec": {
+                      "properties": {
+                        "destination": {
+                          "required": ["name"]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
     }
   },
   {

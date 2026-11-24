@@ -497,13 +497,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // when paging items from backend
   // send request to backend
   const filterSelectionsStr = JSON.stringify(filterSelections)
+  const requestSortColumnId = sort?.index === undefined ? undefined : selectedSortedCols[sort.index]?.id
   const requestSort = useMemo(() => {
-    if (sort?.index === undefined) {
-      return sort
-    }
-    const columnId = selectedSortedCols[sort.index]?.id
-    return columnId ? { ...sort, id: columnId } : sort
-  }, [selectedSortedCols, sort])
+    return requestSortColumnId ? { ...sort, id: requestSortColumnId } : sort
+  }, [requestSortColumnId, sort])
   useEffect(() => {
     if (setRequestView && isPreProcessed) {
       setRequestView({
