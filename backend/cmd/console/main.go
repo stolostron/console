@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 
+	librarycrypto "github.com/openshift/library-go/pkg/crypto"
 	"k8s.io/client-go/discovery"
 	discocache "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
@@ -55,6 +56,7 @@ func main() {
 func run() error {
 	cfg := config.Load()
 	applog.SetLevel(cfg.LogLevel)
+	applog.Logger().Info("Go runtime FIPS mode", "enabled", librarycrypto.IsFIPSEnabled())
 
 	sa, ok := auth.LoadServiceAccount(cfg)
 	if !ok {
