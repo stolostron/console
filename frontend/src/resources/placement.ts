@@ -16,7 +16,7 @@ export type PlacementKindType = 'Placement'
 export const GlobalPlacementName = 'global'
 
 export const PlacementDefinition: IResourceDefinition = {
-  apiVersion: PlacementApiVersionAlpha,
+  apiVersion: PlacementApiVersionBeta,
   kind: PlacementKind,
 }
 
