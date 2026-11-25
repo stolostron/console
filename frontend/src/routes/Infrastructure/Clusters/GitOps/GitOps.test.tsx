@@ -10,7 +10,7 @@ import { nockDelete, nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '~/lib/
 import { rbacDelete, rbacPatch } from '~/lib/rbac-util'
 import { StateProvider } from '~/lib/state-provider'
 import { NavigationPath } from '~/NavigationPath'
-import { PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
+import { PlacementApiVersion, PlacementKind } from '~/resources/placement'
 import {
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
@@ -24,7 +24,7 @@ const resource: GitOpsCluster = {
   kind: GitOpsClusterKind,
   metadata: { name: 'fleet-gitops', namespace: 'openshift-gitops' },
   spec: {
-    placementRef: { apiVersion: PlacementApiVersionBeta, kind: PlacementKind, name: 'fleet-placement' },
+    placementRef: { apiVersion: PlacementApiVersion, kind: PlacementKind, name: 'fleet-placement' },
     gitopsAddon: { enabled: true, argoCDAgent: { enabled: true } },
   },
   status: {
@@ -43,7 +43,7 @@ function renderGitOps(resources: GitOpsCluster[] = [resource], clusterSets: stri
         store.set(gitOpsClustersState, resources)
         store.set(placementsState, [
           {
-            apiVersion: PlacementApiVersionBeta,
+            apiVersion: PlacementApiVersion,
             kind: PlacementKind,
             metadata: { name: 'fleet-placement', namespace: 'openshift-gitops' },
             spec: { clusterSets },

@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersion, PlacementKind } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { MatchExpressions } from '../selector'
 import { createResource } from '../utils'
@@ -52,7 +52,7 @@ const useSharedValueMock = useSharedValue as jest.Mock
 
 /** Global placement included in placement lists when includeGlobalPlacement is used. */
 const globalPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: { name: GlobalPlacementName, namespace: 'default' },
   spec: {},
@@ -473,7 +473,7 @@ describe('placement-client', () => {
       // Assert - name from producePlacementName with prefix 'cluster-sets-'
       expect(createResourceMock).toHaveBeenCalledTimes(1)
       expect(createResourceMock).toHaveBeenCalledWith({
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'cluster-sets-cluster-set-1-and-cluster-set-2',
@@ -665,7 +665,7 @@ describe('placement-client', () => {
       // Assert
       expect(createResourceMock).toHaveBeenCalledTimes(1)
       expect(createResourceMock).toHaveBeenCalledWith({
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'clusters-cluster-1-and-cluster-2',
@@ -893,7 +893,7 @@ describe('placement-client', () => {
       clusterNames: string[],
       additionalMatchExpressions: MatchExpressions[] = []
     ): Placement => ({
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name, namespace: 'default', labels: PlacementManagedBySystemLabel },
       spec: {
@@ -925,7 +925,7 @@ describe('placement-client', () => {
         namespace: 'default',
         ownerReferences: [
           {
-            apiVersion: PlacementApiVersionBeta,
+            apiVersion: PlacementApiVersion,
             kind: 'Placement',
             name: placementName,
             uid: `${placementName}-uid`,
@@ -957,7 +957,7 @@ describe('placement-client', () => {
       it('should return empty clusters array for placement without predicates', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'no-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {},
@@ -977,7 +977,7 @@ describe('placement-client', () => {
       it('should return empty clusters array for placement with empty predicates array', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'empty-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: { predicates: [] },
@@ -997,7 +997,7 @@ describe('placement-client', () => {
       it('should ignore matchExpressions with key other than name', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'wrong-key', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1030,7 +1030,7 @@ describe('placement-client', () => {
       it('should extract only values from matchExpressions with key=name', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'mixed-keys', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1064,7 +1064,7 @@ describe('placement-client', () => {
       it('should handle placement with no labelSelector', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'no-label-selector', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1090,7 +1090,7 @@ describe('placement-client', () => {
       it('should handle placement with no matchExpressions', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'no-match-expressions', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1118,7 +1118,7 @@ describe('placement-client', () => {
       it('should handle placement with empty matchExpressions array', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'empty-match-expressions', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1148,7 +1148,7 @@ describe('placement-client', () => {
       it('should handle matchExpression with key=name but no values', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'no-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1178,7 +1178,7 @@ describe('placement-client', () => {
       it('should handle matchExpression with key=name but empty values array', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'empty-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1208,7 +1208,7 @@ describe('placement-client', () => {
       it('should filter out falsy values from matchExpression values', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'falsy-values', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1244,7 +1244,7 @@ describe('placement-client', () => {
       it('should deduplicate cluster names from predicates', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'duplicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1284,7 +1284,7 @@ describe('placement-client', () => {
       it('should handle multiple predicates each with their own matchExpressions', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'multi-predicates', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {
@@ -1389,7 +1389,7 @@ describe('placement-client', () => {
       it('should use PlacementDecision clusters when placement has no predicates', () => {
         // Arrange
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'decision-only-clusters', namespace: 'default', labels: PlacementManagedBySystemLabel },
           spec: {},
@@ -1512,7 +1512,7 @@ describe('placement-client', () => {
       it('should return only placements that have PlacementManagedBySystemLabel', () => {
         const withLabel = createPlacementWithPredicates('with-label', ['cluster-a'])
         const withoutLabel: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'without-label', namespace: 'default' },
           spec: {
@@ -1540,7 +1540,7 @@ describe('placement-client', () => {
 
       it('should return empty array when no placements have PlacementManagedBySystemLabel', () => {
         const placement: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'unmanaged', namespace: 'default' },
           spec: {
@@ -1570,7 +1570,7 @@ describe('placement-client', () => {
       it('should call useFindPlacementDecisions with names of found placements only', () => {
         const withLabel = createPlacementWithPredicates('found-placement', ['c1'])
         const withoutLabel: Placement = {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { name: 'missing-label', namespace: 'default' },
           spec: {},

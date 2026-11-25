@@ -2,13 +2,7 @@
 import { sha256 } from 'js-sha256'
 import { useSharedValue, useSharedAtoms } from '../../shared-atoms'
 import { MulticlusterRoleAssignmentNamespace } from '../multicluster-role-assignment'
-import {
-  GlobalPlacementName,
-  Placement,
-  PlacementApiVersionBeta,
-  PlacementKind,
-  PlacementPredicates,
-} from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersion, PlacementKind, PlacementPredicates } from '../placement'
 import { PlacementDecision } from '../placement-decision'
 import { createResource, IRequestResult } from '../utils'
 import { PlacementManagedBySystemLabel } from './constants'
@@ -293,7 +287,7 @@ const createPlacement = (
   namespace = MulticlusterRoleAssignmentNamespace
 ): IRequestResult<Placement> => {
   const placement: Placement = {
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: {
       name: producePlacementName(nameElements, namePrefix),

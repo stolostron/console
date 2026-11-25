@@ -53,7 +53,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   Placement,
-  PlacementApiVersionBeta,
+  PlacementApiVersion,
   PlacementKind,
   Secret,
   SecretApiVersion,
@@ -75,7 +75,7 @@ const gitOpsCluster: GitOpsCluster = {
       argoNamespace: 'argo-server-1',
     },
     placementRef: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       name: 'mock-placement',
     },
@@ -258,7 +258,7 @@ const argoAppSetHelm: ApplicationSet = {
 }
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'mock-placement',
@@ -270,7 +270,7 @@ const mockPlacement: Placement = {
 }
 
 const placementGit: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: `${argoAppSetGit.metadata.name}-placement`,
@@ -291,7 +291,7 @@ const placementGit: Placement = {
   },
 }
 const placementHelm: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: `${argoAppSetHelm.metadata.name}-placement`,

@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { StateProvider } from '~/lib/state-provider'
 import { PlacementDecision, PlacementDecisionApiVersion, PlacementDecisionKind } from '~/resources/placement-decision'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '~/resources/placement'
 import {
   getPlacementsForApplicationSet,
   getPlacementsForCluster,
@@ -15,7 +15,7 @@ import { clickElement } from '~/lib/test-util'
 
 const placementUidAlpha = 'uid-placement-alpha'
 const placementWithUid: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'placement-alpha',
@@ -33,7 +33,7 @@ const placementDecisionForCluster = (clusterName: string, placementUid: string):
     namespace: 'ns-alpha',
     ownerReferences: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         name: 'placement-alpha',
         uid: placementUid,
@@ -46,7 +46,7 @@ const placementDecisionForCluster = (clusterName: string, placementUid: string):
 })
 
 const mockPlacement1: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: 'Placement',
   metadata: {
     name: 'placement-1',
@@ -55,7 +55,7 @@ const mockPlacement1: Placement = {
   spec: {},
 }
 const mockPlacement2: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: 'Placement',
   metadata: {
     name: 'placement-2',
@@ -64,7 +64,7 @@ const mockPlacement2: Placement = {
   spec: {},
 }
 const mockPlacement3: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: 'Placement',
   metadata: {
     name: 'placement-3',
@@ -73,7 +73,7 @@ const mockPlacement3: Placement = {
   spec: {},
 }
 const mockPlacement4: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: 'Placement',
   metadata: {
     name: 'placement-4',

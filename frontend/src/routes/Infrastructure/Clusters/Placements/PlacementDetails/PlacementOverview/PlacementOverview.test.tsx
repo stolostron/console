@@ -17,7 +17,7 @@ import {
   ApplicationSetApiVersion,
   ApplicationSetKind,
 } from '../../../../../../resources/application-set'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../../resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '../../../../../../resources/placement'
 import {
   PlacementDecision,
   PlacementDecisionApiVersion,
@@ -35,7 +35,7 @@ import { PlacementDetailsContext } from '../PlacementDetails'
 import PlacementOverviewPageContent from './PlacementOverview'
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'test-placement',
@@ -75,7 +75,7 @@ const mockPlacementDecision: PlacementDecision = {
     uid: 'uid-pd-1',
     ownerReferences: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         name: 'test-placement',
         uid: 'uid-placement-1',
@@ -146,7 +146,7 @@ const mockGitOpsCluster: GitOpsCluster = {
   },
   spec: {
     placementRef: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       name: 'test-placement',
     },

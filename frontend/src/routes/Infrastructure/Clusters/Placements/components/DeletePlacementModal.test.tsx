@@ -3,7 +3,7 @@
 import { render, screen, waitFor } from '@testing-library/react'
 import { StateProvider } from '~/lib/state-provider'
 import { DeletePlacementModal, IDeletePlacementModalProps } from './DeletePlacementModal'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '../../../../../resources/placement'
 import { ApplicationSet, ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
 import { Policy, PolicyApiVersion, PolicyKind } from '../../../../../resources/policy'
 import { PolicySet, PolicySetApiVersion, PolicySetKind } from '../../../../../resources/policy-set'
@@ -17,7 +17,7 @@ jest.mock('../../../../../lib/delete-application', () => ({
 }))
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'test-placement',
@@ -79,7 +79,7 @@ const mockGitOpsCluster: GitOpsCluster = {
   },
   spec: {
     placementRef: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       name: 'test-placement',
     },
