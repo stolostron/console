@@ -85,6 +85,7 @@ export default class TemplateEditor extends React.Component {
     title: PropTypes.string,
     type: PropTypes.string,
     wizardClassName: PropTypes.string,
+    wizardTitle: PropTypes.string,
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -384,6 +385,7 @@ export default class TemplateEditor extends React.Component {
     return (
       <ControlPanel
         wizardClassName={this.props.wizardClassName}
+        wizardTitle={this.props.wizardTitle}
         handleControlChange={this.handleControlChange}
         handleNewEditorMode={this.handleNewEditorMode}
         handleGroupChange={this.handleGroupChange}
@@ -705,8 +707,11 @@ export default class TemplateEditor extends React.Component {
               switch (true) {
                 // collapse section above when this control is selected
                 case collapseAboveAfterSelection === true:
-                  controlData.some(({ id: tid, sectionRef, sectionTitleRef }) => {
+                  controlData.some((item) => {
+                    const { id: tid, sectionRef, sectionTitleRef } = item
                     if (sectionRef && sectionTitleRef) {
+                      // Match user collapse so accordion isExpanded stays in sync.
+                      item.collapsed = true
                       sectionRef.classList.toggle('collapsed', true)
                       sectionTitleRef.classList.toggle('collapsed', true)
                     }

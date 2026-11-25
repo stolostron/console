@@ -7,6 +7,7 @@ export default function TemplateEditor(props: {
   monacoEditor?: ReactNode
   controlData: any[]
   wizardClassName?: string
+  wizardTitle?: string
   template: any
   logging?: boolean
   portals?: {

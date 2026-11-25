@@ -56,6 +56,80 @@ describe('ControlPanelNumber component', () => {
     await clickElement(getByTestId('down-controlId'))
     expect(control.active).toBe('0')
   })
+  it('renders plain variant without stepper buttons', async () => {
+    const control: {
+      name: string
+      tooltip: string
+      controlData: unknown[]
+      id: string
+      type: string
+      variant: string
+      initial: string
+      active?: string
+    } = {
+      name: 'Cores',
+      tooltip: 'tooltip',
+      controlData: [],
+      id: 'cpCores',
+      type: 'number',
+      variant: 'plain',
+      initial: '8',
+      active: '',
+    }
+    const { getByTestId, queryByTestId } = render(
+      <ControlPanelNumber
+        key={'key'}
+        control={control}
+        controlData={control.controlData}
+        controlId={'cpCores'}
+        handleChange={fn}
+        i18n={t}
+      />
+    )
+
+    expect(getByTestId('cpCores')).toBeInTheDocument()
+    expect(queryByTestId('up-cpCores')).not.toBeInTheDocument()
+    expect(queryByTestId('down-cpCores')).not.toBeInTheDocument()
+    await typeElement(getByTestId('cpCores'), '4')
+    expect(control.active).toBe('4')
+  })
+
+  it('initializes empty stepper value to the minimum on plus or minus', async () => {
+    const control: {
+      name: string
+      tooltip: string
+      controlData: unknown[]
+      id: string
+      type: string
+      min: number
+      active?: string
+    } = {
+      name: 'Replicas',
+      tooltip: 'tooltip',
+      controlData: [],
+      id: 'replicas',
+      type: 'number',
+      min: 1,
+      active: '',
+    }
+    const { getByTestId } = render(
+      <ControlPanelNumber
+        key={'key'}
+        control={control}
+        controlData={control.controlData}
+        controlId={'replicas'}
+        handleChange={fn}
+        i18n={t}
+      />
+    )
+
+    await clickElement(getByTestId('up-replicas'))
+    expect(control.active).toBe('1')
+    control.active = ''
+    await clickElement(getByTestId('down-replicas'))
+    expect(control.active).toBe('1')
+  })
+
   it('renders as expected with min int value', async () => {
     const control: {
       name: string

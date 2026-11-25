@@ -9,7 +9,7 @@ import get from 'lodash/get'
 ///////////////////////////////////////////////////////////////////////////////
 export const initializeControlData = (initialControlData, onControlInitialize, i18n, uniqueGroupID, inGroup) => {
   const parentControlData = initialControlData.map((control) => {
-    const { type, controlData, groupCnt = 1, startWithNone } = control
+    const { type, controlData, groupCnt = 1, startWithNone, initialGroupCount } = control
     switch (type) {
       case 'group': {
         let active = control.active
@@ -19,12 +19,22 @@ export const initializeControlData = (initialControlData, onControlInitialize, i
         if (!control.nextUniqueGroupID) {
           control.nextUniqueGroupID = 1
         }
-        if (startWithNone && active.length === 0) {
-          return control
-        }
-        while (active.length < groupCnt) {
-          active.push(initializeControlData(controlData, onControlInitialize, i18n, control.nextUniqueGroupID, true))
-          control.nextUniqueGroupID++
+        // Seed only on first init so later re-inits do not resurrect deleted groups.
+        if (!control.groupsSeeded) {
+          let seedCount = initialGroupCount ?? (startWithNone ? 0 : groupCnt)
+          // Empty groups without startWithNone cannot show the add prompt — seed at least one.
+          if (seedCount === 0 && !startWithNone) {
+            seedCount = Math.max(groupCnt, 1)
+          }
+          if (seedCount === 0 && active.length === 0) {
+            control.groupsSeeded = true
+            return control
+          }
+          while (active.length < seedCount) {
+            active.push(initializeControlData(controlData, onControlInitialize, i18n, control.nextUniqueGroupID, true))
+            control.nextUniqueGroupID++
+          }
+          control.groupsSeeded = true
         }
         return control
       }

@@ -9,18 +9,15 @@
   display: flex;
   justify-content: left;
 }
-.temptifly .creation-view-portals,
-.creation-view .creation-view-portals {
+:is(.temptifly, .creation-view) .creation-view-portals {
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
-.temptifly .creation-view-portals > div,
-.creation-view .creation-view-portals > div {
+:is(.temptifly, .creation-view) .creation-view-portals > div {
   margin-right: 25px;
 }
-.temptifly .creation-view-controls,
-.creation-view .creation-view-controls {
+:is(.temptifly, .creation-view) .creation-view-controls {
   display: flex;
   flex-direction: column;
   row-gap: 0;
@@ -31,82 +28,73 @@
   padding: var(--pf-v6-c-wizard__main-body--PaddingBlockStart) var(--pf-v6-c-wizard__main-body--PaddingInlineEnd)
     var(--pf-v6-c-wizard__main-body--PaddingBlockEnd) var(--pf-v6-c-wizard__main-body--PaddingInlineStart);
 }
-.temptifly .creation-view-controls div:focus,
-.creation-view .creation-view-controls div:focus {
+:is(.temptifly, .creation-view) .creation-view-controls div:focus {
   outline: none;
 }
-.temptifly .creation-view-controls-section,
-.creation-view .creation-view-controls-section {
+:is(.temptifly, .creation-view) .creation-view-controls-section {
   max-height: 10000px;
   transition: max-height 0.3s;
 }
-.temptifly .creation-view-controls-section.collapsed,
-.creation-view .creation-view-controls-section.collapsed {
+:is(.temptifly, .creation-view) .creation-view-controls-section.collapsed {
   overflow: hidden;
   max-height: 0;
 }
-.temptifly .creation-view-controls-section.shadowed,
-.creation-view .creation-view-controls-section.shadowed {
+:is(.temptifly, .creation-view) .creation-view-controls-section.shadowed {
   border: 1px solid #dfe0e3;
   background: white;
   box-shadow: 0 1px 1px 0 rgba(0, 0, 0, 0.1);
   padding: 20px;
 }
-.temptifly .creation-view-controls-section.shadowed .pf-v6-c-form-control,
-.creation-view .creation-view-controls-section.shadowed .pf-v6-c-form-control {
+:is(.temptifly, .creation-view) .creation-view-controls-section.shadowed .pf-v6-c-form-control {
   background-color: #f4f7fb;
 }
-.temptifly .creation-view-controls-section.shadowed.collapsed,
-.creation-view .creation-view-controls-section.shadowed.collapsed {
+:is(.temptifly, .creation-view) .creation-view-controls-section.shadowed.collapsed {
   overflow: hidden;
   max-height: 0;
   border: none;
   padding: 0;
 }
-.temptifly .creation-view-controls-section.collapsed,
-.creation-view .creation-view-controls-section.collapsed {
+:is(.temptifly, .creation-view) .creation-view-controls-section.collapsed {
   overflow: hidden;
   max-height: 0;
 }
-.temptifly .pf-v6-c-wizard__footer,
-.creation-view .pf-v6-c-wizard__footer {
+:is(.temptifly, .creation-view) .pf-v6-c-wizard__footer {
   box-shadow: rgba(3, 3, 3, 0.16) 0px -2px 4px -1px;
 }
-.temptifly .pf-v6-c-skeleton,
-.creation-view .pf-v6-c-skeleton {
+/* PatternFly sets pointer-events: none on disabled nav links, so the cursor must
+   live on the parent nav item for unreachable steps (required fields incomplete). */
+:is(.temptifly, .creation-view) .pf-v6-c-wizard__nav-item:has(> .pf-v6-c-wizard__nav-link:disabled),
+:is(.temptifly, .creation-view) .pf-v6-c-wizard__nav-item:has(> .pf-v6-c-wizard__nav-link.pf-m-disabled) {
+  cursor: not-allowed;
+}
+:is(.temptifly, .creation-view) .pf-v6-c-skeleton {
   height: 40px;
   background-color: #e0e0e0;
 }
-.temptifly .pf-v6-c-form-control.input,
-.creation-view .pf-v6-c-form-control.input {
+:is(.temptifly, .creation-view) .pf-v6-c-form-control.input {
   padding: 0;
 }
-.temptifly .pf-v6-c-alert h4,
-.creation-view .pf-v6-c-alert h4 {
+:is(.temptifly, .creation-view) .pf-v6-c-alert h4 {
   margin: 0;
 }
-.temptifly-controls,
-.creation-view-controls {
+:is(.temptifly-controls, .creation-view-controls) {
   height: 100%;
   width: 100%;
   overflow-x: hidden;
   overflow-y: auto;
 }
-.temptifly-controls-note,
-.creation-view-controls-note {
+:is(.temptifly-controls-note, .creation-view-controls-note) {
   cursor: default;
   display: flex;
   padding-bottom: 2rem;
   font-size: 0.875rem;
   font-weight: 400;
 }
-.temptifly-controls-must-exist,
-.creation-view-controls-must-exist {
+:is(.temptifly-controls-must-exist, .creation-view-controls-must-exist) {
   padding-top: 3px;
   margin-left: 0.25rem;
 }
-.temptifly-controls .info-icon,
-.creation-view-controls .info-icon {
+:is(.temptifly-controls, .creation-view-controls) .info-icon {
   margin-left: 0.375rem;
   width: 1rem;
   height: 1rem;
@@ -114,16 +102,13 @@
   stroke: none;
   cursor: pointer;
 }
-.temptifly-controls-title,
-.creation-view-controls-title {
+:is(.temptifly-controls-title, .creation-view-controls-title) {
   cursor: pointer;
 }
-.temptifly-controls-title:focus,
-.creation-view-controls-title:focus {
+:is(.temptifly-controls-title:focus, .creation-view-controls-title:focus) {
   outline: none;
 }
-.temptifly-controls-title-circle,
-.creation-view-controls-title-circle {
+:is(.temptifly-controls-title-circle, .creation-view-controls-title-circle) {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,8 +121,7 @@
   color: #fff;
   font-size: 20px;
 }
-.temptifly-controls-title-main,
-.creation-view-controls-title-main {
+:is(.temptifly-controls-title-main, .creation-view-controls-title-main) {
   font-weight: normal;
   font-size: 16px;
   padding: 16px 0;
@@ -146,20 +130,16 @@
   position: relative;
   line-height: 28px;
 }
-.temptifly-controls-title-main.overline,
-.creation-view-controls-title-main.overline {
+:is(.temptifly-controls-title-main.overline, .creation-view-controls-title-main.overline) {
   border-top: 4px double #d3caca;
 }
-.temptifly-controls-title-main.subtitle,
-.creation-view-controls-title-main.subtitle {
+:is(.temptifly-controls-title-main.subtitle, .creation-view-controls-title-main.subtitle) {
   font-size: 16px;
 }
-.temptifly-controls-title-main-collapse-button,
-.creation-view-controls-title-main-collapse-button {
+:is(.temptifly-controls-title-main-collapse-button, .creation-view-controls-title-main-collapse-button) {
   display: flex;
 }
-.temptifly-controls-title-main-collapse-button > svg,
-.creation-view-controls-title-main-collapse-button > svg {
+:is(.temptifly-controls-title-main-collapse-button, .creation-view-controls-title-main-collapse-button) > svg {
   margin: 0 6px;
   width: 16px;
   height: 16px;
@@ -167,96 +147,57 @@
   transition: all 100ms;
   transform: rotate(90deg);
 }
-.temptifly-controls-title-main-name,
-.creation-view-controls-title-main-name {
-  height: 32px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: hidden;
+:is(.temptifly-controls-title-main-name, .creation-view-controls-title-main-name) {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--pf-t--global--spacer--sm);
+  white-space: normal;
 }
-.temptifly-controls-title-main-summary,
-.creation-view-controls-title-main-summary {
-  padding-left: 30px;
-  font-weight: 400;
-  visibility: hidden;
-}
-.temptifly-controls-title-main-summary.visible,
-.creation-view-controls-title-main-summary.visible {
-  visibility: visible;
-}
-.temptifly-controls-title-main-summary .tag,
-.creation-view-controls-title-main-summary .tag {
-  cursor: default;
-  font-size: 12px;
-  margin-right: 10px;
-  color: #596a73;
-  background-color: #e3e7e9;
-}
-.temptifly-controls-title-normal-container,
-.creation-view-controls-title-normal-container {
+:is(.temptifly-controls-title-normal-container, .creation-view-controls-title-normal-container) {
   display: flex;
   align-items: center;
 }
-.temptifly-controls-title-normal,
-.creation-view-controls-title-normal {
+:is(.temptifly-controls-title-normal, .creation-view-controls-title-normal) {
   font-weight: normal;
   font-size: 14px;
   padding: 0 0 8px;
 }
-.temptifly-controls-title.collapsed .creation-view-controls-title-normal-container,
-.creation-view-controls-title.collapsed .creation-view-controls-title-normal-container {
+:is(.temptifly-controls-title.collapsed, .creation-view-controls-title.collapsed) .creation-view-controls-title-normal-container {
   display: none;
 }
-.temptifly-controls-title.collapsed .creation-view-controls-title-main-collapse-button > svg,
-.creation-view-controls-title.collapsed .creation-view-controls-title-main-collapse-button > svg {
+:is(.temptifly-controls-title.collapsed, .creation-view-controls-title.collapsed) .creation-view-controls-title-main-collapse-button > svg {
   transform: rotate(0);
 }
-.temptifly-controls-title.collapsed .creation-view-controls-title-main-name,
-.creation-view-controls-title.collapsed .creation-view-controls-title-main-name {
+:is(.temptifly-controls-title.collapsed, .creation-view-controls-title.collapsed) .creation-view-controls-title-main-name {
   text-overflow: ellipsis;
 }
-.temptifly-controls-title.collapsed .creation-view-controls-title-main-summary,
-.creation-view-controls-title.collapsed .creation-view-controls-title-main-summary {
-  visibility: visible;
-}
-.temptifly-controls-singleselect-loading,
-.creation-view-controls-singleselect-loading,
-.temptifly-controls-combobox-loading,
-.creation-view-controls-combobox-loading,
-.temptifly-controls-treeselect-loading,
-.creation-view-controls-treeselect-loading {
+:is(.temptifly-controls-singleselect-loading, .creation-view-controls-singleselect-loading),
+:is(.temptifly-controls-combobox-loading, .creation-view-controls-combobox-loading),
+:is(.temptifly-controls-treeselect-loading, .creation-view-controls-treeselect-loading) {
   position: relative;
   background-color: white;
   padding: 5px 8px 5px 30px;
   height: 36px;
   border-bottom: 1px solid #8a8d90;
 }
-.temptifly-controls-singleselect-loading .pf-v6-c-spinner,
-.creation-view-controls-singleselect-loading .pf-v6-c-spinner,
-.temptifly-controls-combobox-loading .pf-v6-c-spinner,
-.creation-view-controls-combobox-loading .pf-v6-c-spinner,
-.temptifly-controls-treeselect-loading .pf-v6-c-spinner,
-.creation-view-controls-treeselect-loading .pf-v6-c-spinner {
+:is(.temptifly-controls-singleselect-loading, .creation-view-controls-singleselect-loading) .pf-v6-c-spinner,
+:is(.temptifly-controls-combobox-loading, .creation-view-controls-combobox-loading) .pf-v6-c-spinner,
+:is(.temptifly-controls-treeselect-loading, .creation-view-controls-treeselect-loading) .pf-v6-c-spinner {
   position: absolute;
   top: 6px;
   left: 4px;
 }
-.temptifly-controls-singleselect .tf--list-box,
-.creation-view-controls-singleselect .tf--list-box,
-.temptifly-controls-combobox .tf--list-box,
-.creation-view-controls-combobox .tf--list-box,
-.temptifly-controls-treeselect .tf--list-box,
-.creation-view-controls-treeselect .tf--list-box {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box {
   position: relative;
   box-shadow: 0 1px 0 0 #5a6872;
   cursor: pointer;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__selection,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__selection,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__selection,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__selection,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__selection,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__selection {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__selection,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__selection,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__selection {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -265,28 +206,19 @@
   padding: 0 2.2rem;
   cursor: pointer;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__selection svg,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__selection svg,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__selection svg,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__selection svg,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__selection svg,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__selection svg {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__selection svg,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__selection svg,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__selection svg {
   height: 100%;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__selection:focus,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__selection:focus,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__selection:focus,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__selection:focus,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__selection:focus,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__selection:focus {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__selection:focus,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__selection:focus,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__selection:focus {
   outline: #06c auto 1px;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu-icon,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu-icon,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu-icon,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu-icon {
   position: absolute;
   top: 0;
   right: 0;
@@ -294,36 +226,24 @@
   height: 100%;
   cursor: pointer;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon svg,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon svg,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu-icon svg,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon svg,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon svg,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon svg {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu-icon svg,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu-icon svg,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu-icon svg {
   height: 100%;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon:focus,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon:focus,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu-icon:focus,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon:focus,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon:focus,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon:focus {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu-icon:focus,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu-icon:focus,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu-icon:focus {
   outline: #06c auto 1px;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu-icon--open,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu-icon--open,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu-icon--open,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu-icon--open,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu-icon--open,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu-icon--open {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu-icon--open,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu-icon--open,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu-icon--open {
   transform: rotate(180deg);
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__refresh-icon,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__refresh-icon,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__refresh-icon,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__refresh-icon,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__refresh-icon,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__refresh-icon {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__refresh-icon,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__refresh-icon,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__refresh-icon {
   position: absolute;
   top: 0;
   right: 40px;
@@ -331,20 +251,14 @@
   height: 100%;
   cursor: pointer;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__refresh-icon svg,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__refresh-icon svg,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__refresh-icon svg,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__refresh-icon svg,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__refresh-icon svg,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__refresh-icon svg {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__refresh-icon svg,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__refresh-icon svg,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__refresh-icon svg {
   height: 100%;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu {
   box-shadow: var(--pf-t--global--box-shadow--md);
   position: absolute;
   left: 0;
@@ -357,32 +271,23 @@
   cursor: pointer;
   padding: 10px;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-container {
   display: flex;
   flex-direction: column;
   margin: 10px 0;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item-title {
   font-weight: bold;
   line-height: 12px;
   font-size: 18px;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item {
   display: flex;
   align-items: center;
   height: fit-content;
@@ -391,62 +296,33 @@
   position: relative;
   white-space: nowrap;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:focus {
   outline: #06c auto 1px;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item:hover {
   background-color: rgba(85, 150, 230, 0.1);
   outline: 1px solid transparent;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
-.creation-view-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
-.creation-view-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item b {
   font-weight: bold;
   font-size: 18px;
   text-indent: 0px;
   text-align: center;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
-.creation-view-controls-singleselect
-  .tf--list-box
-  .tf--list-box__menu
-  .tf--list-box__menu-item.tf--list-box__menu-branch,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
-.creation-view-controls-treeselect
-  .tf--list-box
-  .tf--list-box__menu
-  .tf--list-box__menu-item.tf--list-box__menu-branch {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item.tf--list-box__menu-branch {
   font-weight: 700;
 }
-.temptifly-controls-singleselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
-.creation-view-controls-singleselect
-  .tf--list-box
-  .tf--list-box__menu
-  .tf--list-box__menu-item
-  .tf-select__menu-item-icon,
-.temptifly-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
-.creation-view-controls-combobox .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
-.temptifly-controls-treeselect .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
-.creation-view-controls-treeselect
-  .tf--list-box
-  .tf--list-box__menu
-  .tf--list-box__menu-item
-  .tf-select__menu-item-icon {
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon,
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box .tf--list-box__menu .tf--list-box__menu-item .tf-select__menu-item-icon {
   position: absolute;
   right: 10px;
   color: #06c;
@@ -458,69 +334,56 @@
 .creation-view-controls-add-value-container.bottom-right {
   justify-content: flex-end;
 }
-.temptifly-controls-delete-button,
-.creation-view-controls-delete-button {
+:is(.temptifly-controls-delete-button, .creation-view-controls-delete-button) {
   display: flex;
   position: absolute;
   top: 16px;
   right: 10px;
   z-index: 100;
 }
-.temptifly-controls-add-combobox,
-.creation-view-controls-add-combobox {
+:is(.temptifly-controls-add-combobox, .creation-view-controls-add-combobox) {
   margin-bottom: 8px;
   position: relative;
 }
-.temptifly-controls-table-container,
-.creation-view-controls-table-container {
+:is(.temptifly-controls-table-container, .creation-view-controls-table-container) {
   margin-bottom: 20px;
   position: relative;
 }
-.temptifly-controls-table-exceptions,
-.creation-view-controls-table-exceptions {
+:is(.temptifly-controls-table-exceptions, .creation-view-controls-table-exceptions) {
   color: red;
   font-size: 12px;
 }
-.temptifly-controls-table-delete-button,
-.creation-view-controls-table-delete-button {
+:is(.temptifly-controls-table-delete-button, .creation-view-controls-table-delete-button) {
   cursor: pointer;
   color: #3d70b2;
   display: flex;
 }
-.temptifly-controls-table-delete-button .icon,
-.creation-view-controls-table-delete-button .icon {
+:is(.temptifly-controls-table-delete-button, .creation-view-controls-table-delete-button) .icon {
   margin: 0 6px;
   width: 16px;
   height: 16px;
   fill: #3d70b2;
 }
-.temptifly-controls-table-delete-button:focus,
-.creation-view-controls-table-delete-button:focus {
+:is(.temptifly-controls-table-delete-button:focus, .creation-view-controls-table-delete-button:focus) {
   outline: none;
 }
-.temptifly-controls-table .pf-v6-c-toolbar__content-section,
-.creation-view-controls-table .pf-v6-c-toolbar__content-section {
+:is(.temptifly-controls-table, .creation-view-controls-table) .pf-v6-c-toolbar__content-section {
   justify-content: space-between;
 }
-.temptifly-controls-table .pf-v6-c-table tr > *,
-.creation-view-controls-table .pf-v6-c-table tr > * {
+:is(.temptifly-controls-table, .creation-view-controls-table) .pf-v6-c-table tr > * {
   padding: 14px;
 }
-.temptifly-controls-table .tf-table-button-container,
-.creation-view-controls-table .tf-table-button-container {
+:is(.temptifly-controls-table, .creation-view-controls-table) .tf-table-button-container {
   display: flex;
 }
-.temptifly-controls-table .tf-table-button-container > div,
-.creation-view-controls-table .tf-table-button-container > div {
+:is(.temptifly-controls-table, .creation-view-controls-table) .tf-table-button-container > div {
   padding: 10px;
 }
-.temptifly-controls-table-singleselect,
-.creation-view-controls-table-singleselect {
+:is(.temptifly-controls-table-singleselect, .creation-view-controls-table-singleselect) {
   padding: 0;
   min-width: 100px;
 }
-.temptifly-controls-table-toggle,
-.creation-view-controls-table-toggle {
+:is(.temptifly-controls-table-toggle, .creation-view-controls-table-toggle) {
   display: flex;
   align-items: center;
 }
@@ -532,121 +395,72 @@
     background-color: #fff;
   }
 }
-.temptifly-controls-table .new-row,
-.creation-view-controls-table .new-row {
+:is(.temptifly-controls-table, .creation-view-controls-table) .new-row {
   animation: fadeIt 10s ease-out;
 }
-.temptifly-controls-labels,
-.creation-view-controls-labels {
+:is(.temptifly-controls-labels, .creation-view-controls-labels) {
   padding: 0 0.3125rem 1.5625rem 2px;
 }
-.temptifly-controls-labels-title,
-.creation-view-controls-labels-title {
+:is(.temptifly-controls-labels-container, .creation-view-controls-labels-container) {
   display: flex;
-  align-items: center;
-  font-weight: bold;
-  font-size: 0.875rem;
-  padding-bottom: 0.5rem;
-}
-.temptifly-controls-labels-container,
-.creation-view-controls-labels-container {
-  min-height: 40px;
-  box-shadow: 0 1px 0 0 #5a6872;
-  display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: var(--pf-t--global--spacer--sm);
   padding: 0;
 }
-.temptifly-controls-labels-tag-container,
-.creation-view-controls-labels-tag-container {
-  padding: 6px 0 0 7px;
-}
-.temptifly-controls-labels-tag-container .pf-v6-c-label,
-.creation-view-controls-labels-tag-container .pf-v6-c-label {
-  margin-right: 5px;
-}
-.temptifly-controls-labels-edit-container,
-.creation-view-controls-labels-edit-container {
-  position: relative;
+:is(.temptifly-controls-labels-entry, .creation-view-controls-labels-entry) {
   width: 100%;
 }
-.temptifly-controls-labels-edit-container input,
-.creation-view-controls-labels-edit-container input {
-  border: none;
+:is(.temptifly-controls-labels-tag-container, .creation-view-controls-labels-tag-container) {
+  margin-block-start: var(--pf-t--global--spacer--sm);
 }
-.temptifly-controls-textbox,
-.creation-view-controls-textbox,
-.temptifly-controls-multiselect,
-.creation-view-controls-multiselect,
-.temptifly-controls-singleselect,
-.creation-view-controls-singleselect,
-.temptifly-controls-combobox,
-.creation-view-controls-combobox,
-.temptifly-controls-treeselect,
-.creation-view-controls-treeselect,
-.temptifly-controls-select,
-.creation-view-controls-select,
-.temptifly-controls-textarea,
-.creation-view-controls-textarea,
-.temptifly-controls-number,
-.creation-view-controls-number,
-.temptifly-controls-cards,
-.creation-view-controls-cards,
-.temptifly-controls-skeleton,
-.creation-view-controls-skeleton {
+:is(.temptifly-controls-textbox, .creation-view-controls-textbox),
+:is(.temptifly-controls-multiselect, .creation-view-controls-multiselect),
+:is(.temptifly-controls-singleselect, .creation-view-controls-singleselect),
+:is(.temptifly-controls-combobox, .creation-view-controls-combobox),
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect),
+:is(.temptifly-controls-select, .creation-view-controls-select),
+:is(.temptifly-controls-textarea, .creation-view-controls-textarea),
+:is(.temptifly-controls-number, .creation-view-controls-number),
+:is(.temptifly-controls-cards, .creation-view-controls-cards),
+:is(.temptifly-controls-skeleton, .creation-view-controls-skeleton) {
   padding: 0 0.3125rem 1.5625rem 2px;
 }
-.temptifly-controls-textbox-title,
-.creation-view-controls-textbox-title,
-.temptifly-controls-multiselect-title,
-.creation-view-controls-multiselect-title,
-.temptifly-controls-singleselect-title,
-.creation-view-controls-singleselect-title,
-.temptifly-controls-combobox-title,
-.creation-view-controls-combobox-title,
-.temptifly-controls-treeselect-title,
-.creation-view-controls-treeselect-title,
-.temptifly-controls-select-title,
-.creation-view-controls-select-title,
-.temptifly-controls-textarea-title,
-.creation-view-controls-textarea-title,
-.temptifly-controls-number-title,
-.creation-view-controls-number-title,
-.temptifly-controls-cards-title,
-.creation-view-controls-cards-title,
-.temptifly-controls-skeleton-title,
-.creation-view-controls-skeleton-title {
+:is(.temptifly-controls-textbox-title, .creation-view-controls-textbox-title),
+:is(.temptifly-controls-multiselect-title, .creation-view-controls-multiselect-title),
+:is(.temptifly-controls-singleselect-title, .creation-view-controls-singleselect-title),
+:is(.temptifly-controls-combobox-title, .creation-view-controls-combobox-title),
+:is(.temptifly-controls-treeselect-title, .creation-view-controls-treeselect-title),
+:is(.temptifly-controls-select-title, .creation-view-controls-select-title),
+:is(.temptifly-controls-textarea-title, .creation-view-controls-textarea-title),
+:is(.temptifly-controls-number-title, .creation-view-controls-number-title),
+:is(.temptifly-controls-cards-title, .creation-view-controls-cards-title),
+:is(.temptifly-controls-skeleton-title, .creation-view-controls-skeleton-title) {
   display: flex;
   align-items: center;
   font-weight: bold;
   font-size: 0.875rem;
   padding-bottom: 0.5rem;
 }
-.temptifly-controls textarea.pf-v6-c-form-control,
-.creation-view-controls textarea.pf-v6-c-form-control {
+:is(.temptifly-controls, .creation-view-controls) textarea.pf-v6-c-form-control {
   min-height: 100px;
 }
-.temptifly-controls-treeselect .tf--list-box__menu-branch,
-.creation-view-controls-treeselect .tf--list-box__menu-branch {
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box__menu-branch {
   font-weight: bold;
   text-decoration: none;
 }
-.temptifly-controls-treeselect .tf--list-box__menu-branch:before,
-.creation-view-controls-treeselect .tf--list-box__menu-branch:before {
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box__menu-branch:before {
   padding-right: 2px;
   font-family: codicon;
   content: '\eab4';
 }
-.temptifly-controls-treeselect .tf--list-box__menu-branch.open:before,
-.creation-view-controls-treeselect .tf--list-box__menu-branch.open:before {
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box__menu-branch.open:before {
   content: '\eab7';
 }
-.temptifly-controls-treeselect .tf--list-box__menu-branch.searching,
-.creation-view-controls-treeselect .tf--list-box__menu-branch.searching {
+:is(.temptifly-controls-treeselect, .creation-view-controls-treeselect) .tf--list-box__menu-branch.searching {
   color: gray;
   font-weight: normal;
 }
-.temptifly-controls-checkbox,
-.creation-view-controls-checkbox {
+:is(.temptifly-controls-checkbox, .creation-view-controls-checkbox) {
   padding: 0 0.3125rem 1.125rem 0;
   display: flex;
   align-items: center;
@@ -654,17 +468,14 @@
   font-size: 0.875rem;
   position: relative;
 }
-.temptifly-controls-checkbox .pf-v6-c-form__group-label,
-.creation-view-controls-checkbox .pf-v6-c-form__group-label,
+:is(.temptifly-controls-checkbox, .creation-view-controls-checkbox) .pf-v6-c-form__group-label,
 .creation-view-controls-custom .pf-v6-c-form__group-label {
   padding: 0 0 0 5px;
 }
-.temptifly-controls-checkbox .pf-v6-c-check__input,
-.creation-view-controls-checkbox .pf-v6-c-check__input {
+:is(.temptifly-controls-checkbox, .creation-view-controls-checkbox) .pf-v6-c-check__input {
   margin-right: 6px;
 }
-.temptifly-controls .creation-view-group-container,
-.creation-view-controls .creation-view-group-container {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container {
   position: relative;
   border: 1px solid var(--pf-t--global--border--color--subtle);
   background-color: var(--pf-t--global--background--color--secondary--default);
@@ -692,24 +503,17 @@
 .creation-view-controls .creation-view-group-subcontainer .clusterSelector-labels-section .pf-v6-c-form__label-text {
   font-weight: bold;
 }
-.temptifly-controls .creation-view-group-container .pf-v6-c-form-control .pf-v6-c-badge.pf-m-read,
-.creation-view-controls .creation-view-group-container .pf-v6-c-form-control .pf-v6-c-badge.pf-m-read {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container .pf-v6-c-form-control .pf-v6-c-badge.pf-m-read {
   background-color: darkgray;
 }
-.temptifly-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button,
-.creation-view-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container .creation-view-controls-title-main-collapse-button {
   position: relative;
   left: unset;
 }
-.temptifly-controls .creation-view-group-container .creation-view-controls-title-main-collapse-button.collapsed > svg,
-.creation-view-controls
-  .creation-view-group-container
-  .creation-view-controls-title-main-collapse-button.collapsed
-  > svg {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container .creation-view-controls-title-main-collapse-button.collapsed > svg {
   transform: rotate(-180deg);
 }
-.temptifly-controls .creation-view-group-container .techPreviewTag,
-.creation-view-controls .creation-view-group-container .techPreviewTag {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container .techPreviewTag {
   width: 88px;
   height: 26px;
   display: inline-block;
@@ -723,8 +527,7 @@
   line-height: 16px;
   text-align: center;
 }
-.temptifly-controls .creation-view-group-container .tf--create-cluster-page__provider-card,
-.creation-view-controls .creation-view-group-container .tf--create-cluster-page__provider-card {
+:is(.temptifly-controls, .creation-view-controls) .creation-view-group-container .tf--create-cluster-page__provider-card {
   background-color: #f0f0f0;
   border: 1px solid #dfe3e6;
   display: flex;
@@ -732,35 +535,131 @@
   cursor: pointer;
 }
 
-.temptifly-controls.showEditor .creation-view-controls-card-container,
-.creation-view-controls.showEditor .creation-view-controls-card-container {
+:is(.temptifly-controls.showEditor, .creation-view-controls.showEditor) .creation-view-controls-card-container {
   margin-bottom: 20px;
 }
 
 .creation-view-controls-card-container .pf-v6-c-tile.pf-m-display-lg {
   min-height: 140px;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: flex-start;
+  align-items: flex-start;
   flex-direction: column;
+  text-align: start;
+}
+.creation-view-controls-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--pf-t--global--spacer--sm);
+  width: 100%;
+  text-align: start;
+}
+.creation-view-controls-card-badge {
+  display: flex;
+  align-items: center;
+  min-height: 1.375rem;
+}
+.creation-view-controls-card-title {
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+  font-size: var(--pf-t--global--font--size--md);
+  line-height: var(--pf-t--global--font--line-height--heading);
+}
+.creation-view-controls-card-body .control-panel-cards__extra-text {
+  color: var(--pf-t--global--text--color--subtle);
 }
 
-.temptifly .pf-v6-c-wizard .pf-v6-c-wizard__main-body,
-.creation-view .pf-v6-c-wizard .pf-v6-c-wizard__main-body {
+.creation-view-form-row.pf-v6-l-grid {
+  column-gap: 20px;
+  row-gap: 0;
+  align-items: start;
+}
+.creation-view-form-row .pf-v6-c-form__group {
+  margin-block-end: var(--pf-t--global--spacer--lg);
+}
+
+.creation-view-size-summary-block {
+  margin: 0;
+}
+.creation-view-size-summary {
+  margin: 0 0 var(--pf-t--global--spacer--sm);
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--pf-t--color--gray--50);
+}
+.creation-view-size-summary strong {
+  color: var(--pf-t--color--gray--95);
+  font-weight: 600;
+}
+.creation-view-hint {
+  margin: var(--pf-t--global--spacer--sm) 0 0;
+  font-size: var(--pf-t--global--font--size--body--default);
+  font-weight: var(--pf-t--global--font--weight--body--default);
+  line-height: 1.4;
+  color: var(--pf-t--global--text--color--regular);
+  max-width: 47.5rem;
+}
+.creation-view-hint strong {
+  color: inherit;
+  font-weight: var(--pf-t--global--font--weight--body--bold);
+}
+.creation-view-hint--field {
+  margin: 8px 0 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #6a6e73;
+  max-width: none;
+}
+.creation-view-pool-empty {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border: 1px dashed #c7c7c7;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #6a6e73;
+  max-width: 40rem;
+  line-height: 1.45;
+}
+.creation-view-controls-custom:has(.creation-view-size-summary) {
+  padding-bottom: var(--pf-t--global--spacer--md);
+}
+
+/* Standalone review styles moved to control-panel-finish.css (imported via @import above). */
+
+
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .pf-v6-c-wizard__main-body {
   padding: 0;
   height: 100%;
 }
-.temptifly .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-name,
-.creation-view .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-name {
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main {
+  padding-left: 0;
+  justify-content: flex-start;
+}
+/* Top border between step intro / sections. */
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main.overline {
+  border-top: 1px solid #d2d2d2;
+  padding-top: 24px;
+}
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main .pf-v6-c-expandable-section__toggle {
+  display: inline-flex;
+  width: auto;
+  max-width: 100%;
+  margin-inline-start: 0;
+  padding-inline-start: 0;
+  justify-content: flex-start;
+  text-align: start;
+}
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-name {
   font-weight: bold;
-  margin-left: -30px;
+  height: auto;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
-.temptifly .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button,
-.creation-view .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-collapse-button {
-  left: -25px;
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-controls-title-main-name.normal {
+  font-weight: normal;
 }
-.temptifly .pf-v6-c-wizard .creation-view-controls .creation-view-group-container,
-.creation-view .pf-v6-c-wizard .creation-view-controls .creation-view-group-container {
+:is(.temptifly, .creation-view) .pf-v6-c-wizard .creation-view-controls .creation-view-group-container {
   border: none;
   box-shadow: none;
   padding: 0 0 0 22px;
