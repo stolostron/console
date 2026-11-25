@@ -27,8 +27,8 @@ const mockPolicyReports: PolicyReport = {
         reason: 'testing-reason',
         resolution: 'testing-resolution',
       },
-      message: 'policyreport testing risk 1',
-      policy: 'policyreport testing risk 1 policy',
+      message: 'policyreport testing risk 1: details',
+      policy: 'insights.example.advisor-policy-prefix',
       result: 'policyreport testing risk 1 result',
     },
     {
@@ -107,9 +107,8 @@ describe('ClusterPolicySidebar', () => {
       'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
     )
 
-    // wait for policy reports to be displayed and click the first report in table
-    await waitForText('policyreport testing risk 1 policy: policyreport testing risk 1')
-    await clickByText('policyreport testing risk 1 policy: policyreport testing risk 1')
+    // Show the full message, including its colon, without the policy name.
+    await clickByText('policyreport testing risk 1: details')
 
     // wait for drilldown risk subdetail component
     await waitForText('Low')
@@ -127,9 +126,8 @@ describe('ClusterPolicySidebar', () => {
       'Identified issues from your cluster in different categories. We Identify and prioritize risks and issues to security, configuration, health, performance, availability, and stability of your clusters.'
     )
 
-    // wait for policy reports to be displayed and click the moderate recomendation
-    await waitForText('policyreport testing risk 2 policy: policyreport testing risk 2')
-    await clickByText('policyreport testing risk 2 policy: policyreport testing risk 2')
+    // Click the moderate recommendation.
+    await clickByText('policyreport testing risk 2')
     // wait for drilldown risk subdetail component
     await waitForText('Moderate')
 
@@ -141,17 +139,15 @@ describe('ClusterPolicySidebar', () => {
     // Click back button and wait for static text
     await clickByText('Back')
 
-    // wait for policy reports to be displayed and click the important recomendation
-    await waitForText('policyreport testing risk 3 policy: policyreport testing risk 3')
-    await clickByText('policyreport testing risk 3 policy: policyreport testing risk 3')
+    // Click the important recommendation.
+    await clickByText('policyreport testing risk 3')
     // wait for drilldown risk subdetail component
     await waitForText('Important')
     // Click back button and wait for static text
     await clickByText('Back')
 
-    // wait for policy reports to be displayed and click the critical recomendation
-    await waitForText('policyreport testing risk 4 policy: policyreport testing risk 4')
-    await clickByText('policyreport testing risk 4 policy: policyreport testing risk 4')
+    // Click the critical recommendation.
+    await clickByText('policyreport testing risk 4')
     // wait for drilldown risk subdetail component
     await waitForText('Critical')
     // Click back button and wait for static text

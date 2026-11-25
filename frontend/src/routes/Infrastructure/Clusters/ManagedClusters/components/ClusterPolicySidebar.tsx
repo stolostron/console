@@ -13,15 +13,31 @@ import {
   Content,
   ContentVariants,
 } from '@patternfly/react-core'
-import { AngleLeftIcon, FlagIcon, ListIcon, OutlinedClockIcon } from '@patternfly/react-icons'
+import {
+  AngleLeftIcon,
+  FlagIcon,
+  ListIcon,
+  OutlinedClockIcon,
+  RhUiSeverityCriticalFillIcon,
+  RhUiSeverityImportantFillIcon,
+  RhUiSeverityMinorFillIcon,
+  RhUiSeverityModerateFillIcon,
+} from '@patternfly/react-icons'
 import { TableGridBreakpoint } from '@patternfly/react-table'
+import {
+  t_color_blue_10,
+  t_color_blue_50,
+  t_color_orange_40,
+  t_color_red_60,
+  t_color_yellow_40,
+} from '@patternfly/react-tokens'
 import { Markdown } from '@redhat-cloud-services/rule-components/Markdown'
 import _ from 'lodash'
 import { useState } from 'react'
 import type { TFunction } from 'i18next'
 import { useTranslation } from '../../../../../lib/acm-i18next'
 import { PolicyReport, PolicyReportResults } from '../../../../../resources'
-import { AcmEmptyState, AcmLabels, AcmTable, colorThemes, compareStrings } from '../../../../../ui-components'
+import { AcmEmptyState, AcmLabels, AcmTable, compareStrings } from '../../../../../ui-components'
 import { getTextWidth } from '../../../../../ui-components/utils'
 import {
   backAction,
@@ -32,69 +48,88 @@ import {
   tableTitle,
   titleText,
 } from '../../../../Governance/common/policySidebarStyles'
-import { CriticalRiskIcon, ImportantRiskIcon, LowRiskIcon, ModerateRiskIcon } from './ClusterPolicySidebarIcons'
+
+const RISK_STYLES = {
+  critical: { Icon: RhUiSeverityCriticalFillIcon, color: t_color_red_60.value },
+  important: { Icon: RhUiSeverityImportantFillIcon, color: t_color_orange_40.value },
+  moderate: { Icon: RhUiSeverityModerateFillIcon, color: t_color_yellow_40.value },
+  low: { Icon: RhUiSeverityMinorFillIcon, color: t_color_blue_50.value },
+}
+
+type RiskLevel = keyof typeof RISK_STYLES
+
+// The OpenShift Insights popup uses a lighter blue for the Low slice than for its icon.
+const LOW_RISK_SLICE_COLOR = t_color_blue_10.value
+
+function getRiskLevels(t: TFunction): { risk: RiskLevel; label: string; score: string }[] {
+  return [
+    { risk: 'critical', label: t('Critical'), score: '4' },
+    { risk: 'important', label: t('Important'), score: '3' },
+    { risk: 'moderate', label: t('Moderate'), score: '2' },
+    { risk: 'low', label: t('Low'), score: '1' },
+  ]
+}
+
+function RiskIcon({ risk }: { risk: RiskLevel }) {
+  const { Icon, color } = RISK_STYLES[risk]
+  return <Icon style={{ color }} />
+}
+
+function RiskLegendSymbol({ datum, x = 0, y = 0 }: { datum?: { risk: RiskLevel }; x?: number; y?: number }) {
+  if (!datum) return null
+  return (
+    <g aria-hidden="true" transform={`translate(${x}, ${y - 5})`}>
+      <RiskIcon risk={datum.risk} />
+    </g>
+  )
+}
 
 function renderDonutChart(data: PolicyReportResults[], t: TFunction) {
   const clusterRiskScores = data.map((issue) => issue.properties.total_risk)
-  const formattedData = [
-    {
-      key: t('Critical'),
-      value: clusterRiskScores.filter((score: string) => score === '4').length,
-      isPrimary: true,
-    },
-    {
-      key: t('Important'),
-      value: clusterRiskScores.filter((score: string) => score === '3').length,
-    },
-    {
-      key: t('Moderate'),
-      value: clusterRiskScores.filter((score: string) => score === '2').length,
-    },
-    {
-      key: t('Low'),
-      value: clusterRiskScores.filter((score: string) => score === '1').length,
-    },
-  ]
-  const chartData = formattedData.map((d) => ({ x: d.key, y: d.value }))
-  const legendData: Array<{ name?: string; link?: string }> = formattedData.map((d) => ({
-    name: `${d.value} ${d.key}`,
+  const counts = getRiskLevels(t).map(({ risk, label, score }) => ({
+    risk,
+    label,
+    count: clusterRiskScores.filter((riskScore) => riskScore === score).length,
   }))
-
-  const chartWidth = 400
-  const availableWidth = 0.8 * chartWidth
+  const innerRadius = 67
   const subtitleText = t('Total issues')
-  const subtitleWidth = getTextWidth(subtitleText)
-  const shouldPlaceSubtitleAtBottom = subtitleWidth > availableWidth
+  const shouldPlaceSubtitleAtBottom = getTextWidth(subtitleText) > 2 * innerRadius - 12
 
   return (
     <ChartDonut
       ariaTitle={t('Cluster violations')}
       ariaDesc={t('Donut chart of cluster violations')}
       legendOrientation="vertical"
-      legendPosition="right"
-      constrainToVisibleArea={true}
-      data={chartData}
-      legendData={legendData}
+      constrainToVisibleArea
+      data={counts.map(({ label, count }) => ({ x: label, y: count }))}
+      legendData={counts.map(({ risk, label, count }) => ({ risk, name: `${count} ${label}` }))}
       legendComponent={
         <ChartLegend
-          data={legendData}
+          title={t('Total risk')}
+          titleComponent={<ChartLabel dx={13} dy={-10} style={{ fontWeight: 'bold', fontSize: '14px' }} />}
+          dataComponent={<RiskLegendSymbol />}
           labelComponent={<ChartLabel />}
-          colorScale={colorThemes.criticalImportantModerateLow}
+          x={-10}
+          rowGutter={-3}
         />
       }
       labels={({ datum }) => `${datum.x}: ${datum.y}`}
       padding={{
-        bottom: shouldPlaceSubtitleAtBottom ? 30 : 20,
-        left: 20,
-        right: 145,
-        top: 20,
+        bottom: shouldPlaceSubtitleAtBottom ? 36 : 0,
+        left: 135,
+        right: 10,
+        top: 0,
       }}
       title={`${data.length}`}
-      subTitle={t('Total issues')}
+      subTitle={subtitleText}
+      subTitleComponent={<ChartLabel style={{ fill: 'var(--pf-t--chart--color--black--500)' }} />}
       subTitlePosition={shouldPlaceSubtitleAtBottom ? 'bottom' : undefined}
-      width={400}
-      height={200}
-      colorScale={colorThemes.criticalImportantModerateLow}
+      width={320}
+      height={shouldPlaceSubtitleAtBottom ? 216 : 180}
+      radius={80}
+      innerRadius={innerRadius}
+      padAngle={0}
+      colorScale={counts.map(({ risk }) => (risk === 'low' ? LOW_RISK_SLICE_COLOR : RISK_STYLES[risk].color))}
     />
   )
 }
@@ -107,54 +142,31 @@ function DetailsView(props: {
   const { t } = useTranslation()
   const [tabState, setTabState] = useState<string | number>(0)
 
-  function riskLevel() {
-    const riskScore = _.get(selectedReport, 'properties.total_risk')
-    let totalRisk, riskIcon
+  function renderRiskLevel() {
+    const level = getRiskLevels(t).find(({ score }) => score === selectedReport?.properties?.total_risk)
+    if (!level) return null
 
-    const riskComponent = (totalRisk: string, riskIcon: any) => {
-      return (
-        <Flex className={riskSubDetail} direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
-          <FlexItem>
-            <Flex>
-              <FlexItem>{riskIcon}</FlexItem>
-              <FlexItem>
-                <Content>
-                  <Content component={ContentVariants.h4}>{totalRisk}</Content>
-                </Content>
-              </FlexItem>
-            </Flex>
-          </FlexItem>
-          <FlexItem>
-            <Content>
-              <Content component={ContentVariants.p}>
-                {t('The impact of the problem would be {{totalRisk}} if it occurred', { totalRisk })}
-              </Content>
+    return (
+      <Flex className={riskSubDetail} direction={{ default: 'column' }} spaceItems={{ default: 'spaceItemsNone' }}>
+        <FlexItem>
+          <Flex alignItems={{ default: 'alignItemsCenter' }}>
+            <FlexItem>
+              <RiskIcon risk={level.risk} />
+            </FlexItem>
+            <FlexItem>
+              <strong>{level.label}</strong>
+            </FlexItem>
+          </Flex>
+        </FlexItem>
+        <FlexItem>
+          <Content>
+            <Content component={ContentVariants.p}>
+              {t('The impact of the problem would be {{totalRisk}} if it occurred', { totalRisk: level.label })}
             </Content>
-          </FlexItem>
-        </Flex>
-      )
-    }
-
-    switch (riskScore) {
-      case '4':
-        totalRisk = t('Critical')
-        riskIcon = <CriticalRiskIcon />
-        return riskComponent(totalRisk, riskIcon)
-      case '3':
-        totalRisk = t('Important')
-        riskIcon = <ImportantRiskIcon />
-        return riskComponent(totalRisk, riskIcon)
-      case '2':
-        totalRisk = t('Moderate')
-        riskIcon = <ModerateRiskIcon />
-        return riskComponent(totalRisk, riskIcon)
-      case '1':
-        totalRisk = t('Low')
-        riskIcon = <LowRiskIcon />
-        return riskComponent(totalRisk, riskIcon)
-      default:
-        return null
-    }
+          </Content>
+        </FlexItem>
+      </Flex>
+    )
   }
 
   function categories() {
@@ -211,7 +223,7 @@ function DetailsView(props: {
               </Content>
             </FlexItem>
           </Flex>
-          {riskLevel()}
+          {renderRiskLevel()}
         </GridItem>
         <GridItem span={4}>
           <Flex>
@@ -267,7 +279,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
     <div className={body}>
       <Content className={titleText}>
         <Content component={ContentVariants.h2}>
-          {t('policy.identified.issues', { count: policyReportViolations.length })}
+          {t('Issues Identified: {{issueCount}}', { issueCount: policyReportViolations.length })}
         </Content>
         <Content component={ContentVariants.p}>
           {t(
@@ -277,7 +289,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
       </Content>
       <div className={donutContainer}>{renderDonutChart(policyReportViolations, t)}</div>
       <Content className={tableTitle}>
-        <Content component={ContentVariants.h4}>{t('Recommendations with remediation')}</Content>
+        <Content component={ContentVariants.h3}>{t('Recommendations with remediation')}</Content>
       </Content>
       <AcmTable<PolicyReportResults>
         aria-label={t('Cluster policy reports table')}
@@ -296,8 +308,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
           {
             header: t('Description'),
             search: (report) => report.policy + ': ' + report.message,
-            sort: (a: PolicyReportResults, b: PolicyReportResults) =>
-              compareStrings(a.policy + ': ' + a.message, b.policy + ': ' + b.message),
+            sort: (a: PolicyReportResults, b: PolicyReportResults) => compareStrings(a.message, b.message),
             cell: (item: PolicyReportResults) => (
               <Button
                 variant="link"
@@ -308,7 +319,7 @@ export function ClusterPolicySidebar(props: { data: PolicyReport }) {
                 isInline
                 component="span"
               >
-                {item.policy + ': ' + item.message}
+                {item.message}
               </Button>
             ),
           },
