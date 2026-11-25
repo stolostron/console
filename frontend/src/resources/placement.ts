@@ -4,8 +4,8 @@ import { IResource, IResourceDefinition } from './resource'
 import { Selector } from './selector'
 import { listResources } from './utils/resource-request'
 
-export const PlacementApiVersionBeta = 'cluster.open-cluster-management.io/v1beta1'
-export type PlacementApiVersionBetaType = 'cluster.open-cluster-management.io/v1beta1'
+export const PlacementApiVersion = 'cluster.open-cluster-management.io/v1beta1'
+export type PlacementApiVersionType = 'cluster.open-cluster-management.io/v1beta1'
 
 export const PlacementKind = 'Placement'
 export type PlacementKindType = 'Placement'
@@ -13,12 +13,12 @@ export type PlacementKindType = 'Placement'
 export const GlobalPlacementName = 'global'
 
 export const PlacementDefinition: IResourceDefinition = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
 }
 
 export interface Placement extends IResource {
-  apiVersion: PlacementApiVersionBetaType
+  apiVersion: PlacementApiVersionType
   kind: PlacementKindType
   metadata: Metadata
   spec: {
@@ -65,11 +65,11 @@ export function listPlacements(namespace: string) {
   if (!namespace) {
     return {
       promise: Promise.resolve([]),
-      abort: () => { },
+      abort: () => {},
     }
   }
   const result = listResources<Placement>({
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: {
       namespace,

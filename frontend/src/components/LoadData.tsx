@@ -80,7 +80,7 @@ import {
   NMStateConfigKind,
   NodePoolApiVersion,
   NodePoolKind,
-  PlacementApiVersionBeta,
+  PlacementApiVersion,
   PlacementBindingApiVersion,
   PlacementBindingKind,
   PlacementDecisionApiVersion,
@@ -341,7 +341,7 @@ export function LoadData(props: { children?: ReactNode }) {
     addSetter(NMStateConfigApiVersion, NMStateConfigKind, setNMStateConfigs)
     addSetter(NodePoolApiVersion, NodePoolKind, setNodePoolsState)
     // addSetter matches on API group (apiVersion.split('/')[0]), not full version
-    addSetter(PlacementApiVersionBeta, PlacementKind, setPlacementsState)
+    addSetter(PlacementApiVersion, PlacementKind, setPlacementsState)
     addSetter(PlacementBindingApiVersion, PlacementBindingKind, setPlacementBindingsState)
     addSetter(PlacementDecisionApiVersion, PlacementDecisionKind, setPlacementDecisionsState)
     addSetter(PolicyApiVersion, PolicyKind, setPoliciesState)

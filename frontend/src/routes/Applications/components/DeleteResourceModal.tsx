@@ -9,7 +9,7 @@ import { Fragment, ReactNode, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { Trans } from '../../../lib/acm-i18next'
 import { deleteApplication } from '../../../lib/delete-application'
-import { ApplicationKind, ApplicationSetKind, IResource, PlacementApiVersionBeta } from '../../../resources'
+import { ApplicationKind, ApplicationSetKind, IResource, PlacementApiVersion } from '../../../resources'
 import '../css/DeleteResourceModal.css'
 
 export interface IDeleteResourceModalProps {
@@ -63,7 +63,7 @@ export function DeleteResourceModal(props: IDeleteResourceModalProps | { open: f
     ) {
       childResources = [
         {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: 'Placement',
           name: props.appSetPlacement,
           namespace: props.resource.metadata?.namespace,

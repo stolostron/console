@@ -7,7 +7,7 @@ import { placementsState } from '../../../../../atoms'
 import { nockIgnoreApiPaths, nockIgnoreRBAC, nockList } from '../../../../../lib/nock-util'
 import { waitForNock, waitForText } from '../../../../../lib/test-util'
 import { NavigationPath } from '../../../../../NavigationPath'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '../../../../../resources/placement'
 import { ApplicationSetApiVersion, ApplicationSetKind } from '../../../../../resources/application-set'
 import Clusters from '../../Clusters'
 
@@ -16,7 +16,7 @@ jest.mock('../../../../../components/KubevirtProviderAlert', () => ({
 }))
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'test-placement',

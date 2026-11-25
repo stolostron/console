@@ -23,7 +23,7 @@ import { defaultContext, PluginDataContext } from '~/lib/PluginDataContext'
 import type { IResource } from '~/resources'
 import { GitOpsClusterApiVersion, GitOpsClusterKind, type GitOpsCluster } from '~/resources/gitops-cluster'
 import { NamespaceApiVersion, NamespaceKind, type Namespace } from '~/resources/namespace'
-import { PlacementApiVersionBeta, PlacementKind } from '~/resources/placement'
+import { PlacementApiVersion, PlacementKind } from '~/resources/placement'
 import type * as GitOpsResources from '~/routes/Infrastructure/Clusters/GitOps/gitOpsClusterResources'
 import { EditGitOpsCluster } from '~/routes/Infrastructure/Clusters/GitOps/EditGitOpsCluster'
 import { AcmToastContext } from '~/ui-components'
@@ -116,13 +116,13 @@ const mockGitOpsCluster: GitOpsCluster = {
   metadata: { name: 'fleet', namespace: 'openshift-gitops', uid: 'goc-uid', resourceVersion: '10' },
   spec: {
     argoServer: { argoNamespace: 'openshift-gitops' },
-    placementRef: { kind: PlacementKind, apiVersion: PlacementApiVersionBeta, name: 'fleet-placement' },
+    placementRef: { kind: PlacementKind, apiVersion: PlacementApiVersion, name: 'fleet-placement' },
     gitopsAddon: { enabled: true, argoCDAgent: { enabled: true, mode: 'managed' } },
   },
 }
 
 const mockPlacement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: { name: 'fleet-placement', namespace: 'openshift-gitops', uid: 'placement-uid' },
   spec: { clusterSets: ['default'] },

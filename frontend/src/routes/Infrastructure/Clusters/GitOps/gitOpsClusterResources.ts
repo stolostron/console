@@ -13,7 +13,7 @@ import {
   ManagedClusterSetBindingKind,
   type ManagedClusterSetBinding,
 } from '~/resources/managed-cluster-set-binding'
-import { PlacementApiVersionBeta, PlacementDefinition, PlacementKind, type Placement } from '~/resources/placement'
+import { PlacementApiVersion, PlacementDefinition, PlacementKind, type Placement } from '~/resources/placement'
 import { PolicyApiVersion, PolicyDefinition, PolicyKind, type Policy } from '~/resources/policy'
 import { createSubjectAccessReview } from '~/resources/self-subject-access-review'
 import {
@@ -126,7 +126,7 @@ export function createGitOpsClusterResource(options: {
       },
       placementRef: {
         kind: PlacementKind,
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         name: resolvePlacementDraftName(name, existing?.spec?.placementRef?.name, {
           isLive: Boolean(existing?.metadata?.uid),
           previousGitOpsClusterName,
@@ -219,7 +219,7 @@ export function createPlacementResource(options: {
   }
 
   return {
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: {
       ...existing?.metadata,
@@ -1265,7 +1265,7 @@ export function ensureGitOpsClusterPlacement(resources: IResource[], t: TFunctio
   gitOpsCluster.spec.placementRef = {
     ...gitOpsCluster.spec.placementRef,
     kind: PlacementKind,
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     name: placementName,
   }
 

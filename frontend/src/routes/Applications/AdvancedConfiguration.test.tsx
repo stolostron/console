@@ -37,7 +37,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   Placement,
-  PlacementApiVersionBeta,
+  PlacementApiVersion,
   PlacementDecision,
   PlacementDecisionApiVersion,
   PlacementDecisionKind,
@@ -191,7 +191,7 @@ const mockApplication: Application = {
 
 const placement: Placement = {
   kind: PlacementKind,
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   metadata: {
     name: 'test-placement',
     namespace: 'default',
@@ -323,7 +323,7 @@ describe('advanced configuration page', () => {
 describe('getPlacementDecisionClusterCount', () => {
   const resource: IResource = {
     kind: PlacementKind,
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     metadata: {
       name: 'test-placement',
     },

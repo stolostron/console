@@ -21,7 +21,7 @@ import {
   ManagedClusterSetBindingApiVersion,
   ManagedClusterSetBindingKind,
   Placement,
-  PlacementApiVersionBeta,
+  PlacementApiVersion,
   PlacementKind,
 } from '../../resources'
 import { reconcileResources } from '../../resources/utils'
@@ -107,7 +107,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
         },
         placementRef: {
           kind: PlacementKind,
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           name: `${name}-placement`,
         },
       },
@@ -126,7 +126,7 @@ export function CreateArgoResources(props: ICreateArgoResourcesModalProps) {
     })
 
     const placement: Placement = {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: `${name}-placement`, namespace: namespace },
       spec: {
