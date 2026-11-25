@@ -177,11 +177,6 @@ export function createPlacementResource(options: {
         labelSelector: {
           matchExpressions: [
             {
-              key: 'vendor',
-              operator: 'In',
-              values: ['OpenShift'],
-            },
-            {
               key: 'local-cluster',
               operator: 'DoesNotExist',
             },

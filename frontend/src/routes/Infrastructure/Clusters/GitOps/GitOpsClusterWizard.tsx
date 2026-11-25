@@ -46,6 +46,7 @@ export interface GitOpsClusterWizardProps {
   existingAppProject?: IResource
   loadExistingAppProject?: () => Promise<IResource | undefined>
   isModal?: boolean
+  yamlSwitchTarget?: HTMLElement | null
 }
 
 export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
@@ -80,8 +81,9 @@ export function GitOpsClusterWizard(props: Readonly<GitOpsClusterWizardProps>) {
       onCancel={props.onCancel}
       breadcrumb={props.breadcrumb}
       editMode={editMode}
-      yaml={!props.isModal}
-      yamlEditor={props.isModal ? undefined : props.yamlEditor}
+      persistYaml={!props.isModal}
+      yamlSwitchTarget={props.yamlSwitchTarget}
+      yamlEditor={props.yamlEditor}
       defaultData={defaultData}
     >
       <Step label={t('Details')} id="details">
