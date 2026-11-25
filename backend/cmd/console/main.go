@@ -12,7 +12,6 @@ import (
 	"strings"
 	"syscall"
 
-	librarycrypto "github.com/openshift/library-go/pkg/crypto"
 	"k8s.io/client-go/discovery"
 	discocache "k8s.io/client-go/discovery/cached/memory"
 	"k8s.io/client-go/dynamic"
@@ -39,6 +38,7 @@ import (
 	"github.com/stolostron/console/backend/internal/searchproxy"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
+	"github.com/stolostron/console/backend/internal/tlsconfig"
 	"github.com/stolostron/console/backend/internal/upgraderisks"
 	"github.com/stolostron/console/backend/internal/user"
 	"github.com/stolostron/console/backend/internal/vmproxy"
@@ -56,7 +56,12 @@ func main() {
 func run() error {
 	cfg := config.Load()
 	applog.SetLevel(cfg.LogLevel)
-	applog.Logger().Info("Go runtime FIPS mode", "enabled", librarycrypto.IsFIPSEnabled())
+	fipsMode := tlsconfig.CurrentFIPSMode()
+	applog.Logger().Info("FIPS mode",
+		"enabled", fipsMode.Enabled,
+		"nativeGo", fipsMode.NativeGo,
+		"redHatOpenSSLRequested", fipsMode.RedHatOpenSSLRequested,
+	)
 
 	sa, ok := auth.LoadServiceAccount(cfg)
 	if !ok {

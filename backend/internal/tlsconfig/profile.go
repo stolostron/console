@@ -7,7 +7,6 @@ import (
 	"slices"
 
 	configv1 "github.com/openshift/api/config/v1"
-	librarycrypto "github.com/openshift/library-go/pkg/crypto"
 
 	applog "github.com/stolostron/console/backend/internal/log"
 )
@@ -48,7 +47,7 @@ func IntermediateSettings() Settings {
 
 // FromProfile maps an OpenShift TLS security profile to Go settings.
 func FromProfile(p SecurityProfile) Settings {
-	return fromProfile(p, librarycrypto.IsFIPSEnabled())
+	return fromProfile(p, IsFIPSEnabled())
 }
 
 // fromProfile converts a security profile to Settings, applying FIPS group filtering.
