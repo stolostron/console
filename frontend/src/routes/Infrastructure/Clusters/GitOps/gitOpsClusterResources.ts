@@ -1082,7 +1082,7 @@ async function loadCleanupPlacements(
         namespaces.map(
           (namespace) =>
             listResources<Placement>({
-              apiVersion: PlacementApiVersionBeta,
+              apiVersion: PlacementApiVersion,
               kind: PlacementKind,
               metadata: { namespace },
             }).promise

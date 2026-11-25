@@ -307,7 +307,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
       source: 'Local',
     }
     const placement: Placement = {
-      apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Placement',
       metadata: {
         name: 'all-clusters',
@@ -316,7 +316,7 @@ describe('Delete policy modal with shared placements and bindings', () => {
       spec: {},
     }
     const placementLegacy: Placement = {
-      apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
+      apiVersion: 'cluster.open-cluster-management.io/v1beta1',
       kind: 'Placement',
       metadata: {
         name: 'all-clusters-legacy',

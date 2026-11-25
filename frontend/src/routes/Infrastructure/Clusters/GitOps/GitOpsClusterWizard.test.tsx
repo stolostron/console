@@ -7,7 +7,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC } from '~/lib/nock-util'
 import { GitOpsClusterWizard } from '~/routes/Infrastructure/Clusters/GitOps/GitOpsClusterWizard'
 import { GitOpsClusterKind } from '~/resources/gitops-cluster'
 import { ManagedClusterSetBindingKind, type ManagedClusterSetBinding } from '~/resources/managed-cluster-set-binding'
-import { PlacementApiVersionBeta, PlacementKind, type Placement } from '~/resources/placement'
+import { PlacementApiVersion, PlacementKind, type Placement } from '~/resources/placement'
 import {
   buildGitOpsClusterResources,
   collectMissingPermissions,
@@ -82,7 +82,7 @@ describe('GitOpsClusterWizard', () => {
 
   it('reviews deleted Placements and owned bindings and updates the alert when another Placement retains a binding', async () => {
     const previousPlacement: Placement = {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'old-targets', namespace: 'openshift-gitops', uid: 'placement-uid' },
       spec: { clusterSets: ['old-set'] },

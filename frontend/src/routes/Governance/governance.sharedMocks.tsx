@@ -589,12 +589,12 @@ const policySet2: PolicySet = {
 // PLACEMENT
 // ******
 const placement1: Placement = {
-  apiVersion: 'cluster.open-cluster-management.io/v1alpha1',
+  apiVersion: 'cluster.open-cluster-management.io/v1beta1',
   kind: 'Placement',
   metadata: {
     annotations: {
       'kubectl.kubernetes.io/last-applied-configuration':
-        '{"apiVersion":"cluster.open-cluster-management.io/v1alpha1","kind":"Placement","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"clusterSets":["cluster-set"],"numberOfClusters":1,"predicates":[{"requiredClusterSelector":{"labelSelector":{"matchLabels":{"local-cluster":"true"}}}}]}}\n',
+        '{"apiVersion":"cluster.open-cluster-management.io/v1beta1","kind":"Placement","metadata":{"annotations":{},"name":"policy-set-with-1-placement","namespace":"test"},"spec":{"clusterSets":["cluster-set"],"numberOfClusters":1,"predicates":[{"requiredClusterSelector":{"labelSelector":{"matchLabels":{"local-cluster":"true"}}}}]}}\n',
     },
     creationTimestamp: '2022-03-02T14:45:53Z',
     name: 'policy-set-with-1-placement',
