@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	configv1 "github.com/openshift/api/config/v1"
+	librarycrypto "github.com/openshift/library-go/pkg/crypto"
 
 	applog "github.com/stolostron/console/backend/internal/log"
 )
