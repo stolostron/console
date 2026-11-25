@@ -65,7 +65,12 @@ export default function CreateGitOpsClusterPage() {
 }
 
 export function CreateGitOpsCluster(
-  props: { isModal?: boolean; onCancel?: () => void; onSubmitSuccess?: () => void } = {}
+  props: {
+    isModal?: boolean
+    yamlSwitchTarget?: HTMLElement | null
+    onCancel?: () => void
+    onSubmitSuccess?: () => void
+  } = {}
 ) {
   const { t } = useTranslation()
   const {
@@ -105,6 +110,7 @@ export function CreateGitOpsCluster(
     <GitOpsClusterWizard
       title={t('Create GitOpsCluster')}
       isModal={props.isModal}
+      yamlSwitchTarget={props.yamlSwitchTarget}
       namespaces={availableNamespaces}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}

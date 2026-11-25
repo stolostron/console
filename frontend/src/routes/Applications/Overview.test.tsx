@@ -581,7 +581,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
   })
 
   test.each(['Cancel', 'Close'])(
-    'GitOps setup opens a form-only modal with a description and closes using %s without navigation',
+    'GitOps setup opens a modal with YAML off by default and closes using %s without navigation',
     async (closeButton) => {
       const previousYamlPreference = localStorage.getItem('yaml')
       localStorage.setItem('yaml', 'true')
@@ -607,7 +607,9 @@ describe('Create application dropdown - GitOps agent mode', () => {
 
         await clickElement(configureLink)
         const dialog = screen.getByRole('dialog')
-        expect(within(dialog).getByRole('heading', { name: 'Create GitOps configuration' })).toBeInTheDocument()
+        const title = within(dialog).getByRole('heading', { name: 'Create GitOps configuration', level: 1 })
+        expect(title).toBeInTheDocument()
+        expect(dialog).toHaveAccessibleName('Create GitOps configuration')
         expect(dialog).toHaveAccessibleDescription(
           'Create a GitOpsCluster resource and placement rules to connect managed clusters to GitOps for Pull model ApplicationSets.'
         )
@@ -624,7 +626,10 @@ describe('Create application dropdown - GitOps agent mode', () => {
         expect(getComputedStyle(modalBody!).flexGrow).toBe('1')
         expect(within(dialog).getByRole('button', { name: 'Close' })).toBeInTheDocument()
         expect(within(dialog).queryByRole('textbox', { name: /monaco/i, hidden: true })).not.toBeInTheDocument()
-        expect(within(dialog).queryByRole('switch', { name: 'YAML' })).not.toBeInTheDocument()
+        const yamlSwitch = within(dialog).getByRole('switch', { name: 'YAML' })
+        expect(yamlSwitch).not.toBeChecked()
+        expect(title.parentElement?.nextElementSibling).toContainElement(yamlSwitch)
+        expect(title).not.toContainElement(yamlSwitch)
         expect(localStorage.getItem('yaml')).toBe('true')
         // Match the existing GitOps details checks for reused IDs in the shared wizard fields.
         expect(

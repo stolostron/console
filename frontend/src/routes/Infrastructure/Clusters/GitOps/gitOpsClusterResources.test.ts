@@ -109,10 +109,7 @@ describe('gitOpsClusterResources', () => {
       {
         requiredClusterSelector: {
           labelSelector: {
-            matchExpressions: [
-              { key: 'vendor', operator: 'In', values: ['OpenShift'] },
-              { key: 'local-cluster', operator: 'DoesNotExist' },
-            ],
+            matchExpressions: [{ key: 'local-cluster', operator: 'DoesNotExist' }],
           },
         },
       },
