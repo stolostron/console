@@ -348,7 +348,6 @@ describe('Applications Page', () => {
     expect(headers.slice(0, 4)).toEqual(['Name', 'Type', 'Model', 'Namespace'])
   })
 
-
   test('export button should produce a file for download', async () => {
     nockAggegateRequest('applications', fetchAggregate.req, fetchAggregate.res)
 

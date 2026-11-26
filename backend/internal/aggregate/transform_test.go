@@ -36,7 +36,12 @@ func TestFilterAndSortApplications(t *testing.T) {
 		},
 		{
 			Transform: Transform{
-				Name: "a", Type: kindAppSet, Namespace: "ns", Clusters: []string{"c2"}, Sources: "apple", Scores: Scores{colHealth: 2000},
+				Name:      "a",
+				Type:      kindAppSet,
+				Namespace: "ns",
+				Clusters:  []string{"c2"},
+				Sources:   "apple",
+				Scores:    Scores{colHealth: 2000},
 			},
 		},
 	}

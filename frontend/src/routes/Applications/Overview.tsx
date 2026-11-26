@@ -1255,9 +1255,7 @@ function ApplicationsOverviewContent() {
       <AcmDropdown
         isDisabled={!canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)}
         tooltip={
-          !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)
-            ? t('rbac.unauthorized')
-            : ''
+          !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster) ? t('rbac.unauthorized') : ''
         }
         id={'application-create'}
         onSelect={(id) => {
