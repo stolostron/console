@@ -3,11 +3,9 @@ import { Navigate, Route, Routes } from 'react-router'
 import ApplicationsDetailsPage from './ApplicationDetails/ApplicationDetails'
 import ApplicationsPage from './ApplicationsPage'
 import Overview from './Overview'
-import AdvancedConfiguration from './AdvancedConfiguration'
 import { CreatePushApplicationSet } from './CreateArgoApplication/CreatePushApplicationSet'
 import { EditApplicationSetPage } from './CreateArgoApplication/EditApplicationSetPage'
 import { CreatePullApplicationSet } from './CreateArgoApplication/CreatePullApplicationSet'
-import CreateSubscriptionApplicationPage from './CreateSubscriptionApplication/SubscriptionApplication'
 import { MatchType, NavigationPath, SubRoutesRedirect, createRoutePathFunction } from '../../NavigationPath'
 import { ApplicationDetailsPageContent } from './ApplicationDetails/ApplicationDetails/ApplicationDetails'
 import { ApplicationTopologyPageContent } from './ApplicationDetails/ApplicationTopology/ApplicationTopology'
@@ -25,14 +23,6 @@ export default function Applications() {
       <Route
         path={applicationsChildPath(NavigationPath.createApplicationArgoPullModel)}
         element={<CreatePullApplicationSet />}
-      />
-      <Route
-        path={applicationsChildPath(NavigationPath.createApplicationSubscription)}
-        element={<CreateSubscriptionApplicationPage />}
-      />
-      <Route
-        path={applicationsChildPath(NavigationPath.editApplicationSubscription)}
-        element={<CreateSubscriptionApplicationPage />}
       />
       <Route element={<ApplicationsDetailsPage />}>
         <Route
@@ -63,7 +53,6 @@ export default function Applications() {
         }
       />
       <Route element={<ApplicationsPage />}>
-        <Route path={applicationsChildPath(NavigationPath.advancedConfiguration)} element={<AdvancedConfiguration />} />
         <Route path={applicationsChildPath(NavigationPath.applications)} element={<Overview />} />
       </Route>
       <Route path="*" element={<Navigate to={NavigationPath.applications} replace />} />

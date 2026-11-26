@@ -4,13 +4,11 @@ import { Stack, StackItem, ToggleGroup, ToggleGroupItem } from '@patternfly/reac
 import _ from 'lodash'
 import queryString from 'query-string'
 import type { TFunction } from 'i18next'
-import { Link, useNavigate } from 'react-router'
+import { useNavigate } from 'react-router'
 
 import { DOC_LINKS, ViewDocumentationLink } from '../../../lib/doc-util'
-import { rbacCreate, useIsAnyNamespaceAuthorized } from '../../../lib/rbac-util'
-import { NavigationPath } from '../../../NavigationPath'
-import { ApplicationDefinition, IResource } from '../../../resources'
-import { AcmButton, AcmEmptyState, AcmTable, AcmTableStateProvider } from '../../../ui-components'
+import { IResource } from '../../../resources'
+import { AcmEmptyState, AcmTable, AcmTableStateProvider } from '../../../ui-components'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './DeleteResourceModal'
 
 export interface IToggleSelectorProps<T = any> {
@@ -29,7 +27,6 @@ export function ToggleSelector(props: IToggleSelectorProps) {
     { id: 'subscriptions', title: t('Subscriptions'), emptyMessage: t("You don't have any subscriptions yet") },
     { id: 'channels', title: t('Channels'), emptyMessage: t("You don't have any channels") },
   ] as const
-  const canCreateApplication = useIsAnyNamespaceAuthorized(rbacCreate(ApplicationDefinition))
   const selectedId = getSelectedId({ location, options, defaultOption, queryParam: 'resources' })
   const selectedResources = _.get(props.table, `${selectedId}`)
 
@@ -60,18 +57,6 @@ export function ToggleSelector(props: IToggleSelectorProps) {
             title={options.find((option) => option.id === selectedId)?.emptyMessage || ''}
             action={
               <Stack>
-                {selectedId === 'subscriptions' && (
-                  <StackItem>
-                    <AcmButton
-                      isDisabled={!canCreateApplication}
-                      tooltip={!canCreateApplication ? t('rbac.unauthorized') : ''}
-                      component={Link}
-                      to={NavigationPath.createApplicationSubscription}
-                    >
-                      {t('Create application')}
-                    </AcmButton>
-                  </StackItem>
-                )}
                 <StackItem>
                   <ViewDocumentationLink doclink={DOC_LINKS.MANAGE_APPLICATIONS} />
                 </StackItem>

@@ -390,17 +390,6 @@ describe('Applications Page', () => {
     )
     expect(mockNavigate).toHaveBeenCalledWith(expect.stringContaining('/multicloud/search'))
   })
-
-  test('Edit application action navigates to subscription editor', async () => {
-    await waitForText('Actions', true)
-    await clickElement(screen.getByText('Actions'))
-    await clickElement(
-      screen.getByRole('menuitem', {
-        name: /edit application/i,
-      })
-    )
-    expect(mockNavigate).toHaveBeenCalledWith('/multicloud/applications/edit/subscription/namespace-0/application-0')
-  })
 })
 
 describe('ApplicationSet details page', () => {

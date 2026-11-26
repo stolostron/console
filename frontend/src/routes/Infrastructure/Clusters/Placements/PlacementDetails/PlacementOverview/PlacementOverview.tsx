@@ -12,10 +12,7 @@ import { PlacementDecisionApiVersion } from '../../../../../../resources/placeme
 import { GitOpsClusterApiVersion } from '../../../../../../resources/gitops-cluster'
 import { useLocalHubName } from '../../../../../../hooks/use-local-hub'
 import { useEffect, useMemo, useState } from 'react'
-import {
-  getLabels,
-  getMatchLabels,
-} from '../../../../../Applications/CreateSubscriptionApplication/controlData/ControlDataPlacement'
+import { getLabels, getMatchLabels } from '../../../../../Applications/helpers/placement-labels'
 import { OutlinedQuestionCircleIcon } from '@patternfly/react-icons'
 import AcmTimestamp from '../../../../../../lib/AcmTimestamp'
 import {

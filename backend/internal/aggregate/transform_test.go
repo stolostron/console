@@ -5,9 +5,6 @@ package aggregate
 import "testing"
 
 func TestGetApplicationType(t *testing.T) {
-	if getApplicationType(map[string]any{"apiVersion": "app.k8s.io/v1beta1", "kind": "Application"}, nil) != kindSubscriptionApp {
-		t.Fatal("subscription")
-	}
 	if getApplicationType(map[string]any{"apiVersion": "argoproj.io/v1alpha1", "kind": "Application"}, nil) != kindArgo {
 		t.Fatal("argo")
 	}
@@ -39,11 +36,16 @@ func TestFilterAndSortApplications(t *testing.T) {
 		},
 		{
 			Transform: Transform{
-				Name: "a", Type: kindSubscriptionApp, Namespace: "ns", Clusters: []string{"c2"}, Sources: "apple", Scores: Scores{colHealth: 2000},
+				Name:      "a",
+				Type:      kindAppSet,
+				Namespace: "ns",
+				Clusters:  []string{"c2"},
+				Sources:   "apple",
+				Scores:    Scores{colHealth: 2000},
 			},
 		},
 	}
-	got := filterApplications(map[string][]string{"type": {kindSubscriptionApp}}, items)
+	got := filterApplications(map[string][]string{"type": {kindAppSet}}, items)
 	if len(got) != 1 || got[0].Transform.Name != "a" {
 		t.Fatalf("%+v", got)
 	}
@@ -118,38 +120,6 @@ func TestTruncateSourceName(t *testing.T) {
 }
 
 func TestGetApplicationSources(t *testing.T) {
-	subscriptions := []map[string]any{
-		{
-			"metadata": map[string]any{
-				"name":      "sub",
-				"namespace": "ns",
-				"annotations": map[string]any{
-					gitPathAnnotation: "mortgage",
-				},
-			},
-			"spec": map[string]any{"channel": "ns/chan", "name": "package-name"},
-		},
-	}
-	channels := []map[string]any{
-		{
-			"metadata": map[string]any{"name": "chan", "namespace": "ns"},
-			"spec":     map[string]any{"type": "Git", "pathname": "https://example.com/repo.git"},
-		},
-	}
-	subscription := map[string]any{
-		"apiVersion": "app.k8s.io/v1beta1",
-		"kind":       "Application",
-		"metadata": map[string]any{
-			"name": "subscription", "namespace": "ns",
-			"annotations": map[string]any{
-				"apps.open-cluster-management.io/subscriptions": "ns/sub",
-			},
-		},
-	}
-	if got := getApplicationSources(subscription, kindSubscriptionApp, subscriptions, channels); len(got) != 1 || got[0] != "mortgage" {
-		t.Fatalf("subscription sources %+v", got)
-	}
-
 	argo := map[string]any{
 		"apiVersion": "argoproj.io/v1alpha1",
 		"kind":       "Application",
@@ -193,28 +163,6 @@ func TestGetApplicationSources(t *testing.T) {
 	}
 }
 
-func TestGetApplicationSourcesSubscriptionHelmPackageFallback(t *testing.T) {
-	subscriptions := []map[string]any{{
-		"metadata": map[string]any{"name": "sub", "namespace": "ns"},
-		"spec":     map[string]any{"channel": "ns/chan", "name": "package-name"},
-	}}
-	channels := []map[string]any{{
-		"metadata": map[string]any{"name": "chan", "namespace": "ns"},
-		"spec":     map[string]any{"type": "HelmRepo"},
-	}}
-	subscription := map[string]any{
-		"metadata": map[string]any{
-			"annotations": map[string]any{
-				"apps.open-cluster-management.io/subscriptions": "ns/sub",
-			},
-		},
-	}
-	got := getApplicationSources(subscription, kindSubscriptionApp, subscriptions, channels)
-	if len(got) != 1 || got[0] != "package-name" {
-		t.Fatalf("subscription helm sources %+v", got)
-	}
-}
-
 func TestStatusFilterKey(t *testing.T) {
 	item := App{Transform: Transform{Scores: Scores{colHealth: 0, colSynced: 2000, colDeployed: 0}}}
 	if statusFilterKey(item, colHealth) != "Healthy" {
@@ -231,9 +179,15 @@ func TestStatusFilterKey(t *testing.T) {
 func TestPaginationPerPageAllAndBreakpoint(t *testing.T) {
 	lister := MapLister{
 		"cluster.open-cluster-management.io/v1|ManagedCluster": {localCluster()},
-		"app.k8s.io/v1beta1|Application": {
-			uObj("app.k8s.io/v1beta1", "Application", "zeta", "default", nil),
-			uObj("app.k8s.io/v1beta1", "Application", "alpha", "default", nil),
+		"argoproj.io/v1alpha1|Application": {
+			uObj("argoproj.io/v1alpha1", "Application", "zeta", "default", map[string]any{
+				"metadata": map[string]any{"name": "zeta", "namespace": "default", "uid": "uid-zeta"},
+				"spec":     map[string]any{"destination": map[string]any{"name": "in-cluster"}},
+			}),
+			uObj("argoproj.io/v1alpha1", "Application", "alpha", "default", map[string]any{
+				"metadata": map[string]any{"name": "alpha", "namespace": "default", "uid": "uid-alpha"},
+				"spec":     map[string]any{"destination": map[string]any{"name": "in-cluster"}},
+			}),
 		},
 	}
 	h := testHandler(t, lister)
@@ -319,38 +273,6 @@ func TestFilterApplicationsAllDimensions(t *testing.T) {
 	}
 	if len(filterApplications(map[string][]string{"unknown": {"x"}}, items)) != 0 {
 		t.Fatal("unknown filter")
-	}
-}
-
-func TestEngineTransformSubscriptionLabels(t *testing.T) {
-	e := NewEngine(MapLister{
-		"apps.open-cluster-management.io/v1|Subscription": {
-			uObj("apps.open-cluster-management.io/v1", "Subscription", "sub", "ns", map[string]any{
-				"metadata": map[string]any{
-					"name": "sub", "namespace": "ns",
-					"labels": map[string]any{"env": "prod"},
-				},
-			}),
-		},
-		"cluster.open-cluster-management.io/v1beta1|PlacementDecision": {},
-	}, nil, nil)
-	app := map[string]any{
-		"apiVersion": "app.k8s.io/v1beta1",
-		"kind":       "Application",
-		"metadata": map[string]any{
-			"name": "app", "namespace": "ns",
-			"annotations": map[string]any{
-				"apps.open-cluster-management.io/subscriptions": "ns/sub",
-			},
-		},
-	}
-	out := e.transform([]map[string]any{app}, nil, false, nil, nil, nil)
-	if len(out) != 1 {
-		t.Fatalf("%+v", out)
-	}
-	labels := metaLabels(out[0].Object)
-	if strVal(labels["env"]) != "prod" {
-		t.Fatalf("labels %+v", labels)
 	}
 }
 

@@ -2,13 +2,9 @@
 
 import { Fragment } from 'react'
 import LabelWithPopover from './LabelWithPopover'
-import { AcmButton } from '../../../ui-components'
-import { ButtonVariant } from '@patternfly/react-core'
-import { PencilAltIcon } from '@patternfly/react-icons'
 import '../css/TimeWindowLabels.css'
 import { useTranslation } from '../../../lib/acm-i18next'
-import { NavigationPath } from '../../../NavigationPath'
-import { Link, useParams, generatePath } from 'react-router'
+import { useParams } from 'react-router'
 
 export interface ITimeWindowLabelsProps {
   subName: string
@@ -20,8 +16,7 @@ export interface ITimeWindowLabelsProps {
 }
 
 export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
-  const { name = '', namespace = '' } = useParams()
-  const params = { name, namespace }
+  useParams()
   const { t } = useTranslation()
   const notSelectedLabel = t('Not selected')
 
@@ -62,23 +57,6 @@ export function TimeWindowLabels(props: ITimeWindowLabelsProps) {
               <div className="timeWindow-content">{ranges ? createTimeRanges(ranges) : notSelectedLabel}</div>
             </Fragment>
           )}
-          <Link
-            to={generatePath(NavigationPath.editApplicationSubscription, {
-              name: params.name,
-              namespace: params.namespace,
-            })}
-          >
-            <AcmButton
-              id="set-time-window-link"
-              component="a"
-              variant={ButtonVariant.link}
-              rel="noreferrer"
-              icon={<PencilAltIcon />}
-              iconPosition="right"
-            >
-              {t('Edit time window')}
-            </AcmButton>
-          </Link>
         </div>
       </LabelWithPopover>
     </div>

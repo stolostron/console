@@ -34,7 +34,6 @@ import {
   ManagedCluster,
   ManagedClusterApiVersion,
   ManagedClusterKind,
-  SubscriptionKind,
 } from '../../resources'
 import { getISOStringTimestamp } from '../../resources/utils'
 import { AcmToastGroup, AcmToastProvider } from '../../ui-components'
@@ -191,7 +190,6 @@ describe('Applications Page', () => {
   test('should display info', async () => {
     // wait for page to load
     await waitForText('feng-remote-argo8')
-    expect(screen.getByText(SubscriptionKind)).toBeTruthy()
     expect(screen.getByText(mockApplication0.metadata.namespace!)).toBeTruthy()
     expect(screen.getAllByText('Local')).toBeTruthy()
 
@@ -232,24 +230,6 @@ describe('Applications Page', () => {
   test('should filter', async () => {
     // wait for page to load
     await waitForText('feng-remote-argo8')
-
-    // subscription
-
-    // Open filter
-    await clickElement(screen.getByText('Filter'))
-
-    expect(screen.getByRole('checkbox', { name: /subscription/i })).toBeTruthy()
-    await clickElement(screen.getByRole('checkbox', { name: /subscription/i }))
-
-    // Close filter
-    await clickElement(screen.getByText('Filter'))
-    await waitFor(() => expect(screen.queryByRole('checkbox', { name: /subscription/i })).toBeNull())
-    expect(screen.queryByText(ApplicationSetKind)).toBeNull()
-    expect(screen.queryByText('Discovered')).toBeNull()
-    expect(screen.getAllByText(SubscriptionKind)).toBeTruthy()
-
-    // clear subscription filter
-    await clickElement(screen.getByRole('button', { name: /close subscription/i }))
 
     // argo apps
     // Open filter
@@ -314,24 +294,6 @@ describe('Applications Page', () => {
 
   test.each([
     {
-      name: 'view for subscription application',
-      appName: 'application-0',
-      action: 'View application',
-      route: '/multicloud/applications/details/namespace-0/application-0/details?apiVersion=application.app.k8s.io',
-    },
-    {
-      name: 'edit for subscription application',
-      appName: 'application-0',
-      action: 'Edit application',
-      route: '/multicloud/applications/edit/subscription/namespace-0/application-0?context=applications',
-    },
-    {
-      name: 'search for subscription application',
-      appName: 'application-0',
-      action: 'Search application',
-      route: '/multicloud/search',
-    },
-    {
       name: 'view for application set',
       appName: 'applicationset-0',
       action: 'View application',
@@ -378,13 +340,6 @@ describe('Applications Page', () => {
     expect(screen.getByTestId('location-display').textContent).toBe('/multicloud/applications/create/argo')
   })
 
-  test('create dropdown navigates to subscription', async () => {
-    await waitForText('feng-remote-argo8')
-    await clickElement(screen.getByRole('button', { name: /create application/i }))
-    await clickElement(within(screen.getByRole('menu')).getByText('Subscription'))
-    expect(screen.getByTestId('location-display')).toHaveTextContent('/multicloud/applications/create/subscription')
-  })
-
   test('places Model between Type and Namespace', async () => {
     await waitForText('feng-remote-argo8')
     const headers = within(screen.getByRole('grid', { name: 'Applications table' }))
@@ -419,7 +374,7 @@ describe('Applications Page', () => {
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
         'Name,Type,Model,Namespace,Clusters,Sources,Labels,Health Status,Sync Status,Pod Status,Created\n' +
-          `"application-0","Subscription","-","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
+          `"application-0","-","-","namespace-0","Local",-,-,"-","-","-","${getISOStringTimestamp(applicationAggregate.res.items[0].metadata?.creationTimestamp || '')}"\n` +
           '"applicationset-0","Application set","-","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
           '"applicationset-1","Application set","-","openshift-gitops","None","testapp",-,"-","-","-",-\n' +
           '"argoapplication-1","Argo CD","-","argoapplication-1-ns","None","foo",-,"-","-","-",-\n' +
@@ -528,7 +483,7 @@ describe('Applications saved column order', () => {
 })
 
 describe('Create application dropdown - GitOps agent mode', () => {
-  test('offers Agent pull, Push, and Subscription without setup when Agent and Push are enabled', async () => {
+  test('offers Agent pull and Push without setup when Agent and Push are enabled', async () => {
     const argoCD = {
       apiVersion: 'argoproj.io/v1beta1',
       kind: 'ArgoCD',
@@ -548,7 +503,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
       )
     ).toBeInTheDocument()
     expect(menu.getByRole('menuitem', { name: /Argo CD Push model ApplicationSet/ })).toBeInTheDocument()
-    expect(menu.getByText('Subscription')).toBeInTheDocument()
+    expect(menu.queryByText('Subscription')).not.toBeInTheDocument()
     expect(menu.queryByText('Set up GitOps configuration for Argo CD Agent Pull')).not.toBeInTheDocument()
     expect(menu.queryByText('Argo CD ManifestWork Pull model ApplicationSet')).not.toBeInTheDocument()
     await clickElement(pullOption)
@@ -571,7 +526,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
     const setupOption = screen.getByRole('menuitem', { name: 'Set up GitOps configuration for Argo CD Agent Pull' })
     expect(setupOption).not.toHaveAttribute('aria-disabled', 'true')
     expect(screen.getByRole('menuitem', { name: /Push model/i })).toBeInTheDocument()
-    expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+    expect(within(screen.getByRole('menu')).queryByText('Subscription')).not.toBeInTheDocument()
     await user.hover(pullOption)
     expect(await screen.findByRole('tooltip')).toHaveTextContent(
       'Create a GitOpsCluster to enable pull model ApplicationSet creation.'
@@ -692,7 +647,7 @@ describe('Create application dropdown - GitOps agent mode', () => {
       await clickElement(screen.getByRole('button', { name: /create application/i }))
       expect(screen.queryByRole('menuitem', { name: /Push model/i }) !== null).toBe(enabled)
       expect(screen.getByRole('menuitem', { name: /Agent pull model/i })).not.toHaveAttribute('aria-disabled', 'true')
-      expect(within(screen.getByRole('menu')).getByText('Subscription')).toBeInTheDocument()
+      expect(within(screen.getByRole('menu')).queryByText('Subscription')).not.toBeInTheDocument()
     }
   )
 
@@ -827,7 +782,7 @@ describe('Create application dropdown', () => {
       )
     ).toBeInTheDocument()
     expect(within(popup).getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
-    expect(within(popup).getByText('Subscription')).toBeInTheDocument()
+    expect(within(popup).queryByText('Subscription')).not.toBeInTheDocument()
     expect(await axe(popup)).toHaveNoViolations()
   })
 
@@ -842,6 +797,6 @@ describe('Create application dropdown', () => {
     expect(popup.getByText('Argo CD Agent Pull model ApplicationSet')).toBeInTheDocument()
     expect(popup.getByText('Argo CD ManifestWork Pull model ApplicationSet')).toBeInTheDocument()
     expect(popup.getByText('Argo CD Push model ApplicationSet')).toBeInTheDocument()
-    expect(popup.getByText('Subscription')).toBeInTheDocument()
+    expect(popup.queryByText('Subscription')).not.toBeInTheDocument()
   })
 })

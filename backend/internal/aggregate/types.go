@@ -67,7 +67,6 @@ const (
 
 // Application type identifiers stored in Transform.Type and used for filtering.
 const (
-	kindSubscriptionApp  = "subscription"      // ACM Subscription-based application
 	kindArgo             = "argo"              // standalone Argo CD Application
 	kindAppSet           = "appset"            // Argo CD ApplicationSet
 	kindFlux             = "flux"              // Flux CD application (kustomize or helm)
@@ -78,7 +77,6 @@ const (
 // Cache bucket keys for Engine.cache. Each bucket holds a different category
 // of application, split into local (hub informer) and remote (Search API) sources.
 const (
-	cacheSubscription = "subscription"   // ACM Subscription apps (local informer only)
 	cacheAppSet       = "appset"         // Argo CD ApplicationSets (local informer only)
 	cacheLocalArgo    = "localArgoApps"  // Argo CD Applications discovered from hub informer
 	cacheRemoteArgo   = "remoteArgoApps" // Argo CD Applications discovered from Search
@@ -91,7 +89,7 @@ const (
 // cacheKeys lists every cache bucket in the order they are merged when
 // building the full application list for /aggregate/applications.
 var cacheKeys = []string{
-	cacheSubscription, cacheAppSet, cacheLocalArgo, cacheRemoteArgo,
+	cacheAppSet, cacheLocalArgo, cacheRemoteArgo,
 	cacheLocalOCP, cacheRemoteOCP, cacheLocalSys, cacheRemoteSys,
 }
 
@@ -310,12 +308,6 @@ func metaCreation(obj map[string]any) string {
 // metaLabels extracts metadata.labels from an unstructured object.
 func metaLabels(obj map[string]any) map[string]any {
 	m, _ := metaMap(obj)["labels"].(map[string]any)
-	return m
-}
-
-// metaAnnotations extracts metadata.annotations from an unstructured object.
-func metaAnnotations(obj map[string]any) map[string]any {
-	m, _ := metaMap(obj)["annotations"].(map[string]any)
 	return m
 }
 

@@ -74,9 +74,7 @@ import {
 } from '../../ui-components'
 import { useAllClusters } from '../Infrastructure/Clusters/ManagedClusters/components/useAllClusters'
 import { DeleteResourceModal, IDeleteResourceModalProps } from './components/DeleteResourceModal'
-import { DeprecatedTitle } from './components/DeprecatedTitle'
 import { argoAppSetQueryString } from './CreateArgoApplication/actions'
-import { subscriptionAppQueryString } from './CreateSubscriptionApplication/actions'
 import {
   getAnnotation,
   getAppChildResources,
@@ -86,12 +84,11 @@ import {
   getClusterCountString,
   getResourceTimestamp,
   getSearchLink,
-  getSubscriptionsFromAnnotation,
   hostingSubAnnotationStr,
   isResourceTypeOf,
   getApplicationModel,
 } from './helpers/resource-helper'
-import { isLocalSubscription } from './helpers/subscriptions'
+
 import { IApplicationResource } from './model/application-resource'
 import { ApplicationStatus } from './model/application-status'
 import { useFetchApplicationLabels } from './useFetchApplicationLabels'
@@ -101,11 +98,6 @@ import {
   initializeApplicationColumnOrder,
 } from '~/routes/Applications/helpers/initializeApplicationColumnOrder'
 
-const gitBranchAnnotationStr = 'apps.open-cluster-management.io/git-branch'
-const gitPathAnnotationStr = 'apps.open-cluster-management.io/git-path'
-// support github annotations
-const githubBranchAnnotationStr = 'apps.open-cluster-management.io/github-branch'
-const githubPathAnnotationStr = 'apps.open-cluster-management.io/github-path'
 export const localClusterStr = 'local-cluster'
 export const partOfAnnotationStr = 'app.kubernetes.io/part-of'
 const appAnnotationStr = 'app'
@@ -200,11 +192,7 @@ export function getApplicationNamespace(resource: IApplicationResource, search: 
 
 // Map resource kind to type column
 export function getApplicationType(resource: IApplicationResource, systemAppNSPrefixes: string[], t: TFunction) {
-  if (resource.apiVersion === ApplicationApiVersion) {
-    if (resource.kind === ApplicationKind) {
-      return t('Subscription')
-    }
-  } else if (resource.apiVersion === ArgoApplicationApiVersion) {
+  if (resource.apiVersion === ArgoApplicationApiVersion) {
     if (resource.kind === ArgoApplicationKind) {
       return t('Argo CD')
     } else if (resource.kind === ApplicationSetKind) {
@@ -358,86 +346,42 @@ export function exportApplicationStatusGroup(resource: IResource, type: 'health'
   }
   return '-'
 }
-export const getApplicationRepos = (resource: IResource, subscriptions: Subscription[], channels: Channel[]) => {
-  let castType
-  if (resource.apiVersion === ApplicationApiVersion) {
-    if (resource.kind === ApplicationKind) {
-      const subAnnotations = getSubscriptionsFromAnnotation(resource)
-      const appRepos: any[] = []
-
-      for (let i = 0; i < subAnnotations.length; i++) {
-        if (isLocalSubscription(subAnnotations[i], subAnnotations)) {
-          // skip local sub
-          continue
-        }
-        const subDetails = subAnnotations[i].split('/')
-
-        subscriptions.forEach((sub) => {
-          if (sub.metadata.name === subDetails[1] && sub.metadata.namespace === subDetails[0]) {
-            const channelStr = sub.spec.channel
-
-            if (channelStr) {
-              const chnDetails = channelStr?.split('/')
-              const channel = channels.find(
-                (chn) => chn.metadata.name === chnDetails[1] && chn.metadata.namespace === chnDetails[0]
-              )
-
-              appRepos.push({
-                type: channel?.spec.type,
-                pathName: channel?.spec.pathname,
-                gitBranch: getAnnotation(sub, gitBranchAnnotationStr) || getAnnotation(sub, githubBranchAnnotationStr),
-                gitPath: getAnnotation(sub, gitPathAnnotationStr) || getAnnotation(sub, githubPathAnnotationStr),
-                package: sub.spec.name,
-                packageFilterVersion: sub.spec.packageFilter?.version,
-              })
-            }
-          }
-        })
-      }
-      return appRepos
-    }
-  } else if (resource.apiVersion === ArgoApplicationApiVersion) {
-    if (resource.kind === ArgoApplicationKind) {
-      castType = resource as ArgoApplication
-      const appRepos: any[] = []
-
-      // single source handling
-      if (castType.spec.source) {
-        // if the source data is incomplete (missing repoURL), return empty to show no information
-        // rather than incomplete information
-        if (!castType.spec.source.repoURL) {
-          return []
-        }
-        return [createRepoFromArgoSource(castType.spec.source)]
-      }
-
-      // multiple sources handling(fallback for details page when search data is incomplete)
-      if (castType.spec.sources) {
-        for (const source of castType.spec.sources) {
-          if (source.repoURL) {
-            appRepos.push(createRepoFromArgoSource(source))
-          }
-        }
-      }
-      return appRepos
-    } else if (resource.kind === ApplicationSetKind) {
-      castType = resource as ApplicationSet
-      const appRepos: any[] = []
-
-      // single source handling
-      if (!castType.spec.template?.spec?.sources && castType.spec.template?.spec?.source) {
-        return [createRepoFromArgoSource(castType.spec.template.spec.source)]
-      }
-
-      // multiple sources handling
-      if (castType.spec.template?.spec?.sources) {
-        for (const source of castType.spec.template.spec.sources) {
-          appRepos.push(createRepoFromArgoSource(source))
-        }
-      }
-      return appRepos
-    }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const getApplicationRepos = (resource: IResource, _subscriptions?: Subscription[], _channels?: Channel[]) => {
+  if (resource.apiVersion !== ArgoApplicationApiVersion) {
+    return undefined
   }
+  if (resource.kind === ArgoApplicationKind) {
+    return getArgoAppRepos(resource as ArgoApplication)
+  }
+  if (resource.kind === ApplicationSetKind) {
+    return getAppSetRepos(resource as ApplicationSet)
+  }
+  return undefined
+}
+
+function getArgoAppRepos(app: ArgoApplication) {
+  if (app.spec.source) {
+    if (!app.spec.source.repoURL) {
+      return []
+    }
+    return [createRepoFromArgoSource(app.spec.source)]
+  }
+  if (!app.spec.sources) {
+    return []
+  }
+  return app.spec.sources.filter((s: any) => s.repoURL).map(createRepoFromArgoSource)
+}
+
+function getAppSetRepos(appSet: ApplicationSet) {
+  const templateSpec = appSet.spec.template?.spec
+  if (!templateSpec?.sources && templateSpec?.source) {
+    return [createRepoFromArgoSource(templateSpec.source)]
+  }
+  if (templateSpec?.sources) {
+    return templateSpec.sources.map(createRepoFromArgoSource)
+  }
+  return []
 }
 
 // repository object creation from an Argo source
@@ -461,20 +405,20 @@ export function truncateSourceName(name: string, maxLength = MAX_SOURCE_NAME_LEN
 }
 
 /** Unique display names for application sources (Argo/Subscription path, or helm chart as fallback). */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 export function getApplicationSourceNames(
   resource: IResource,
-  subscriptions: Subscription[],
-  channels: Channel[]
+  _subscriptions?: Subscription[],
+  _channels?: Channel[]
 ): string[] {
-  const repos = getApplicationRepos(resource, subscriptions, channels) ?? []
+  /* eslint-enable @typescript-eslint/no-unused-vars */
+  const repos = getApplicationRepos(resource) ?? []
   const names: string[] = []
   const seen = new Set<string>()
 
   for (const repo of repos) {
     const pathName = typeof repo.gitPath === 'string' ? repo.gitPath.trim() : ''
-    const displayName =
-      pathName ||
-      (repo.chart ? String(repo.chart) : repo.type === 'HelmRepo' && repo.package ? String(repo.package) : '')
+    const displayName = pathName || (repo.chart ? String(repo.chart) : '')
     if (displayName && !seen.has(displayName)) {
       seen.add(displayName)
       names.push(displayName)
@@ -592,7 +536,7 @@ function ApplicationsOverviewContent() {
 
       // Resource column
       const resourceMap: { [key: string]: string } = {}
-      const appRepos = getApplicationRepos(tableItem, subscriptions, channels)
+      const appRepos = getApplicationRepos(tableItem)
       let resourceText = ''
       appRepos?.forEach((repo) => {
         if (!resourceMap[repo.type]) {
@@ -797,7 +741,7 @@ function ApplicationsOverviewContent() {
           return getClusterCountField(clusterCount, clusterCountString, clusterCountSearchLink)
         },
         tooltip: t(
-          'For Subscription applications, displays the number of remote and local clusters where resources for the application are deployed. For Argo applications, this is the name of the destination cluster. For OpenShift applications, this is the cluster where the application is deployed.'
+          'For Argo applications, this is the name of the destination cluster. For OpenShift applications, this is the cluster where the application is deployed.'
         ),
         sort: 'transformed.clusterCount',
         search: 'transformed.clusterCount',
@@ -945,10 +889,6 @@ function ApplicationsOverviewContent() {
             label: 'OpenShift',
             value: 'openshift',
           },
-          {
-            label: t('Subscription'),
-            value: 'subscription',
-          },
         ],
         tableFilterFn: (selectedValues: string[], item: IApplicationResource) => {
           return selectedValues.some((value) => {
@@ -969,8 +909,6 @@ function ApplicationsOverviewContent() {
                   return selectedValues.includes('appset')
                 case `${getApiVersionResourceGroup(ArgoApplicationApiVersion)}/${ArgoApplicationKind}`:
                   return selectedValues.includes('argo')
-                case `${getApiVersionResourceGroup(ApplicationApiVersion)}/${ApplicationKind}`:
-                  return selectedValues.includes('subscription')
               }
               return false
             }
@@ -1080,29 +1018,6 @@ function ApplicationsOverviewContent() {
       const actions: IAcmRowAction<any>[] = []
       const { metadata = {} } = resource
       const { name = '', namespace = '' } = metadata
-
-      if (isResourceTypeOf(resource, ApplicationDefinition)) {
-        actions.push({
-          id: 'viewApplication',
-          title: t('View application'),
-          click: () => {
-            void navigate({
-              pathname: generatePath(NavigationPath.applicationOverview, { name, namespace }),
-              search: subscriptionAppQueryString,
-            })
-          },
-        })
-        actions.push({
-          id: 'editApplication',
-          title: t('Edit application'),
-          click: () => {
-            void navigate({
-              pathname: generatePath(NavigationPath.editApplicationSubscription, { name, namespace }),
-              search: '?context=applications',
-            })
-          },
-        })
-      }
 
       if (isResourceTypeOf(resource, ApplicationSetDefinition)) {
         actions.push({
@@ -1311,13 +1226,6 @@ function ApplicationsOverviewContent() {
             },
           ]
         : []),
-      {
-        id: 'create-subscription',
-        text: <DeprecatedTitle title={t('Subscription')} />,
-        description: t('Distribute subscription resources from the hub to managed clusters'),
-        isDisabled: !canCreateApplication,
-        tooltip: !canCreateApplication ? t('rbac.unauthorized') : '',
-      },
     ]
 
     if (!hasGitOpsCluster) {
@@ -1345,11 +1253,9 @@ function ApplicationsOverviewContent() {
 
     return (
       <AcmDropdown
-        isDisabled={!canCreateApplication && !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)}
+        isDisabled={!canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)}
         tooltip={
-          !canCreateApplication && !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster)
-            ? t('rbac.unauthorized')
-            : ''
+          !canCreateApplicationSet && (hasGitOpsCluster || !canCreateGitOpsCluster) ? t('rbac.unauthorized') : ''
         }
         id={'application-create'}
         onSelect={(id) => {
@@ -1359,8 +1265,6 @@ function ApplicationsOverviewContent() {
             void navigate(NavigationPath.createApplicationArgoPullModel)
           } else if (id === 'configure-gitops') {
             setGitOpsWizardSession({})
-          } else {
-            void navigate(NavigationPath.createApplicationSubscription)
           }
         }}
         text={t('Create application')}
@@ -1372,7 +1276,6 @@ function ApplicationsOverviewContent() {
       />
     )
   }, [
-    canCreateApplication,
     canCreateApplicationSet,
     canCreateGitOpsCluster,
     hasGitOpsCluster,
@@ -1420,20 +1323,6 @@ function ApplicationsOverviewContent() {
                 <Content component="p">
                   {t(
                     'ApplicationSet application where Argo CD application resources are created on the hub cluster. The hub cluster is responsible for reconciling and pushing the deployed application to the managed clusters.'
-                  )}
-                </Content>
-              </span>
-            </div>
-            <div style={{ paddingTop: '10px' }}>
-              <span style={{ fontSize: '18px', fontWeight: 'bold' }}>
-                <Content component="p">
-                  <DeprecatedTitle title={t('Subscription')} />
-                </Content>
-              </span>
-              <span>
-                <Content component="p">
-                  {t(
-                    'Subscription application where subscription resources are distributed from the hub cluster to the managed clusters. Each managed cluster independently reconciles and deploys the application using the received subscription resource.'
                   )}
                 </Content>
               </span>

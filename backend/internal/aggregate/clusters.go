@@ -179,8 +179,6 @@ func (e *Engine) applicationClusters(obj map[string]any, typ string, subscriptio
 			return argoPullModelClusters(e.pulledAppSetMap[key])
 		}
 		return e.argoPushModelClusters(e.appSetAppsMap[key], local, clusters)
-	case kindSubscriptionApp:
-		return subscriptionClusters(obj, subscriptions, placementDecisions)
 	}
 	return []string{e.hubClusterName()}
 }
@@ -256,61 +254,6 @@ func isLocalClusterURL(raw string, local *Cluster) bool {
 		return false
 	}
 	return strings.Contains(localHost, hostnameWithoutAPI)
-}
-
-// subscriptionClusters resolves target clusters for an ACM Subscription app
-// by walking the subscription → placement → PlacementDecision chain.
-func subscriptionClusters(obj map[string]any, subscriptions, placementDecisions []map[string]any) []string {
-	set := map[string]struct{}{}
-	ann := strVal(metaAnnotations(obj)["apps.open-cluster-management.io/subscriptions"])
-	if ann == "" {
-		return nil
-	}
-	subs := strings.Split(ann, ",")
-	for _, sa := range subs {
-		if isLocalSubscription(sa, subs) {
-			continue
-		}
-		details := strings.Split(sa, "/")
-		if len(details) < 2 {
-			continue
-		}
-		for _, sub := range subscriptions {
-			if metaName(sub) != details[1] || metaNamespace(sub) != details[0] {
-				continue
-			}
-			placementRef := nestedString(sub, "spec", "placement", "placementRef", "name")
-			for _, pd := range placementDecisions {
-				labels := metaLabels(pd)
-				if strVal(labels["cluster.open-cluster-management.io/placement"]) != placementRef {
-					continue
-				}
-				for _, d := range nestedSlice(pd, "status", "decisions") {
-					dm, _ := d.(map[string]any)
-					if n := strVal(dm["clusterName"]); n != "" {
-						set[n] = struct{}{}
-					}
-				}
-			}
-		}
-	}
-	return setKeys(set)
-}
-
-// isLocalSubscription returns true if subName ends with "-local" and the base
-// name (without the suffix) exists in subList, indicating a local override.
-func isLocalSubscription(subName string, subList []string) bool {
-	const suffix = "-local"
-	if !strings.HasSuffix(subName, suffix) {
-		return false
-	}
-	base := subName[:len(subName)-len(suffix)]
-	for _, s := range subList {
-		if s == base {
-			return true
-		}
-	}
-	return false
 }
 
 // argoCluster resolves the target cluster for a standalone Argo CD Application
