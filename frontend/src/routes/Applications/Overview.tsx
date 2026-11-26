@@ -348,49 +348,40 @@ export function exportApplicationStatusGroup(resource: IResource, type: 'health'
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const getApplicationRepos = (resource: IResource, _subscriptions?: Subscription[], _channels?: Channel[]) => {
-  let castType
-  if (resource.apiVersion === ArgoApplicationApiVersion) {
-    if (resource.kind === ArgoApplicationKind) {
-      castType = resource as ArgoApplication
-      const appRepos: any[] = []
-
-      // single source handling
-      if (castType.spec.source) {
-        // if the source data is incomplete (missing repoURL), return empty to show no information
-        // rather than incomplete information
-        if (!castType.spec.source.repoURL) {
-          return []
-        }
-        return [createRepoFromArgoSource(castType.spec.source)]
-      }
-
-      // multiple sources handling(fallback for details page when search data is incomplete)
-      if (castType.spec.sources) {
-        for (const source of castType.spec.sources) {
-          if (source.repoURL) {
-            appRepos.push(createRepoFromArgoSource(source))
-          }
-        }
-      }
-      return appRepos
-    } else if (resource.kind === ApplicationSetKind) {
-      castType = resource as ApplicationSet
-      const appRepos: any[] = []
-
-      // single source handling
-      if (!castType.spec.template?.spec?.sources && castType.spec.template?.spec?.source) {
-        return [createRepoFromArgoSource(castType.spec.template.spec.source)]
-      }
-
-      // multiple sources handling
-      if (castType.spec.template?.spec?.sources) {
-        for (const source of castType.spec.template.spec.sources) {
-          appRepos.push(createRepoFromArgoSource(source))
-        }
-      }
-      return appRepos
-    }
+  if (resource.apiVersion !== ArgoApplicationApiVersion) {
+    return undefined
   }
+  if (resource.kind === ArgoApplicationKind) {
+    return getArgoAppRepos(resource as ArgoApplication)
+  }
+  if (resource.kind === ApplicationSetKind) {
+    return getAppSetRepos(resource as ApplicationSet)
+  }
+  return undefined
+}
+
+function getArgoAppRepos(app: ArgoApplication) {
+  if (app.spec.source) {
+    if (!app.spec.source.repoURL) {
+      return []
+    }
+    return [createRepoFromArgoSource(app.spec.source)]
+  }
+  if (!app.spec.sources) {
+    return []
+  }
+  return app.spec.sources.filter((s: any) => s.repoURL).map(createRepoFromArgoSource)
+}
+
+function getAppSetRepos(appSet: ApplicationSet) {
+  const templateSpec = appSet.spec.template?.spec
+  if (!templateSpec?.sources && templateSpec?.source) {
+    return [createRepoFromArgoSource(templateSpec.source)]
+  }
+  if (templateSpec?.sources) {
+    return templateSpec.sources.map(createRepoFromArgoSource)
+  }
+  return []
 }
 
 // repository object creation from an Argo source
@@ -427,9 +418,7 @@ export function getApplicationSourceNames(
 
   for (const repo of repos) {
     const pathName = typeof repo.gitPath === 'string' ? repo.gitPath.trim() : ''
-    const displayName =
-      pathName ||
-      (repo.chart ? String(repo.chart) : repo.type === 'HelmRepo' && repo.package ? String(repo.package) : '')
+    const displayName = pathName || (repo.chart ? String(repo.chart) : '')
     if (displayName && !seen.has(displayName)) {
       seen.add(displayName)
       names.push(displayName)
