@@ -201,6 +201,7 @@ module.exports = function (env: any, argv: { hot?: boolean; mode: string | undef
         '/multicloud/prometheus',
         '/multicloud/proxy/search',
         '/multicloud/aggregate',
+        '/multicloud/rbac/any-namespace',
         '/multicloud/username',
         '/multicloud/userpreference',
         '/multicloud/version',

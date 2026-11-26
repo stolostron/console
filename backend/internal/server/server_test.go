@@ -660,6 +660,7 @@ func TestLongTailRegistered(t *testing.T) {
 		server.WithAnsibleTower(ok),
 		server.WithPlacementDebug(ok),
 		server.WithUpgradeRisks(ok),
+		server.WithRBACAny(ok),
 	))
 	defer ts.Close()
 
@@ -667,6 +668,7 @@ func TestLongTailRegistered(t *testing.T) {
 		"/ansibletower", "/multicloud/ansibletower",
 		"/placement-debug", "/multicloud/placement-debug",
 		"/upgrade-risks-prediction", "/multicloud/upgrade-risks-prediction",
+		"/rbac/any-namespace", "/multicloud/rbac/any-namespace",
 	}
 	for _, p := range rosa.Routes {
 		paths = append(paths, p, "/multicloud"+p)

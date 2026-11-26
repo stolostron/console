@@ -2,7 +2,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { Namespace, NamespaceDefinition, ResourceAttributes } from '../resources'
-import { nockIgnoreApiPaths, nockRBAC } from './nock-util'
+import { nockAnyNamespaceRBAC, nockIgnoreApiPaths, nockRBAC } from './nock-util'
 import {
   areAllNamespacesUnauthorized,
   getAuthorizedNamespaces,
@@ -22,12 +22,13 @@ const mockNamespaces: Namespace[] = [
     metadata: { name: 'test-namespace-2' },
   },
 ]
+let mockNamespacesForRBAC = mockNamespaces
 
 jest.mock('../shared-atoms', () => ({
   useSharedAtoms: () => ({
     namespacesState: 'namespacesState',
   }),
-  useSharedValue: () => mockNamespaces,
+  useSharedValue: () => mockNamespacesForRBAC,
 }))
 
 const adminAccess = { name: '*', namespace: '*', resource: '*', verb: '*' }
@@ -66,33 +67,27 @@ describe('getAuthorizedNamespaces', () => {
 })
 
 describe('isAnyNamespaceAuthorized', () => {
-  it('checks each namespace individually for non-admin users', async () => {
+  it('checks all visible namespaces with one backend request', async () => {
     nockIgnoreApiPaths()
-    const nocks = [
-      nockRBAC(adminAccess, false),
-      nockRBAC({ ...createDeployment, namespace: 'test-namespace-1' }, false),
-      nockRBAC({ ...createDeployment, namespace: 'test-namespace-2' }, true),
-    ]
+    const namespaces = ['test-namespace-1', 'test-namespace-2']
+    const nock = nockAnyNamespaceRBAC(createDeployment, namespaces, true)
     expect(
-      await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), [
-        {
+      await isAnyNamespaceAuthorized(
+        Promise.resolve(createDeployment),
+        namespaces.map((name) => ({
           ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-          metadata: { name: 'test-namespace-1' },
-        },
-        {
-          ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
-          metadata: { name: 'test-namespace-2' },
-        },
-      ]).promise
+          metadata: { name },
+        }))
+      ).promise
     ).toEqual(true)
-    await waitForNocks(nocks)
+    await waitForNocks([nock])
   })
   it('returns false for an empty namespace list', async () => {
     expect(await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), []).promise).toEqual(false)
   })
-  it('returns true without checking namespaces for an admin user', async () => {
+  it('returns true when the backend reports authorization', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockRBAC(adminAccess, true)]
+    const nock = nockAnyNamespaceRBAC(createDeployment, ['test-namespace-1', 'test-namespace-2'], true)
     expect(
       await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), [
         {
@@ -105,18 +100,22 @@ describe('isAnyNamespaceAuthorized', () => {
         },
       ]).promise
     ).toEqual(true)
-    await waitForNocks(nocks)
+    await waitForNocks([nock])
+  })
+  it('does not report authorization when the backend request fails', async () => {
+    nockIgnoreApiPaths()
+    const nock = nockAnyNamespaceRBAC(createDeployment, ['test-namespace-1'], false, 503)
+    expect(await isAnyNamespaceAuthorized(Promise.resolve(createDeployment), [mockNamespaces[0]]).promise).toEqual(
+      false
+    )
+    await waitForNocks([nock])
   })
 })
 
 describe('areAllNamespacesUnauthorized', () => {
-  it('checks each namespace individually for non-admin users', async () => {
+  it('returns true only when every namespace is confirmed denied', async () => {
     nockIgnoreApiPaths()
-    const nocks = [
-      nockRBAC(adminAccess, false),
-      nockRBAC({ ...createDeployment, namespace: 'test-namespace-1' }, false),
-      nockRBAC({ ...createDeployment, namespace: 'test-namespace-2' }, true),
-    ]
+    const nock = nockAnyNamespaceRBAC(createDeployment, ['test-namespace-1', 'test-namespace-2'], false)
     expect(
       await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), [
         {
@@ -128,15 +127,15 @@ describe('areAllNamespacesUnauthorized', () => {
           metadata: { name: 'test-namespace-2' },
         },
       ]).promise
-    ).toEqual(false)
-    await waitForNocks(nocks)
+    ).toEqual(true)
+    await waitForNocks([nock])
   })
   it('returns true for an empty namespace list', async () => {
     expect(await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), []).promise).toEqual(true)
   })
-  it('returns false without checking namespaces for an admin user', async () => {
+  it('returns false when the backend reports authorization', async () => {
     nockIgnoreApiPaths()
-    const nocks = [nockRBAC(adminAccess, true)]
+    const nock = nockAnyNamespaceRBAC(createDeployment, ['test-namespace-1', 'test-namespace-2'], true)
     expect(
       await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), [
         {
@@ -149,7 +148,15 @@ describe('areAllNamespacesUnauthorized', () => {
         },
       ]).promise
     ).toEqual(false)
-    await waitForNocks(nocks)
+    await waitForNocks([nock])
+  })
+  it('does not treat backend failures as confirmed denial', async () => {
+    nockIgnoreApiPaths()
+    const nock = nockAnyNamespaceRBAC(createDeployment, ['test-namespace-1'], false, 503)
+    expect(await areAllNamespacesUnauthorized(Promise.resolve(createDeployment), [mockNamespaces[0]]).promise).toEqual(
+      false
+    )
+    await waitForNocks([nock])
   })
 })
 
@@ -166,11 +173,7 @@ describe('useIsAnyNamespaceAuthorized', () => {
     }
 
     // Set up nocks for the initial request - should only be called once
-    const nocks = [
-      nockRBAC(adminAccess, false),
-      nockRBAC({ ...resourceAttributes1, namespace: 'test-namespace-1' }, false),
-      nockRBAC({ ...resourceAttributes1, namespace: 'test-namespace-2' }, true),
-    ]
+    const nocks = [nockAnyNamespaceRBAC(resourceAttributes1, ['test-namespace-1', 'test-namespace-2'], true)]
 
     // Render the hook with the first resourceAttributes object
     const { result, rerender } = renderHook(
@@ -216,11 +219,7 @@ describe('useIsAnyNamespaceAuthorized', () => {
     }
 
     // Set up nocks for the initial request - should only be called once across all rerenders
-    const nocks = [
-      nockRBAC(adminAccess, false),
-      nockRBAC({ ...resourceAttributes, namespace: 'test-namespace-1' }, false),
-      nockRBAC({ ...resourceAttributes, namespace: 'test-namespace-2' }, true),
-    ]
+    const nocks = [nockAnyNamespaceRBAC(resourceAttributes, ['test-namespace-1', 'test-namespace-2'], true)]
 
     // The hook callback creates a new Promise on each render, simulating
     // a common pattern where Promise.resolve({...}) is called inline
@@ -243,5 +242,43 @@ describe('useIsAnyNamespaceAuthorized', () => {
 
     // If additional network requests were made, the test would fail because
     // we haven't set up additional nock mocks for them
+  })
+
+  it('preserves authorization on errors and revokes it after confirmed denial', async () => {
+    nockIgnoreApiPaths()
+    const namespaces = ['test-namespace-1', 'test-namespace-2']
+    const extendedNamespaces = [
+      ...mockNamespaces,
+      {
+        ...(NamespaceDefinition as Pick<Namespace, 'apiVersion' | 'kind'>),
+        metadata: { name: 'test-namespace-3' },
+      },
+    ]
+    mockNamespacesForRBAC = mockNamespaces
+    const nocks = [
+      nockAnyNamespaceRBAC(createDeployment, namespaces, true),
+      nockAnyNamespaceRBAC(createDeployment, [...namespaces, 'test-namespace-3'], false, 503),
+      nockAnyNamespaceRBAC(createDeployment, namespaces, false),
+    ]
+    const { result, rerender } = renderHook(() => useIsAnyNamespaceAuthorized(Promise.resolve(createDeployment)))
+
+    await waitFor(() => expect(result.current).toBe(true))
+    await waitForNocks([nocks[0]])
+
+    mockNamespacesForRBAC = extendedNamespaces
+    await act(async () => {
+      rerender()
+      await Promise.resolve()
+    })
+    await waitForNocks([nocks[1]])
+    expect(result.current).toBe(true)
+
+    mockNamespacesForRBAC = [...mockNamespaces]
+    await act(async () => {
+      rerender()
+      await Promise.resolve()
+    })
+    await waitFor(() => expect(result.current).toBe(false))
+    await waitForNocks([nocks[2]])
   })
 })

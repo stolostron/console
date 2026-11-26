@@ -48,6 +48,7 @@ type handlerOptions struct {
 	ansibleTower   http.Handler
 	placementDebug http.Handler
 	upgradeRisks   http.Handler
+	rbacAny        http.Handler
 }
 
 // Option configures Handler.
@@ -99,6 +100,13 @@ func WithPlacementDebug(h http.Handler) Option {
 func WithUpgradeRisks(h http.Handler) Option {
 	return func(o *handlerOptions) {
 		o.upgradeRisks = h
+	}
+}
+
+// WithRBACAny registers POST /rbac/any-namespace (and its /multicloud alias).
+func WithRBACAny(h http.Handler) Option {
+	return func(o *handlerOptions) {
+		o.rbacAny = h
 	}
 }
 
@@ -344,6 +352,9 @@ func Handler(cfg *config.Config, opts ...Option) (http.Handler, error) {
 	}
 	if o.upgradeRisks != nil {
 		registerAliasedPost(r, o.upgradeRisks, "/upgrade-risks-prediction")
+	}
+	if o.rbacAny != nil {
+		registerAliasedPost(r, o.rbacAny, "/rbac/any-namespace")
 	}
 	if o.k8sProxy != nil {
 		registerK8sProxyRoutes(r, o.k8sProxy)
