@@ -24,9 +24,8 @@ export const titleText = css({
 })
 
 export const donutContainer = css({
-  maxWidth: '450px',
+  maxWidth: '320px',
   paddingBottom: 'var(--pf-t--global--spacer--md)',
-  marginLeft: '-4rem',
 })
 
 export const tableTitle = css({
