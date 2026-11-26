@@ -8,17 +8,40 @@ import {
   ActionListGroup,
   ActionListItem,
   Button,
+  Content,
+  ContentVariants,
   Icon,
   Title,
   Stack,
   StackItem,
+  Tooltip,
   WizardFooterWrapper,
   WizardStep,
   Wizard,
+  useWizardContext,
 } from '@patternfly/react-core'
 import { ExclamationCircleIcon } from '@patternfly/react-icons'
 import ControlPanelFinish from './ControlPanelFinish'
 import get from 'lodash/get'
+import {
+  hasIncompleteRequiredControls as _hasIncompleteRequiredControls,
+  isRequiredValueMissing as _isRequiredValueMissing,
+  getMaxEnabledStepIndex as _getMaxEnabledStepIndex,
+} from '../utils/controlPredicates'
+
+// Re-export for backwards compatibility (ControlPanelWizard.test.js imports from here)
+export const isRequiredValueMissing = _isRequiredValueMissing
+export const hasIncompleteRequiredControls = _hasIncompleteRequiredControls
+export const getMaxEnabledStepIndex = _getMaxEnabledStepIndex
+
+/** Internal: flatten all controls from wizard steps (wizard-specific). */
+const flattenStepControls = (steps = []) => steps.flatMap(({ controls = [] }) => controls)
+
+/** Bridge class review panel to PatternFly wizard navigation. */
+const ReviewFinishWithStepLinks = (props) => {
+  const { goToStepById } = useWizardContext()
+  return <ControlPanelFinish {...props} onEditStep={goToStepById} />
+}
 
 class ControlPanelWizard extends React.Component {
   constructor(props) {
@@ -37,6 +60,7 @@ class ControlPanelWizard extends React.Component {
       creationStatus,
       backButtonOverride,
       i18n,
+      wizardTitle,
     } = this.props
     let { steps } = this.props
     steps.forEach((step) => {
@@ -49,45 +73,40 @@ class ControlPanelWizard extends React.Component {
       })
     })
 
-    // determine valid last step
-    let validStepIndex
-    steps.some(({ title: control, controls = [] }, index) => {
-      const { isComplete, type = 'step' } = control
-      switch (type) {
-        case 'step':
-          controls.some(({ mustValidate }) => {
-            if (mustValidate && !isComplete) {
-              validStepIndex = index
-              return true
-            }
-          })
-          break
-        case 'review':
-          if (!isComplete) {
-            validStepIndex = index
-          }
-          break
-      }
-      return validStepIndex
-    })
-    validStepIndex = validStepIndex || steps.length + 1
+    // Opt-in strict gating when any step/review title sets validateRequiredFields.
+    // Default keeps legacy mustValidate-only nav so other wizards are unchanged.
+    // Use getMaxEnabledStepIndex — do not use `validStepIndex || …` (index 0 is falsy).
+    const validateRequiredFields = steps.some(({ title }) => !!title?.validateRequiredFields)
+    const validStepIndex = getMaxEnabledStepIndex(steps, { validateRequiredFields })
 
-    const renderReview = (details, lastReviewInx, comment) => {
+    const renderReview = (details, lastReviewInx, reviewControl) => {
+      const { comment, commentVariant, header, reviewLayout } = reviewControl || {}
+      const headerContent = typeof header === 'function' ? header(this.props.controlData, i18n) : null
+      const isStandaloneReview = reviewLayout === 'standalone'
+      const FinishPanel = isStandaloneReview ? ReviewFinishWithStepLinks : ControlPanelFinish
       return (
-        <ControlPanelFinish
-          details={details}
-          comment={comment}
-          startStep={lastReviewInx}
-          renderNotifications={renderNotifications.bind(this)}
-          i18n={i18n}
-        />
+        <Stack hasGutter={!isStandaloneReview}>
+          {headerContent && <StackItem>{headerContent}</StackItem>}
+          <StackItem>
+            <FinishPanel
+              details={details}
+              comment={comment}
+              commentVariant={commentVariant}
+              controlData={this.props.controlData}
+              startStep={lastReviewInx}
+              reviewLayout={reviewLayout}
+              renderNotifications={renderNotifications.bind(this)}
+              i18n={i18n}
+            />
+          </StackItem>
+        </Stack>
       )
     }
 
     let lastType = ''
     let lastReviewInx = 0
     steps = steps.map(({ title: control, controls, sections }, inx) => {
-      const { id, type, title, comment, exception } = control
+      const { id, type, title, description, exception } = control
       lastType = type
       if (inx - 1 > 0 && steps[inx - 1].title.type === 'review') {
         lastReviewInx = inx - 1
@@ -123,13 +142,14 @@ class ControlPanelWizard extends React.Component {
           <div key={id} className={controlClasses}>
             <Stack hasGutter>
               <StackItem>
-                <Title headingLevel="h2" size="2xl">
+                <Title headingLevel="h2" size="xl">
                   {title}
                 </Title>
+                {description && <Content component={ContentVariants.p}>{description}</Content>}
               </StackItem>
               <StackItem>
                 {control.type === 'review'
-                  ? renderReview(this.props.steps.slice(lastReviewInx, inx), lastReviewInx, comment)
+                  ? renderReview(this.props.steps.slice(lastReviewInx, inx), lastReviewInx, control)
                   : renderControlSections(sections)}
               </StackItem>
             </Stack>
@@ -158,7 +178,8 @@ class ControlPanelWizard extends React.Component {
     }
 
     const onSave = () => {
-      // if last step was a review, it already did  a mutate
+      // Explicit review steps create via validateNextStep (mutation or handleCreateResource).
+      // Auto-appended review steps (lastType !== 'review') create here.
       if (lastType !== 'review') {
         this.props.handleCreateResource()
       }
@@ -194,12 +215,20 @@ class ControlPanelWizard extends React.Component {
                   })
               }
               activeControlData.isComplete = true
+              // Distinguish completed mutation reviews after mutation is cleared.
+              activeControlData.mutationCompleted = true
               delete activeControlData.mutation
               this.forceUpdate()
+              onNext()
             }
           })
-        } else {
+        } else if (activeControlData?.mutationCompleted) {
+          // Mutation already ran — continue wizard instead of submitting again.
           onNext()
+        } else {
+          // Review without mutation (e.g. kubevirt standalone) — submit create here.
+          // onSave skips review steps because mutation-based reviews already created.
+          this.props.handleCreateResource()
         }
       } else {
         onNext()
@@ -210,34 +239,42 @@ class ControlPanelWizard extends React.Component {
     const isWorking = creationStatus === 'IN_PROGRESS' || isProcessing
     const isDisabled = creationStatus === 'DONE' || isWorking
 
+    const allControls = flattenStepControls(steps)
     const CustomFooter = (activeStep, goToNextStep, goToPrevStep, close) => {
       const activeStepIndex = steps.findIndex((step) => step.id === activeStep.id)
+      const isReviewStep = activeStep.id === 'review' || activeStep.id === 'reviewSave'
+      const isCurrentStepIncomplete =
+        validateRequiredFields &&
+        !isReviewStep &&
+        hasIncompleteRequiredControls(steps[activeStepIndex]?.controls || [], allControls)
+      const incompleteHint = i18n('Complete all required fields before continuing')
+      const nextButton = (
+        <Button
+          isLoading={isWorking}
+          isDisabled={isDisabled}
+          isAriaDisabled={isCurrentStepIncomplete}
+          variant="primary"
+          spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
+          onClick={() => {
+            if (!isWorking && !isCurrentStepIncomplete) {
+              validateNextStep(activeStep, goToNextStep)
+            }
+          }}
+        >
+          {processingLabel ||
+            (activeStep.id === 'reviewSave'
+              ? i18n('Save')
+              : activeStep.id === 'review'
+                ? isEditing
+                  ? i18n('Save')
+                  : i18n('Create')
+                : i18n('Next'))}
+        </Button>
+      )
       return (
         <WizardFooterWrapper>
           <ActionList>
             <ActionListGroup>
-              <ActionListItem>
-                <Button
-                  isLoading={isWorking}
-                  isDisabled={isDisabled}
-                  variant="primary"
-                  spinnerAriaValueText={isWorking ? i18n('Processing') : undefined}
-                  onClick={() => {
-                    if (!isWorking) {
-                      validateNextStep(activeStep, goToNextStep)
-                    }
-                  }}
-                >
-                  {processingLabel ||
-                    (activeStep.id === 'reviewSave'
-                      ? i18n('Save')
-                      : activeStep.id === 'review'
-                        ? isEditing
-                          ? i18n('Save')
-                          : i18n('Create')
-                        : i18n('Next'))}
-                </Button>
-              </ActionListItem>
               <ActionListItem>
                 <Button
                   variant="secondary"
@@ -252,6 +289,13 @@ class ControlPanelWizard extends React.Component {
                 >
                   {i18n('Back')}
                 </Button>
+              </ActionListItem>
+              <ActionListItem>
+                {isCurrentStepIncomplete ? (
+                  <Tooltip content={incompleteHint}>{nextButton}</Tooltip>
+                ) : (
+                  nextButton
+                )}
               </ActionListItem>
             </ActionListGroup>
             <ActionListGroup>
@@ -272,7 +316,7 @@ class ControlPanelWizard extends React.Component {
     return (
       <Wizard
         navAriaLabel={i18n('Create wizard steps')}
-        title={i18n('Create wizard content')}
+        title={wizardTitle || i18n('Create wizard content')}
         height={'100%'}
         onSave={onSave}
         onClose={onClose}
@@ -306,6 +350,7 @@ ControlPanelWizard.propTypes = {
   setEditorReadOnly: PropTypes.func,
   setWizardRef: PropTypes.func,
   steps: PropTypes.array,
+  wizardTitle: PropTypes.string,
 }
 
 export default ControlPanelWizard

@@ -1644,7 +1644,7 @@
   "Enter your vCenter server": "Enter your vCenter server",
   "Enter your vCenter username": "Enter your vCenter username",
   "Enter your vSphere datacenter": "Enter your vSphere datacenter",
-  "enter.add.label": "Enter key=value",
+  "enter.add.label": "Enter a valid key and optional value",
   "enter.duplicate.key": "Duplicate key: {{0}}",
   "equal": "equal",
   "Equal": "Equal",

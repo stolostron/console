@@ -17,7 +17,7 @@ const ControlPanelFormGroup = (props: {
   hideLabel?: boolean
 }) => {
   const { controlId, control, controlData, omitHelperText = false, children, i18n, hideLabel } = props
-  const { name, opaque, tooltip, validation = {}, icon } = control
+  const { name, opaque, tooltip, tooltipHeader, validation = {}, icon } = control
   return (
     <React.Fragment>
       <div style={opaque ? { pointerEvents: 'none', opacity: 0.7 } : {}}>
@@ -29,7 +29,11 @@ const ControlPanelFormGroup = (props: {
           labelHelp={
             /* istanbul ignore next */
             tooltip ? (
-              <Popover id={`${controlId}-label-help-popover`} bodyContent={tooltip}>
+              <Popover
+                id={`${controlId}-label-help-popover`}
+                headerContent={tooltipHeader}
+                bodyContent={tooltip}
+              >
                 <>
                   <Button
                     variant="plain"

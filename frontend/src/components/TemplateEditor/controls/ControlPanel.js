@@ -1,12 +1,13 @@
 /* Copyright Contributors to the Open Cluster Management project */
 'use strict'
 
-import { Alert, Button } from '@patternfly/react-core'
-import { PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
+import { Alert, Button, Grid, GridItem } from '@patternfly/react-core'
+import { MinusCircleIcon, PlusCircleIcon, TrashIcon } from '@patternfly/react-icons'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import React from 'react'
 import '../css/control-panel.css'
+import { partitionGroupSections } from '../utils/groupControlUtils'
 import ControlPanelAccordion from './ControlPanelAccordion'
 import ControlPanelBoolean from './ControlPanelBoolean'
 import ControlPanelCards from './ControlPanelCards'
@@ -24,6 +25,7 @@ import ControlPanelMultiTextInput from './ControlPanelMultiTextInput'
 import ControlPanelTreeSelect from './ControlPanelTreeSelect'
 import ControlPanelValues from './ControlPanelValues'
 import ControlPanelWizard from './ControlPanelWizard'
+import { isControlHidden } from '../utils/controlPredicates'
 
 class ControlPanel extends React.Component {
   static propTypes = {
@@ -49,6 +51,7 @@ class ControlPanel extends React.Component {
     showPortals: PropTypes.object,
     templateYAML: PropTypes.any,
     backButtonOverride: PropTypes.func,
+    wizardTitle: PropTypes.string,
   }
 
   constructor(props) {
@@ -199,6 +202,7 @@ class ControlPanel extends React.Component {
       creationStatus,
       backButtonOverride,
       i18n,
+      wizardTitle,
     } = this.props
     return (
       <ControlPanelWizard
@@ -216,13 +220,19 @@ class ControlPanel extends React.Component {
         isEditing={isEditing}
         creationStatus={creationStatus}
         backButtonOverride={backButtonOverride}
+        wizardTitle={wizardTitle}
       />
     )
   }
 
   renderControlSections(controlSections, grpId = '') {
     return controlSections.map(({ title, content: _content }) => {
-      const { id, collapsed = false, shadowed } = title
+      const { id, collapsed = false, shadowed, title: sectionTitle, subtitle } = title
+      const sectionLabel = typeof sectionTitle === 'string' ? sectionTitle : subtitle
+      // Include grpId so repeated group copies get unique content IDs; first copy keeps grpId ''.
+      const sectionContentId = `${id || ''}${grpId}-${sectionLabel || ''}-content`
+        .replaceAll(/\s+/g, '-')
+        .toLowerCase()
       const sectionClasses = classNames({
         'creation-view-controls-section': true,
         shadowed,
@@ -232,11 +242,12 @@ class ControlPanel extends React.Component {
         'creation-view-group-subcontainer': title.subgroup,
       })
       title.content = _content
+      title.sectionContentId = sectionContentId
       return (
-        <React.Fragment key={id}>
+        <React.Fragment key={`${id}${grpId}`}>
           <div className={sectionContainerClasses}>
             {this.renderControl(id, 'section', title, grpId)}
-            <div className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
+            <div id={sectionContentId} className={sectionClasses} ref={this.setControlSectionRef.bind(this, title)}>
               {this.renderControls(_content, grpId)}
             </div>
           </div>
@@ -246,18 +257,60 @@ class ControlPanel extends React.Component {
   }
 
   renderControls(controlData, grpId) {
+    const nodes = []
+    let rowId = null
+    let rowItems = []
+
+    const flushRow = () => {
+      if (rowItems.length === 0) {
+        return
+      }
+      const rowControlId = rowItems[0]?.id || 'row'
+      nodes.push(
+        <Grid key={`form-row-${grpId || 'root'}-${rowId}-${rowControlId}`} hasGutter className="creation-view-form-row">
+          {rowItems.map(({ id, type, control }) => (
+            <GridItem key={id} md={6}>
+              {this.renderControlWithFetch(id, type, control, grpId)}
+            </GridItem>
+          ))}
+        </Grid>
+      )
+      rowItems = []
+      rowId = null
+    }
+
+    controlData.forEach((control, i) => {
+      const { id = `${control.type}-${i}`, type, formRow } = control
+      if (type === 'group') {
+        flushRow()
+        nodes.push(this.renderGroup(control, grpId))
+        return
+      }
+      if (formRow) {
+        if (rowId && rowId !== formRow) {
+          flushRow()
+        }
+        rowId = formRow
+        rowItems.push({ id, type, control })
+        return
+      }
+      flushRow()
+      nodes.push(this.renderControlWithFetch(id, type, control, grpId))
+    })
+    flushRow()
+
+    return <React.Fragment>{nodes}</React.Fragment>
+  }
+
+  canDeleteGroup(control, inx) {
+    const { prompts, startWithNone, active = [] } = control
+    if (!prompts) {
+      return false
+    }
     return (
-      <React.Fragment>
-        {controlData.map((control, i) => {
-          const { id = `${control.type}-${i}`, type } = control
-          switch (type) {
-            case 'group':
-              return this.renderGroup(control, grpId)
-            default:
-              return this.renderControlWithFetch(id, type, control, grpId)
-          }
-        })}
-      </React.Fragment>
+      startWithNone ||
+      (prompts.disableDeleteForFirst && inx > 0) ||
+      (!prompts.disableDeleteForFirst && active.length > 1)
     )
   }
 
@@ -266,6 +319,7 @@ class ControlPanel extends React.Component {
     active.forEach((controlData) => {
       controlData.forEach((ctrl) => {
         ctrl.group = control
+        ctrl.groupControlData = controlData
       })
     })
     const isHidden = typeof hidden === 'function' ? hidden() : hidden
@@ -287,15 +341,17 @@ class ControlPanel extends React.Component {
 
             const card = controlData.find(({ type }) => type === 'cards')
             const groupType = card && Array.isArray(card.active) ? card.active.join() : 'general'
+            const showDelete = this.canDeleteGroup(control, inx)
+            const section = controlData.find(({ type }) => type === 'section')
+            if (section) {
+              section.headerAction =
+                showDelete && prompts?.deleteLabel ? this.renderDeleteGroupButton(control, inx) : undefined
+            }
 
             return (
               <React.Fragment key={`${controlData[0].id}Group${inx}`}>
                 <div className="creation-view-group-container" key={groupType}>
-                  {prompts &&
-                    (startWithNone ||
-                      (prompts.disableDeleteForFirst && inx > 0) ||
-                      (!prompts.disableDeleteForFirst && active.length > 1)) &&
-                    this.renderDeleteGroupButton(control, inx)}
+                  {showDelete && !prompts?.deleteLabel && this.renderDeleteGroupButton(control, inx)}
                   {this.renderGroupControlSections(controlData, inx, groupId)}
                 </div>
                 {prompts && prompts.addPrompt && active.length - 1 === inx && this.renderAddGroupButton(control)}
@@ -308,31 +364,10 @@ class ControlPanel extends React.Component {
   }
 
   renderGroupControlSections(controlData, grpNum, grpId = '') {
-    // create collapsable control sections
-    let section
-    let content = []
-    let stopRendering = false
-    let stopRenderingOnNextControl = false
-    const controlSections = []
-    controlData.forEach((control) => {
-      const { type, pauseControlCreationHereUntilSelected } = control
-      stopRendering = stopRenderingOnNextControl
-      if (pauseControlCreationHereUntilSelected) {
-        stopRenderingOnNextControl = !control.active
-      }
-      if (!stopRendering) {
-        control.grpNum = grpNum
-        if (type === 'section') {
-          content = []
-          section = { title: control, content }
-          controlSections.push(section)
-        } else {
-          content.push(control)
-        }
-      }
-    })
+    const controlSections = partitionGroupSections(controlData, grpNum)
     return this.renderControlSections(controlSections, grpId)
   }
+
 
   // if data for 'available' is fetched from server, use apollo component
   renderControlWithFetch(id, type, control, grpId) {
@@ -605,10 +640,12 @@ class ControlPanel extends React.Component {
   }
 
   renderCustom(control, controlId, templateYAML, handleCreateResource, controlProps) {
-    const { i18n } = this.props
+    const { i18n, controlData } = this.props
     const { component } = control
     const custom = React.cloneElement(component, {
       control,
+      // Always pass the live initialized controlData (not a stale getControlData closure).
+      controlData,
       i18n,
       controlId,
       handleChange: this.handleChange.bind(this, control),
@@ -750,10 +787,27 @@ class ControlPanel extends React.Component {
   renderDeleteGroupButton(control, inx) {
     const { controlData } = this.props
     const {
-      prompts: { deletePrompt },
+      prompts: { deletePrompt, deleteLabel },
     } = control
     const handleGroupChange = () => {
       this.props.handleGroupChange(control, controlData, this.creationView, inx)
+    }
+    if (deleteLabel) {
+      return (
+        <Button
+          variant="link"
+          isDanger
+          isInline
+          icon={<MinusCircleIcon />}
+          tabIndex="0"
+          title={deletePrompt || deleteLabel}
+          aria-label={deletePrompt || deleteLabel}
+          onClick={handleGroupChange}
+          style={{ marginRight: '10px' }}
+        >
+          {deleteLabel}
+        </Button>
+      )
     }
     return (
       <Button
@@ -786,8 +840,7 @@ class ControlPanel extends React.Component {
   }
 
   isHidden(control, controlData) {
-    const { hidden } = control
-    return hidden === true || hidden === 'true' || (typeof hidden === 'function' && hidden(control, controlData))
+    return isControlHidden(control, controlData)
   }
 }
 
