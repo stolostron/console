@@ -5,11 +5,7 @@ import { ButtonVariant } from '@patternfly/react-core'
 import { ModalVariant } from '@patternfly/react-core/deprecated'
 import { useContext, useEffect, useState } from 'react'
 import type { TFunction } from 'i18next'
-import {
-  getErrorInfo,
-  isAccessRestrictedError,
-  normalizeAccessRestrictedError,
-} from '../../../../components/ErrorPage'
+import { getErrorInfo, isAccessRestrictedError, normalizeAccessRestrictedError } from '../../../../components/ErrorPage'
 import { useTranslation } from '../../../../lib/acm-i18next'
 import { IResource } from '../../../../resources'
 import { fetchRetry, getBackendUrl, getRequest } from '../../../../resources/utils'

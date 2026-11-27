@@ -1,11 +1,6 @@
 /* Copyright Contributors to the Open Cluster Management project */
 import type { TFunction } from 'i18next'
-import {
-  getErrorInfo,
-  getRawErrorInfo,
-  isAccessRestrictedError,
-  normalizeAccessRestrictedError,
-} from './ErrorPage'
+import { getErrorInfo, getRawErrorInfo, isAccessRestrictedError, normalizeAccessRestrictedError } from './ErrorPage'
 import { ResourceError, ResourceErrorCode } from '../resources/utils'
 
 const t = ((key: string) => key) as unknown as TFunction
@@ -23,9 +18,7 @@ describe('ErrorPage access-restricted helpers', () => {
   test('isAccessRestrictedError detects forbidden text in plain errors', () => {
     expect(
       isAccessRestrictedError(
-        new Error(
-          'subscriptions.operators.coreos.com is forbidden: User "GK0X" cannot list resource "subscriptions"'
-        )
+        new Error('subscriptions.operators.coreos.com is forbidden: User "GK0X" cannot list resource "subscriptions"')
       )
     ).toBe(true)
     expect(isAccessRestrictedError(new Error('network timeout'))).toBe(false)
