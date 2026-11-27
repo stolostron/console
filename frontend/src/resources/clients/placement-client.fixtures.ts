@@ -1,5 +1,5 @@
 /* Copyright Contributors to the Open Cluster Management project */
-import { GlobalPlacementName, Placement, PlacementApiVersionBeta, PlacementKind } from '../placement'
+import { GlobalPlacementName, Placement, PlacementApiVersion, PlacementKind } from '../placement'
 
 /**
  * Test case fixture for isPlacementForClusterSets
@@ -17,7 +17,7 @@ export const isPlacementForClusterSetsTestCases: IsPlacementForClusterSetsTestCa
   {
     description: 'should return true when placement has clusterSets with one element',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p1', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-1'] },
@@ -27,7 +27,7 @@ export const isPlacementForClusterSetsTestCases: IsPlacementForClusterSetsTestCa
   {
     description: 'should return true when placement has clusterSets with multiple elements',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p2', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-1', 'cluster-set-2', 'cluster-set-3'] },
@@ -37,7 +37,7 @@ export const isPlacementForClusterSetsTestCases: IsPlacementForClusterSetsTestCa
   {
     description: 'should return false when placement has empty clusterSets array',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p3', namespace: 'default' },
       spec: { clusterSets: [] },
@@ -47,7 +47,7 @@ export const isPlacementForClusterSetsTestCases: IsPlacementForClusterSetsTestCa
   {
     description: 'should return false when placement has undefined clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p4', namespace: 'default' },
       spec: {},
@@ -57,7 +57,7 @@ export const isPlacementForClusterSetsTestCases: IsPlacementForClusterSetsTestCa
   {
     description: 'should return false when placement has predicates but no clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p5', namespace: 'default' },
       spec: {
@@ -92,7 +92,7 @@ export const isPlacementForClusterNamesTestCases: IsPlacementForClusterNamesTest
   {
     description: 'should return true when placement has predicates but no clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p1', namespace: 'default' },
       spec: {
@@ -112,7 +112,7 @@ export const isPlacementForClusterNamesTestCases: IsPlacementForClusterNamesTest
   {
     description: 'should return true when placement has empty clusterSets array',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p2', namespace: 'default' },
       spec: { clusterSets: [] },
@@ -122,7 +122,7 @@ export const isPlacementForClusterNamesTestCases: IsPlacementForClusterNamesTest
   {
     description: 'should return true when placement has undefined clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p3', namespace: 'default' },
       spec: {},
@@ -132,7 +132,7 @@ export const isPlacementForClusterNamesTestCases: IsPlacementForClusterNamesTest
   {
     description: 'should return false when placement has clusterSets with one element',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p4', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-1'] },
@@ -142,7 +142,7 @@ export const isPlacementForClusterNamesTestCases: IsPlacementForClusterNamesTest
   {
     description: 'should return false when placement has clusterSets with multiple elements',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p5', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-1', 'cluster-set-2'] },
@@ -168,7 +168,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return true when cluster name is in placement predicates',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p1', namespace: 'default' },
       spec: {
@@ -189,7 +189,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return true when cluster name is in one of multiple predicates',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p2', namespace: 'default' },
       spec: {
@@ -217,7 +217,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when cluster name is not in placement predicates',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p3', namespace: 'default' },
       spec: {
@@ -238,7 +238,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when placement has no predicates',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p4', namespace: 'default' },
       spec: {},
@@ -249,7 +249,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when placement has empty predicates array',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p5', namespace: 'default' },
       spec: { predicates: [] },
@@ -260,7 +260,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when predicate has no requiredClusterSelector',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p6', namespace: 'default' },
       spec: {
@@ -277,7 +277,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when predicate has no labelSelector',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p7', namespace: 'default' },
       spec: {
@@ -296,7 +296,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when predicate has empty matchExpressions',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p8', namespace: 'default' },
       spec: {
@@ -317,7 +317,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when matchExpression has different key',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p9', namespace: 'default' },
       spec: {
@@ -338,7 +338,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when matchExpression values is undefined',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p10', namespace: 'default' },
       spec: {
@@ -359,7 +359,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return false when matchExpression values is empty array',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p11', namespace: 'default' },
       spec: {
@@ -380,7 +380,7 @@ export const doesPlacementContainsClusterNameTestCases: DoesPlacementContainsClu
   {
     description: 'should return true when cluster name is found among multiple matchExpressions',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p12', namespace: 'default' },
       spec: {
@@ -421,7 +421,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return true when cluster set name is in placement clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p1', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-a', 'cluster-set-b'] },
@@ -432,7 +432,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return true when cluster set name is the only element in clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p2', namespace: 'default' },
       spec: { clusterSets: ['single-cluster-set'] },
@@ -443,7 +443,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return true when cluster set name is last in multiple clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p3', namespace: 'default' },
       spec: { clusterSets: ['cs-1', 'cs-2', 'cs-3'] },
@@ -454,7 +454,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return false when cluster set name is not in placement clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p4', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-a', 'cluster-set-b'] },
@@ -465,7 +465,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return false when placement has no clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p5', namespace: 'default' },
       spec: {},
@@ -476,7 +476,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return false when placement has empty clusterSets array',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p6', namespace: 'default' },
       spec: { clusterSets: [] },
@@ -487,7 +487,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return false when placement has predicates but no clusterSets',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p7', namespace: 'default' },
       spec: {
@@ -508,7 +508,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should return false for partial match of cluster set name',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p8', namespace: 'default' },
       spec: { clusterSets: ['cluster-set-production'] },
@@ -519,7 +519,7 @@ export const doesPlacementContainsClusterSetTestCases: DoesPlacementContainsClus
   {
     description: 'should be case sensitive when matching cluster set names',
     placement: {
-      apiVersion: PlacementApiVersionBeta,
+      apiVersion: PlacementApiVersion,
       kind: PlacementKind,
       metadata: { name: 'p9', namespace: 'default' },
       spec: { clusterSets: ['Cluster-Set-A'] },
@@ -689,7 +689,7 @@ export const producePlacementNameLongListTestCases: ProducePlacementNameLongList
  * Global placement included in placement lists (same as in placement-client.test).
  */
 const globalPlacementForLabelsQuery: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: { name: GlobalPlacementName, namespace: 'default' },
   spec: {},
@@ -701,7 +701,7 @@ const globalPlacementForLabelsQuery: Placement = {
  */
 export const defaultPlacementsForLabelsQuery: Placement[] = [
   {
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: { name: 'placement-1', namespace: 'default' },
     spec: {
@@ -717,7 +717,7 @@ export const defaultPlacementsForLabelsQuery: Placement[] = [
     },
   },
   {
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: { name: 'placement-2', namespace: 'default' },
     spec: {
@@ -733,7 +733,7 @@ export const defaultPlacementsForLabelsQuery: Placement[] = [
     },
   },
   {
-    apiVersion: PlacementApiVersionBeta,
+    apiVersion: PlacementApiVersion,
     kind: PlacementKind,
     metadata: { name: 'placement-no-predicates', namespace: 'default' },
     spec: {},
@@ -773,7 +773,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return placement when single label query matches (placement has that key-value)',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-with-labels',
@@ -791,7 +791,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return placement when single label query matches and placement has additional labels',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-abc',
@@ -809,7 +809,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return empty when single label query does not match (placement has other labels)',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-abc',
@@ -826,7 +826,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return empty when single label query is provided but placement has no labels',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: { name: 'placement-no-labels', namespace: 'default' },
         spec: {},
@@ -839,7 +839,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return placement when multiple labels query matches (placement has all queried labels)',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-abc',
@@ -857,7 +857,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should return empty when multiple labels query and placement is missing one label',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-abc',
@@ -874,7 +874,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
     description: 'should combine labels filter with other filters (AND)',
     placements: [
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'placement-named-and-labeled',
@@ -884,7 +884,7 @@ export const useFindPlacementsLabelsQueryTestCases: UseFindPlacementsLabelsQuery
         spec: {},
       },
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: {
           name: 'other-labeled',

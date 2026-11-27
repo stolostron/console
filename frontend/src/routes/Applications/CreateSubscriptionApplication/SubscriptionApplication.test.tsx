@@ -40,7 +40,7 @@ import {
   NamespaceApiVersion,
   NamespaceKind,
   Placement,
-  PlacementApiVersionBeta,
+  PlacementApiVersion,
   PlacementKind,
   Project,
   ProjectApiVersion,
@@ -294,7 +294,7 @@ const mockChannelProject: Project = {
 }
 
 const mockCreatePlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     labels: {
@@ -336,7 +336,7 @@ const nockCreateManagedclustersetbindings: ManagedClusterSetBinding = {
 }
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     namespace: 'namespace-0',
@@ -470,7 +470,7 @@ describe('Create Subscription Application page', () => {
     const placementNocks = [
       nockList(
         {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { namespace: mockApplication0.metadata.namespace! },
         },
@@ -544,7 +544,7 @@ describe('Create Subscription Application page', () => {
     const placementNocks = [
       nockList(
         {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { namespace: mockApplication0.metadata.namespace! },
         },
@@ -656,7 +656,7 @@ describe('Create Subscription Application page', () => {
     const placementNocks = [
       nockList(
         {
-          apiVersion: PlacementApiVersionBeta,
+          apiVersion: PlacementApiVersion,
           kind: PlacementKind,
           metadata: { namespace: mockApplication0.metadata.namespace! },
         },

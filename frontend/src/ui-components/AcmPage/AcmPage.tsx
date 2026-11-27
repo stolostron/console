@@ -48,6 +48,7 @@ export interface AcmPageHeaderProps {
   popoverAutoWidth?: PopoverProps['hasAutoWidth']
   label?: string | React.ReactNode
   labelColor?: LabelProps['color']
+  labelPosition?: 'inline' | 'right'
   description?: string | React.ReactNode
   breadcrumb?: { text: string; to?: string }[]
   navigation?: React.ReactNode
@@ -58,6 +59,11 @@ export interface AcmPageHeaderProps {
 }
 
 export function AcmPageHeader(props: AcmPageHeaderProps) {
+  const label = props.label && props.labelColor && (
+    <SplitItem>
+      <Label color={props.labelColor}>{props.label}</Label>
+    </SplitItem>
+  )
   return (
     <PageSection
       id={'page-header'}
@@ -116,11 +122,7 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                           </Title>
                         </Content>
                       </SplitItem>
-                      {props.label && props.labelColor && (
-                        <SplitItem>
-                          <Label color={props.labelColor}>{props.label}</Label>
-                        </SplitItem>
-                      )}
+                      {props.labelPosition !== 'right' && label}
                       {props.switches && (
                         <SplitItem>
                           <span
@@ -134,6 +136,12 @@ export function AcmPageHeader(props: AcmPageHeaderProps) {
                             {props.switches}
                           </span>
                         </SplitItem>
+                      )}
+                      {props.labelPosition === 'right' && label && (
+                        <>
+                          <SplitItem isFilled />
+                          {label}
+                        </>
                       )}
                       {/* <SplitItem>{props.description && <p>{props.description}</p>}</SplitItem> */}
                     </Split>

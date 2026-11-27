@@ -15,7 +15,7 @@ import CreatePlacementPage, { CreatePlacement } from './CreatePlacement'
 import { AcmToastContext } from '../../../../../ui-components'
 import { LostChangesContext } from '../../../../../components/LostChanges'
 import { Namespace, NamespaceApiVersion, NamespaceKind } from '../../../../../resources/namespace'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../../resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '../../../../../resources/placement'
 import { IResource } from '../../../../../resources'
 import { noop } from 'lodash'
 
@@ -55,7 +55,7 @@ const mockNamespace: Namespace = {
 }
 
 const mockPlacement: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: { name: 'test-placement', namespace: 'test-ns' },
   spec: {},
@@ -206,7 +206,7 @@ describe('CreatePlacement', () => {
     expect(mockOnSubmit).toBeDefined()
     await mockOnSubmit!([
       {
-        apiVersion: PlacementApiVersionBeta,
+        apiVersion: PlacementApiVersion,
         kind: PlacementKind,
         metadata: { name: 'test-placement', namespace: 'test-ns' },
         spec: {},

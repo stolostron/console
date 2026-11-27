@@ -497,13 +497,10 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
   // when paging items from backend
   // send request to backend
   const filterSelectionsStr = JSON.stringify(filterSelections)
+  const requestSortColumnId = sort?.index === undefined ? undefined : selectedSortedCols[sort.index]?.id
   const requestSort = useMemo(() => {
-    if (sort?.index === undefined) {
-      return sort
-    }
-    const columnId = selectedSortedCols[sort.index]?.id
-    return columnId ? { ...sort, id: columnId } : sort
-  }, [selectedSortedCols, sort])
+    return requestSortColumnId ? { ...sort, id: requestSortColumnId } : sort
+  }, [requestSortColumnId, sort])
   useEffect(() => {
     if (setRequestView && isPreProcessed) {
       setRequestView({
@@ -595,12 +592,25 @@ export function AcmTable<T>(props: AcmTableProps<T>) {
       const fuse = new Fuse(tableItems, {
         ignoreLocation: true,
         threshold: threshold,
+        includeScore: true,
         keys: selectedSortedCols
           .map((column, i) => (column.search ? `column-${i}` : undefined))
           .filter((value) => value !== undefined),
         // TODO use FuseOptionKeyObject to allow for weights
       })
-      const filtered = fuse.search<ITableItem<T>>(internalSearch).map((result) => result.item)
+      // Fuse ranks by score; includeScore is required so scoreDiff is meaningful.
+      // Equal scores keep input order. Tie-break on key so poll/rebuild reshuffles
+      // of items[] cannot reorder equal-score matches.
+      const filtered = fuse
+        .search<ITableItem<T>>(internalSearch)
+        .sort((a, b) => {
+          const scoreDiff = (a.score ?? 0) - (b.score ?? 0)
+          if (scoreDiff !== 0) {
+            return scoreDiff
+          }
+          return compareStrings(a.item.key, b.item.key)
+        })
+        .map((result) => result.item)
       return { filtered, filteredCount: filtered.length }
     } else {
       return { filtered: tableItems, filteredCount: totalCount }

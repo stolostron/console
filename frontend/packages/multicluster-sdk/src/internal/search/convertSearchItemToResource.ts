@@ -319,6 +319,7 @@ export function convertSearchItemToResource<R extends K8sResourceCommon | K8sRes
       setIfDefined(resource, 'spec.template.spec.architecture', item.architecture)
       setIfDefined(resource, 'spec.template.spec.domain.cpu.cores', item.cpu, Number(item.cpu))
       setIfDefined(resource, 'spec.template.spec.domain.memory.guest', item.memory)
+      setIfDefined(resource, 'metadata.annotations.description', item._description)
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/flavor"]', item.flavor)
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/os"]', item.osName)
       setIfDefined(resource, 'spec.template.metadata.annotations["vm.kubevirt.io/workload"]', item.workload)

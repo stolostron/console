@@ -7,6 +7,7 @@ Prerequisites:
 - openpyxl library (pip install openpyxl)
 - pytorch library (pip install torch torchvision pillow)
 - playwright library (pip install playwright) (playwright install)
+- Google Chrome browser installed
 
 Usage:
   ./generate-doc-links.py [--compare] [--previous-acm-version VERSION] [--previous-ocp-version VERSION]
@@ -212,8 +213,17 @@ def take_screenshot(url, name, anchor_selector):
         if Path(f"{name}.png").is_file():
             print(f"Skipping screenshot for {url} because {name}.png already exists")
             return 0
-        browser = p.chromium.launch()
-        page = browser.new_page()
+        browser = p.chromium.launch(channel="chrome", headless=False)
+        context = browser.new_context(
+            locale="en-US",
+            extra_http_headers={
+                "Accept-Language": "en-US,en;q=0.9",
+            },
+        )
+        context.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        """)
+        page = context.new_page()
         response = page.goto(url, wait_until="domcontentloaded")
         status = response.status if response else 0
         if status >= 400:
@@ -297,6 +307,7 @@ def take_screenshot(url, name, anchor_selector):
 
         # full_page=True captures the entire scrollable area
         page.screenshot(path=f"{name}.png", full_page=True)
+        context.close()
         browser.close()
         return status
 

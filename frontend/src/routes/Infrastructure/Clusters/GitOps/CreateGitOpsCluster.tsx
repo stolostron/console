@@ -64,7 +64,14 @@ export default function CreateGitOpsClusterPage() {
   return <CreateGitOpsCluster />
 }
 
-export function CreateGitOpsCluster() {
+export function CreateGitOpsCluster(
+  props: {
+    isModal?: boolean
+    yamlSwitchTarget?: HTMLElement | null
+    onCancel?: () => void
+    onSubmitSuccess?: () => void
+  } = {}
+) {
   const { t } = useTranslation()
   const {
     argoCDsState,
@@ -102,6 +109,8 @@ export function CreateGitOpsCluster() {
   return (
     <GitOpsClusterWizard
       title={t('Create GitOpsCluster')}
+      isModal={props.isModal}
+      yamlSwitchTarget={props.yamlSwitchTarget}
       namespaces={availableNamespaces}
       clusterSets={clusterSets}
       clusterSetBindings={clusterSetBindings}
@@ -113,11 +122,12 @@ export function CreateGitOpsCluster() {
       yamlEditor={getWizardSyncEditor}
       onCancel={() => {
         cancelForm()
-        void navigate(NavigationPath.gitOps)
+        if (props.onCancel) props.onCancel()
+        else void navigate(NavigationPath.gitOps)
       }}
       breadcrumb={[{ text: t('GitOps'), to: NavigationPath.gitOps }, { text: t('Create GitOpsCluster') }]}
       onSubmit={async (data) => {
-        const resources = ensureGitOpsClusterPlacement(data as IResource[])
+        const resources = ensureGitOpsClusterPlacement(data as IResource[], t)
         const missing = await collectMissingPermissions(resources)
         if (missing.length > 0) {
           toast.addAlert({
@@ -129,7 +139,7 @@ export function CreateGitOpsCluster() {
           throw new Error(t('Missing permissions to create one or more required resources.'))
         }
 
-        return reconcileGitOpsWizardResources(resources)
+        return reconcileGitOpsWizardResources(resources, t)
           .then((result) => {
             const gitOpsCluster = resources.find((resource) => resource.kind === GitOpsClusterKind)
             const name = gitOpsCluster?.metadata?.name
@@ -143,7 +153,8 @@ export function CreateGitOpsCluster() {
               autoClose: true,
             })
             submitForm()
-            void navigate(NavigationPath.gitOps)
+            if (props.onSubmitSuccess) props.onSubmitSuccess()
+            else void navigate(NavigationPath.gitOps)
           })
           .catch((err) => {
             const reason = err?.reason ?? 'Unknown'

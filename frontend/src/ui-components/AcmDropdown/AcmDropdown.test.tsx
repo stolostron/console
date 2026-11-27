@@ -65,6 +65,20 @@ describe('AcmDropdown', () => {
     await clickElement(getByTestId('dropdown'))
     await waitFor(() => expect(getByTestId('install-config')).toBeInTheDocument())
   })
+  test.each(['isDisabled', 'isAriaDisabled'] as const)('does not select an item with %s', async (disabledProp) => {
+    const onSelect = jest.fn()
+    const { getByRole } = render(
+      <AcmDropdown
+        id="disabled-action"
+        text="Create application"
+        onSelect={onSelect}
+        dropdownItems={[{ id: 'pull', text: 'Pull model', [disabledProp]: true }]}
+      />
+    )
+    await clickElement(getByRole('button', { name: 'Create application' }))
+    await clickElement(getByRole('menuitem', { name: 'Pull model' }))
+    expect(onSelect).not.toHaveBeenCalled()
+  })
   test('renders as a kebab dropdown in disabled state', async () => {
     const { getByTestId, queryByTestId } = render(
       <Component isDisabled={true} tooltip="Tooltip text" isKebab={true} onToggle={() => null} />

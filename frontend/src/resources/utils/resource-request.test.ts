@@ -12,7 +12,7 @@ import {
   reconcileResources,
   updateResources,
 } from './resource-request'
-import { StatusApiVersion, StatusKind } from '../status'
+import { StatusApiVersion, StatusKind, type Status } from '../status'
 import {
   nockAnsibleTower,
   nockCreate,
@@ -20,11 +20,13 @@ import {
   nockDelete,
   nockDeleteError,
   nockIgnoreApiPaths,
+  nockPatch,
   nockReplace,
   nockReplaceError,
 } from '../../lib/nock-util'
 
 import nock from 'nock'
+import { getResourceNameApiPathTestHelper } from '~/resources'
 
 export const clusterName = 'test-cluster'
 
@@ -76,6 +78,68 @@ describe('reconcileResources', () => {
       await reconcileResources([mockClusterCurator, mockClusterNamespace], [])
     }).rejects.toThrow(ResourceError)
   })
+
+  it.each(['dry-run', 'apply'])(
+    'continues GitOps cleanup when an individual deletion is missing during %s',
+    async (phase) => {
+      const first = mockClusterCurator
+      const second = {
+        ...mockClusterCurator,
+        metadata: { ...mockClusterCurator.metadata, name: 'remaining', uid: 'remaining-uid' },
+      }
+      const scopes = [
+        nock(process.env.JEST_DEFAULT_HOST as string)
+          .delete(getResourceNameApiPathTestHelper(first))
+          .query({ dryRun: 'All' })
+          .reply(phase === 'dry-run' ? 404 : 200, first),
+        nock(process.env.JEST_DEFAULT_HOST as string)
+          .delete(getResourceNameApiPathTestHelper(second))
+          .query({ dryRun: 'All' })
+          .reply(200, second),
+        nockDelete(first, first, 404),
+        nockDelete(second, second, 200),
+      ]
+      await expect(reconcileResources([], [first, second], { ignoreNotFound: true })).resolves.toBeUndefined()
+      expect(scopes.every((scope) => scope.isDone())).toBe(true)
+    }
+  )
+
+  it('still reports non-404 deletion failures during GitOps cleanup', async () => {
+    nock(process.env.JEST_DEFAULT_HOST as string)
+      .delete(getResourceNameApiPathTestHelper(mockClusterCurator))
+      .query({ dryRun: 'All' })
+      .reply(403, mockClusterCurator)
+    await expect(reconcileResources([], [mockClusterCurator], { ignoreNotFound: true })).rejects.toMatchObject({
+      code: ResourceErrorCode.Forbidden,
+    })
+  })
+
+  it.each([false, true])(
+    'guards patches with the version used for the merge (concurrent update=%s)',
+    async (changed) => {
+      const live = { ...mockClusterCurator, metadata: { ...mockClusterCurator.metadata, resourceVersion: '42' } }
+      const desired = { ...mockPatchedClusterCurator, metadata: live.metadata }
+      const patch = [
+        { op: 'test', path: '/metadata/resourceVersion', value: '42' },
+        { op: 'add', path: '/spec/desiredCuration', value: 'upgrade' },
+      ]
+      const dryRun = nockPatch(live, patch, desired, 200, { dryRun: 'All' })
+      const failure: Status = {
+        apiVersion: StatusApiVersion,
+        kind: StatusKind,
+        code: 422,
+        status: 'Failure',
+        message: 'test failed at /metadata/resourceVersion',
+      }
+      const save = nockPatch(live, patch, changed ? failure : desired, changed ? 422 : 200)
+      const result = reconcileResources([desired], [live], { requireResourceVersion: true })
+      const outcome = await result.catch((error: unknown) => error)
+      const expectedFailure = expect.objectContaining({ code: ResourceErrorCode.UnprocessableEntity })
+      expect(outcome).toEqual(changed ? expectedFailure : undefined)
+      expect(dryRun.isDone()).toBe(true)
+      expect(save.isDone()).toBe(true)
+    }
+  )
 })
 
 describe('createResource', () => {

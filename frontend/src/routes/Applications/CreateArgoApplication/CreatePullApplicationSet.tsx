@@ -11,7 +11,7 @@ import {
 import { ArgoWizard, setRepositoryTypeForSources } from '~/wizards/Argo/ArgoWizard'
 import { AcmToastContext } from '~/ui-components'
 import { useContext, useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { useSharedValue, useSharedAtoms, useSharedSelectors } from '~/shared-atoms'
 import { SyncEditor, ValidationStatus } from '~/components/SyncEditor/SyncEditor'
 import { useTranslation } from '~/lib/acm-i18next'
@@ -32,6 +32,8 @@ import schema from './pullmodelschema.json'
 import { LostChangesContext } from '~/components/LostChanges'
 import { LoadingPage } from '~/components/LoadingPage'
 import { useTimezones } from '~/hooks/useTimezone'
+import { useApplicationGitOpsMode } from '~/hooks/useApplicationGitOpsMode'
+import { PluginContext } from '~/lib/PluginContext'
 
 export default function CreatePullApplicationSetPage() {
   return <CreatePullApplicationSet />
@@ -79,6 +81,8 @@ function getWizardSyncEditor() {
 
 export function CreatePullApplicationSet() {
   const { t } = useTranslation()
+  const { dataContext } = useContext(PluginContext)
+  const { loadCompleted } = useContext(dataContext)
   const {
     channelsState,
     namespacesState,
@@ -101,6 +105,7 @@ export function CreatePullApplicationSet() {
   const managedClusterSetBindings = useSharedValue(managedClusterSetBindingsState)
   const { ansibleCredentialsValue } = useSharedSelectors()
   const secrets = useSharedValue(secretsState)
+  const { hasGitOpsCluster, isArgoCDAgentModeEnabled } = useApplicationGitOpsMode()
 
   const availableArgoNS = GetGitOpsClusters(gitOpsClusters)
   const availableNamespace = namespaces.map((namespace) => namespace.metadata.name).filter(isType)
@@ -116,6 +121,8 @@ export function CreatePullApplicationSet() {
   // opening wizard may take longer, but the longer the wait the more likelihood
   // user is creating appsets with the cli and not this wizard
   useEffect(() => {
+    if (!hasGitOpsCluster) return
+
     const fetchAppSets = async () => {
       try {
         const response = await listResources<ApplicationSet>({
@@ -129,7 +136,12 @@ export function CreatePullApplicationSet() {
       }
     }
     void fetchAppSets()
-  }, [])
+  }, [hasGitOpsCluster])
+
+  if (!hasGitOpsCluster) {
+    if (!loadCompleted) return <LoadingPage />
+    return <Navigate to={NavigationPath.applications} replace />
+  }
 
   return loadingAppSets ? (
     <LoadingPage />
@@ -143,8 +155,13 @@ export function CreatePullApplicationSet() {
       placements={placements}
       breadcrumb={[
         { text: t('Applications'), to: NavigationPath.applications },
-        { text: t('Create application set - Pull model') },
+        {
+          text: isArgoCDAgentModeEnabled
+            ? t('Create application set - Agent pull model')
+            : t('Create application set - Pull model'),
+        },
       ]}
+      gitOpsModel={isArgoCDAgentModeEnabled ? 'agent' : 'manifestwork'}
       clusters={managedClusters}
       clusterSets={clusterSets}
       clusterSetBindings={managedClusterSetBindings}

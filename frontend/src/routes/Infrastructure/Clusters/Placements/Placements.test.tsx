@@ -9,7 +9,7 @@ import { nockIgnoreApiPaths, nockIgnoreRBAC, nockRBAC } from '../../../../lib/no
 import { waitForNocks, waitForText } from '../../../../lib/test-util'
 import { NavigationPath } from '../../../../NavigationPath'
 import { Namespace, NamespaceApiVersion, NamespaceKind, SelfSubjectAccessReview } from '../../../../resources'
-import { Placement, PlacementApiVersionBeta, PlacementKind } from '../../../../resources/placement'
+import { Placement, PlacementApiVersion, PlacementKind } from '../../../../resources/placement'
 import Clusters from '../Clusters'
 
 jest.mock('../../../../components/KubevirtProviderAlert', () => ({
@@ -17,7 +17,7 @@ jest.mock('../../../../components/KubevirtProviderAlert', () => ({
 }))
 
 const mockPlacement1: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'test-placement-1',
@@ -34,7 +34,7 @@ const mockPlacement1: Placement = {
 }
 
 const mockPlacement2: Placement = {
-  apiVersion: PlacementApiVersionBeta,
+  apiVersion: PlacementApiVersion,
   kind: PlacementKind,
   metadata: {
     name: 'test-placement-2',

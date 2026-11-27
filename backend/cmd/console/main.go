@@ -38,6 +38,7 @@ import (
 	"github.com/stolostron/console/backend/internal/searchproxy"
 	"github.com/stolostron/console/backend/internal/server"
 	"github.com/stolostron/console/backend/internal/static"
+	"github.com/stolostron/console/backend/internal/tlsconfig"
 	"github.com/stolostron/console/backend/internal/upgraderisks"
 	"github.com/stolostron/console/backend/internal/user"
 	"github.com/stolostron/console/backend/internal/vmproxy"
@@ -55,6 +56,12 @@ func main() {
 func run() error {
 	cfg := config.Load()
 	applog.SetLevel(cfg.LogLevel)
+	fipsMode := tlsconfig.CurrentFIPSMode()
+	applog.Logger().Info("FIPS mode",
+		"enabled", fipsMode.Enabled,
+		"nativeGo", fipsMode.NativeGo,
+		"redHatOpenSSLRequested", fipsMode.RedHatOpenSSLRequested,
+	)
 
 	sa, ok := auth.LoadServiceAccount(cfg)
 	if !ok {
