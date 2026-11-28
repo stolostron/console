@@ -15,6 +15,12 @@ metadata:
 {{#if region}}
     region: '{{{region}}}'  ##region
 {{/if}}
+{{#if zone}}
+    zone: '{{{zone}}}'  ##zone
+{{/if}}
+{{#if locationDatacenter}}
+    datacenter: '{{{locationDatacenter}}}'  ##locationDatacenter
+{{/if}}
     vendor: OpenShift
 {{#if clusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
@@ -162,13 +168,22 @@ metadata:
     cloud: RHV
   {{/case}}
 {{/switch}}
+{{!-- No ## markers here: editor-to-form sync (reverse) targets ClusterDeployment[0] only --}}
+{{#if zone}}
+    zone: '{{{zone}}}'
+{{/if}}
+{{#if locationDatacenter}}
+    datacenter: '{{{locationDatacenter}}}'
+{{/if}}
     name: '{{{name}}}'
     vendor: OpenShift
 {{#if clusterSet}}
     cluster.open-cluster-management.io/clusterset: '{{{clusterSet}}}'
 {{/if}}
     {{#each additional}}
+    {{#unless (isOverriddenByLocationField key)}}
     {{{key}}}: '{{{value}}}'
+    {{/unless}}
     {{/each}}
   name: '{{{name}}}'
 spec:

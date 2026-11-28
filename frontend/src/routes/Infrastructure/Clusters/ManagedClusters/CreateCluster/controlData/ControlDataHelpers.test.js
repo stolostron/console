@@ -1,7 +1,14 @@
 // Copyright (c) 2022 Red Hat, Inc.
 // Copyright Contributors to the Open Cluster Management project
 'use strict'
-import { differentiateCuratorSecrets, reverseMultitext, secretName } from './ControlDataHelpers'
+import { differentiateCuratorSecrets, locationControls, reverseMultitext, secretName } from './ControlDataHelpers'
+import { getControlDataAWS } from './ControlDataAWS'
+import { getControlDataGCP } from './ControlDataGCP'
+import { getControlDataAZR } from './ControlDataAZR'
+import { getControlDataVMW } from './ControlDataVMW'
+import i18next from 'i18next'
+
+const tFn = i18next.t.bind(i18next)
 
 const controlTemplate = {
   tooltip: 'Add the ingress to be created',
@@ -177,5 +184,69 @@ describe('automation secret naming (ACM-39253)', () => {
 
   it('returns an empty spec unchanged when no automation template is selected', () => {
     expect(differentiateCuratorSecrets('', 'mycluster', 'clusters')).toEqual('')
+  })
+})
+
+describe('location controls', () => {
+  it('defines optional zone and locationDatacenter text controls that reverse into labels', () => {
+    const [zone, datacenter] = locationControls(tFn)
+    expect(zone).toMatchObject({
+      id: 'zone',
+      type: 'text',
+      reverse: 'ClusterDeployment[0].metadata.labels.zone',
+    })
+    expect(datacenter).toMatchObject({
+      id: 'locationDatacenter',
+      type: 'text',
+      reverse: 'ClusterDeployment[0].metadata.labels.datacenter',
+    })
+    for (const control of [zone, datacenter]) {
+      expect(control.active).toBe('')
+      expect(control.validation.required).toBe(false)
+      expect(control.validation.tester.test('us-east-1a')).toBe(true)
+      expect(control.validation.tester.test('bad value!')).toBe(false)
+      expect(control.validation.tester.test('rack.1_a-b')).toBe(true)
+      expect(control.validation.tester.test('')).toBe(true)
+      // Kubernetes label values must start and end with an alphanumeric character
+      expect(control.validation.tester.test('-zone')).toBe(false)
+      expect(control.validation.tester.test('zone_')).toBe(false)
+      expect(control.validation.tester.test('.zone')).toBe(false)
+      // and be at most 63 characters
+      expect(control.validation.tester.test('a'.repeat(63))).toBe(true)
+      expect(control.validation.tester.test('a'.repeat(64))).toBe(false)
+    }
+  })
+
+  it.each([
+    ['AWS', () => getControlDataAWS(tFn, jest.fn(), true, false, false, true)],
+    ['GCP', () => getControlDataGCP(tFn, jest.fn(), true, false, false, true)],
+    ['Azure', () => getControlDataAZR(tFn, jest.fn(), true, false, false, true)],
+    ['vSphere', () => getControlDataVMW(tFn, jest.fn(), true, true, false)],
+  ])('includes zone and locationDatacenter controls for %s', (_name, getControlData) => {
+    const ids = getControlData().map((control) => control.id)
+    expect(ids).toContain('zone')
+    expect(ids).toContain('locationDatacenter')
+  })
+
+  it.each([
+    ['AWS', () => getControlDataAWS(tFn, jest.fn(), true, false, false, true)],
+    ['GCP', () => getControlDataGCP(tFn, jest.fn(), true, false, false, true)],
+    ['Azure', () => getControlDataAZR(tFn, jest.fn(), true, false, false, true)],
+  ])('places the location controls right after region for %s', (_name, getControlData) => {
+    const ids = getControlData().map((control) => control.id)
+    const regionIndex = ids.indexOf('region')
+    expect(regionIndex).toBeGreaterThan(-1)
+    expect(ids.slice(regionIndex + 1, regionIndex + 3)).toEqual(['zone', 'locationDatacenter'])
+  })
+
+  it('adds exactly one location datacenter control to vSphere, separate from the credential datacenter variable', () => {
+    const ids = getControlDataVMW(tFn, jest.fn(), true, true, false).map((control) => control.id)
+    expect(ids.filter((id) => id === 'locationDatacenter')).toHaveLength(1)
+  })
+
+  it('rejects non-string values instead of throwing', () => {
+    const [zone] = locationControls(tFn)
+    expect(zone.validation.tester.test(undefined)).toBe(false)
+    expect(zone.validation.tester.test(null)).toBe(false)
   })
 })
