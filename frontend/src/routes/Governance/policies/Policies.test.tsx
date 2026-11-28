@@ -71,6 +71,63 @@ describe('Policies Page', () => {
     await waitForText('Test policy description')
   })
 
+  test('Shows the dependency gate summary and links to Results', async () => {
+    const policy = {
+      ...mockPolicy[0],
+      spec: {
+        ...mockPolicy[0].spec,
+        dependencies: [
+          {
+            apiVersion: 'policy.open-cluster-management.io/v1',
+            kind: 'Policy',
+            name: 'prerequisite',
+            compliance: 'NonCompliant' as const,
+          },
+        ],
+      },
+      status: {
+        ...mockPolicy[0].status,
+        status: [{ clustername: 'local-cluster', clusternamespace: 'local-cluster', compliant: 'Pending' }],
+      },
+    }
+    const replica = {
+      ...mockPolicy[1],
+      metadata: {
+        ...mockPolicy[1].metadata,
+        name: `${policy.metadata.namespace}.${policy.metadata.name}`,
+        labels: {
+          ...mockPolicy[1].metadata.labels,
+          'policy.open-cluster-management.io/cluster-name': 'local-cluster',
+        },
+      },
+      spec: {
+        ...policy.spec,
+        dependencies: policy.spec.dependencies.map((dep) => ({
+          ...dep,
+          name: `${policy.metadata.namespace}.${dep.name}`,
+        })),
+      },
+    }
+    const prerequisite = {
+      ...replica,
+      metadata: { ...replica.metadata, name: `${policy.metadata.namespace}.prerequisite` },
+      status: { compliant: 'Compliant' as const },
+    }
+    render(
+      <StateProvider initializeStore={(store) => store.set(policiesState, [policy, replica, prerequisite])}>
+        <MemoryRouter>
+          <PoliciesPage />
+        </MemoryRouter>
+      </StateProvider>
+    )
+    const link = await screen.findByRole('link', { name: /View dependency results.*1 not met/ })
+    expect(link).toHaveAttribute(
+      'href',
+      `/multicloud/governance/policies/details/${policy.metadata.namespace}/${policy.metadata.name}/results`
+    )
+    expect(screen.getByRole('columnheader', { name: 'Dependencies' })).toBeInTheDocument()
+  })
+
   test('Should render Policies page correctly with Default selected Columns', async () => {
     render(
       <StateProvider
@@ -466,9 +523,9 @@ describe('Export from policy table', () => {
     await clickElement(screen.getByText('Export all to CSV'))
     expect(blobConstructorSpy).toHaveBeenCalledWith(
       [
-        'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Source,Automation,Created,Description,Standards,Controls,Categories\n' +
-          '"policy-set-with-1-placement-policy","test","Enabled","inform","-","no violations: 1 cluster, violations: 0 clusters, pending: 0 clusters, unknown: 0 clusters","Local","-",-,"-","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"\n' +
-          '"policy1","test","Enabled","inform","-","-","Local","-",-,"Test policy description","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"',
+        'Name,Namespace,Status,Remediation,Policy set,Cluster violations,Dependencies,Source,Automation,Created,Description,Standards,Controls,Categories\n' +
+          '"policy-set-with-1-placement-policy","test","Enabled","inform","-","no violations: 1 cluster, violations: 0 clusters, pending: 0 clusters, unknown: 0 clusters","-","Local","-",-,"-","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"\n' +
+          '"policy1","test","Enabled","inform","-","-","-","Local","-",-,"Test policy description","NIST SP 800-53","CM-2 Baseline Configuration","CM Configuration Management"',
       ],
       { type: 'text/csv' }
     )

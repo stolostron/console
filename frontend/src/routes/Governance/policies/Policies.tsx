@@ -69,6 +69,9 @@ import {
   handlePolicySetCell,
   handleStatusCell,
 } from './PolicyTableCell'
+import { getDependencySummaryText, PolicyDependenciesCell } from './PolicyDependenciesCell'
+import { policyKey } from './policyDependencySummary'
+import { usePolicyDependencySummaries } from './usePolicyDependencySummaries'
 export interface PolicyTableItem {
   policy: Policy
   source: string | JSX.Element
@@ -86,6 +89,7 @@ export default function PoliciesPage() {
     subscriptionsState,
   } = useSharedAtoms()
   const policies = useAddRemediationPolicies()
+  const dependencySummaries = usePolicyDependencySummaries(policies)
   const helmReleases = useSharedValue(helmReleaseState)
   const subscriptions = useSharedValue(subscriptionsState)
   const channels = useSharedValue(channelsState)
@@ -197,6 +201,25 @@ export default function PoliciesPage() {
       },
       { ...policyClusterViolationsColumn, id: 'cv', isDefault: true, order: 6 },
       {
+        header: t('Dependencies'),
+        cell: (item: PolicyTableItem) => (
+          <PolicyDependenciesCell
+            policy={item.policy}
+            summary={dependencySummaries.get(policyKey(item.policy))}
+            t={t}
+          />
+        ),
+        sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
+          const a = dependencySummaries.get(policyKey(itemA.policy))
+          const b = dependencySummaries.get(policyKey(itemB.policy))
+          return (a?.total ?? 0) - (b?.total ?? 0) || (a?.notMet ?? 0) - (b?.notMet ?? 0)
+        },
+        id: 'dependencies',
+        order: 7,
+        isDefault: true,
+        exportContent: (item) => getDependencySummaryText(dependencySummaries.get(policyKey(item.policy)), t),
+      },
+      {
         header: t('Source'),
         sort: (itemA: PolicyTableItem, itemB: PolicyTableItem) => {
           let itemAText = itemA.source as string
@@ -215,7 +238,7 @@ export default function PoliciesPage() {
           return item.source ? item.source : '-'
         },
         id: 'source',
-        order: 7,
+        order: 8,
         isDefault: false,
         isFirstVisitChecked: true,
         exportContent: (item) => {
@@ -251,7 +274,7 @@ export default function PoliciesPage() {
             t
           ),
         id: 'automation',
-        order: 8,
+        order: 9,
         isDefault: false,
         exportContent: (item) => {
           const policyAutomationMatch = policyAutomations.find(
@@ -265,7 +288,7 @@ export default function PoliciesPage() {
         cell: handleCreatedCell,
         sort: 'policy.metadata.creationTimestamp',
         id: 'created',
-        order: 9,
+        order: 10,
         isDefault: false,
         isFirstVisitChecked: false,
         exportContent: (item) => {
@@ -279,13 +302,14 @@ export default function PoliciesPage() {
         cell: (item: PolicyTableItem) => handleBtnCell(item, setModal),
         cellTransforms: [fitContent],
         id: 'btn',
-        order: 10,
+        order: 11,
         isDefault: true,
         isActionCol: true,
       },
     ],
     [
       policyClusterViolationsColumn,
+      dependencySummaries,
       policySets,
       policyAutomations,
       canUpdatePolicyAutomation,
